@@ -27,7 +27,7 @@ title: MTD block prefix
 size: 20
 fields:
   - {at: 0, size: 4, type: u32, name: reserved, value: 0, level: proven}
-  - {at: 4, size: 4, type: u32, name: declared body length, level: observed}
+  - {at: 4, size: 4, type: u32, name: declared body length, level: proven}
   - {at: 8, size: 4, type: u32, name: block kind, level: proven}
   - {at: 12, size: 4, type: u32, name: block version, level: proven}
   - {at: 16, size: 1, type: u8, name: marker, level: proven}
@@ -35,7 +35,7 @@ fields:
 ```
 
 Some stock blocks overstate their lengths. Typed counts, nested structure and markers still describe the complete
-file; this discrepancy does not establish whether the game uses or ignores the declared lengths. :observed
+file; this discrepancy does not establish whether the game uses or ignores the declared lengths. :proven[all binder definitions]
 
 | Block kind | Version | Contents | Confidence |
 |---|---:|---|---|

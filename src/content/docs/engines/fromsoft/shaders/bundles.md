@@ -21,14 +21,16 @@ programs and a `.metaparam`. :observed Elden Ring also has DLC bundle binders na
 | Geometry inputs | Ordinary and skinned variants | Ordinary, skinned and SpeedTree variants | :observed |
 
 Stage file extensions agree with the shader kind in their program containers in Sekiro's bundle census and in
-the Elden Ring Academy material-bundle comparison. :observed
+the Elden Ring Academy material-bundle comparison. The Sekiro census checks all 16,428 programs in its 248
+bundles without a stage mismatch; Elden Ring's cited check is limited to one area.
+:proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"}
 
 | Extension | Stage | Confidence |
 |---|---|---|
-| `.vpo` | Vertex | :observed |
-| `.ppo` | Pixel | :observed |
-| `.hpo` | Hull | :observed |
-| `.dpo` | Domain | :observed |
+| `.vpo` | Vertex | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
+| `.ppo` | Pixel | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
+| `.hpo` | Hull | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
+| `.dpo` | Domain | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
 
 ## Passes and switches
 
@@ -57,5 +59,5 @@ The binding metadata is described in [METAPARAM](/engines/fromsoft/materials/met
 
 :::open[What selects every runtime permutation and render state?]
 The material switch does not explain every instance-dependent pass choice. The cited capture does not establish
-blend modes 3–5 or a material field predicting every depth-bias change. :unknown{games="sekiro"}
+blend modes 3â€“5 or a material field predicting every depth-bias change. :unknown{games="sekiro"}
 :::

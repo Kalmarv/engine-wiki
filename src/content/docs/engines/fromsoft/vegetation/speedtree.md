@@ -8,8 +8,9 @@ implementations:
 ---
 
 Elden Ring's SpeedTree models are FLVER files with header word `0x8000` at `0x6A`. Their layouts declare both
-stored vertex members and a per-instance stream supplied at draw time. The inspected population contains 119
-models. :observed
+stored vertex members and a per-instance stream supplied at draw time. All 119 SpeedTree models in the asset and map binders declare those two stream classes.
+The independent reader refuses all 119; their stored streams are read separately and their non-billboard
+geometry is checked against the vertex programs. :proven[all 119 SpeedTree models]
 
 The game's own G-buffer vertex program is executed for every non-billboard mesh vertex in the asset and map
 population, with identity instance transforms, finest LOD and wind disabled. Position and UV agree exactly;
@@ -19,7 +20,7 @@ not animated wind behaviour. :proven[executed vertex programs]
 ## Stored and runtime streams
 
 The first member word splits into a low 16-bit stream number and a high 16-bit modifier. Modifier `0x8000` marks
-an unstored member; offsets advance independently within each declared stream. :observed
+an unstored member; offsets advance independently within each declared stream. :proven[all 119 SpeedTree models]
 
 | Input | Content | Confidence |
 |---|---|---|
@@ -35,7 +36,7 @@ Three meshes of `AEG801_258` are exceptions to taking the two byte members as th
 Half4 UV5 member as the normal input. The input selected by the program determines its role. :proven[executed vertex programs]
 
 The stored frame unpacks as `x*2-1`. Its pixel program applies sampled normal X along the stored tangent `T` and
-Y along `-w*(N×T)`; this differs from the ordinary layered-program convention. :observed
+Y along `-w*(NÃ—T)`; this differs from the ordinary layered-program convention. :observed
 
 ## Wind and billboard cards
 

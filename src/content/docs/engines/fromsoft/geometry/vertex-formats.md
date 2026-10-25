@@ -18,9 +18,9 @@ describes its packing; the same type can be decoded differently for a normal, bo
 title: Buffer layout
 size: 16
 fields:
-  - {at: 0, size: 4, type: u32, name: member count, level: observed}
-  - {at: 4, size: 8, type: bytes, name: reserved, value: 0, level: observed}
-  - {at: 12, size: 4, type: u32, name: members offset, level: observed}
+  - {at: 0, size: 4, type: u32, name: member count, level: proven}
+  - {at: 4, size: 8, type: bytes, name: reserved, value: 0, level: proven}
+  - {at: 12, size: 4, type: u32, name: members offset, level: proven}
 ```
 
 ```layout
@@ -28,10 +28,10 @@ title: Layout member
 size: 20
 fields:
   - {at: 0, size: 4, type: u32, name: stream descriptor, level: sourced, note: 'Ordinary layouts use a stream word; SpeedTree splits it into stream u16 and modifier u16.'}
-  - {at: 4, size: 4, type: u32, name: byte offset within stream, level: observed}
-  - {at: 8, size: 4, type: u32, name: member type, level: observed}
-  - {at: 12, size: 4, type: u32, name: semantic, level: observed}
-  - {at: 16, size: 4, type: u32, name: semantic index, level: observed}
+  - {at: 4, size: 4, type: u32, name: byte offset within stream, level: proven}
+  - {at: 8, size: 4, type: u32, name: member type, level: proven}
+  - {at: 12, size: 4, type: u32, name: semantic, level: proven}
+  - {at: 16, size: 4, type: u32, name: semantic index, level: proven}
 ```
 
 | Semantic | Role | Confidence |
@@ -44,6 +44,11 @@ fields:
 | 6 | Tangent | :observed |
 | 7 | Bitangent | :observed |
 | 10 | Vertex colour | :observed |
+
+The layout records above are checked across the whole-install reference population: 14,459 Sekiro and 22,050
+Elden Ring models. The reference refuses 119 Elden Ring SpeedTree models; those streams have a separate
+program-execution check. One Sekiro archive entry is unreadable before model inspection.
+:proven[whole-install reference population]
 
 ## Types and consumer decoding
 
@@ -97,7 +102,7 @@ transforms the pivot as a point, including instance translation; it is not a sig
 
 The whole-install attribute inventory records these pivots on 306 Sekiro meshes (978,040 vertices) and 1,586 Elden
 Ring meshes (5,301,513 vertices), with SpeedTree's stored members handled separately. The respective maximum
-absolute components are 487.75 and 2,118. :observed
+absolute components are 487.75 and 2,118. :proven[whole-install attribute inventory]
 
 :::open[Does every declared member type have a consumer-verified meaning?]
 No exhaustive shader-consumer check establishes every type/semantic combination. The table deliberately separates

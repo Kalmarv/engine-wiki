@@ -21,26 +21,26 @@ the FLVER reference may retain a `.matxml` source name. :observed
 title: FLVER2 material
 size: 32
 fields:
-  - {at: 0, size: 4, type: u32, name: material name offset, level: observed}
-  - {at: 4, size: 4, type: u32, name: definition path offset, level: observed}
-  - {at: 8, size: 4, type: u32, name: texture count, level: observed}
-  - {at: 12, size: 4, type: u32, name: first texture index, level: observed}
+  - {at: 0, size: 4, type: u32, name: material name offset, level: proven}
+  - {at: 4, size: 4, type: u32, name: definition path offset, level: proven}
+  - {at: 8, size: 4, type: u32, name: texture count, level: proven}
+  - {at: 12, size: 4, type: u32, name: first texture index, level: proven}
   - {at: 16, size: 4, type: u32, name: calculated string byte count, level: sourced, note: SoulsFormatsNEXT identifies this as the combined material and texture string size.}
-  - {at: 20, size: 4, type: u32, name: GX list offset, level: observed}
+  - {at: 20, size: 4, type: u32, name: GX list offset, level: proven}
   - {at: 24, size: 4, type: u32, name: material index, level: sourced}
-  - {at: 28, size: 4, type: u32, name: reserved, value: 0, level: observed}
+  - {at: 28, size: 4, type: u32, name: reserved, value: 0, level: proven}
 ```
 
 ```layout
 title: FLVER2 texture binding
 size: 32
 fields:
-  - {at: 0, size: 4, type: u32, name: path offset, level: observed}
-  - {at: 4, size: 4, type: u32, name: texture kind name offset, level: observed}
-  - {at: 8, size: 8, type: float2, name: scale, level: observed}
+  - {at: 0, size: 4, type: u32, name: path offset, level: proven}
+  - {at: 4, size: 4, type: u32, name: texture kind name offset, level: proven}
+  - {at: 8, size: 8, type: float2, name: scale, level: proven}
   - {at: 16, size: 1, type: u8, name: U tiling type, level: sourced}
   - {at: 17, size: 1, type: u8, name: V tiling type, level: sourced}
-  - {at: 18, size: 2, type: bytes, name: reserved, value: 0, level: observed}
+  - {at: 18, size: 2, type: bytes, name: reserved, value: 0, level: proven}
   - {at: 20, size: 12, type: float3, name: unknown values, level: unknown}
 ```
 
@@ -61,6 +61,11 @@ The `N` in `Texture2D_N` identifies a logical texture across material and progra
 metaparam slot/register: Sekiro's DetailBlend base albedo `Texture2D_7` is at register 1, while detail albedo
 `Texture2D_2` is at register 7. :observed{games="sekiro"}
 
+The FLVER record layouts below are checked in the whole-install model population: 14,459 Sekiro files
+and 22,050 reference-readable Elden Ring files. The reference refuses another 119 Elden Ring SpeedTree files;
+those have a separate stream check. One Sekiro archive entry fails before model inspection and is excluded.
+:proven[whole-install reference population]
+
 ## GX extension lists
 
 GX lists preserve material extension payloads beside the ordinary texture bindings. :sourced[SoulsFormatsNEXT]
@@ -69,9 +74,9 @@ GX lists preserve material extension payloads beside the ordinary texture bindin
 title: GX item header
 size: 12
 fields:
-  - {at: 0, size: 4, type: bytes, name: identifier, level: observed}
+  - {at: 0, size: 4, type: bytes, name: identifier, level: proven}
   - {at: 4, size: 4, type: u32, name: version, level: sourced}
-  - {at: 8, size: 4, type: u32, name: total item length, level: observed, note: Includes this header for ordinary items.}
+  - {at: 8, size: 4, type: u32, name: total item length, level: proven, note: Includes this header for ordinary items.}
 ```
 
 The terminator identifier is `0x7FFFFFFF` or `0xFFFFFFFF`, with version word 100 and zero payload padding.

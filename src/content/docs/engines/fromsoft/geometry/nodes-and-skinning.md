@@ -16,24 +16,29 @@ implementations:
 FLVER nodes describe a transform hierarchy. Meshes can follow a node rigidly or carry weighted bone indices;
 dummy points identify attachment locations independently of the drawable meshes. :sourced[SoulsFormatsNEXT]
 
+The FLVER record layouts below are checked in the whole-install model population: 14,459 Sekiro files
+and 22,050 reference-readable Elden Ring files. The reference refuses another 119 Elden Ring SpeedTree files;
+those have a separate stream check. One Sekiro archive entry fails before model inspection and is excluded.
+:proven[whole-install reference population]
+
 ## Nodes
 
 ```layout
 title: FLVER2 node
 size: 128
 fields:
-  - {at: 0, size: 12, type: float3, name: translation, level: observed}
-  - {at: 12, size: 4, type: u32, name: name offset, level: observed}
-  - {at: 16, size: 12, type: float3, name: Euler rotation, level: observed}
-  - {at: 28, size: 2, type: i16, name: parent index, level: observed}
+  - {at: 0, size: 12, type: float3, name: translation, level: proven}
+  - {at: 12, size: 4, type: u32, name: name offset, level: proven}
+  - {at: 16, size: 12, type: float3, name: Euler rotation, level: proven}
+  - {at: 28, size: 2, type: i16, name: parent index, level: proven}
   - {at: 30, size: 2, type: i16, name: first child index, level: sourced}
-  - {at: 32, size: 12, type: float3, name: scale, level: observed}
+  - {at: 32, size: 12, type: float3, name: scale, level: proven}
   - {at: 44, size: 2, type: i16, name: next sibling index, level: sourced}
   - {at: 46, size: 2, type: i16, name: previous sibling index, level: sourced}
   - {at: 48, size: 12, type: float3, name: minimum bounds, level: sourced}
   - {at: 60, size: 4, type: u32, name: node flags, level: sourced}
   - {at: 64, size: 12, type: float3, name: maximum bounds, level: sourced}
-  - {at: 76, size: 52, type: bytes, name: reserved, value: 0, level: observed}
+  - {at: 76, size: 52, type: bytes, name: reserved, value: 0, level: proven}
 ```
 
 The community reader constructs the local transform, in row-vector notation, as
@@ -54,7 +59,7 @@ fields:
   - {at: 2, size: 2, type: i16, name: all skeletons count, level: sourced}
   - {at: 4, size: 4, type: u32, name: base skeleton offset, level: sourced}
   - {at: 8, size: 4, type: u32, name: all skeletons offset, level: sourced}
-  - {at: 12, size: 20, type: bytes, name: reserved, value: 0, level: observed}
+  - {at: 12, size: 20, type: bytes, name: reserved, value: 0, level: proven}
 ```
 
 ```layout
@@ -66,7 +71,7 @@ fields:
   - {at: 4, size: 2, type: i16, name: next sibling index, level: sourced}
   - {at: 6, size: 2, type: i16, name: previous sibling index, level: sourced}
   - {at: 8, size: 4, type: i32, name: node index, level: sourced}
-  - {at: 12, size: 4, type: u32, name: reserved, value: 0, level: observed}
+  - {at: 12, size: 4, type: u32, name: reserved, value: 0, level: proven}
 ```
 
 ## Rigid and dynamic data
@@ -107,7 +112,7 @@ fields:
   - {at: 47, size: 1, type: bool, name: use upward vector, level: sourced}
   - {at: 48, size: 4, type: i32, name: unknown 30, level: unknown}
   - {at: 52, size: 4, type: i32, name: unknown 34, level: unknown}
-  - {at: 56, size: 8, type: bytes, name: reserved, value: 0, level: observed}
+  - {at: 56, size: 8, type: bytes, name: reserved, value: 0, level: proven}
 ```
 
 The reference ID identifies the point to scripts and effects; its meaning is external to FLVER. The parent bone

@@ -25,9 +25,9 @@ whose response to moving the camera fits neither form; no transform convention i
 
 ## Joint matrices
 
-The inspected palette-applying programs read each joint as three float4 rows, not columns: 17,455 Elden Ring
+Every palette-applying vertex program in the bundle census reads each joint as three float4 rows, not columns: 17,455 Elden Ring
 programs and 42 Sekiro programs. One additional Elden Ring program reads only joint translations, so its accesses
-alone do not distinguish a complete matrix layout. :observed
+alone do not distinguish a complete matrix layout. :proven[whole-bundle palette census]
 
 Some Elden Ring skinned programs apply `VC_aClothCancelObjMatrix` before `VC_aObjMatrix`, giving two distinct
 palettes. A vertex-indexed constant-buffer access distinguishes a joint palette from an instance-only object

@@ -18,12 +18,32 @@ The package's format byte is metadata beside the DDS; the DDS also declares its 
 
 Sekiro's whole-install comparison visits packages inside ordinary and split binders, compares independent
 metadata and DDS payloads, and accounts for entries both readers reject. The evidence is exhaustive for the
-reference-readable package population, not proof that every archive entry is a valid TPF. :proven{games="sekiro"}
+reference-readable package population: 14,481 packages holding 30,613 textures. One archive entry is refused
+before its contents can be inspected; none of those 14,481 package records is refused. The proof does not
+cover the unread archive payload. :proven{games="sekiro"}
 
 ## Header and descriptors
 
+The separate layouts mark the complete Sekiro package census as Proven and Elden Ring's sampled PC packages
+as Observed. No whole-install Elden Ring TPF comparison is established here. :observed{games="elden-ring"}
+
 ```layout
 title: PC TPF header
+games: [sekiro]
+size: 16
+fields:
+  - {at: 0, size: 4, type: char, name: magic, value: 'TPF\0', level: proven}
+  - {at: 4, size: 4, type: u32, name: data size, level: proven}
+  - {at: 8, size: 4, type: u32, name: texture count, level: proven}
+  - {at: 12, size: 1, type: u8, name: platform, value: 0, level: sourced, note: PC.}
+  - {at: 13, size: 1, type: u8, name: package flags, level: unknown, note: Accepted values 0 through 3; complete semantics not established.}
+  - {at: 14, size: 1, type: u8, name: name encoding, level: proven, note: 1 is UTF-16; checked other cases use byte strings.}
+  - {at: 15, size: 1, type: u8, name: reserved, value: 0, level: proven}
+```
+
+```layout
+title: PC TPF header
+games: [elden-ring]
 size: 16
 fields:
   - {at: 0, size: 4, type: char, name: magic, value: 'TPF\0', level: observed}
@@ -37,6 +57,22 @@ fields:
 
 ```layout
 title: PC TPF texture descriptor prefix
+games: [sekiro]
+size: 20
+fields:
+  - {at: 0, size: 4, type: u32, name: payload offset, level: proven}
+  - {at: 4, size: 4, type: u32, name: payload length, level: proven}
+  - {at: 8, size: 1, type: u8, name: package format code, level: sourced}
+  - {at: 9, size: 1, type: u8, name: texture kind, level: proven, note: 0 image; 1 cube; 2 volume.}
+  - {at: 10, size: 1, type: u8, name: mip count, level: proven}
+  - {at: 11, size: 1, type: u8, name: texture flags, level: unknown, note: 0 or 1 in supported PC descriptors.}
+  - {at: 12, size: 4, type: u32, name: name offset, level: proven}
+  - {at: 16, size: 4, type: u32, name: optional metadata present, level: proven}
+```
+
+```layout
+title: PC TPF texture descriptor prefix
+games: [elden-ring]
 size: 20
 fields:
   - {at: 0, size: 4, type: u32, name: payload offset, level: observed}
@@ -51,6 +87,17 @@ fields:
 
 ```layout
 title: Optional TPF metadata
+games: [sekiro]
+size: variable
+fields:
+  - {at: 0, size: 4, type: u32, name: metadata identifier, level: unknown}
+  - {at: 4, size: 4, type: u32, name: payload byte length, level: proven}
+  - {at: 8, size: payload byte length, type: u32 array, name: metadata words, level: unknown, note: Length is a multiple of four; words are not necessarily floats.}
+```
+
+```layout
+title: Optional TPF metadata
+games: [elden-ring]
 size: variable
 fields:
   - {at: 0, size: 4, type: u32, name: metadata identifier, level: unknown}
@@ -59,11 +106,12 @@ fields:
 ```
 
 Optional metadata immediately follows its descriptor prefix, so descriptors are not necessarily a fixed-stride
-array. Names and payload offsets are file-relative. Payloads start with `DDS `. :observed
+array. Names and payload offsets are file-relative. Payloads start with `DDS `.
+:proven[all 14481 packages]{games="sekiro"} :observed{games="elden-ring"}
 
 The data-size field has two observed producer conventions: length from the end of names, or length from the first
 DDS payload. Inter-section padding is zero but has no fixed width; trailing padding is at most 15 zero bytes.
-:observed
+:proven[all 14481 packages]{games="sekiro"} :observed{games="elden-ring"}
 
 ## Pixel formats and colour transfer
 
@@ -84,7 +132,7 @@ rules across formats, not a census of which codes Sekiro or Elden Ring actually 
 | 8, 9, 105 | RGBA8, BGRA8, RGBA8 respectively | :sourced[SoulsFormatsNEXT] |
 
 The reference source is internally inconsistent on some remaining codes: its comments call 22 a half-float
-format while its DXGI table uses 16-bit UNORM, and comments call 108–110 sRGB while that table gives linear BC
+format while its DXGI table uses 16-bit UNORM, and comments call 108â€“110 sRGB while that table gives linear BC
 formats. These mappings cannot establish a runtime colour view. :sourced[SoulsFormatsNEXT]
 
 DDS block-compressed formats identify both block packing and, for DXGI formats, linear or sRGB transfer.
@@ -92,7 +140,7 @@ Sekiro area-texture pixel comparisons match an independent BC decoder exactly, a
 decoders within one channel level where those readers support the format. Two m25 sky textures are explicit
 unsupported-format cases for the C# reader. :observed{games="sekiro"}
 
-BC blocks cover 4×4 texels; a sub-4×4 mip still occupies a whole block. BC1 and BC4 use eight-byte blocks;
+BC blocks cover 4Ã—4 texels; a sub-4Ã—4 mip still occupies a whole block. BC1 and BC4 use eight-byte blocks;
 BC2, BC3, BC5, BC6H and BC7 use sixteen-byte blocks. :sourced[bcdec]
 
 Normal maps and masks are read as linear data; albedo sampling can require an sRGB view. In Elden Ring's Academy
@@ -104,6 +152,6 @@ at linear formats. This payload correlation does not prove every runtime resourc
 The DDS payload provides a concrete pixel-format declaration. An exhaustive per-game mapping from the separate
 TPF format byte to that declaration is not established here, nor are all optional metadata word meanings.
 :unknown
-The conflicting reference descriptions for codes 22 and 108–110 also require comparison with actual DDS payloads
+The conflicting reference descriptions for codes 22 and 108â€“110 also require comparison with actual DDS payloads
 and resource views. :unknown
 :::

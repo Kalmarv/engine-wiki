@@ -29,9 +29,9 @@ engines:
   - id: unreal
     name: Unreal Engine
     summary: Unreal Engine 5 packages, IoStore and custom-map packaging.
-  - id: sonic-team
-    name: Sonic Team (SA2)
-    summary: Sonic Adventure 2's engine and data formats.
+  - id: ninja
+    name: SEGA Ninja (SA2)
+    summary: "The SEGA Ninja library's data as Sonic Adventure 2 ships it (GameCube): NJS object trees, Chunk, Basic and Ginja (GX) models, GVM/GVR textures, PRS compression, REL stage modules."
 
 # In reading order. A page's system decides its sidebar group and its row in the coverage matrix.
 systems:

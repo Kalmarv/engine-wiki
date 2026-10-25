@@ -56,6 +56,7 @@
   engine: forzatech
   developer: Playground Games
   year: 2026
+  build: Steam release, track Brio data of early October 2026 (build number not recorded; install no longer present)
 
 - id: sunset-overdrive
   name: Sunset Overdrive
@@ -63,6 +64,7 @@
   engine: insomniac
   developer: Insomniac Games
   year: 2014
+  build: Steam PC release, build 3373500 (Sunset.exe of 2018-12-06; install no longer present)
 
 - id: skatebird
   name: SkateBIRD
@@ -107,9 +109,9 @@
   build: Unreal Engine 5.6.1, Steam app 4704690
 
 - id: sa2b
-  name: Sonic Adventure 2 Battle
+  name: "Sonic Adventure 2: Battle (GameCube)"
   short: SA2B
-  engine: sonic-team
+  engine: ninja
   developer: Sonic Team
   year: 2001
-  build: PC (Steam)
+  build: GameCube disc image, USA (game id GSNE8P)

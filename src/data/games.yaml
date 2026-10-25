@@ -1,0 +1,115 @@
+# Every game the wiki covers. `id` is what pages use in frontmatter (`games:`) and in directives
+# (`:only[elden-ring]`); `short` is the label a chip or a matrix column shows. A game's engine must be an id in
+# engines.yaml. `build` is the version our observations come from: a claim is only known to hold for it.
+
+- id: sekiro
+  name: "Sekiro: Shadows Die Twice"
+  short: Sekiro
+  engine: fromsoft
+  developer: FromSoftware
+  year: 2019
+  build: Steam release, data of 2026-10-10
+
+- id: elden-ring
+  name: Elden Ring
+  short: Elden Ring
+  engine: fromsoft
+  developer: FromSoftware
+  year: 2022
+  build: Steam release, regulation 11730034
+
+- id: riders-republic
+  name: Riders Republic
+  short: RR
+  engine: anvil
+  developer: Ubisoft Annecy
+  year: 2021
+  build: Steam build 25394987
+
+- id: ghost-recon-breakpoint
+  name: "Tom Clancy's Ghost Recon Breakpoint"
+  short: GRB
+  engine: anvil
+  developer: Ubisoft Paris
+  year: 2019
+  build: community sources only
+
+- id: gta-v
+  name: Grand Theft Auto V Enhanced
+  short: GTA V
+  engine: rage
+  developer: Rockstar North
+  year: 2025
+  build: Enhanced (PC, 2025)
+
+- id: skate
+  name: skate.
+  short: skate.
+  engine: frostbite
+  developer: Full Circle
+  year: 2025
+  build: Skate.exe build 20260929
+
+- id: fh6
+  name: Forza Horizon 6
+  short: FH6
+  engine: forzatech
+  developer: Playground Games
+  year: 2026
+
+- id: sunset-overdrive
+  name: Sunset Overdrive
+  short: Sunset
+  engine: insomniac
+  developer: Insomniac Games
+  year: 2014
+
+- id: skatebird
+  name: SkateBIRD
+  short: SkateBIRD
+  engine: unity
+  developer: Glass Bottom Games
+  year: 2021
+  build: Unity 2019.4 (Mono)
+
+- id: sledding
+  name: Sledding Game
+  short: Sledding
+  engine: unity
+  year: 2025
+  build: Unity 6000.3
+
+- id: peak
+  name: PEAK
+  short: PEAK
+  engine: unity
+  developer: Aggro Crab, Landfall
+  year: 2025
+  build: 2.6.b (Unity 6, Mono)
+
+- id: big-walk
+  name: Big Walk
+  short: Big Walk
+  engine: unity
+  developer: House House
+  build: Unity 6000.3.17f1 (IL2CPP)
+
+- id: stuntboost
+  name: STUNTBOOST
+  short: STUNTBOOST
+  engine: monogame
+  build: Steam app 2999500
+
+- id: meccha-chameleon
+  name: MECCHA CHAMELEON
+  short: MECCHA
+  engine: unreal
+  build: Unreal Engine 5.6.1, Steam app 4704690
+
+- id: sa2b
+  name: Sonic Adventure 2 Battle
+  short: SA2B
+  engine: sonic-team
+  developer: Sonic Team
+  year: 2001
+  build: PC (Steam)

@@ -1,0 +1,69 @@
+---
+// Starlight's Markdown content, with the games a page applies to above it and its sources and implementations below.
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import { gameById, engineById, systemById } from '../lib/registry.mjs';
+import { pageMeta } from '../lib/page-meta.mjs';
+
+const route = Astro.locals.starlightRoute;
+const entry = route.entry;
+const isDoc = entry && entry.data.template !== 'splash';
+const meta = isDoc ? pageMeta(entry) : null;
+const { sources = [], implementations = [] } = isDoc ? entry.data : {};
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+{
+  meta && (meta.engine || meta.games.length > 0) && (
+    <div class="page-meta">
+      {meta.engine && (
+        <a class="page-meta__engine" href={`${base}/engines/${meta.engine}/`}>
+          {engineById[meta.engine].name}
+        </a>
+      )}
+      {meta.system && <span class="page-meta__system">{systemById[meta.system].name}</span>}
+      {meta.games.length > 0 && (
+        <span class="page-meta__games">
+          Applies to
+          {meta.games.map((g) => (
+            <a class="game-chip" href={`${base}/coverage/#${g}`} title={gameById[g].name}>
+              {gameById[g].short}
+            </a>
+          ))}
+        </span>
+      )}
+    </div>
+  )
+}
+<Default><slot /></Default>
+{
+  (sources.length > 0 || implementations.length > 0) && (
+    <footer class="page-refs sl-markdown-content">
+      {sources.length > 0 && (
+        <section>
+          <h2 id="sources">Sources</h2>
+          <ul>
+            {sources.map((s) => (
+              <li>
+                {s.url ? <a href={s.url}>{s.title}</a> : s.title}
+                {s.note && <span class="page-refs__note"> — {s.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {implementations.length > 0 && (
+        <section class="page-refs__impl">
+          <h3 id="implementations">Implementations</h3>
+          <ul>
+            {implementations.map((s) => (
+              <li>
+                {s.url ? <a href={s.url}>{s.name}</a> : s.name}
+                {s.note && <span class="page-refs__note"> — {s.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </footer>
+  )
+}

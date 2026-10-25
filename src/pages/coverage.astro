@@ -1,0 +1,191 @@
+---
+// What the wiki knows and how surely, computed from every page at build time: the confidence badges and layout fields
+// each page carries, by engine, system and game. Nothing here is maintained by hand.
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { getCollection } from 'astro:content';
+import { levels } from '../lib/confidence.mjs';
+import { engines, systems, gamesOf, gameById, games as allGames } from '../lib/registry.mjs';
+import { claimsOf } from '../lib/claims.mjs';
+import { pageMeta } from '../lib/page-meta.mjs';
+import { legend } from '../lib/layout.mjs';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const href = (id) => `${base}/${id.replace(/(^|\/)index$/, '')}/`.replace(/\/+$/, '/').replace(/\/\/+/g, '/');
+const zero = () => Object.fromEntries(levels.map((l) => [l.id, 0]));
+
+const docs = (await getCollection('docs')).sort((a, b) => a.id.localeCompare(b.id));
+const pages = docs.map((entry) => {
+  const meta = pageMeta(entry);
+  return { entry, meta, claims: claimsOf(entry.body ?? '', `src/content/docs/${entry.id}`) };
+});
+
+// cell key engine|system|game -> { counts, pages: Set<id>, impl: bool }
+const cells = new Map();
+const cell = (e, s, g) => {
+  const k = `${e}|${s}|${g}`;
+  if (!cells.has(k)) cells.set(k, { counts: zero(), pages: new Set(), impl: false });
+  return cells.get(k);
+};
+const gameTotals = Object.fromEntries(allGames.map((g) => [g.id, zero()]));
+const layoutsByEngine = new Map();
+const open = [];
+const untagged = [];
+
+for (const { entry, meta, claims } of pages) {
+  for (const q of claims.open) open.push({ q, entry, meta });
+  if (meta.section !== 'engines') continue;
+  const system = meta.system ?? 'overview';
+  const add = (level, gamesOfClaim) => {
+    for (const g of gamesOfClaim.length ? gamesOfClaim : meta.games) {
+      const c = cell(meta.engine, system, g);
+      c.counts[level]++;
+      c.pages.add(entry.id);
+      gameTotals[g][level]++;
+    }
+  };
+  for (const b of claims.badges) add(b.level, b.games);
+  for (const lay of claims.layouts) {
+    for (const f of lay.fields) add(f.level, f.games.length ? f.games : lay.games);
+    if (!layoutsByEngine.has(meta.engine)) layoutsByEngine.set(meta.engine, []);
+    layoutsByEngine.get(meta.engine).push({ lay, entry });
+  }
+  for (const g of meta.games) {
+    const c = cell(meta.engine, system, g);
+    c.pages.add(entry.id);
+    if (entry.data.implementations.length) c.impl = true;
+  }
+  if (!claims.badges.length && !claims.layouts.length && meta.system) untagged.push(entry);
+}
+
+const sum = (counts) => Object.values(counts).reduce((a, b) => a + b, 0);
+const segs = (counts) => levels.filter((l) => counts[l.id]).map((l) => ({ id: l.id, n: counts[l.id], label: l.label }));
+const strong = (counts) => counts.proven + counts.observed;
+
+const engineBlocks = engines
+  .map((e) => {
+    const gs = gamesOf(e.id);
+    const rows = [{ id: 'overview', name: 'Overview' }, ...systems]
+      .map((s) => ({ s, cells: gs.map((g) => cells.get(`${e.id}|${s.id}|${g.id}`)) }))
+      .filter((r) => r.cells.some(Boolean));
+    const missing = systems.filter((s) => !rows.some((r) => r.s.id === s.id));
+    return { e, gs, rows, missing };
+  })
+  .filter((b) => b.rows.length);
+const empty = engines.filter((e) => !engineBlocks.some((b) => b.e.id === e.id));
+const firstPage = (c) => [...c.pages].sort()[0];
+---
+
+<StarlightPage frontmatter={{ title: 'Coverage', description: 'What the wiki knows, per engine, system and game, and how surely.', tableOfContents: false }}>
+  <p>
+    Every count on this page is computed from the pages themselves: each <a href={`${base}/guide/confidence/`}>confidence badge</a> and
+    each field of a byte layout is one claim, counted for the games it applies to. A cell's bar is its claims by confidence;
+    the number is how many there are. Nothing here is kept by hand.
+  </p>
+  <div class="legend cov-legend">{levels.map((l) => <span><i class={`lv-${l.id}`}></i>{l.label}</span>)}</div>
+
+  <h2 id="games">By game</h2>
+  <table class="cov-games">
+    <thead><tr><th>Game</th><th>Engine</th><th class="num">Claims</th><th>Confidence</th><th class="num">Proven or observed</th></tr></thead>
+    <tbody>
+      {
+        allGames.map((g) => {
+          const t = gameTotals[g.id];
+          const n = sum(t);
+          return (
+            <tr id={g.id}>
+              <td>{g.name}</td>
+              <td><a href={`${base}/engines/${g.engine}/`}>{engines.find((e) => e.id === g.engine).name}</a></td>
+              <td class="num">{n || '—'}</td>
+              <td>{n > 0 ? <span class="bar wide">{segs(t).map((s) => <span class={`seg lv-${s.id}`} style={`flex:${s.n}`} title={`${s.label}: ${s.n}`} />)}</span> : <span class="muted">nothing written yet</span>}</td>
+              <td class="num">{n ? `${Math.round((100 * strong(t)) / n)}%` : ''}</td>
+            </tr>
+          );
+        })
+      }
+    </tbody>
+  </table>
+
+  <h2 id="engines">By engine and system</h2>
+  {
+    engineBlocks.map(({ e, gs, rows, missing }) => (
+      <section class="cov-engine">
+        <h3 id={`engine-${e.id}`}><a href={`${base}/engines/${e.id}/`}>{e.name}</a></h3>
+        <table class="cov-matrix">
+          <thead><tr><th>System</th>{gs.map((g) => <th title={g.name}>{g.short}</th>)}</tr></thead>
+          <tbody>
+            {rows.map(({ s, cells: cs }) => (
+              <tr>
+                <th scope="row" title={s.summary}>{s.name}</th>
+                {cs.map((c) =>
+                  c ? (
+                    <td>
+                      <a class="cov-cell" href={href(firstPage(c))} title={[...c.pages].join('\n')}>
+                        <span class="bar">{sum(c.counts) ? segs(c.counts).map((sg) => <span class={`seg lv-${sg.id}`} style={`flex:${sg.n}`} />) : <span class="seg lv-none" style="flex:1" />}</span>
+                        <span class="cov-n">{sum(c.counts) || 'no claims'}{c.impl && <span class="impl" title="implemented by a tool (see the page's Implementations)">◆</span>}</span>
+                      </a>
+                    </td>
+                  ) : (
+                    <td class="cov-empty">—</td>
+                  ),
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {missing.length > 0 && <p class="muted cov-missing">No pages yet: {missing.map((s) => s.name).join(', ')}.</p>}
+      </section>
+    ))
+  }
+  {empty.length > 0 && <p class="muted">Engines with no pages yet: {empty.map((e) => e.name).join(', ')}.</p>}
+
+  <h2 id="layouts">Byte layouts</h2>
+  <p>How much of each documented structure is understood: bytes whose meaning is proven or observed, of the structure's size (fields of variable size are counted as fields, not bytes).</p>
+  <Fragment set:html={legend()} />
+  {
+    [...layoutsByEngine].map(([eid, list]) => (
+      <section>
+        <h3>{engines.find((e) => e.id === eid).name}</h3>
+        <table class="cov-layouts">
+          <thead><tr><th>Structure</th><th>Games</th><th class="num">Fields</th><th class="num">Bytes</th><th>Bytes by confidence</th><th class="num">Known</th></tr></thead>
+          <tbody>
+            {list.map(({ lay, entry }) => {
+              const st = lay.stats;
+              const known = st.byLevel.proven + st.byLevel.observed;
+              return (
+                <tr>
+                  <td><a href={href(entry.id)}>{lay.title}</a></td>
+                  <td>{(lay.games.length ? lay.games : pageMeta(entry).games).map((g) => <span class="game-chip">{gameById[g].short}</span>)}</td>
+                  <td class="num">{st.fields}</td>
+                  <td class="num">{st.total || 'variable'}</td>
+                  <td>{st.total ? <span class="bar wide">{[...levels.map((l) => [l.id, st.byLevel[l.id]]), ['undescribed', st.undescribed]].filter(([, n]) => n).map(([id, n]) => <span class={`seg lv-${id}`} style={`flex:${n}`} title={`${id}: ${n} bytes`} />)}</span> : ''}</td>
+                  <td class="num">{st.total ? `${Math.round((100 * known) / st.total)}%` : ''}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </section>
+    ))
+  }
+
+  <h2 id="open">Open questions</h2>
+  {
+    open.length ? (
+      <ul class="cov-open">
+        {open.map(({ q, entry }) => (
+          <li><a href={href(entry.id)}>{entry.data.title}</a>: {q}</li>
+        ))}
+      </ul>
+    ) : <p class="muted">None recorded.</p>
+  }
+
+  {
+    untagged.length > 0 && (
+      <>
+        <h2 id="untagged">Pages with no claims tagged</h2>
+        <p>These pages state things without a confidence badge, so they count for nothing above.</p>
+        <ul>{untagged.map((entry) => <li><a href={href(entry.id)}>{entry.data.title}</a></li>)}</ul>
+      </>
+    )
+  }
+</StarlightPage>

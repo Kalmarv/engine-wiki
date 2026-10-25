@@ -1,0 +1,88 @@
+# Engines (a page's `engine:`), and the systems every engine section is organised by (a page's `system:`).
+# An engine section is a folder src/content/docs/engines/<id>/ with an index.md and a folder per system it covers.
+
+engines:
+  - id: fromsoft
+    name: FromSoftware engine
+    summary: FromSoftware's in-house engine, shared by Sekiro and Elden Ring with per-game differences.
+  - id: anvil
+    name: Anvil
+    summary: Ubisoft's engine (Scimitar lineage); forge archives of typed, CRC-named resources.
+  - id: rage
+    name: RAGE
+    summary: Rockstar Advanced Game Engine; RPF archives of RSC resources.
+  - id: frostbite
+    name: Frostbite (skate.)
+    summary: EA's engine as skate. ships it, and how the game loads, streams and limits content.
+  - id: forzatech
+    name: ForzaTech
+    summary: Turn 10 and Playground Games' engine.
+  - id: insomniac
+    name: Insomniac engine
+    summary: Insomniac Games' in-house engine as Sunset Overdrive ships it.
+  - id: unity
+    name: Unity
+    summary: Unity players' serialized files and bundles, and what each game builds on them.
+  - id: monogame
+    name: MonoGame / XNA
+    summary: The XNA 4.0 content format (XNB) as MonoGame and FNA games ship it.
+  - id: unreal
+    name: Unreal Engine
+    summary: Unreal Engine 5 packages, IoStore and custom-map packaging.
+  - id: sonic-team
+    name: Sonic Team (SA2)
+    summary: Sonic Adventure 2's engine and data formats.
+
+# In reading order. A page's system decides its sidebar group and its row in the coverage matrix.
+systems:
+  - id: archives
+    name: Archives and files
+    summary: Containers, compression, encryption, file naming and hashing.
+  - id: data-model
+    name: Data model
+    summary: Resource headers, type and class registries, references, entities and components.
+  - id: world
+    name: World and streaming
+    summary: Placement, cells and tiles, streaming, world state and layers.
+  - id: geometry
+    name: Geometry
+    summary: Meshes, vertex formats, levels of detail, skinning.
+  - id: materials
+    name: Materials
+    summary: Material definitions, templates, parameters and texture bindings.
+  - id: shaders
+    name: Shaders
+    summary: Compiled shader containers, bindings and what the shaders compute.
+  - id: textures
+    name: Textures
+    summary: Texture containers, pixel formats, mip storage.
+  - id: lighting
+    name: Lighting and sky
+    summary: Lights, global illumination, sky, atmosphere, time of day.
+  - id: terrain
+    name: Terrain
+    summary: Height fields, terrain materials and their blending.
+  - id: vegetation
+    name: Vegetation
+    summary: Grass, trees, SpeedTree and wind.
+  - id: water
+    name: Water
+    summary: Oceans, rivers, lakes and their surfaces.
+  - id: effects
+    name: Effects and decals
+    summary: Particles, decals and other effect entities.
+  - id: collision
+    name: Collision and physics
+    summary: Collision shapes, physics materials and surfaces.
+  - id: animation
+    name: Animation
+    summary: Skeletons, clips, tracks and timing.
+  - id: gameplay
+    name: Gameplay data
+    summary: Params, scripts, events and the game's own rules.
+  - id: runtime
+    name: Runtime and limits
+    summary: What the running engine does with the data, its limits, and known crashes.
+  - id: mod-loading
+    name: Mod loading
+    summary: How mods are loaded, merged and packaged.

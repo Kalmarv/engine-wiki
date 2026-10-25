@@ -93,7 +93,7 @@ n = T·x − B·y + N·z,   B = cross(N, T) · T.w                           N, 
 `s` is the sampled value, so a SNORM map gives `x = 2v − 1` on the signed value. :observed On the game's meshes `T = +dP/du`
 and `cross(N, T) × w = +dP/dv`, with D3D's v pointing down the image (73,176 triangles of 242 meshes, 99.6% agree); so `−B·y`
 makes green+ point to the top of the image: the maps are Y+ ("OpenGL"), and green is not inverted. :observed Two independent
-checks agree: a Blender-style tangent frame on 1,997 real triangles puts green as stored a median 0.03° from the game's
+checks agree: a MikkTSpace tangent frame built from the mesh UVs on 1,997 real triangles puts green as stored a median 0.03° from the game's
 normal against 34° inverted; and of the 209 Tokyo normal maps where a curl-free test is decisive, 197 are Y+ and 12 Y−.
 :observed
 

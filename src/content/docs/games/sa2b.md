@@ -17,7 +17,7 @@ sources:
 Sonic Adventure 2: Battle (Sonic Team, 2001) is the GameCube release of Sonic Adventure 2. It is built on SEGA's Ninja data formats ([SEGA Ninja (SA2)](/engines/ninja/)). :sourced[SA Tools]
 The pages here record **only the GameCube USA disc image, game id `GSNE8P`**; the PC (Steam) release was not read. :observed
 
-All observations come from one recorded census of that disc image, October 2026. The census cannot be re-run now, so the counts are marked :observed with their scope and nothing for this game is
+All observations come from one recorded census of that disc image. The census cannot be re-run now, so the counts are marked :observed with their scope and nothing for this game is
 marked as proven. :observed
 
 ## Where the data lives

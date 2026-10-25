@@ -26,7 +26,7 @@ sources:
 Forza Horizon 6 (Playground Games, 2026) is an open-world driving game set in Japan, with the map centred on Tokyo. It runs on
 [ForzaTech](/engines/forzatech/). The track is named `Brio` in the install. :observed
 
-All observations on the FH6 pages come from one recorded census of a Steam install of the game, taken in early October 2026, which is no longer
+All observations on the FH6 pages come from one recorded census of a Steam install of the game, which is no longer
 installed (about 158 GB), so the figures cannot be re-checked today. The counts are measurements over every file of the stated kind and are
 marked :observed; no FH6 statement is marked as proven. :observed
 

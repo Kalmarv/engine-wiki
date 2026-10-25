@@ -83,5 +83,5 @@ Within a model every mesh refers to its index buffer by position, and each file 
 
 ## Byte order of tags
 
-A blob tag appears in the file in reversed byte order of how it is written above when read as ASCII (the `MTPR` blob has
-the bytes `RPTM`, the `LCNM` blob the bytes `MNCL`, the `PARM` blob the bytes `MRAP`). :observed
+A blob tag appears in the file in reversed byte order of how it is written above when read as ASCII (the `LCNM` blob has
+the bytes `MNCL`, the `PARM` blob the bytes `MRAP`, the `VARS` blob the bytes `SRAV`). :observed

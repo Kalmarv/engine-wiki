@@ -17,7 +17,7 @@ sources:
 Sunset Overdrive (Insomniac Games, 2014 on Xbox One, 2018 on PC) is an open-world action game set in Sunset City, built on Insomniac's [engine](/engines/insomniac/) at its **i16** generation.
 The PC port is the one recorded here (made by Blind Squirrel according to the executable's timestamp and credits; Steam app 847370). :observed
 
-The observations come from one recorded census of the Steam build **3373500** (`Sunset.exe`, x64, PE timestamp 2018-12-06; about 28 GB installed), taken in October 2026. The install is no longer
+The observations come from one recorded census of the Steam build **3373500** (`Sunset.exe`, x64, PE timestamp 2018-12-06; about 28 GB installed). The install is no longer
 present, so the figures cannot be re-checked today. The counts are measurements over every asset of the stated kind and are marked :observed; nothing for this game is marked as proven. :observed
 
 ## Where the data lives

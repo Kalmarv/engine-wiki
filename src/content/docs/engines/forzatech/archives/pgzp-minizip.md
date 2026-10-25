@@ -25,8 +25,8 @@ This page describes the Tokyo track `Brio`, the only track measured. :observed
 | Chunk | Size | Entries | Holds | Confidence |
 |---|---|---|---|---|
 | `GeoChunk0` | 37 GB | 411,013 | every model, every `.pgeo` placement file and `.pb` texture (each with at least its lowest quality tier), terrain cluster models | :observed |
-| `GeoChunk1` | 3.3 GB | 3,065 | smaller set of textures and resources | :observed |
-| `GeoChunk2` | 46 GB | 79,840 | higher quality tiers of textures, including the largest terrain cell maps and the top records of the near-field ground layers | :observed |
+| `GeoChunk1` | 3.3 GB | 3,065 | no `.modelbin`; its other contents (the models, placements and `.pb` textures are in chunks 0 to 2) are not described separately | :unknown |
+| `GeoChunk2` | 46 GB | 79,840 | higher quality tiers of textures, including the largest terrain cell maps (mainmap q5) and the `top.dxt` near-field layer files | :observed |
 | `GeoChunk3` | 4.4 GB | 1,476 | only the highest-resolution `builtmegatexture` records (the `.hq*` files) | :observed |
 
 No path appears in two chunks. :observed Only `GeoChunk0` holds `.modelbin` files. :observed

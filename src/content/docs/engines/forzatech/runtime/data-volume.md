@@ -3,7 +3,7 @@ title: Data volume of the Tokyo track
 description: How much geometry, how many textures and placements the Forza Horizon 6 Tokyo track holds, per area, per LOD and per season.
 ---
 
-The figures below describe the content of the track `Brio` in the data, not what a converter or a viewer does with it. They come from
+The figures below describe the content of the track `Brio` in the data, not what any tool built from it does. They come from
 recorded censuses and exports of a build that is no longer installed. :observed
 
 ## Whole track

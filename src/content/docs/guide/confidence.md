@@ -18,6 +18,22 @@ important it is or how likely it seems.
 
 Something nobody has looked at has no badge and no page: it shows as a gap on the [coverage page](/coverage/).
 
+## Proven or Observed: the line
+
+The question is **how much of the game the check covered**, not how confident anyone feels.
+
+- **Proven:** the check covered *every* instance in the install for that build: all the archive files of that kind,
+  every entry of a type, every program in the bundle. A strict reader (one that refuses an entry on an unexpected value or
+  on bytes it cannot account for) getting through all of them with no refusals proves the layout it reads. So does an
+  independent reader agreeing on all of them. "The six forges of the install hold 1,301,684 entries and every header
+  reads as below" is Proven.
+- **Observed:** the check covered *part* of what exists: one area, one level, a sample, the entries one tool could open,
+  some archives but not all, one capture, a handful of launches. Runtime measurements of the running game (frame
+  captures, crash reproductions, timings) are Observed unless the mechanism is one that cannot depend on the scene.
+
+A census with refusals proves the layout for what it read: say "proven on the 585,234 entries read; 29,876 refused" and
+leave the refused part open.
+
 ## What a level is about
 
 A level is about the statement it is attached to, for the build of the game the wiki records (each game's hub page

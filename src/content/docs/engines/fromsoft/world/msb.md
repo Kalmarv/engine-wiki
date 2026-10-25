@@ -52,16 +52,46 @@ Ashina Castle's map-piece and object names, model references, positions, rotatio
 an independent SoulsFormats decode. That comparison does not cover the other Sekiro part kinds. :observed{games="sekiro"}
 Every part of every kind in Elden Ring's map-layout comparison agrees with SoulsFormatsNEXT. :proven{games="elden-ring"}
 
-| Field | MSBS | MSBE | Confidence |
-|---|---|---|---|
-| Part header size | 160 bytes | 192 bytes | :observed |
-| Kind field | `+8` | `+12` | :observed |
-| Model index | `+16` | `+20` | :observed |
-| Position / rotation / scale | `+32` / `+44` / `+56`, three floats each | Same | :observed |
-| Entity data pointer / type data pointer | `+96` / `+104` | Same | :observed |
-| Entity data size | `0x54` | `0x40` | :observed |
-| Entity ID / eight group IDs within entity data | `+0` / `+0x1c` | Same | :observed |
-| Enemy NPC row within type data | `+12` | Same | :sourced[SoulsFormatsNEXT] |
+```layout
+title: MSBS part header — selected fields
+size: 160
+games: [sekiro]
+note: Offsets within records are relative to the record start. Unlisted fields are not described here.
+fields:
+  - {at: 0, size: 8, type: u64, name: name offset, level: observed}
+  - {at: 8, size: 4, type: u32, name: part kind, level: observed}
+  - {at: 16, size: 4, type: i32, name: model index, level: observed, note: -1 names no model}
+  - {at: 24, size: 8, type: u64, name: resource path offset, level: sourced}
+  - {at: 32, size: 12, type: "f32[3]", name: position, level: observed}
+  - {at: 44, size: 12, type: "f32[3]", name: rotation in degrees, level: observed}
+  - {at: 56, size: 12, type: "f32[3]", name: scale, level: observed}
+  - {at: 96, size: 8, type: u64, name: entity data offset, level: observed, note: Entity block occupies 0x54 bytes}
+  - {at: 104, size: 8, type: u64, name: type data offset, level: observed}
+  - {at: 112, size: 8, type: u64, name: graphics configuration offset, level: observed}
+  - {at: 120, size: 8, type: u64, name: scene configuration offset, level: observed}
+```
+
+```layout
+title: MSBE part header — selected fields
+size: 192
+games: [elden-ring]
+note: Unlisted fields are not described here; record-relative offsets.
+fields:
+  - {at: 0, size: 8, type: u64, name: name offset, level: proven}
+  - {at: 12, size: 4, type: u32, name: part kind, level: proven}
+  - {at: 20, size: 4, type: i32, name: model index, level: proven, note: -1 names no model}
+  - {at: 24, size: 8, type: u64, name: resource path offset, level: sourced}
+  - {at: 32, size: 12, type: "f32[3]", name: position, level: proven}
+  - {at: 44, size: 12, type: "f32[3]", name: rotation in degrees, level: proven}
+  - {at: 56, size: 12, type: "f32[3]", name: scale, level: proven}
+  - {at: 96, size: 8, type: u64, name: entity data offset, level: observed, note: Entity block occupies 0x40 bytes}
+  - {at: 104, size: 8, type: u64, name: type data offset, level: observed}
+  - {at: 112, size: 8, type: u64, name: graphics configuration offset, level: observed}
+  - {at: 120, size: 8, type: u64, name: scene configuration offset, level: observed}
+```
+
+Within entity data, the entity ID is at `+0` and eight group IDs start at `+0x1c`. Enemy type data stores the NPC
+row ID at `+12`. :sourced[SoulsFormatsNEXT]
 
 Kind 0 is a map piece, 2 an enemy, 4 a player, 5 collision, 10 a dummy enemy and 11 connecting collision.
 :sourced[SoulsFormatsNEXT] :only[sekiro] Kind 1 is an object and 9 a dummy object.
@@ -73,10 +103,36 @@ An entity ID of 0 or -1 names no entity. A positive group ID lets an event addre
 
 ## Regions and events
 
-Regions combine a type, a shape and a placement. The common region header stores the type at `+8`, shape code at
-`+16`, position at `+20`, rotation at `+32`, shape-data pointer at `+72`, entity-data pointer at `+80` and type-data
-pointer at `+88`. :sourced[SoulsFormatsNEXT] Shape variants include points, circles, spheres, cylinders, rectangles,
+Regions combine a type, a shape and a placement. :sourced[SoulsFormatsNEXT]
+
+```layout
+title: Region header — selected common fields
+size: variable
+note: Region-record-relative offsets; type-specific payloads differ.
+fields:
+  - {at: 0, size: 8, type: u64, name: name offset, level: sourced}
+  - {at: 8, size: 4, type: u32, name: region type, level: sourced}
+  - {at: 12, size: 4, type: u32, name: region index, level: sourced}
+  - {at: 16, size: 4, type: u32, name: shape type, level: sourced}
+  - {at: 20, size: 12, type: "f32[3]", name: position, level: sourced}
+  - {at: 32, size: 12, type: "f32[3]", name: rotation in degrees, level: sourced}
+  - {at: 72, size: 8, type: u64, name: shape data offset, level: sourced}
+  - {at: 80, size: 8, type: u64, name: entity data offset, level: sourced}
+  - {at: 88, size: 8, type: u64, name: type data offset, level: sourced}
+```
+
+Shape variants include points, circles, spheres, cylinders, rectangles,
 boxes and composites; a shape and a region's purpose are different fields. :sourced[SoulsFormatsNEXT]
+
+| Shape code | Payload | Confidence |
+|---|---|---|
+| `0xffffffff` | No shape | :sourced[SoulsFormatsNEXT] |
+| 0 | Point, no dimensions | :sourced[SoulsFormatsNEXT] |
+| 1 / 2 | Circle / sphere, one radius float | :sourced[SoulsFormatsNEXT] |
+| 3 | Cylinder, radius then height | :sourced[SoulsFormatsNEXT] |
+| 4 | Rectangle, width then depth | :sourced[SoulsFormatsNEXT] |
+| 5 | Box, width then depth then height | :sourced[SoulsFormatsNEXT] |
+| 6 | Composite child-region records | :sourced[SoulsFormatsNEXT] |
 
 Region type 8 identifies spawn points in both generations. :sourced[SoulsFormatsNEXT] Sekiro's event type 9 is
 MapOffset; MSBE has no corresponding MapOffset event. See [coordinate frames](/engines/fromsoft/world/frames/).

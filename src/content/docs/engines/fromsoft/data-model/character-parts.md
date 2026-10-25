@@ -26,8 +26,8 @@ Sekiro's `wp_a_0761_l` contains closed and open Loaded Umbrella forms, each with
 A material-name mark `#XX#` assigns a mesh to display group XX. `NpcParam.modelDispMaskXX` enables that group; an
 unmarked mesh is always visible under this rule. Smithbox applies groups 0–31. :sourced[Smithbox]
 
-The Sekiro community description gives the range as 01–31, while actual `c1010` materials also contain `#00#`.
-:sourced[Sekiro modding wiki]{games="sekiro"} :observed{games="sekiro"}
+The Sekiro community description gives the range as 01–31. :sourced[Sekiro modding wiki]{games="sekiro"}
+Actual `c1010` materials also contain `#00#`. :observed{games="sekiro"}
 
 The NPC row comes from each enemy or dummy-enemy placement; it is not necessarily a property shared by every
 occurrence of a character model. Every map enemy's model/NPC-row link in the independent comparison matches the MSB

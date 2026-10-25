@@ -17,6 +17,10 @@ Collision appearance and behavior are separate from render materials. Compressed
 shape keys through `fsnp` tables; object binders also contain convex and capsule bodies with body-local poses.
 :observed
 
+An MSB collision part also stores a hit-filter byte. Several parts can name the same collision file while carrying
+different filters or event-state conditions; file identity alone does not determine which occurrence is active.
+:observed
+
 ## Material lookup
 
 The compressed shape's `pParam` references `triangleDataArray` and `primitiveDataArray`. A triangle-data row's

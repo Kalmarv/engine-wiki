@@ -2,6 +2,8 @@
 title: Coordinate frames and map offsets
 description: Placement transforms, map-local collision and the distinction between angular units.
 sources:
+  - title: SoulsFormatsNEXT
+    url: https://github.com/soulsmods/SoulsFormatsNEXT
   - title: Smithbox
     url: https://github.com/vawser/Smithbox
   - title: Soulstruct Blender

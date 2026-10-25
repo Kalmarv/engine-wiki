@@ -36,6 +36,21 @@ A vector spline stores a control-point count and degree, byte knot values, compo
 quantized control points in XYZ component order. Static-only vectors store floats. Rotation tracks store aligned
 quantized quaternions, with knots and degree when spline-valued. :sourced[Smithbox]
 
+| Selector | Scalar quantization | Confidence |
+|---|---|---|
+| 0 | 8-bit values between the component bounds | :sourced[Smithbox] |
+| 1 | 16-bit values between the component bounds | :sourced[Smithbox] |
+
+| Selector | Quaternion encoding | Alignment | Confidence |
+|---|---|---|---|
+| 0 | Polar32 | 4 bytes | :sourced[Smithbox] |
+| 1 | ThreeComp40 | 1 byte | :sourced[Smithbox] |
+| 2 | ThreeComp48 | 2 bytes | :sourced[Smithbox] |
+| 5 | Uncompressed four-float quaternion | 4 bytes | :sourced[Smithbox] |
+
+The named ThreeComp24 and Straight16 variants have selector values 3 and 4 in the external decoder's format model;
+their presence in either game's examined clips is not established here. :sourced[Smithbox]
+
 :::open[What do the optional 16 trailing zero bytes encode?]
 Some examined 2018.1 blocks have a further 16 zero bytes before the next block when float data starts on a 16-byte
 boundary. Their presence is observed; a semantic role beyond alignment is not established.

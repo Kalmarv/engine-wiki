@@ -18,14 +18,14 @@ sources:
     url: https://www.soulsmodding.com/
 ---
 
-Sekiro (2019) and Elden Ring (2022) run on one engine lineage that FromSoftware has carried since Demon's Souls. The
-two games read their data the same way: files packed in BHD5/BDT archive pairs, wrapped in DCX compression envelopes
+Sekiro (2019) and Elden Ring (2022) share FromSoftware's in-house engine lineage. :sourced[Souls Modding wiki] The
+two games organize their data similarly: files packed in BHD5/BDT archive pairs, wrapped in DCX compression envelopes
 and grouped in BND4 binders; models in FLVER files; maps laid out by MSB files; collision as Havok files; lights in BTL
-banks; behaviour in EMEVD event scripts and params. :proven
+banks; behaviour in EMEVD event scripts and params. :observed
 
-Most formats are self-describing: a file's version or its section chain says which variant it is, so one reader serves
-both games by what the bytes state. :proven The differences the files do not state about themselves (where a game keeps
-its files, how it hashes archive paths, which keys open its archives) are each game's own rules. :proven
+Several formats identify their structural variant through a version or section chain. :observed Row definitions,
+resource paths and runtime selection rules can still depend on the game: a PARAM's type and version, for example, do
+not include its field definitions. :sourced[Paramdex]
 
 ## What the two games share and where they differ
 
@@ -37,12 +37,16 @@ its files, how it hashes archive paths, which keys open its archives) are each g
 | Compression | DCX `KRAK` (Oodle Kraken) | DCX `KRAK`; `ZSTD` for the params | :proven |
 | Params | `param/gameparam/gameparam.parambnd.dcx` in the archives | `regulation.bin` beside the executable, AES-256-CBC encrypted | :proven |
 | `NPC_PARAM_ST` | data version 14, 896-byte rows | data version 9, 736-byte rows | :proven |
-| Map layout | MSB, Sekiro generation (MSBS) | MSB, Elden Ring generation (MSBE); same section chain and record envelopes | :proven |
-| World structure | separate map areas (`m11_01` Ashina Castle, ...) | map areas plus open-world tiles of 256 m (`m60`, `m61`), each inside larger parent tiles | :proven |
+| Map layout | MSBS, eight sections | MSBE, six sections; shared section-chain mechanism, different part headers | :observed |
+| World structure | separate map areas (`m11_01` Ashina Castle, ...) | map areas plus open-world tiles of 256 m (`m60`, `m61`), each inside larger parent tiles | :observed |
 | Material definitions | MTD | MATBIN | :proven |
-| Compiled shaders | DXBC (Direct3D 11) | DXIL (Direct3D 12) | :proven |
+| Compiled shaders | DXBC (Direct3D 11) | DXIL (Direct3D 12) | :observed |
 | Collision | Havok 2016.2 | Havok 2018.1 | :observed |
-| Light banks (BTL) | version 16 | version 18; the same 232-byte light record | :proven |
-| Event scripts (EMEVD) | 64-bit little-endian layout, version `0xCD` | the same layout | :proven |
+| Light banks (BTL) | version 16 | version 18; the same 232-byte light record | :observed |
+| Event scripts (EMEVD) | 64-bit little-endian layout, version `0xCD` | the same layout | :observed |
+| Traversal data | EDGE grapple, hang and wall-hug records | No equivalent established here | :observed{games="sekiro"} |
+| Animation | Havok skeleton and motion, TAE actions; player companion binders | Havok skeleton and motion, TAE actions; divided companion binders | :observed |
 
-Each row is described on the system page it belongs to; the archive rows in [BHD5 and BDT archives](/engines/fromsoft/archives/bhd5-bdt/).
+The [archive index](/engines/fromsoft/archives/bhd5-bdt/), [map layouts](/engines/fromsoft/world/msb/),
+[coordinate frames](/engines/fromsoft/world/frames/), [parameter tables](/engines/fromsoft/data-model/params/) and
+[runtime observations](/engines/fromsoft/runtime/render-state/) describe the scope and limits of these comparisons.

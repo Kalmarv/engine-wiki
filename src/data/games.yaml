@@ -8,7 +8,7 @@
   engine: fromsoft
   developer: FromSoftware
   year: 2019
-  build: Steam release, data of 2026-10-10
+  build: Steam 1.06; file corpus recorded 2026-10-10
 
 - id: elden-ring
   name: Elden Ring
@@ -16,7 +16,7 @@
   engine: fromsoft
   developer: FromSoftware
   year: 2022
-  build: Steam release, regulation 11730034
+  build: App 1.17.2; calibrations 1.17.3; regulation 11730034
 
 - id: riders-republic
   name: Riders Republic
@@ -40,7 +40,7 @@
   engine: rage
   developer: Rockstar North
   year: 2025
-  build: Enhanced (PC, 2025)
+  build: "Enhanced, Steam PC; inspected October 2026, exact executable version unrecorded"
 
 - id: skate
   name: skate.

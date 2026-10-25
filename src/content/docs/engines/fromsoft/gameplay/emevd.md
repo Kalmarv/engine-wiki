@@ -28,6 +28,24 @@ values then give count/offset pairs for events, instructions, an unused table, l
 files, followed by byte-length/offset pairs for argument and string blocks. :observed
 
 ```layout
+title: EMEVD header
+size: 144
+fields:
+  - {at: 0, size: 4, type: "char[4]", name: magic, value: "EVD\\0", level: observed}
+  - {at: 4, size: 4, type: "u8[4]", name: format bytes, level: sourced, note: "00 ff 01 ff"}
+  - {at: 8, size: 4, type: u32, name: version, value: "0xCD", level: observed}
+  - {at: 12, size: 4, type: u32, name: file size, level: observed}
+  - {at: 16, size: 16, type: "i64[2]", name: event count and offset, level: observed}
+  - {at: 32, size: 16, type: "i64[2]", name: instruction count and offset, level: observed}
+  - {at: 48, size: 16, type: "i64[2]", name: unknown table count and offset, level: unknown, note: Count is zero in examined scripts}
+  - {at: 64, size: 16, type: "i64[2]", name: layer count and offset, level: observed}
+  - {at: 80, size: 16, type: "i64[2]", name: substitution count and offset, level: observed}
+  - {at: 96, size: 16, type: "i64[2]", name: linked-file count and offset, level: observed}
+  - {at: 112, size: 16, type: "i64[2]", name: argument length and offset, level: observed}
+  - {at: 128, size: 16, type: "i64[2]", name: string length and offset, level: observed}
+```
+
+```layout
 title: EMEVD event record
 size: 48
 fields:
@@ -60,6 +78,17 @@ fields:
   - {at: 16, size: 8, type: i64, name: source event-argument byte offset, level: observed}
   - {at: 24, size: 4, type: u32, name: copy byte count, level: observed}
   - {at: 28, size: 4, type: i32, name: unknown, level: unknown, note: Stored word retained without interpretation}
+```
+
+```layout
+title: EMEVD instruction layer
+size: 32
+fields:
+  - {at: 0, size: 4, type: u32, name: unknown, level: unknown, note: Observed 2}
+  - {at: 4, size: 4, type: u32, name: layer mask, level: sourced}
+  - {at: 8, size: 8, type: i64, name: unknown, level: unknown, note: Observed 0}
+  - {at: 16, size: 8, type: i64, name: unknown, level: unknown, note: Observed -1}
+  - {at: 24, size: 8, type: i64, name: unknown, level: unknown, note: Observed 1}
 ```
 
 ## Sekiro world-state functions

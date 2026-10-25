@@ -17,6 +17,25 @@ start and end times in seconds, and raw parameter bytes. The event-type definiti
 
 Both games use the 64-bit little-endian version `0x1000D`, called `SDT` by SoulsFormatsNEXT. :observed
 
+```layout
+title: TAE event header
+size: 24
+note: File-relative offsets to f32 times and to the event-data record.
+fields:
+  - {at: 0, size: 8, type: u64, name: start time offset, level: observed}
+  - {at: 8, size: 8, type: u64, name: end time offset, level: observed}
+  - {at: 16, size: 8, type: u64, name: event data offset, level: observed}
+```
+
+```layout
+title: TAE event data record
+size: 16
+fields:
+  - {at: 0, size: 4, type: i32, name: event type, level: observed}
+  - {at: 4, size: 4, type: i32, name: unknown, level: unknown, note: Community reader names it Unk04}
+  - {at: 8, size: 8, type: u64, name: parameter offset, level: observed, note: Zero or the position immediately after this record in examined files}
+```
+
 ## Animation headers
 
 | Header | Stored relationship | Confidence |

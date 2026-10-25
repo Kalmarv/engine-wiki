@@ -72,14 +72,14 @@
   engine: unity
   developer: Glass Bottom Games
   year: 2021
-  build: Unity 2019.4 (Mono)
+  build: "Steam build 11275982; Unity 2019.4.20f1 (Mono)"
 
 - id: sledding
   name: Sledding Game
   short: Sledding
   engine: unity
   year: 2025
-  build: Unity 6000.3
+  build: "Steam build 25351629; Unity 6000.3.12f1 (IL2CPP)"
 
 - id: peak
   name: PEAK
@@ -87,26 +87,27 @@
   engine: unity
   developer: Aggro Crab, Landfall
   year: 2025
-  build: 2.6.b (Unity 6, Mono)
+  build: "Steam build 26134529 (game 3.0.0); Unity 6000.3.15f1 (Mono)"
 
 - id: big-walk
   name: Big Walk
   short: Big Walk
   engine: unity
   developer: House House
-  build: Unity 6000.3.17f1 (IL2CPP)
+  build: "Steam build 25723723; Unity 6000.3.17f1 (IL2CPP)"
 
 - id: stuntboost
   name: STUNTBOOST
   short: STUNTBOOST
   engine: monogame
-  build: Steam app 2999500
+  developer: Byting Games
+  build: Steam build 25832744 (app 2999500)
 
 - id: meccha-chameleon
   name: MECCHA CHAMELEON
   short: MECCHA
   engine: unreal
-  build: Unreal Engine 5.6.1, Steam app 4704690
+  build: "Steam build 25293176 (app 4704690); Unreal Engine 5.6.1"
 
 - id: sa2b
   name: "Sonic Adventure 2: Battle (GameCube)"

@@ -75,6 +75,10 @@ the page flags; the 16 bytes preceding their body are not a trustworthy loose-fi
 When a resource's 24-bit stored length is `0xFFFFFF`, its actual length is assembled little-endian from bytes
 `7, 14, 5, 2` of those 16 preceding bytes. :sourced[CodeWalker]
 
+Script resources (`.ysc`) have encrypted compressed bodies without a separate resource-entry encryption flag; the
+inspected reader selects decryption by extension. The resource body's stored length participates in NG key
+selection. :sourced[CodeWalker]
+
 ## Ciphers
 
 | Header value | Interpretation | Confidence |

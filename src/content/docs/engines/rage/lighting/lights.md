@@ -1,0 +1,81 @@
+---
+title: Light records and attenuation
+description: Authored local lights, bone placement, time masks and the Enhanced light shader's radial window.
+games: [gta-v]
+sources:
+  - title: CodeWalker
+    url: https://github.com/dexyfex/CodeWalker
+    note: LightAttributes record names and bone-placement reference.
+implementations:
+  - name: primase worlds/gta (drawable.rs)
+    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/drawable.rs
+---
+
+Drawables and fragments carry authored light lists. Records distinguish point (1), spot (2) and capsule (4) lights
+and store position, colour, intensity, range, time flags, direction, cone angles and additional shadow/volume/corona
+parameters. :observed
+
+Light positions and directions are in the space of the bone named by `bone_id`. A fragment can supply its own bone
+pose; otherwise the skeleton's composed rest pose places the light in drawable space before the entity transform.
+:observed
+
+```layout
+title: LightAttributes
+size: 168
+fields:
+  - {at: 0, size: 8, type: bytes, name: unknown zero words, level: unknown, note: "zero in inspected records"}
+  - {at: 8, size: 12, type: vec3, name: position, level: observed}
+  - {at: 20, size: 4, type: u32, name: unknown zero word, level: unknown}
+  - {at: 24, size: 3, type: RGB8, name: colour, level: observed}
+  - {at: 27, size: 1, type: u8, name: flashiness, level: sourced}
+  - {at: 28, size: 4, type: f32, name: intensity, level: observed}
+  - {at: 32, size: 4, type: u32, name: flags, level: sourced}
+  - {at: 36, size: 2, type: u16, name: bone tag, level: observed}
+  - {at: 38, size: 1, type: u8, name: kind, level: observed}
+  - {at: 39, size: 1, type: u8, name: group ID, level: sourced}
+  - {at: 40, size: 4, type: u32, name: time flags, level: observed}
+  - {at: 44, size: 4, type: f32, name: falloff range, level: observed}
+  - {at: 48, size: 4, type: f32, name: falloff exponent, level: sourced, note: "CPU mapping to shader attenuation k is unknown"}
+  - {at: 52, size: 16, type: vec4, name: culling plane, level: sourced}
+  - {at: 68, size: 1, type: u8, name: shadow blur, level: sourced}
+  - {at: 69, size: 7, type: bytes, name: unknown zero bytes, level: unknown}
+  - {at: 76, size: 4, type: f32, name: volume intensity, level: sourced}
+  - {at: 80, size: 4, type: f32, name: volume size scale, level: sourced}
+  - {at: 84, size: 3, type: RGB8, name: volume outer colour, level: sourced}
+  - {at: 87, size: 1, type: u8, name: light hash, level: sourced}
+  - {at: 88, size: 4, type: f32, name: volume outer intensity, level: sourced}
+  - {at: 92, size: 4, type: f32, name: corona size, level: sourced}
+  - {at: 96, size: 4, type: f32, name: volume outer exponent, level: sourced}
+  - {at: 100, size: 4, type: "u8[4]", name: light-shadow-specular-volume fade distances, level: sourced}
+  - {at: 104, size: 4, type: f32, name: shadow near clip, level: sourced}
+  - {at: 108, size: 4, type: f32, name: corona intensity, level: sourced}
+  - {at: 112, size: 4, type: f32, name: corona Z bias, level: sourced}
+  - {at: 116, size: 12, type: vec3, name: direction, level: observed}
+  - {at: 128, size: 12, type: vec3, name: tangent, level: observed}
+  - {at: 140, size: 4, type: f32, name: inner cone angle, level: sourced}
+  - {at: 144, size: 4, type: f32, name: outer cone angle, level: sourced}
+  - {at: 148, size: 12, type: vec3, name: capsule extent, level: sourced}
+  - {at: 160, size: 4, type: u32, name: projected texture hash, level: sourced}
+  - {at: 164, size: 4, type: u32, name: unknown zero word, level: unknown}
+```
+
+## Hours
+
+The low 24 time-flag bits select hours; a zero hour mask means always on in the documented light interpretation.
+Sampled street lamps carry `0xF0003F`, selecting 00–05 and 20–23. Their `emissivenight` lamp-head materials are also
+dark by day. :observed
+
+## Shader window
+
+Executing the sampled point-light and directional-light pixel programs under Microsoft WARP confirms that their
+diffuse terms share a global scale `G`: point lighting uses `G * colour * intensity * window * albedo * NdotL`,
+while sunlight uses `G * sun * albedo * NdotL`. The point-light radial window is `s / ((1-k)*s + k)`, with
+`s = saturate(1 - d²/R²)`. This is evidence for these compiled programs and tested inputs. :proven[WARP execution]
+
+The shader window is not inverse-square attenuation. CodeWalker's renderer uses a different curve,
+`(1-d)/(1+k*d²)`, which does not establish the game's compiled shader response. :observed[shader disassembly]
+
+:::open[How do authored light values become shader constants?]
+The CPU mapping from `falloff_exponent` to shader `k`, the absolute photometric units and any CPU intensity scale
+are unresolved. Shader execution establishes the constant-to-pixel equation, not those upstream mappings. :unknown
+:::

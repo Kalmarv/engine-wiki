@@ -15,11 +15,11 @@ implementations:
 
 YCD files are RSC7 version 46 clip dictionaries. They contain animations keyed by hash and named clips that play
 one animation or a list of animation windows with playback rates. Animation and clip maps use hash buckets with
-chained collision entries. :observed
+chained collision entries. :proven
 
 The full-install comparison covers 25,961 unique archive-entry paths and 267,536 animations. Counts are over
 dictionaries, including separate archived copies, rather than distinct animation hashes or raw dump rows.
-:observed[unique-path recount]
+:proven[unique-path recount]
 
 Every animation in that corpus decodes with strict sequence boundaries: parameter bytes end at frame data, channel
 lists end at root-motion references, and those references end at the sequence's data length. Independent CodeWalker
@@ -35,20 +35,20 @@ fields:
   - {at: 0, size: 16, type: bytes, name: resource base, level: sourced}
   - {at: 16, size: 2, type: bytes, name: unknown flags, level: unknown}
   - {at: 18, size: 2, type: bytes, name: unknown, level: unknown}
-  - {at: 20, size: 2, type: u16, name: frame count, level: observed}
-  - {at: 22, size: 2, type: u16, name: sequence frame limit, level: observed}
-  - {at: 24, size: 4, type: f32, name: duration, level: observed}
+  - {at: 20, size: 2, type: u16, name: frame count, level: proven}
+  - {at: 22, size: 2, type: u16, name: sequence frame limit, level: proven}
+  - {at: 24, size: 4, type: f32, name: duration, level: proven}
   - {at: 28, size: 4, type: u32, name: unknown, level: unknown}
   - {at: 32, size: 24, type: bytes, name: unknown, level: unknown}
   - {at: 56, size: 4, type: u32, name: maximum sequence block, level: sourced}
   - {at: 60, size: 4, type: u32, name: usage count, level: sourced}
-  - {at: 64, size: 8, type: pointer, name: sequence pointer array, level: observed}
-  - {at: 72, size: 2, type: u16, name: sequence count, level: observed}
-  - {at: 74, size: 2, type: u16, name: sequence capacity, level: observed}
+  - {at: 64, size: 8, type: pointer, name: sequence pointer array, level: proven}
+  - {at: 72, size: 2, type: u16, name: sequence count, level: proven}
+  - {at: 74, size: 2, type: u16, name: sequence capacity, level: proven}
   - {at: 76, size: 4, type: bytes, name: unknown, level: unknown}
-  - {at: 80, size: 8, type: pointer, name: bone-track IDs, level: observed}
-  - {at: 88, size: 2, type: u16, name: bone-track count, level: observed}
-  - {at: 90, size: 2, type: u16, name: bone-track capacity, level: observed}
+  - {at: 80, size: 8, type: pointer, name: bone-track IDs, level: proven}
+  - {at: 88, size: 2, type: u16, name: bone-track count, level: proven}
+  - {at: 90, size: 2, type: u16, name: bone-track capacity, level: proven}
   - {at: 92, size: 4, type: bytes, name: unknown, level: unknown}
 ```
 
@@ -75,9 +75,9 @@ fields:
 title: Animation bone-track ID
 size: 4
 fields:
-  - {at: 0, size: 2, type: u16, name: bone tag, level: observed}
+  - {at: 0, size: 2, type: u16, name: bone tag, level: proven}
   - {at: 2, size: 1, type: u8, name: unknown, level: unknown}
-  - {at: 3, size: 1, type: u8, name: track number, level: observed}
+  - {at: 3, size: 1, type: u8, name: track number, level: proven}
 ```
 
 ## Channels
@@ -103,7 +103,7 @@ for offsets, starts and low delta bits. The high delta part counts zero bits bef
 sign bit. A running increment accumulates the deltas and advances the reconstructed value. :proven[strict corpus decode]
 
 Cached quaternion reconstruction supplies the missing unit component from the first three channels, puts it in
-the component position named by the channel word, then normalizes the resulting track quaternion. :observed
+the component position named by the channel word, then normalizes the resulting track quaternion. :proven
 
 ## Tracks and time
 

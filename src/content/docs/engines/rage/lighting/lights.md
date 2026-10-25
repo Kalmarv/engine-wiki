@@ -15,6 +15,11 @@ Drawables and fragments carry authored light lists. Records distinguish point (1
 and store position, colour, intensity, range, time flags, direction, cone angles and additional shadow/volume/corona
 parameters. :observed
 
+The proven light-record fields below are read for every light list in the accepted version-159 YDR/YDD and
+version-171 YFT corpus. The whole-resource census rejects unknown light kinds, non-finite values and unexpected
+reserved words and reports no such failures; fifteen other-version YDR copies are excluded. Runtime placement,
+hour examples and CPU-to-shader mappings have separate evidence scopes. :proven[all accepted drawable resources]
+
 Light positions and directions are in the space of the bone named by `bone_id`. A fragment can supply its own bone
 pose; otherwise the skeleton's composed rest pose places the light in drawable space before the entity transform.
 :observed
@@ -24,17 +29,17 @@ title: LightAttributes
 size: 168
 fields:
   - {at: 0, size: 8, type: bytes, name: unknown zero words, level: unknown, note: "zero in inspected records"}
-  - {at: 8, size: 12, type: vec3, name: position, level: observed}
+  - {at: 8, size: 12, type: vec3, name: position, level: proven}
   - {at: 20, size: 4, type: u32, name: unknown zero word, level: unknown}
-  - {at: 24, size: 3, type: RGB8, name: colour, level: observed}
+  - {at: 24, size: 3, type: RGB8, name: colour, level: proven}
   - {at: 27, size: 1, type: u8, name: flashiness, level: sourced}
-  - {at: 28, size: 4, type: f32, name: intensity, level: observed}
+  - {at: 28, size: 4, type: f32, name: intensity, level: proven}
   - {at: 32, size: 4, type: u32, name: flags, level: sourced}
-  - {at: 36, size: 2, type: u16, name: bone tag, level: observed}
-  - {at: 38, size: 1, type: u8, name: kind, level: observed}
+  - {at: 36, size: 2, type: u16, name: bone tag, level: proven}
+  - {at: 38, size: 1, type: u8, name: kind, level: proven}
   - {at: 39, size: 1, type: u8, name: group ID, level: sourced}
-  - {at: 40, size: 4, type: u32, name: time flags, level: observed}
-  - {at: 44, size: 4, type: f32, name: falloff range, level: observed}
+  - {at: 40, size: 4, type: u32, name: time flags, level: proven}
+  - {at: 44, size: 4, type: f32, name: falloff range, level: proven}
   - {at: 48, size: 4, type: f32, name: falloff exponent, level: sourced, note: "CPU mapping to shader attenuation k is unknown"}
   - {at: 52, size: 16, type: vec4, name: culling plane, level: sourced}
   - {at: 68, size: 1, type: u8, name: shadow blur, level: sourced}
@@ -50,8 +55,8 @@ fields:
   - {at: 104, size: 4, type: f32, name: shadow near clip, level: sourced}
   - {at: 108, size: 4, type: f32, name: corona intensity, level: sourced}
   - {at: 112, size: 4, type: f32, name: corona Z bias, level: sourced}
-  - {at: 116, size: 12, type: vec3, name: direction, level: observed}
-  - {at: 128, size: 12, type: vec3, name: tangent, level: observed}
+  - {at: 116, size: 12, type: vec3, name: direction, level: proven}
+  - {at: 128, size: 12, type: vec3, name: tangent, level: proven}
   - {at: 140, size: 4, type: f32, name: inner cone angle, level: sourced}
   - {at: 144, size: 4, type: f32, name: outer cone angle, level: sourced}
   - {at: 148, size: 12, type: vec3, name: capsule extent, level: sourced}

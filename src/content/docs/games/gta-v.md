@@ -33,7 +33,7 @@ all copies at once does not reproduce either state. :observed
 
 The retained [archive census](/engines/rage/archives/install-census/) contains 5,407 archive paths and 393,673 file
 entries, counting nested archives and overridden copies. Those units are distinct from active world placements.
-:observed
+:proven[complete archive-listing recount]
 
 ## Enhanced-specific data
 

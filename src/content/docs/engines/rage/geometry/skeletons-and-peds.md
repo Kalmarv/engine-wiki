@@ -15,19 +15,24 @@ implementations:
 
 Drawables can carry a skeleton with per-bone local transforms, parent indices, tags and stored inverse transforms.
 A geometry's blend indices refer through its bone palette; palette entries are bone tags rather than necessarily
-the skeleton's array indices. :observed
+the skeleton's array indices. :proven
+
+Skeleton header fields below are read wherever present across every accepted version-159 YDR/YDD and version-171
+YFT in the resource census, including fragment drawables. Fifteen other-version YDR copies are excluded. This
+establishes stored skeleton structure, while the component-variation and pose examples below retain their own
+measurement scope. :proven[version-filtered full-install census]
 
 ```layout
 title: Skeleton header
 size: 112
 fields:
   - {at: 0, size: 32, type: bytes, name: undescribed prefix, level: unknown}
-  - {at: 32, size: 8, type: pointer, name: bone records, level: observed}
-  - {at: 40, size: 8, type: pointer, name: inverse transforms, level: observed}
-  - {at: 48, size: 8, type: pointer, name: local transforms, level: observed}
-  - {at: 56, size: 8, type: pointer, name: parent indices, level: observed}
+  - {at: 32, size: 8, type: pointer, name: bone records, level: proven}
+  - {at: 40, size: 8, type: pointer, name: inverse transforms, level: proven}
+  - {at: 48, size: 8, type: pointer, name: local transforms, level: proven}
+  - {at: 56, size: 8, type: pointer, name: parent indices, level: proven}
   - {at: 64, size: 30, type: bytes, name: undescribed fields, level: unknown}
-  - {at: 94, size: 2, type: u16, name: bone count, level: observed}
+  - {at: 94, size: 2, type: u16, name: bone count, level: proven}
   - {at: 96, size: 16, type: bytes, name: undescribed tail, level: unknown}
 ```
 
@@ -36,13 +41,13 @@ title: Bone record
 size: 80
 fields:
   - {at: 0, size: 68, type: bytes, name: undescribed fields, level: unknown}
-  - {at: 68, size: 2, type: u16, name: bone tag, level: observed}
+  - {at: 68, size: 2, type: u16, name: bone tag, level: proven}
   - {at: 70, size: 10, type: bytes, name: undescribed tail, level: unknown}
 ```
 
 Local transforms occupy 64 bytes each as row-vector 4×4 matrices with an unused fourth column. Parent indices are
 16-bit signed values; `-1` marks a root. Composing a bone's local transform with its ancestors places it in drawable
-space. :observed
+space. :proven
 
 Four unsigned-byte indices and four normalized unsigned-byte weights supply the sampled `BLENDINDICES0` and
 `BLENDWEIGHT0` skin streams. Stored inverse transforms belong to the skeleton; replacing them with assumed identity

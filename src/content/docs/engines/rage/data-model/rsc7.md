@@ -32,35 +32,43 @@ nibble: `version = (systemFlags >> 28) * 16 + (graphicsFlags >> 28)`. :sourced[C
 
 ## Page flags
 
+The page-size calculation is checked by decoding every one of the install's 348,598 resource entries. Each body
+fills the flagged allocation or ends inside its final zero-filled page; a missing whole page is rejected.
+:proven[all archived resources]
+
 For either flag word, `base = 512 << (flags & 15)`. Each count below contributes `count * (base << shift)` bytes;
-their sum is that memory kind's allocation size. :sourced[CodeWalker]
+their sum is that memory kind's allocation size. :proven
 
 | Flag bits | Count mask after shifting | Page-size shift | Confidence |
 |---|---|---|---|
-| 4 | `1` | 8 | :sourced[CodeWalker] |
-| 5–6 | `3` | 7 | :sourced[CodeWalker] |
-| 7–10 | `15` | 6 | :sourced[CodeWalker] |
-| 11–16 | `63` | 5 | :sourced[CodeWalker] |
-| 17–23 | `127` | 4 | :sourced[CodeWalker] |
-| 24 | `1` | 3 | :sourced[CodeWalker] |
-| 25 | `1` | 2 | :sourced[CodeWalker] |
-| 26 | `1` | 1 | :sourced[CodeWalker] |
-| 27 | `1` | 0 | :sourced[CodeWalker] |
+| 4 | `1` | 8 | :proven |
+| 5–6 | `3` | 7 | :proven |
+| 7–10 | `15` | 6 | :proven |
+| 11–16 | `63` | 5 | :proven |
+| 17–23 | `127` | 4 | :proven |
+| 24 | `1` | 3 | :proven |
+| 25 | `1` | 2 | :proven |
+| 26 | `1` | 1 | :proven |
+| 27 | `1` | 0 | :proven |
 
-Some decoded streams end inside the last allocated page; its remaining bytes are zero-filled. The observed reader
-contract distinguishes this short final page from a body missing an entire page. :observed
+Some decoded streams end inside the last allocated page; its remaining bytes are zero-filled. The full-resource
+census distinguishes this short final page from a body missing an entire page. :proven
 
 A graphics offset can exceed 256 MiB and yield a pointer starting with `0x7`; classifying graphics pointers only by
 the leading hexadecimal digit loses that range. :observed
 
 ## Enhanced payload versions
 
+The version table comes from the full archive/resource census, including all archived copies. It establishes the
+versions of the accepted Enhanced layouts, rather than claiming that no other version exists in the install.
+:proven[all archived copies]
+
 | Payload | Version | Confidence |
 |---|---|---|
-| Drawable (`ydr`) and drawable dictionary (`ydd`) | 159 | :observed |
-| Fragment (`yft`) | 171 | :observed |
-| Texture dictionary (`ytd`) | 5 | :observed |
-| Clip dictionary (`ycd`) | 46 | :observed |
+| Drawable (`ydr`) and drawable dictionary (`ydd`) | 159 | :proven |
+| Fragment (`yft`) | 171 | :proven |
+| Texture dictionary (`ytd`) | 5 | :proven |
+| Clip dictionary (`ycd`) | 46 | :proven |
 
 Other layout versions can occur in the same physical install. A census that counts Legacy or older-tool variants
-without decoding them does not establish those variants' payload layouts. :observed
+without decoding them does not establish those variants' payload layouts. :proven

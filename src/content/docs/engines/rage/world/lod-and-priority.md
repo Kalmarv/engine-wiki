@@ -15,15 +15,19 @@ World LOD links placed entities across map files. An entity's `parentIndex` inde
 `-1` means no LOD parent. `numChildren`, `lodDist` and `childLodDist` describe the linked hierarchy's detail and
 distance relationships. :sourced[CodeWalker]
 
+The LOD and priority enum names and values in the tables are checked against the embedded enum descriptions in
+every YMAP and YTYP copy of the install, with no mismatch or refused file. This establishes their stored encoding,
+not the runtime distance or density decision. :proven[all map and archetype enum descriptions]
+
 | `lodLevel` | Name | Confidence |
 |---|---|---|
-| 0 | HD | :sourced[CodeWalker] |
-| 1 | LOD | :sourced[CodeWalker] |
-| 2 | SLOD1 | :sourced[CodeWalker] |
-| 3 | SLOD2 | :sourced[CodeWalker] |
-| 4 | SLOD3 | :sourced[CodeWalker] |
-| 5 | ORPHANHD | :sourced[CodeWalker] |
-| 6 | SLOD4 | :sourced[CodeWalker] |
+| 0 | HD | :proven |
+| 1 | LOD | :proven |
+| 2 | SLOD1 | :proven |
+| 3 | SLOD2 | :proven |
+| 4 | SLOD3 | :proven |
+| 5 | ORPHANHD | :proven |
+| 6 | SLOD4 | :proven |
 
 The distant city has authored SLOD models, separate from the high/medium/low/very-low lists inside individual
 [drawables](/engines/rage/geometry/drawables/). These are two distinct levels of detail organization. :observed
@@ -59,10 +63,10 @@ Real map listings include maps with SLOD entities and bit 4 unset, and maps with
 
 | `priorityLevel` | Name | Confidence |
 |---|---|---|
-| 0 | `PRI_REQUIRED` | :sourced[CodeWalker] |
-| 1 | `PRI_OPTIONAL_HIGH` | :sourced[CodeWalker] |
-| 2 | `PRI_OPTIONAL_MEDIUM` | :sourced[CodeWalker] |
-| 3 | `PRI_OPTIONAL_LOW` | :sourced[CodeWalker] |
+| 0 | `PRI_REQUIRED` | :proven |
+| 1 | `PRI_OPTIONAL_HIGH` | :proven |
+| 2 | `PRI_OPTIONAL_MEDIUM` | :proven |
+| 3 | `PRI_OPTIONAL_LOW` | :proven |
 
 At sampled settings with `CityDensity=1.0` and `SMC_AUTO`, optional-low objects such as parking meters, bollards and
 small palms are absent while optional-medium objects such as news boxes and dumpsters are present. This observation

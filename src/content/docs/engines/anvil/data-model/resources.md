@@ -48,11 +48,11 @@ fields:
   - {"at": 8, "size": "12R", "type": "bytes", "name": "rows", "level": "unknown", "note": "Twelve-byte rows; meanings not established."}
 ```
 
-The extended header occurs on all 9,087 clips in the current complete Animation enumeration, the empty AnimTrackBuiltinTracksTable and three ProxyTextures resources. :observed{games="riders-republic"}
+The extended header occurs on all 9,087 clips in the five-archive Animation enumeration (WhiteRoom patch excluded), the empty AnimTrackBuiltinTracksTable and three ProxyTextures resources. :observed{games="riders-republic"}
 
 ```layout
 title: "Reference"
-size: "variable"
+size: 10
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:

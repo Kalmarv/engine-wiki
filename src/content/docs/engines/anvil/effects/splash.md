@@ -22,7 +22,7 @@ SplashFX stores states and actions, with Display2D, DisplayMesh and DisplayTrail
 | DisplayMesh | Mesh and material, e.g. butterfly geometry | :observed |
 | DisplayTrail | Trail rendering data | :observed |
 
-In the 256-resource effective SplashFX population, 500 material-reference occurrences reach particle-template materials: 279 alpha-blended, 90 opaque, 76 additive and 55 alpha-additive. Textures include flipbooks and gradients; one display-material reference is not necessarily a unique Material. :observed
+In the 256-resource effective SplashFX population (four archives, patch copies replacing base), 500 material-reference occurrences reach particle-template materials: 279 alpha-blended, 90 opaque, 76 additive and 55 alpha-additive. Textures include flipbooks and gradients; one display-material reference is not necessarily a unique Material. :observed
 
 The measured birth-action population contains 366 Loop, 112 AllAtOnce and 49 Once actions. Glows and spotlight flares can use single-particle camera-facing sprites, whereas waterfall spray, falling leaves, smoke and trails require their animated state. A static sprite or mesh alone does not establish particle simulation. :observed
 
@@ -31,3 +31,5 @@ SplashFXInstanceData starts with instance count and matrices, BoundingVolume, op
 :::open[What is the complete particle simulation algorithm?]
 State/action metadata and sampled values do not establish all emission, lifetime, random-seed, collision-test or billboard-selection behavior. :unknown
 :::
+
+SplashEmitterShape has 23 bytes beyond its listed registry fields in inspected bodies. Emitter-shape parameters, SplashColorGradient keys and sampled-curve values are not fully decoded, so exact particle rates, colors and sizes are not established by the registry alone. :observed

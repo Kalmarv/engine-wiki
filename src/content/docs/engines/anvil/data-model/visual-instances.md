@@ -38,7 +38,7 @@ games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:
   - {"at": 0, "size": 4, "type": "u32", "name": "instance count k", "level": "observed"}
-  - {"at": 4, "size": "64Â·k", "type": "matrix4Â·k", "name": "instance matrices", "level": "observed", "note": "column-major; none: placed once by its owner"}
+  - {"at": 4, "size": "64·k", "type": "matrix4·k", "name": "instance matrices", "level": "observed", "note": "column-major; none: placed once by its owner"}
   - {"at": "4+64k", "size": 40, "type": "bytes", "name": "bounds", "level": "observed", "note": "BoundingVolume"}
   - {"at": "44+64k", "size": 10, "type": "bytes", "name": "InstanceShaderConstants pointer, LODSelector link", "level": "observed", "note": "the 10 bytes are GraphicObjectInstanceData.InstanceShaderConstants (a pointer, 03 = null) and LODSelectorInstance.LODSelector (a 9-byte link: tag 01 + the LODSelector's id): (03, 01) on 624,564 of 624,564"}
   - {"at": "54+64k", "size": "var", "type": "bytes", "name": "five level slots", "level": "observed", "note": "each 03 (empty), or 00 + u64 + u32 type and the slot's body: MeshInstanceData 0x536E963B or ImpostorInstanceData 0xB3F06BC3"}
@@ -51,7 +51,7 @@ games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:
   - {"at": 0, "size": 4, "type": "u32", "name": "instance count n", "level": "observed"}
-  - {"at": 4, "size": "64Â·n", "type": "matrix4Â·n", "name": "instance matrices", "level": "observed", "note": "column-major"}
+  - {"at": 4, "size": "64·n", "type": "matrix4·n", "name": "instance matrices", "level": "observed", "note": "column-major"}
   - {"at": "4+64n", "size": 40, "type": "bytes", "name": "bounds", "level": "observed", "note": "BoundingVolume"}
   - {"at": "44+64n", "size": 1, "type": "u8", "name": "InstanceShaderConstants pointer", "level": "observed", "note": "GraphicObjectInstanceData.InstanceShaderConstants (a pointer): 03 = null"}
   - {"at": "45+64n", "size": 1, "type": "u8", "name": "IsFake", "level": "observed", "note": "MeshInstanceData.IsFake (bool): 1 on 2,036 of 2,195"}
@@ -65,13 +65,13 @@ fields:
   - {"at": "69+64n", "size": 4, "type": "u32", "name": "PlatformVersion", "level": "observed", "note": "CompiledMeshInstance.PlatformVersion: 31 2,195"}
   - {"at": "73+64n", "size": 8, "type": "u64", "name": "MeshHash", "level": "observed", "note": "CompiledMeshInstance.MeshHash (u64): non-zero on 2,195 of 2,195"}
   - {"at": "81+64n", "size": 4, "type": "u32", "name": "material-info count a", "level": "observed"}
-  - {"at": "85+64n", "size": "41Â·a", "type": "bytes", "name": "material infos", "level": "observed", "note": "the Material info box"}
+  - {"at": "85+64n", "size": "41·a", "type": "bytes", "name": "material infos", "level": "observed", "note": "the Material info box"}
   - {"at": "85+64n+41a", "size": 4, "type": "u32", "name": "instance bounds count b", "level": "observed"}
-  - {"at": "89+64n+41a", "size": "40Â·b", "type": "bytes", "name": "instance bounds", "level": "observed", "note": "BoundingVolume per instance"}
+  - {"at": "89+64n+41a", "size": "40·b", "type": "bytes", "name": "instance bounds", "level": "observed", "note": "BoundingVolume per instance"}
 ```
 
 ```layout
-title: "Material info (41 bytes, \u00c3\u2014a)"
+title: "Material info (41 bytes, \u00d7a)"
 size: 41
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
@@ -94,7 +94,7 @@ games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:
   - {"at": 0, "size": 4, "type": "u32", "name": "instance count n", "level": "observed"}
-  - {"at": 4, "size": "64Â·n", "type": "matrix4Â·n", "name": "instance matrices", "level": "observed"}
+  - {"at": 4, "size": "64·n", "type": "matrix4·n", "name": "instance matrices", "level": "observed"}
   - {"at": "4+64n", "size": 40, "type": "bytes", "name": "bounds", "level": "observed", "note": "BoundingVolume"}
   - {"at": "44+64n", "size": 10, "type": "bytes", "name": "impostor", "level": "observed", "note": "kept as stored: 03 00 + an Impostor's ClassID"}
 ```
@@ -120,19 +120,19 @@ fields:
   - {"at": 9, "size": 8, "type": "bytes", "name": "unaccounted", "level": "unknown", "note": "zero (0000000000000000 630,686)"}
   - {"at": 17, "size": 8, "type": "u64", "name": "VisualShaderConstants: object id", "level": "observed", "note": "0 on all"}
   - {"at": 25, "size": 4, "type": "u32", "name": "VisualShaderConstants: class id", "value": "0xBFF5DF99", "level": "observed", "note": "= 0xBFF5DF99"}
-  - {"at": 29, "size": 4, "type": "u32", "name": "DataLayout", "level": "observed", "note": "VisualShaderConstants.DataLayout (enum `VisualShaderConstants::Layout`): 0 607,490, 4 22,976, 3 210. Enumerators: 0 VSC_DefaultLayout, 1 VSC_UILayout, 2 VSC_SkinLayout, 3 and 4 hash-only"}
+  - {"at": 29, "size": 4, "type": "u32", "name": "DataLayout", "level": "observed", "note": "0 Default, 1 UI, 2 Skin; values 3 and 4 correspond to Gear and Material views."}
   - {"at": 33, "size": 8, "type": "u64", "name": "DefaultLayout: object id", "level": "observed", "note": "0"}
   - {"at": 41, "size": 4, "type": "u32", "name": "DefaultLayout: class id", "value": "0xD74FA591", "level": "observed", "note": "= 0xD74FA591 (no stored fields)"}
   - {"at": 45, "size": 8, "type": "u64", "name": "UILayout: object id", "level": "observed", "note": "0"}
   - {"at": 53, "size": 4, "type": "u32", "name": "UILayout: class id", "value": "0x9FAF160F", "level": "observed", "note": "= 0x9FAF160F (no stored fields)"}
   - {"at": 57, "size": 8, "type": "u64", "name": "SkinLayout: object id", "level": "observed", "note": "0"}
   - {"at": 65, "size": 4, "type": "u32", "name": "SkinLayout: class id", "value": "0x605001B7", "level": "observed", "note": "= 0x605001B7 (no stored fields)"}
-  - {"at": 69, "size": 8, "type": "u64", "name": "62FA1E14 (GearLayout): object id", "level": "observed", "note": "0"}
+  - {"at": 69, "size": 8, "type": "u64", "name": "62FA1E14 (GearLayout): object id", "level": "unknown", "note": "0"}
   - {"at": 77, "size": 4, "type": "u32", "name": "GearLayout: class id", "value": "0xF54C16B8", "level": "observed", "note": "= 0xF54C16B8 (no stored fields)"}
-  - {"at": 81, "size": 8, "type": "u64", "name": "2C2D56DE (MaterialLayout): object id", "level": "observed", "note": "0"}
+  - {"at": 81, "size": 8, "type": "u64", "name": "2C2D56DE (MaterialLayout): object id", "level": "unknown", "note": "0"}
   - {"at": 89, "size": 4, "type": "u32", "name": "MaterialLayout: class id", "value": "0xF977AE02", "level": "observed", "note": "= 0xF977AE02 (no stored fields)"}
-  - {"at": 93, "size": 16, "type": "u32Â·4", "name": "VisualShaderConstants data, first 16 bytes", "level": "observed", "note": "The 32 bytes at 93..124 are the data block of the embedded VisualShaderConstants (0xBFF5DF99, class size 0x40): its five layout classes have only accessor fields (flags 0x1C, storage 0), views of one block, and DataLayout says which…"}
-  - {"at": 109, "size": 16, "type": "f32Â·4", "name": "VisualShaderConstants data, last 16 bytes", "level": "observed", "note": "four f32. DataLayout 0: (1, 1, 1, 1) on 607,468 of 607,490 (10, 20 or 1.2 x 3 on 21; Vector4_1 by the class list). DataLayout 4 (the UGE props): a grey multiplier (g, g, g, 1), g from 0.5 to 2.49 (2.49 on 678, 2.41 on 403, 2.42 on 310,…"}
+  - {"at": 93, "size": 16, "type": "u32·4", "name": "VisualShaderConstants data, first 16 bytes", "level": "observed", "note": "View selected by DataLayout; exact material-view channel mapping unresolved."}
+  - {"at": 109, "size": 16, "type": "f32·4", "name": "VisualShaderConstants data, last 16 bytes", "level": "observed", "note": "Four f32 values; usually (1, 1, 1, 1) in DefaultLayout."}
 ```
 
 :::open[How do all shader-constant views affect rendering?]

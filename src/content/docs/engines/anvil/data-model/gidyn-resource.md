@@ -50,3 +50,5 @@ Probe positions equal PositionOffset plus V4's xyz offsets in metres. Footer siz
 :::open[What do the encoded sample and visibility values mean?]
 Probe positions and framing do not establish irradiance, all flag bits, sample origin or construction of GPU lighting textures. Multi-volume profiles are outside the checked one-volume scope. :unknown
 :::
+
+The [lighting interpretation](/engines/anvil/lighting/global-illumination/) is distinct from these volume and stream storage rules.

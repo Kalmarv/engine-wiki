@@ -21,12 +21,12 @@ note: "Little-endian. Offsets are relative to this structure."
 fields:
   - {"at": 0, "size": 1, "type": "u8", "name": "ManagedObject byte", "value": "01", "level": "unknown", "note": "Stored bytes; meaning is not established."}
   - {"at": 1, "size": 4, "type": "u32", "name": "GridsDesc count n", "level": "observed", "note": "BaseWorld.GridsDesc: an array of embedded GridDescription (3 in every World)"}
-  - {"at": 5, "size": "nÂ·(57+2w)", "type": "bytes", "name": "GridDescriptions", "level": "observed", "note": "the GridDescription box"}
-  - {"at": "5+n(57+2w)", "size": "var", "type": "fields", "name": "World's stored fields", "level": "observed", "note": "in registry order: FakeEntitiesHandle (link, 9 bytes), StreamFakeEntitiesGrid (enum GridPartition::GridType: 2 USNAT, 3 WhiteRoom), DefaultTransitionPortal (reference, 10), WorldTransitionPortals (array of references: 10 USNAT, 0…"}
+  - {"at": 5, "size": "n·(57+2w)", "type": "bytes", "name": "GridDescriptions", "level": "observed", "note": "the GridDescription box"}
+  - {"at": "5+n(57+2w)", "size": "var", "type": "fields", "name": "World's stored fields", "level": "observed", "note": "Manager links and configuration objects in registry order; detailed below."}
   - {"at": "var", "size": 4, "type": "u32", "name": "world component count c", "level": "observed", "note": "47 USNAT, 21 WhiteRoom; not a field of World's class list (written by its own serializer)"}
-  - {"at": "var", "size": "var", "type": "objects", "name": "world components", "level": "observed", "note": "c pointers (tag 04; 00 on USNAT's TimeOfDayManager) to objects whose class derives from WorldComponent 0xDD4B9F35: NavigationManager, SoundBankWorldComponent, TimeOfDayManager, GameplayCoordinatorWorldComponent,…"}
-  - {"at": "var", "size": 83, "type": "object", "name": "SpaceWorldComponent", "level": "unknown", "note": "The 36 bytes are 00000000 00000000 ffffffff 00000000 e8030000 0000 03(+9 zeros) 00000000: the stored fields' sizes add up to 36 if the bit-field group (Priority, IsInterior, IsUnderground; store 0x171, high kind bits 0x20) takes 6 bytes…"}
-  - {"at": "end-24", "size": 24, "type": "object", "name": "TerrainParam", "level": "observed", "note": "an embedded TerrainParam 0xDA4A4039 (u64 id, class, then TileSizeInPixel u32 1024, TileSizeInMeter f32 512.0, TileCountPerSide u32 32) ends both Worlds: 32 x 512 m = 16,384 m, the open world's -8192..8192 extent. in WhiteRoom…"}
+  - {"at": "var", "size": "var", "type": "objects", "name": "world components", "level": "observed", "note": "Pointers to WorldComponent-derived classes; tag 04 normally, 00 for USNAT TimeOfDayManager."}
+  - {"at": "var", "size": 83, "type": "object", "name": "SpaceWorldComponent", "level": "unknown", "note": "83-byte observed frame; internal 36-byte SpaceSection field order unresolved."}
+  - {"at": "end-24", "size": 24, "type": "object", "name": "TerrainParam", "level": "observed", "note": "Embedded type 0xDA4A4039; last 24 bytes of both checked patch Worlds."}
 ```
 
 | Field / structure | Checked representation | Confidence |

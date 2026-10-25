@@ -16,7 +16,7 @@ DataLayers distinguish event, season and user-content layouts on the same ground
 DataLayer (`0x41813744`) has a two-byte body in the checked DataPC population, without member lists. Layer-owned GridCellDataBlocks instead carry a layer ClassID as their final key. :observed
 
 ```layout
-title: "DataLayerAction (25 bytes, \u00c3\u2014k)"
+title: "DataLayerAction (25 bytes, \u00d7k)"
 size: 25
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
@@ -35,7 +35,11 @@ fields:
 
 That polarity fits 360 zero actions and 47 one actions among 556 placeable campus-cell Entities: event structures use zero, replaced ordinary furniture uses one. This is content evidence rather than execution of the layer manager. :observed
 
-The base and patch USNAT WorldDataLayerManagers name `EVE_BMX_Back2School` in their serialized active-layer lists. An assumption that all event layers initially start off does not follow from the data. :observed
+Both checked USNAT WorldDataLayerManagers contain one entry linking `Looping_Assets` and its GridCellDataBlock, not an event/season active-layer set. Their 35-byte bodies contain no event layer or group references. :observed
+
+DataLayer bodies are `01 01` on 1,047 base and 475 patch layers, and `01 00` on 23 base and three patch layers. Interpreting the second byte as runtime-switchable versus always-loaded fits these contents but remains inferred. :observed :inferred
+
+DataLayerGroup has `01 + u32 count + ten-byte references + 00`; all 53 checked groups fit. Groups organize career, live-user-content and day-one layer sets. :observed
 
 ```layout
 title: "GameStateData tail"
@@ -48,13 +52,13 @@ fields:
   - {"at": 9, "size": 4, "type": "u32", "name": "type", "value": "0x7313743E", "level": "observed"}
   - {"at": 13, "size": 4, "type": "u32", "name": "PropertyCount", "level": "observed", "note": "GameStateData.PropertyCount (registry u32): 9 273,240, 8 94,437, 7 88,147, 10 10,261, 13 9,777, 3 9,038"}
   - {"at": 17, "size": 4, "type": "u32", "name": "DescBuffer length L1", "level": "observed", "note": "GameStateData.DescBuffer is an array of bytes: its length. L1 = 130 273,240, 116 94,437, 102 88,147, 144 10,261"}
-  - {"at": 21, "size": "L1", "type": "bytes", "name": "DescBuffer", "level": "observed", "note": "the property descriptors (one record per property: the length is a multiple of PropertyCount); the records are not decoded"}
+  - {"at": 21, "size": "L1", "type": "bytes", "name": "DescBuffer", "level": "unknown", "note": "Opaque descriptor bytes; checked length fits 4 + 14 × PropertyCount."}
   - {"at": "21+L1", "size": 4, "type": "u32", "name": "DataBuffer length L2", "level": "observed", "note": "GameStateData.DataBuffer is an array of bytes: its length, 169 273,215, 168 94,437, 167 88,105, 170 10,237"}
-  - {"at": "25+L1", "size": "L2", "type": "bytes", "name": "DataBuffer", "level": "observed"}
+  - {"at": "25+L1", "size": "L2", "type": "bytes", "name": "DataBuffer", "level": "unknown", "note": "Opaque property-value bytes."}
 ```
 
 ResetData is null or inline GameStateData. Registry names identify PropertyCount, DescBuffer and DataBuffer; 490,803 measured Entity tails end exactly at these buffers. Descriptor length fits `4 + 14 × PropertyCount` in checked profiles; internal descriptor semantics remain unresolved. :observed
 
 :::open[Which layers are active in each mode and save state?]
-Stored lists do not establish all live transition logic. Event-name prefixes alone cannot define the default playable world. :unknown
+The manager does not supply a general active-event set. Event-name prefixes cannot define the default world, and AND versus OR combination of multiple Entity actions is not established. :unknown
 :::

@@ -38,13 +38,13 @@ fields:
   - {"at": 55, "size": 1, "type": "u8", "name": "4A4D57A9", "level": "unknown", "note": "CollisionFilterInfo bool (name not found): 1 491,936, 0 36"}
   - {"at": 56, "size": 8, "type": "u64", "name": "QueryFlags: object id", "level": "observed", "note": "0"}
   - {"at": 64, "size": 4, "type": "u32", "name": "QueryFlags: class id", "value": "0xA2FFD626", "level": "observed", "note": "= 0xA2FFD626, the class `QueryLayerBits`"}
-  - {"at": 68, "size": 272, "type": "u64Â·34", "name": "QueryFlags slots", "level": "observed", "note": "the 34 bit slots of QueryLayerBits, one u64 each, in the order of the CollisionMaterial box (Static, 89CA5860, Dynamic, CameraCollision, ... TerrainLod0-4 ...). Set (value 1) over the 491,972 RigidBodyComponents: Static 486,510;…"}
-  - {"at": 340, "size": 8, "type": "u64", "name": "DAE8214F: object id", "level": "observed", "note": "0"}
-  - {"at": 348, "size": 4, "type": "u32", "name": "DAE8214F: class id", "value": "0xF5EBC0BE", "level": "observed", "note": "= 0xF5EBC0BE, the class `CollisionLayerBits`"}
-  - {"at": 352, "size": 192, "type": "u64Â·24", "name": "DAE8214F slots", "level": "observed", "note": "the 24 bit slots of CollisionLayerBits (Static, 89CA5860, Dynamic, Debris, DetectionZone, MainCharacter, Character, CharacterNoInteractive, ... Targetable, ... TerrainLod0-4 ...). Set: Static 486,220; 89CA5860 485,255; Dynamic 49,168;…"}
-  - {"at": 544, "size": 8, "type": "u64", "name": "883E5FCA: object id", "level": "observed", "note": "0"}
-  - {"at": 552, "size": 4, "type": "u32", "name": "883E5FCA: class id", "value": "0xF5EBC0BE", "level": "observed", "note": "= 0xF5EBC0BE"}
-  - {"at": 556, "size": 192, "type": "u64Â·24", "name": "883E5FCA slots", "level": "observed", "note": "the 24 bit slots of the second CollisionLayerBits. Set: Static 49,170; 89CA5860 49,170; Dynamic 2; Debris 1,168; DetectionZone 13; D0D6077F 11; 8025B1D3 11; WaterLevel 11; 901DDA28 2; TerrainLod0 4; 1F1A0AB5 797"}
+  - {"at": 68, "size": 272, "type": "u64·34", "name": "QueryFlags slots", "level": "observed", "note": "34 u64 slots of QueryLayerBits; named slots include Static, Dynamic, CameraCollision and Raycast."}
+  - {"at": 340, "size": 8, "type": "u64", "name": "DAE8214F: object id", "level": "unknown", "note": "0"}
+  - {"at": 348, "size": 4, "type": "u32", "name": "DAE8214F: class id", "value": "0xF5EBC0BE", "level": "unknown", "note": "= 0xF5EBC0BE, the class `CollisionLayerBits`"}
+  - {"at": 352, "size": 192, "type": "u64·24", "name": "DAE8214F slots", "level": "unknown", "note": "Stored field; complete meaning is not established."}
+  - {"at": 544, "size": 8, "type": "u64", "name": "883E5FCA: object id", "level": "unknown", "note": "0"}
+  - {"at": 552, "size": 4, "type": "u32", "name": "883E5FCA: class id", "value": "0xF5EBC0BE", "level": "unknown", "note": "= 0xF5EBC0BE"}
+  - {"at": 556, "size": 192, "type": "u64·24", "name": "883E5FCA slots", "level": "unknown", "note": "the 24 bit slots of the second CollisionLayerBits. Set: Static 49,170; 89CA5860 49,170; Dynamic 2; Debris 1,168; DetectionZone 13; D0D6077F 11; 8025B1D3 11; WaterLevel 11; 901DDA28 2; TerrainLod0 4; 1F1A0AB5 797"}
   - {"at": 748, "size": 10, "type": "ref", "name": "Shape", "level": "observed", "note": "RigidBody.Shape (registry; a reference to an ObjectShape): MeshShape, SphereShape, ReferenceListShape, CapsuleShape or BoxShape. Tag 1 or 3 (null): 1 491,947, 3 25"}
   - {"at": 758, "size": 4, "type": "f32", "name": "Mass", "level": "observed", "note": "RigidBody.Mass: 10.0 491,970, 0.2 2"}
   - {"at": 762, "size": 4, "type": "f32", "name": "LinearDamping", "level": "observed", "note": "RigidBody.LinearDamping: 0.1 491,968, 0.8 2, 0.99 2"}
@@ -65,7 +65,7 @@ fields:
   - {"at": 814, "size": 4, "type": "f32", "name": "D38E02CF", "level": "unknown", "note": "RigidBodySleeping f32 (name not found): 0.0 491,972"}
   - {"at": 818, "size": 4, "type": "f32", "name": "E2C7281D", "level": "unknown", "note": "RigidBodySleeping f32 (name not found): 0.0 491,972"}
   - {"at": 822, "size": 4, "type": "u32", "name": "967B0AFB", "level": "unknown", "note": "RigidBodySleeping enum CB6326B3 (enumerators hash-only: 0 = 3F0755E0, 1 = 0D3657D0, 2 = 2E60A5CB): 0 491,972"}
-  - {"at": 826, "size": 1, "type": "u8", "name": "GuidanceSystemPtr: tag", "level": "observed", "note": "RigidBodyComponent.GuidanceSystemPtr, a pointer: 03 (null; h = 8 on 20,249 of 491,972"}
+  - {"at": 826, "size": 1, "type": "u8", "name": "GuidanceSystemPtr: tag", "level": "observed"}
   - {"at": 827, "size": "h", "type": "u64", "name": "GuidanceSystemPtr: id", "level": "observed", "note": "present when the tag is 05"}
   - {"at": "827+h", "size": 4, "type": "u32", "name": "SoundOcclusionLinks count", "level": "observed", "note": "RigidBodyComponent.SoundOcclusionLinks (an array of Entity links): its count, 0 491,972"}
   - {"at": "831+h", "size": 8, "type": "u64", "name": "PhysicsActivityZone: object id", "level": "observed", "note": "RigidBodyComponent.PhysicsActivityZone, an owned object (kind 0x13); non-zero"}

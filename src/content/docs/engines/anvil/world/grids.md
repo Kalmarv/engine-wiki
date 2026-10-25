@@ -31,9 +31,9 @@ fields:
   - {"at": 8, "size": 4, "type": "u32", "name": "type", "value": "0xAFE5F9B4", "level": "observed"}
   - {"at": 12, "size": 8, "type": "u64", "name": "GridLayout id", "value": "0", "level": "observed"}
   - {"at": 20, "size": 4, "type": "u32", "name": "GridLayout type", "value": "0x7DB083ED", "level": "observed"}
-  - {"at": 24, "size": "2Â·w", "type": "i16xw", "name": "DefaultLoadingDistances", "level": "observed", "note": "GridLayout.DefaultLoadingDistances (registry kind 0x0297: fixed array, element 0x05, count 4): USNAT patch (640, 640, 640, 640), (256, 256, 512, 256), (4096, 4096, 5120, 5120); base adds a fifth (640, 256, 4096); WhiteRoom (0, 0, 0, 0[,…"}
+  - {"at": 24, "size": "2·w", "type": "i16xw", "name": "DefaultLoadingDistances", "level": "observed", "note": "GridLayout.DefaultLoadingDistances (registry kind 0x0297: fixed array, element 0x05, count 4): USNAT patch (640, 640, 640, 640), (256, 256, 512, 256), (4096, 4096, 5120, 5120); base adds a fifth (640, 256, 4096); WhiteRoom (0, 0, 0, 0[, 95]) and 95s. Units by reading metres"}
   - {"at": "24+2w", "size": 4, "type": "i32", "name": "CellSize", "level": "observed", "note": "GridLayout.CellSize (registry i32): 128, 128, 512 in USNAT; 32 in the WhiteRoom grid that has cells"}
-  - {"at": "28+2w", "size": 12, "type": "i32Â·3", "name": "BottomLeftX, BottomLeftY, BottomLeftZ", "level": "observed", "note": "GridLayout.BottomLeftX/Y/Z (registry i32 each): (-8192, -8192, 0) in USNAT, (-128, -128, 0) in WhiteRoom"}
+  - {"at": "28+2w", "size": 12, "type": "i32·3", "name": "BottomLeftX, BottomLeftY, BottomLeftZ", "level": "observed", "note": "GridLayout.BottomLeftX/Y/Z (registry i32 each): (-8192, -8192, 0) in USNAT, (-128, -128, 0) in WhiteRoom"}
   - {"at": "40+2w", "size": 4, "type": "i32", "name": "GridDimensionLevel0", "level": "observed", "note": "GridLayout.GridDimensionLevel0 (registry i32): 128, 128, 32 in USNAT; 8 in WhiteRoom"}
   - {"at": "44+2w", "size": 3, "type": "bool x3", "name": "IsSingleLevelGrid, IgnoreCustomLoadingRange, IgnoreRegionLayoutLoadingRange", "level": "observed", "note": "three plain bools (registry kind 0, store 0x80, 0x84, 0x88), 0 0 0 in all 12 grids (so their order is the record order, untested)"}
   - {"at": "47+2w", "size": 10, "type": "ref", "name": "Grid", "level": "observed", "note": "GridDescription.Grid: a reference to the grid (SpatialTopology: a GridPartition), or none (03 + 9 zeros)"}
@@ -50,12 +50,12 @@ fields:
   - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "observed"}
   - {"at": 1, "size": 4, "type": "u32", "name": "level count", "level": "observed", "note": "8 in the open world's ShortRange and TerrainWorldSmall"}
   - {"at": 5, "size": 4, "type": "u32", "name": "cell count c", "level": "observed", "note": "the levels' squared dimensions summed (21,845 for 8 levels from 128)"}
-  - {"at": 9, "size": "21Â·c", "type": "bytes", "name": "cells", "level": "observed", "note": "the GridCell box; a cell's number is its position: level 0 first, row by row from the bottom-left (the notes' best fit)"}
-  - {"at": "9+21c", "size": 4, "type": "u32", "name": "zero", "value": "0", "level": "observed"}
+  - {"at": 9, "size": "21·c", "type": "bytes", "name": "cells", "level": "observed", "note": "the GridCell box; a cell's number is its position: level 0 first, row by row from the bottom-left (the notes' best fit)"}
+  - {"at": "9+21c", "size": 4, "type": "u32", "name": "zero", "value": "0", "level": "unknown", "note": "Stored bytes; meaning is not established."}
 ```
 
 ```layout
-title: "GridCell (21 bytes, \u00c3\u2014c)"
+title: "GridCell (21 bytes, \u00d7c)"
 size: 21
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
@@ -73,7 +73,7 @@ note: "Little-endian. Offsets are relative to this structure."
 fields:
   - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "observed"}
   - {"at": 1, "size": 4, "type": "u32", "name": "object count n", "level": "observed"}
-  - {"at": 5, "size": "10Â·n", "type": "refÂ·n", "name": "objects", "level": "observed", "note": "Entities, EntityGroups, GIDynResources and others, in stored order"}
+  - {"at": 5, "size": "10·n", "type": "ref·n", "name": "objects", "level": "observed", "note": "Entities, EntityGroups, GIDynResources and others, in stored order"}
   - {"at": "5+10n", "size": 4, "type": "u32", "name": "NumberOfObjectsToActivate", "level": "observed", "note": "GridCellDataBlock.NumberOfObjectsToActivate (registry u32): n less the references to GIDynResources, on every block measured"}
   - {"at": "9+10n", "size": 8, "type": "u64", "name": "key", "level": "observed", "note": "its cell's number (equal to its position in the GridPartition), or a DataLayer's ClassID"}
 ```

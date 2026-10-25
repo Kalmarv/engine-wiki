@@ -25,7 +25,7 @@ fields:
   - {"at": 1, "size": 1, "type": "u8", "name": "tag", "value": "03", "level": "observed"}
   - {"at": 2, "size": 64, "type": "matrix4", "name": "placement", "level": "observed", "note": "column-major; translation at 50..61; last row 0 0 0 1"}
   - {"at": 66, "size": 4, "type": "u32", "name": "component count n", "level": "observed"}
-  - {"at": 70, "size": "C", "type": "bytes", "name": "components", "level": "observed", "note": "n Ã— the Component box, in order"}
+  - {"at": 70, "size": "C", "type": "bytes", "name": "components", "level": "observed", "note": "n × the Component box, in order"}
   - {"at": "70+C", "size": 43, "type": "bytes", "name": "run", "level": "observed", "note": "the Run box"}
   - {"at": "113+C", "size": 4, "type": "u32", "name": "FakeCellIndex", "level": "observed", "note": "Entity.FakeCellIndex (registry u32): 0xFFFFFFFF on 18,913 of 21,000, a cell index on 2,087"}
   - {"at": "117+C", "size": 4, "type": "f32", "name": "Scale", "level": "observed", "note": "uniform (registry Scale)"}
@@ -39,7 +39,7 @@ fields:
   - {"at": "186+C", "size": 8, "type": "u64", "name": "DataLayerFilter id", "value": "0", "level": "observed"}
   - {"at": "194+C", "size": 4, "type": "u32", "name": "DataLayerFilter type", "value": "0xDB1D406E", "level": "observed"}
   - {"at": "198+C", "size": 4, "type": "u32", "name": "action count k", "level": "observed"}
-  - {"at": "202+C", "size": "25Â·k", "type": "bytes", "name": "DataLayerActions", "level": "observed", "note": "the DataLayerAction box: the event or season layers it belongs to"}
+  - {"at": "202+C", "size": "25·k", "type": "bytes", "name": "DataLayerActions", "level": "observed", "note": "the DataLayerAction box: the event or season layers it belongs to"}
   - {"at": "202+C+25k", "size": 4, "type": "u32", "name": "UIVisualsDisplayOrder link count M", "level": "observed", "note": "M nine-byte links follow; offsets below assume M = 0."}
   - {"at": "206+C+25k", "size": "var", "type": "bytes", "name": "tail", "level": "observed", "note": "ResetData pointer: 03 null, or inline GameStateData."}
 ```
@@ -47,7 +47,7 @@ fields:
 The count after DataLayer actions counts links: tag `00` or `01` plus u64. Nonzero counts shift ResetData beyond the zero-link offsets above. :observed
 
 ```layout
-title: "Component (\u00c3\u2014n)"
+title: "Component (\u00d7n)"
 size: "13 + body bytes"
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
@@ -64,16 +64,18 @@ Component headers normally use `04`, with `00` on some UI and embedded objects. 
 
 ```layout
 title: "EntityGroup body"
-size: "var"
+size: "variable"
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:
-  - {"at": 0, "size": "E", "type": "bytes", "name": "Entity", "level": "observed", "note": "an Entity body to its tail (the Entity type's boxes); a group's Visuals are batches of instanced props"}
-  - {"at": "E", "size": 4, "type": "u32", "name": "member count c", "level": "observed"}
-  - {"at": "E+4", "size": "10Â·c", "type": "refÂ·c", "name": "members", "level": "observed", "note": "Entities and EntityGroups; each is also listed by its own cell"}
-  - {"at": "E+4+10c", "size": 4, "type": "u32", "name": "zero", "value": "0", "level": "observed"}
-  - {"at": "E+8+10c", "size": 4, "type": "u32", "name": "GroupOptimizationState", "level": "observed", "note": "EntityGroup.GroupOptimizationState (enum): 0 NotOptimized (32,687 of 48,803 USNAT groups), 1 OptimizedAndEditable (1,902), 2 OptimizedAndSealed (14,166)"}
+  - {"at": 0, "size": "E", "type": "bytes", "name": "Entity prefix", "level": "observed"}
+  - {"at": "E", "size": 4, "type": "u32", "name": "member count C", "level": "observed"}
+  - {"at": "E+4", "size": "10C", "type": "references", "name": "members", "level": "observed"}
+  - {"at": "E+4+10C", "size": 4, "type": "u32", "name": "link count M", "level": "observed"}
+  - {"at": "E+8+10C", "size": "9M", "type": "links", "name": "member links", "level": "observed"}
+  - {"at": "E+8+10C+9M", "size": 4, "type": "u32", "name": "GroupOptimizationState", "level": "observed", "note": "0 NotOptimized, 1 OptimizedAndEditable, 2 OptimizedAndSealed."}
 ```
+
 
 In the USNAT group census, 16,743 groups own Visuals; 1,485 groups list 3,847 members. Members also occur in checked cell listings, so membership alone does not establish another placement or a parent transform. A second counted link list can follow the members before the final group-optimization word; the early zero-link formula `12 + 10 × members` is not universal. :observed
 

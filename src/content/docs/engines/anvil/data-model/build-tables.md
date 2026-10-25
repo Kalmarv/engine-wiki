@@ -16,7 +16,7 @@ implementations:
 
 BuildTable (`0x22ECBE63`) is a typed object graph of columns, rows, property paths and resource links. Riders Republic uses these tables for customization and settings, while Breakpoint's community tools expose them as editable assembly definitions. :observed{games="riders-republic"} :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 
-All 10,730 Riders Republic tables in the current enumeration consume exactly: 32,289 columns, 22,728 rows, 43,035 row properties and 14,632 DynamicResources objects containing 24,709 links. These counts include stored copies and do not denote unique parts or playable items. :proven{games="riders-republic"}
+All 10,730 Riders Republic tables across DataPC, DataPC patch, USNAT, USNAT patch and base WhiteRoom consume exactly: 32,289 columns, 22,728 rows, 43,035 row properties and 14,632 DynamicResources objects containing 24,709 links. These counts include stored copies and do not denote unique parts or playable items. :proven{games="riders-republic"}
 
 | Structure | Stored sequence in Riders Republic | Confidence |
 |---|---|---|
@@ -48,3 +48,5 @@ Breakpoint's exported XML distinguishes the root's 64-bit resource identity from
 :::open[What does each property path do at runtime?]
 Typed values and cross-references establish storage. Every customization condition, row weight interpretation and property-path evaluator is not established by exact byte consumption. :unknown{games="riders-republic"}
 :::
+
+The six-archive inventory has 10,741 stored BuildTables; the 11 WhiteRoom-patch entries are outside the five-archive exact-end check above. :observed{games="riders-republic"}

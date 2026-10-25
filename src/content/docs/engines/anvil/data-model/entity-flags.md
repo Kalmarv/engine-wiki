@@ -21,8 +21,8 @@ note: "Little-endian. Offsets are relative to this structure."
 fields:
   - {"at": 0, "size": 8, "type": "u64", "name": "id", "level": "observed"}
   - {"at": 8, "size": 4, "type": "u32", "name": "type", "value": "0x4AEC3476", "level": "observed"}
-  - {"at": 12, "size": 12, "type": "f32Â·3", "name": "minimum", "level": "observed", "note": "x, y, z; an Entity's own bounds are relative to its translation"}
-  - {"at": 24, "size": 12, "type": "f32Â·3", "name": "maximum", "level": "observed"}
+  - {"at": 12, "size": 12, "type": "f32·3", "name": "minimum", "level": "observed", "note": "x, y, z; an Entity's own bounds are relative to its translation"}
+  - {"at": 24, "size": 12, "type": "f32·3", "name": "maximum", "level": "observed"}
   - {"at": 36, "size": 4, "type": "u32", "name": "Type", "level": "observed", "note": "BoundingVolume.Type (enum `BoundingVolume::BVType`): 0 AABBox on 15,190 of 21,000, 2 OOBBox on 5,809, 1 Sphere on 1"}
 ```
 

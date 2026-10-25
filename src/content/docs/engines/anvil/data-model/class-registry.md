@@ -6,6 +6,12 @@ sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
+  - title: ACExplorer
+    url: https://github.com/gentlegiantJGC/ACExplorer
+  - title: ReForger
+    url: https://github.com/QuilLeeR/ReForger
+  - title: Blacksmith
+    url: https://github.com/theawesomecoder61/Blacksmith
 implementations:
   - name: "primase worlds/anvil (component_types.rs)"
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/component_types.rs
@@ -16,7 +22,7 @@ The inspected runtime image contains class-registration strings and field metada
 | Name evidence | What it establishes | Confidence |
 |---|---|---|
 | Runtime class-registration string, matching CRC-32 | Class name in the inspected image | :observed |
-| AnvilToolkit, ACExplorer, ReForger or Blacksmith list | A tool's name for a hash in its supported game | :sourced[community readers] |
+| AnvilToolkit, ACExplorer, ReForger or Blacksmith list | A tool's name for a hash in its supported game | :sourced[ACExplorer, ReForger, Blacksmith] |
 | Wordlist or generated string CRC match | Candidate; accidental 32-bit collisions remain possible | :inferred |
 | RRAssetStudio `Selector`, `MATERIAL_SET` | Display labels for BuildTable `0x22ECBE63` | :sourced[RRAssetStudio] |
 | RRAssetStudio `LODMultiMesh` | Label for LODSelector `0x51DC6B80` | :sourced[RRAssetStudio] |

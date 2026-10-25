@@ -28,7 +28,7 @@ fields:
 ```
 
 ```layout
-title: "Level (48 + 4n bytes, \u00c3\u20145)"
+title: "Level (48 + 4n bytes, \u00d75)"
 size: "48 + 4n bytes"
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
@@ -43,8 +43,8 @@ fields:
   - {"at": 38, "size": 1, "type": "u8", "name": "Optional", "level": "observed"}
   - {"at": 39, "size": 4, "type": "u32", "name": "ShaderLOD", "level": "observed", "note": "LODDescriptor.ShaderLOD (enum `ShaderLODLevel`, u32): 0, 1 or 2; level 0: 0 on 32,069 and 1 on 16,788 of 48,857; level 3: 0 on 21,528, 2 on 16,769, 1 on 10,560 Enumerators: 0 ShaderLOD_High, 1 ShaderLOD_Low, 2 ShaderLOD_UltraLow."}
   - {"at": 43, "size": 4, "type": "u32", "name": "BoneIDs count n", "level": "observed", "note": "LODDescriptor.BoneIDs is an array of u32; its count: 0 to 136, > 0 on 13,424 of 244,285 levels (every one of the 48,857 selectors reads to its end with it)"}
-  - {"at": 47, "size": "4Â·n", "type": "u32Â·n", "name": "BoneIDs", "level": "observed", "note": "the registry names the field BoneIDs)"}
-  - {"at": "47+4n", "size": 1, "type": "u8", "name": "3B574E9D", "level": "unknown", "note": "Stored bytes; meaning is not established."}
+  - {"at": 47, "size": "4·n", "type": "u32·n", "name": "BoneIDs", "level": "observed"}
+  - {"at": "47+4n", "size": 1, "type": "u8", "name": "3B574E9D", "level": "unknown", "note": "Unnamed bool, one on 11,536 of 244,285 measured descriptor slots."}
 ```
 
 ```layout
@@ -56,12 +56,12 @@ fields:
   - {"at": 0, "size": 4, "type": "u32", "name": "count d", "level": "observed", "note": "1 or 2 in the traced samples"}
   - {"at": 4, "size": "9d", "type": "bytes", "name": "dependencies", "level": "observed"}
   - {"at": "4+9d", "size": 4, "type": "u32", "name": "count d again", "level": "observed", "note": "must equal d"}
-  - {"at": "8+9d", "size": "4d", "type": "u32Â·d", "name": "dependency words", "level": "observed", "note": "one u32 per dependency. On the USNAT forge it equals the dependency Mesh's payload bytes, Lv + Lp + Ls + Li + 32n + L1 + L2 + L3 + L4 (the vertex, positions, skin and index buffers, the n 32-byte primitive descriptors and the four CPU…"}
-  - {"at": "8+13d", "size": 6, "type": "bytes", "name": "LODSelector bools", "level": "observed", "note": "the six bool fields of the class LODSelector in the registry's order: TransitionToEmptyLOD, UseNearNullObjects, ForceNoBlend, ForceNoComputeBlendFactor, UseBlendFactorWithDefaultTransition, 0xB0CD17D3 (name not found). Each byte is 0 or…"}
+  - {"at": "8+9d", "size": "4d", "type": "u32·d", "name": "dependency words", "level": "observed", "note": "one u32 per dependency."}
+  - {"at": "8+13d", "size": 6, "type": "bytes", "name": "LODSelector bools", "level": "observed", "note": "the six bool fields of the class LODSelector in the registry's order: TransitionToEmptyLOD, UseNearNullObjects, ForceNoBlend, ForceNoComputeBlendFactor, UseBlendFactorWithDefaultTransition, 0xB0CD17D3 (name not found)."}
 ```
 
 ```layout
-title: "Dependency (9 bytes, \u00c3\u2014d)"
+title: "Dependency (9 bytes, \u00d7d)"
 size: 9
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
@@ -81,3 +81,5 @@ Dependency words match compiled geometry size on 12,088 of 12,681 checked ranged
 :::open[How are distance fields converted into instance fade bands?]
 The exact conversion to per-instance shader data and bool hash `0x3B574E9D` remain unresolved. :unknown
 :::
+
+See also [geometry LOD forms](/engines/anvil/geometry/lod/) for the meshes and impostors reached by these descriptors.

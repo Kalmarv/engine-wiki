@@ -33,7 +33,7 @@ fields:
 
 ```layout
 title: "DataHeader1"
-size: "variable"
+size: 44
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:
@@ -63,7 +63,7 @@ fields:
 
 ```layout
 title: "Index record"
-size: "variable"
+size: 20
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:
@@ -74,7 +74,7 @@ fields:
 
 ```layout
 title: "Name record"
-size: "variable"
+size: 192
 games: [riders-republic]
 note: "Little-endian. Offsets are relative to this structure."
 fields:

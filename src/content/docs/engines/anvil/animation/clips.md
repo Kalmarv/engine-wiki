@@ -11,9 +11,9 @@ implementations:
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/animation.rs
 ---
 
-Animation (`0x0FA3067F`) stores clip metadata, bone-name mappings and keyframe tracks. The complete current enumeration contains 9,087 clips, 1,396,592 tracks and 25,241,022 keys; every clip's track framing consumes exactly to its body end. Event payloads remain opaque and use a following-object anchor, so this is complete track framing rather than complete event decoding. :proven[track framing]
+Animation (`0x0FA3067F`) stores clip metadata, bone-name mappings and keyframe tracks. The complete track enumeration across DataPC, DataPC patch, USNAT, USNAT patch and base WhiteRoom contains 9,087 clips, 1,396,592 tracks and 25,241,022 keys; every clip's track framing consumes exactly to its body end. Event payloads remain opaque and use a following-object anchor, so this is complete track framing rather than complete event decoding. :proven[track framing]
 
-All clips use the [extended resource header](/engines/anvil/data-model/resources/). There are 1,923 clips with events, 4,053 with TTECLAnimation objects and 390 with a nonzero boolean flag in that enumeration. :proven[complete enumeration]
+All 9,087 checked clips use the [extended resource header](/engines/anvil/data-model/resources/). There are 1,923 clips with events, 4,053 with TTECLAnimation objects and 390 with a nonzero boolean flag in that enumeration. :proven[complete enumeration]
 
 ## Body order
 
@@ -27,9 +27,9 @@ fields:
   - {"at": 1, "size": 4, "type": "f32", "name": "Length", "level": "observed"}
   - {"at": 5, "size": 4, "type": "u32", "name": "F4F597FF", "level": "unknown", "note": "Varies by clip."}
   - {"at": 9, "size": 4, "type": "u32", "name": "322B96B8", "level": "unknown", "note": "Zero throughout the clip census."}
-  - {"at": 13, "size": 4, "type": "u32", "name": "556E9166 array count A", "level": "observed"}
+  - {"at": 13, "size": 4, "type": "u32", "name": "556E9166 array count A", "level": "unknown", "note": "Stored bytes; meaning is not established."}
   - {"at": 17, "size": "2A", "type": "u16[]", "name": "556E9166", "level": "unknown", "note": "Empty throughout the census."}
-  - {"at": "17+2A", "size": 4, "type": "u32", "name": "251905D9 array count B", "level": "observed"}
+  - {"at": "17+2A", "size": 4, "type": "u32", "name": "251905D9 array count B", "level": "unknown", "note": "Stored bytes; meaning is not established."}
   - {"at": "21+2A", "size": "2B", "type": "u16[]", "name": "251905D9", "level": "unknown", "note": "Empty throughout the census."}
   - {"at": "21+2A+2B", "size": 4, "type": "u8[4]", "name": "four bool fields", "level": "unknown", "note": "Hashes 1F4DA15F, 93847F6A, ABC2D4B8, 0D7D1D50; fourth set on 390 streamed clips."}
   - {"at": "25+2A+2B", "size": 4, "type": "u32", "name": "event count", "level": "observed"}
@@ -84,8 +84,10 @@ For kind 5, retained components are bits 8–27, bits 52–63 followed by bits 0
 
 ## Entity use
 
-AnimComponent (`0x8C8AA19D`) contains four base bytes, u32 count and ten-byte Animation references, then a tail. Only 70 Entities carry it and 19 list Animations in the full Entity enumeration. Rider clip selection therefore is not established by scanning these references alone. :observed
+AnimComponent (`0x8C8AA19D`) contains four base bytes, u32 count and ten-byte Animation references, then a tail. In the checked five-archive Entity enumeration, 70 Entities carry it and 19 list Animations. Rider clip selection therefore is not established by scanning these references alone. :observed
 
 :::open[How does the engine interpolate and select tracks?]
 Linear, Nearest, Cardinal, Natural and HermiteVel classes exist in the registry, but exact used-kind interpolation is not established. Event elements, high mask bits, kind-seven's top bit and kinds 16–25 still have unresolved semantics. The rider's Kino graph is not decoded here. :unknown
 :::
+
+The complete six-archive index has 9,111 stored Animation entries. WhiteRoom patch contributes 24 entries outside the five-archive exact-end check above. :observed

@@ -32,7 +32,7 @@
   engine: anvil
   developer: Ubisoft Paris
   year: 2019
-  build: community sources only
+  build: ChangeList 7793716, E450_1.24 (community source analysis)
 
 - id: gta-v
   name: Grand Theft Auto V Enhanced

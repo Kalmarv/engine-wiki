@@ -5,7 +5,7 @@ games: [meccha-chameleon]
 sources:
   - title: Unreal Engine
     url: https://github.com/EpicGames/UnrealEngine
-    note: the engine; container formats
+    note: the engine; container formats (source access requires an Epic-linked GitHub account)
 ---
 
 MECCHA CHAMELEON is a game on [Unreal Engine](/engines/unreal/) 5.6.1 (executable `PenguinHotel`, project `Chameleon`). The

@@ -4,8 +4,8 @@ description: Tagfile sections, type compendia, packed vertices, shape keys and c
 sources:
   - title: HKLib
     url: https://github.com/The12thAvenger/HKLib
-  - title: Havoc
-    url: https://github.com/PredatorCZ/Havoc
+  - title: Havoc (SoulsAssetPipeline)
+    url: https://github.com/Meowmaritus/SoulsAssetPipeline/tree/master/Havoc
 implementations:
   - name: primase Havok tagfile reader
     url: https://github.com/Kalmarv/primase/blob/main/toolkit/havok/src/tagfile.rs

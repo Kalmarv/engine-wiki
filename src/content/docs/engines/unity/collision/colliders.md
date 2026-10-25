@@ -3,8 +3,8 @@ title: Colliders and physics materials
 description: "Collider components and their shapes under PhysX, physic materials with their friction and combine modes per game, and the project physics settings each game stores."
 games: [skatebird, sledding, peak]
 sources:
-  - title: Unity scripting reference, Collider, PhysicMaterial and PhysicMaterialCombine
-    url: https://docs.unity3d.com/ScriptReference/PhysicMaterial.html
+  - title: Unity scripting reference, Collider, PhysicsMaterial and PhysicsMaterialCombine (PhysicMaterial before Unity 6)
+    url: https://docs.unity3d.com/ScriptReference/PhysicsMaterial.html
     note: shape fields, material fields, combine modes
 implementations:
   - name: primase worlds/unity (passes/lower_collision.rs)

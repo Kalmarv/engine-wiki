@@ -6,8 +6,8 @@ sources:
     url: https://github.com/soulsmods/Paramdex
   - title: Smithbox
     url: https://github.com/vawser/Smithbox
-  - title: Havoc
-    url: https://github.com/PredatorCZ/Havoc
+  - title: Havoc (SoulsAssetPipeline)
+    url: https://github.com/Meowmaritus/SoulsAssetPipeline/tree/master/Havoc
 implementations:
   - name: primase collision reader
     url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/collision.rs

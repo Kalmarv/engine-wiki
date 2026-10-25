@@ -35,8 +35,8 @@ title: MeshSet section fields
 size: 384
 note: Little-endian; undescribed ranges are not interpreted here.
 fields:
-  - {at: 16, size: 8, type: u64, name: bone list pointer, level: observed}
-  - {at: 24, size: 2, type: u16, name: bone count, level: observed}
+  - {at: 16, size: 8, type: u64, name: bone list pointer, level: proven}
+  - {at: 24, size: 2, type: u16, name: bone count, level: proven}
   - {at: 27, size: 1, type: u8, name: flags, level: observed}
   - {at: 30, size: 1, type: u8, name: total vertex stride, level: proven}
   - {at: 32, size: 4, type: u32, name: primitive count, level: proven}
@@ -55,7 +55,7 @@ title: Vertex declaration
 size: 100
 fields:
   - {at: 0, size: 64, type: "Element[16]", name: element slots, level: proven, note: Each element is four bytes in usage/format/offset/stream order.}
-  - {at: 64, size: 32, type: "u8[16][2]", name: stream descriptors, level: observed, note: First byte of each pair is stride; second byte's meaning is not established here.}
+  - {at: 64, size: 32, type: "u8[16][2]", name: stream descriptors, level: proven, note: First byte of each pair is stride throughout the MeshSet census; second byte's meaning is not established here.}
   - {at: 96, size: 1, type: u8, name: element count, level: proven}
   - {at: 97, size: 1, type: u8, name: stream count, level: proven}
   - {at: 98, size: 2, type: bytes, name: unknown, level: unknown}

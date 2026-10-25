@@ -16,8 +16,12 @@ implementations:
 
 A section's material key joins three kinds of data: a parameter block in a loaded depot, a program-index row in
 `dingolevel_root_win32_shaderstate_db`, and a streamable-texture-set row. Changing only one lookup can leave the
-section bound inconsistently. The stock shader-state database contains 3,619 program records of 168 bytes in
-27 measured families. :observed
+section bound inconsistently. :observed
+
+The exhaustive level-root database census reads all 3,619 program records at 168 bytes each, with zero
+selector refusals. :proven[all level-root program records]
+
+The measured program grouping has 27 families. :observed
 
 | Resource type | Role | Confidence |
 |---|---|---|
@@ -46,21 +50,24 @@ not arbitrary newly authored programs. :observed
 ## Program selectors
 
 Program records contain twelve `(u32 count, u64 pointer)` items from offset `0x18`, at twelve-byte intervals.
-Five items form a decision tree. Tree structure is measured over 130 sampled records; it is not yet a claim
-about every installed program. :observed
+Five items form a decision tree. A strict census reads every record in the game configuration and dingolevel_root
+databases: 5,137 records (1,518 and 3,619 respectively), with zero refusals. The array layout and tree invariants
+below hold throughout these two databases. :proven[all 5,137 records in both databases]
 
 | Offset | Array | Confidence |
 |---|---|---|
-| `0x30` | Options: 16-byte name/type/count/extra records | :observed |
-| `0x3c` | Nodes: `u16 option_index, start, length` | :observed |
-| `0x48` | One `u64` option-value hash per entry | :observed |
-| `0x54` | `u16` entries: child-node index or `0x8000 + permutation_index` | :observed |
-| `0x60` | `u64` permutation ids | :observed |
+| `0x30` | Options: 16-byte name/type/count/extra records | :proven[5,137 records] |
+| `0x3c` | Nodes: `u16 option_index, start, length` | :proven[5,137 records] |
+| `0x48` | One `u64` option-value hash per entry | :proven[5,137 records] |
+| `0x54` | `u16` entries: child-node index or `0x8000 + permutation_index` | :proven[5,137 records] |
+| `0x60` | `u64` permutation ids | :proven[5,137 records] |
 
 Node zero is the root. A node tests its indexed option and selects an entry by value hash; an entry either
-continues to a child or terminates at a permutation. Options increase along a path. Some paths terminate before
-the final option: six sampled records mix child and leaf entries. Every permutation index occurs once among the
-sampled leaves. :observed
+continues to a child or terminates at a permutation. Options increase along a path. Of the 5,137 records, 473
+have no options and one permutation; the other 4,664 have trees of one to seven options. Those trees contain
+42,297 nodes, including 2,444 mixing child and leaf entries, and 62,274 leaves. Every permutation index occurs
+once among its record's leaves, and walking each leaf's own path returns the expected permutation in all
+62,274 cases. :proven[all records and leaves in both databases]
 
 The option names and values are still hashes. Only 43 of 1,345 option-name hashes also appear in material depot
 parameters; deriving all selector values from the material alone is not supported by this measurement. :observed
@@ -85,7 +92,8 @@ id and GUID pointer at `0` and `8`, followed by its compute GUID at `0x10`. The 
 A stock-data census counts 20,429 CompiledBytecode resource entries across twelve TOCs. All embedded containers
 have DXIL chunks; eight entries in globals contain two `DXBC` signatures and the remainder contain one. The
 ordinary wrapper begins `u16 6, u16 2` and contains an `RC2S` block at `0x20`; observed DXBC starts range from 88 to 294
-bytes. Trailing wrapper data is common. :observed
+bytes. Trailing wrapper data is common. Every CompiledBytecode entry in this twelve-TOC census contains the
+described DXIL container structure; no container is refused. :proven[all CompiledBytecode entries]
 
 Two-container ray-tracing wrappers use `RPTR` at `0x20`. The embedded DXBC length is stored at container `+24`;
 container bytes and surrounding wrapper bytes are separate extents. :observed
@@ -98,6 +106,6 @@ ReSkate's map merge keeps base programs and does not accept map-supplied shader 
 :sourced[ReSkate] See [Studio compilation](/engines/frostbite/mod-loading/studio/).
 
 :::open[What supplies each selector option?]
-The tree shape is measured, but the option names, value hashes and all caller-supplied values are not decoded.
+The tree structure is validated across both databases, but the option names, value hashes and all caller-supplied values are not decoded.
 The other seven program-array items are also unresolved. :unknown
 :::

@@ -56,20 +56,23 @@ marker/kind meanings remain unresolved. :observed
 
 ## Register mapping and exceptions
 
-Comparison against space-zero declarations across the game configuration's 2,931 raster permutations yields
-the following partial rule. :observed
+The register census covers every space-zero declaration in every program of the game configuration's 2,931
+raster permutations. The table reports exhaustive agreement counts for candidate sources, including mismatches;
+it does not establish the candidate mapping where a declaration fails to match. :proven[all game-configuration raster programs]
 
 | Register | Candidate source | Measurement | Confidence |
 |---|---|---|---|
-| `b0` | Set 1, group 0 | Matching buffer size in 4,069 of 4,613 declarations | :observed |
-| `b1` | Set 0, group 0 | Matching size in 2,867 of 2,887 | :observed |
-| `b4` | Pass binding, group 0 | Matching size in 5,707 of 5,707 | :observed |
+| `b0` | Set 1, group 0 | Matching buffer size in 4,069 of 4,613 declarations | :proven[exhaustive agreement count] |
+| `b1` | Set 0, group 0 | Matching size in 2,867 of 2,887 | :proven[exhaustive agreement count] |
+| `b4` | Pass binding, group 0 | Matching size in 5,707 of 5,707 | :proven[exhaustive agreement count] |
 | `t0`–`t31` | Set 1, group 1, index equal to register | Part of combined resource result | :observed |
 | `t32`–`t63` | Set 0, group 1, index register minus 32 | Part of combined resource result | :observed |
-| `t64` and above | Pass binding, group 1, index register minus 64 | Combined result: 31,589 of 31,639 resource declarations have entries | :observed |
+| `t64` and above | Pass binding, group 1, index register minus 64 | Combined result: 31,589 of 31,639 resource declarations have entries | :proven[exhaustive agreement count] |
 
-The same programs declare 1,866 `b2`, 38 `b3` and 4,277 sampler registers without established sources in these
-sets. A size match does not independently name a buffer's semantic role. :observed
+Across all those programs, 1,866 `b2`, 38 `b3` and 4,277 sampler declarations have no assigned source under this
+binding-set rule. :proven[all game-configuration raster programs]
+
+A size match does not independently name a buffer's semantic role. :inferred
 
 ## Input layouts
 
@@ -95,9 +98,12 @@ fields:
 ```
 
 One usage byte follows per element; the element and usage arrays are separately sixteen-byte aligned.
-Relocations identify pointer slots `4` and `0xc`. Of 15,383 vertex-program inputs across those permutations,
+Relocations identify pointer slots `4` and `0xc`. :observed
+
+The exhaustive input comparison covers every vertex program of the game configuration's 2,931 raster
+permutations, with no unmapped inputs. Of their 15,383 inputs,
 15,336 match by name/index and width, six by elimination and width, and 41 by name with shader reads wider than
-the stored format. None lacks an element. :observed
+the stored format. :proven[all game-configuration vertex inputs]
 
 ## Render-state bytes
 

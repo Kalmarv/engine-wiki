@@ -5,61 +5,12 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { getCollection } from 'astro:content';
 import { levels } from '../lib/confidence.mjs';
 import { engines, systems, gamesOf, gameById, games as allGames } from '../lib/registry.mjs';
-import { claimsOf } from '../lib/claims.mjs';
-import { pageMeta } from '../lib/page-meta.mjs';
 import { legend } from '../lib/layout.mjs';
+import { computeCoverage, sum, segs, strong } from '../lib/coverage.mjs';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const href = (id) => `${base}/${id.replace(/(^|\/)index$/, '')}/`.replace(/\/+$/, '/').replace(/\/\/+/g, '/');
-const zero = () => Object.fromEntries(levels.map((l) => [l.id, 0]));
-
-const docs = (await getCollection('docs')).sort((a, b) => a.id.localeCompare(b.id));
-const pages = docs.map((entry) => {
-  const meta = pageMeta(entry);
-  return { entry, meta, claims: claimsOf(entry.body ?? '', `src/content/docs/${entry.id}`) };
-});
-
-// cell key engine|system|game -> { counts, pages: Set<id>, impl: bool }
-const cells = new Map();
-const cell = (e, s, g) => {
-  const k = `${e}|${s}|${g}`;
-  if (!cells.has(k)) cells.set(k, { counts: zero(), pages: new Set(), impl: false });
-  return cells.get(k);
-};
-const gameTotals = Object.fromEntries(allGames.map((g) => [g.id, zero()]));
-const layoutsByEngine = new Map();
-const open = [];
-const untagged = [];
-
-for (const { entry, meta, claims } of pages) {
-  for (const q of claims.open) open.push({ q, entry, meta });
-  if (meta.section !== 'engines') continue;
-  const system = meta.system ?? 'overview';
-  const add = (level, gamesOfClaim) => {
-    for (const g of gamesOfClaim.length ? gamesOfClaim : meta.games) {
-      const c = cell(meta.engine, system, g);
-      c.counts[level]++;
-      c.pages.add(entry.id);
-      gameTotals[g][level]++;
-    }
-  };
-  for (const b of claims.badges) add(b.level, b.games);
-  for (const lay of claims.layouts) {
-    for (const f of lay.fields) add(f.level, f.games.length ? f.games : lay.games);
-    if (!layoutsByEngine.has(meta.engine)) layoutsByEngine.set(meta.engine, []);
-    layoutsByEngine.get(meta.engine).push({ lay, entry });
-  }
-  for (const g of meta.games) {
-    const c = cell(meta.engine, system, g);
-    c.pages.add(entry.id);
-    if (entry.data.implementations.length) c.impl = true;
-  }
-  if (!claims.badges.length && !claims.layouts.length && meta.system) untagged.push(entry);
-}
-
-const sum = (counts) => Object.values(counts).reduce((a, b) => a + b, 0);
-const segs = (counts) => levels.filter((l) => counts[l.id]).map((l) => ({ id: l.id, n: counts[l.id], label: l.label }));
-const strong = (counts) => counts.proven + counts.observed;
+const { cells, gameTotals, layoutsByEngine, open, untagged, docs } = computeCoverage(await getCollection('docs'));
 
 const engineBlocks = engines
   .map((e) => {
@@ -149,13 +100,13 @@ const hubs = new Set(docs.filter((d) => d.id.startsWith('games/')).map((d) => d.
         <table class="cov-layouts">
           <thead><tr><th>Structure</th><th>Games</th><th class="num">Fields</th><th class="num">Bytes</th><th>Bytes by confidence</th><th class="num">Known</th></tr></thead>
           <tbody>
-            {list.map(({ lay, entry }) => {
+            {list.map(({ lay, entry, games }) => {
               const st = lay.stats;
               const known = st.byLevel.proven + st.byLevel.observed;
               return (
                 <tr>
                   <td><a href={href(entry.id)}>{lay.title}</a></td>
-                  <td>{(lay.games.length ? lay.games : pageMeta(entry).games).map((g) => <span class="game-chip">{gameById[g].short}</span>)}</td>
+                  <td>{games.map((g) => <span class="game-chip">{gameById[g].short}</span>)}</td>
                   <td class="num">{st.fields}</td>
                   <td class="num">{st.total || 'variable'}</td>
                   <td>{st.total ? <span class="bar wide">{[...levels.map((l) => [l.id, st.byLevel[l.id]]), ['undescribed', st.undescribed]].filter(([, n]) => n).map(([id, n]) => <span class={`seg lv-${id}`} style={`flex:${n}`} title={`${id}: ${n} bytes`} />)}</span> : ''}</td>

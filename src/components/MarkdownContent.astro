@@ -5,6 +5,7 @@ import Default from '@astrojs/starlight/components/MarkdownContent.astro';
 import { getCollection } from 'astro:content';
 import { gameById, engineById, systemById, systems } from '../lib/registry.mjs';
 import { pageMeta } from '../lib/page-meta.mjs';
+import { computeCoverage, sum, segs, strong } from '../lib/coverage.mjs';
 
 const route = Astro.locals.starlightRoute;
 const entry = route.entry;
@@ -19,6 +20,15 @@ const enginePages = isEngineOverview
       .map((e) => ({ e, m: pageMeta(e) }))
       .sort((a, b) => a.e.data.title.localeCompare(b.e.data.title))
   : [];
+// A game's hub: what the wiki knows about the game, per system of its engine.
+const hubGame = entry?.id.startsWith('games/') ? gameById[entry.id.slice('games/'.length)] : null;
+const hubCells = hubGame ? computeCoverage(await getCollection('docs')).cells : null;
+const hubRows = hubGame
+  ? [{ id: 'overview', name: 'Overview' }, ...systems]
+      .map((s) => ({ s, c: hubCells.get(`${hubGame.engine}|${s.id}|${hubGame.id}`) }))
+      .filter((r) => r.c)
+  : [];
+
 const bySystem = systems
   .map((s) => ({ s, pages: enginePages.filter((p) => p.m.system === s.id) }))
   .filter((g) => g.pages.length);
@@ -48,6 +58,31 @@ const bySystem = systems
 }
 <Default>
   <slot />
+  {
+    hubGame && (
+      <section class="hub-coverage">
+        <h2 id="what-is-known">What is known</h2>
+        {hubRows.length > 0 ? (
+          <table class="cov-games">
+            <thead><tr><th>System</th><th class="num">Claims</th><th>Confidence</th><th class="num">Proven or observed</th></tr></thead>
+            <tbody>
+              {hubRows.map(({ s, c }) => (
+                <tr>
+                  <td><a href={`${base}/${[...c.pages].sort()[0]}/`}>{s.name}</a></td>
+                  <td class="num">{sum(c.counts) || '—'}</td>
+                  <td><span class="bar wide">{segs(c.counts).map((sg) => <span class={`seg lv-${sg.id}`} style={`flex:${sg.n}`} title={`${sg.label}: ${sg.n}`} />)}</span></td>
+                  <td class="num">{sum(c.counts) ? `${Math.round((100 * strong(c.counts)) / sum(c.counts))}%` : ''}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p class="muted">No engine pages cover this game yet.</p>
+        )}
+        <p class="muted">Computed from the engine's pages; the whole picture is on the <a href={`${base}/coverage/#engine-${hubGame.engine}`}>coverage page</a>.</p>
+      </section>
+    )
+  }
   {
     bySystem.length > 0 && (
       <section class="engine-pages">

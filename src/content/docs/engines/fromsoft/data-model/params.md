@@ -27,7 +27,8 @@ SoulsFormatsNEXT. :sourced[SoulsFormatsNEXT]{games="elden-ring"}
 ## Shared PARAM envelope
 
 The examined NPC tables use little-endian integers, 64-bit row offsets, an offset to the ASCII param-type name and
-UTF-16 row names. Empty stored row names are distinct from the descriptive names supplied by community lists.
+UTF-16 row names. Every byte of both NPC tables is accounted for by the header, index, rows, strings and bounded
+zero padding. :proven Empty stored row names are distinct from the descriptive names supplied by community lists.
 :observed
 
 ```layout
@@ -35,29 +36,29 @@ title: PARAM header for the examined tables
 size: 64
 fields:
   - {at: 0, size: 4, type: u32, name: strings offset, level: sourced, note: Individual string pointers remain authoritative}
-  - {at: 4, size: 2, type: u16, name: padding, level: observed, value: 0}
+  - {at: 4, size: 2, type: u16, name: padding, level: proven, value: 0}
   - {at: 6, size: 2, type: u16, name: unknown, level: unknown, note: Observed 1 in both NPC tables}
-  - {at: 8, size: 2, type: u16, name: data version, level: observed}
-  - {at: 10, size: 2, type: u16, name: row count, level: observed}
-  - {at: 12, size: 4, type: u32, name: padding, level: observed, value: 0}
-  - {at: 16, size: 8, type: u64, name: param type string offset, level: observed}
-  - {at: 24, size: 20, type: "u8[20]", name: padding, level: observed, value: 0}
+  - {at: 8, size: 2, type: u16, name: data version, level: proven}
+  - {at: 10, size: 2, type: u16, name: row count, level: proven}
+  - {at: 12, size: 4, type: u32, name: padding, level: proven, value: 0}
+  - {at: 16, size: 8, type: u64, name: param type string offset, level: proven}
+  - {at: 24, size: 20, type: "u8[20]", name: padding, level: proven, value: 0}
   - {at: 44, size: 1, type: u8, name: big endian, level: sourced, note: Zero in examined tables}
   - {at: 45, size: 1, type: u8, name: format flags 1, level: sourced, note: "0x85; low bit meaning unresolved"}
   - {at: 46, size: 1, type: u8, name: format flags 2, level: sourced, note: "0x07; bit 0 selects UTF-16 names"}
   - {at: 47, size: 1, type: u8, name: unknown, level: unknown, note: Retained in the header}
-  - {at: 48, size: 8, type: u64, name: row data start, level: observed}
-  - {at: 56, size: 8, type: u64, name: padding, level: observed, value: 0}
+  - {at: 48, size: 8, type: u64, name: row data start, level: proven}
+  - {at: 56, size: 8, type: u64, name: padding, level: proven, value: 0}
 ```
 
 ```layout
 title: PARAM row index entry
 size: 24
 fields:
-  - {at: 0, size: 4, type: i32, name: row ID, level: observed}
-  - {at: 4, size: 4, type: u32, name: padding, level: observed, value: 0}
-  - {at: 8, size: 8, type: u64, name: row data offset, level: observed}
-  - {at: 16, size: 8, type: u64, name: row name offset, level: observed, note: Zero means no name}
+  - {at: 0, size: 4, type: i32, name: row ID, level: proven}
+  - {at: 4, size: 4, type: u32, name: padding, level: proven, value: 0}
+  - {at: 8, size: 8, type: u64, name: row data offset, level: proven}
+  - {at: 16, size: 8, type: u64, name: row name offset, level: proven, note: Zero means no name}
 ```
 
 ## NpcParam

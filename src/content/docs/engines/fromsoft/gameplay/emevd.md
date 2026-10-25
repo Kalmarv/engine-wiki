@@ -17,7 +17,8 @@ layer. Events also list substitutions that copy event-call arguments into partic
 
 Both examined games use the 64-bit little-endian layout with version `0xCD`. Sekiro's common scripts and all map
 scripts found by probing `m10..m99`, block `00..09`, consume the complete files with only bounded zero alignment;
-every event, instruction, substitution, linked-file offset and string byte matches an independent decode.
+all 11 scripts (1,213 events) match an independent decode in every event, instruction, substitution, linked-file
+offset and string byte.
 :proven{games="sekiro"} The same envelope is readable in examined Elden Ring scripts, without establishing the
 meaning of every opcode. :observed{games="elden-ring"}
 
@@ -25,11 +26,13 @@ meaning of every opcode. :observed{games="elden-ring"}
 
 The `0x90`-byte header starts with `EVD\0`, format bytes `00 ff 01 ff`, version and total file size. Sixteen 64-bit
 values then give count/offset pairs for events, instructions, an unused table, layers, substitutions and linked
-files, followed by byte-length/offset pairs for argument and string blocks. :observed
+files, followed by byte-length/offset pairs for argument and string blocks.
+:proven[all 11 scripts]{games="sekiro"} :observed{games="elden-ring"}
 
 ```layout
-title: EMEVD header
+title: EMEVD header (Elden Ring)
 size: 144
+games: [elden-ring]
 fields:
   - {at: 0, size: 4, type: "char[4]", name: magic, value: "EVD\\0", level: observed}
   - {at: 4, size: 4, type: "u8[4]", name: format bytes, level: sourced, note: "00 ff 01 ff"}
@@ -46,8 +49,28 @@ fields:
 ```
 
 ```layout
-title: EMEVD event record
+title: EMEVD header (Sekiro)
+size: 144
+games: [sekiro]
+fields:
+  - {at: 0, size: 4, type: "char[4]", name: magic, value: "EVD\\0", level: proven}
+  - {at: 4, size: 4, type: "u8[4]", name: format bytes, level: sourced, note: "00 ff 01 ff"}
+  - {at: 8, size: 4, type: u32, name: version, value: "0xCD", level: proven}
+  - {at: 12, size: 4, type: u32, name: file size, level: proven}
+  - {at: 16, size: 16, type: "i64[2]", name: event count and offset, level: proven}
+  - {at: 32, size: 16, type: "i64[2]", name: instruction count and offset, level: proven}
+  - {at: 48, size: 16, type: "i64[2]", name: unknown table count and offset, level: unknown, note: Count is zero in examined scripts}
+  - {at: 64, size: 16, type: "i64[2]", name: layer count and offset, level: proven}
+  - {at: 80, size: 16, type: "i64[2]", name: substitution count and offset, level: proven}
+  - {at: 96, size: 16, type: "i64[2]", name: linked-file count and offset, level: proven}
+  - {at: 112, size: 16, type: "i64[2]", name: argument length and offset, level: proven}
+  - {at: 128, size: 16, type: "i64[2]", name: string length and offset, level: proven}
+```
+
+```layout
+title: EMEVD event record (Elden Ring)
 size: 48
+games: [elden-ring]
 fields:
   - {at: 0, size: 8, type: i64, name: event ID, level: observed}
   - {at: 8, size: 8, type: i64, name: instruction count, level: observed}
@@ -59,8 +82,23 @@ fields:
 ```
 
 ```layout
-title: EMEVD instruction
+title: EMEVD event record (Sekiro)
+size: 48
+games: [sekiro]
+fields:
+  - {at: 0, size: 8, type: i64, name: event ID, level: proven}
+  - {at: 8, size: 8, type: i64, name: instruction count, level: proven}
+  - {at: 16, size: 8, type: i64, name: instruction offset, level: proven, note: Relative to the instruction table}
+  - {at: 24, size: 8, type: i64, name: substitution count, level: proven}
+  - {at: 32, size: 8, type: i64, name: substitution offset, level: proven, note: Relative to the substitution table}
+  - {at: 40, size: 4, type: u32, name: rest behavior, level: sourced, note: 0 default; 1 restart; 2 end}
+  - {at: 44, size: 4, type: u32, name: padding, level: proven, value: 0}
+```
+
+```layout
+title: EMEVD instruction (Elden Ring)
 size: 32
+games: [elden-ring]
 fields:
   - {at: 0, size: 4, type: i32, name: bank, level: observed}
   - {at: 4, size: 4, type: i32, name: instruction ID, level: observed}
@@ -70,8 +108,21 @@ fields:
 ```
 
 ```layout
-title: EMEVD parameter substitution
+title: EMEVD instruction (Sekiro)
 size: 32
+games: [sekiro]
+fields:
+  - {at: 0, size: 4, type: i32, name: bank, level: proven}
+  - {at: 4, size: 4, type: i32, name: instruction ID, level: proven}
+  - {at: 8, size: 8, type: i64, name: argument byte count, level: proven}
+  - {at: 16, size: 8, type: i64, name: argument offset, level: proven, note: Relative to the argument block}
+  - {at: 24, size: 8, type: i64, name: layer offset, level: proven, note: Relative to layer table; -1 means none}
+```
+
+```layout
+title: EMEVD parameter substitution (Elden Ring)
+size: 32
+games: [elden-ring]
 fields:
   - {at: 0, size: 8, type: i64, name: instruction index, level: observed}
   - {at: 8, size: 8, type: i64, name: target argument byte offset, level: observed}
@@ -81,8 +132,33 @@ fields:
 ```
 
 ```layout
-title: EMEVD instruction layer
+title: EMEVD parameter substitution (Sekiro)
 size: 32
+games: [sekiro]
+fields:
+  - {at: 0, size: 8, type: i64, name: instruction index, level: proven}
+  - {at: 8, size: 8, type: i64, name: target argument byte offset, level: proven}
+  - {at: 16, size: 8, type: i64, name: source event-argument byte offset, level: proven}
+  - {at: 24, size: 4, type: u32, name: copy byte count, level: proven}
+  - {at: 28, size: 4, type: i32, name: unknown, level: unknown, note: Stored word retained without interpretation}
+```
+
+```layout
+title: EMEVD instruction layer (Elden Ring)
+size: 32
+games: [elden-ring]
+fields:
+  - {at: 0, size: 4, type: u32, name: unknown, level: unknown, note: Observed 2}
+  - {at: 4, size: 4, type: u32, name: layer mask, level: sourced}
+  - {at: 8, size: 8, type: i64, name: unknown, level: unknown, note: Observed 0}
+  - {at: 16, size: 8, type: i64, name: unknown, level: unknown, note: Observed -1}
+  - {at: 24, size: 8, type: i64, name: unknown, level: unknown, note: Observed 1}
+```
+
+```layout
+title: EMEVD instruction layer (Sekiro)
+size: 32
+games: [sekiro]
 fields:
   - {at: 0, size: 4, type: u32, name: unknown, level: unknown, note: Observed 2}
   - {at: 4, size: 4, type: u32, name: layer mask, level: sourced}

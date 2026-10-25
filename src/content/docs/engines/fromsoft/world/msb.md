@@ -21,22 +21,23 @@ section revision numbers alone do not, because revisions can differ while the re
 
 | Order | MSBS | MSBE | Confidence |
 |---|---|---|---|
-| 1 | `MODEL_PARAM_ST` | Same | :observed |
-| 2 | `EVENT_PARAM_ST` | Same | :observed |
-| 3 | `POINT_PARAM_ST` (regions) | Same | :observed |
-| 4 | `ROUTE_PARAM_ST` | Same | :observed |
-| 5 | `LAYER_PARAM_ST` (empty in the examined layouts) | Same | :observed |
-| 6 | `PARTS_PARAM_ST` | Same | :observed |
-| 7 | `MAPSTUDIO_PARTS_POSE_ST` (empty in the examined layouts) | Absent | :observed |
-| 8 | `MAPSTUDIO_BONE_NAME_STRING` (empty in the examined layouts) | Absent | :observed |
+| 1 | `MODEL_PARAM_ST` | Same | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| 2 | `EVENT_PARAM_ST` | Same | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| 3 | `POINT_PARAM_ST` (regions) | Same | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| 4 | `ROUTE_PARAM_ST` | Same | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| 5 | `LAYER_PARAM_ST` (empty in the examined layouts) | Same | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| 6 | `PARTS_PARAM_ST` | Same | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| 7 | `MAPSTUDIO_PARTS_POSE_ST` (empty in the examined layouts) | Absent | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| 8 | `MAPSTUDIO_BONE_NAME_STRING` (empty in the examined layouts) | Absent | :observed{games="sekiro"} :proven{games="elden-ring"} |
 
 The file begins with `MSB ` and a 16-byte header; the first section starts at 16. Section pointers are absolute,
 whereas pointers inside a part or model record are relative to that record. Strings are NUL-terminated UTF-16.
 :observed
 
 ```layout
-title: Section header and pointer table
+title: Section header and pointer table (Sekiro)
 size: variable
+games: [sekiro]
 note: Little-endian; offsets are absolute from the MSB start.
 fields:
   - {at: 0, size: 4, type: u32, name: section revision, level: observed}
@@ -46,11 +47,26 @@ fields:
   - {at: after record offsets, size: 8, type: u64, name: next section offset, level: observed, note: Zero terminates the chain}
 ```
 
+```layout
+title: Section header and pointer table (Elden Ring)
+size: variable
+games: [elden-ring]
+note: Little-endian; offsets are absolute from the MSB start.
+fields:
+  - {at: 0, size: 4, type: u32, name: section revision, level: proven}
+  - {at: 4, size: 4, type: u32, name: pointer count, level: proven, note: Record count plus one}
+  - {at: 8, size: 8, type: u64, name: section name offset, level: proven}
+  - {at: 16, size: "8 × record count", type: "u64[]", name: record offsets, level: proven}
+  - {at: after record offsets, size: 8, type: u64, name: next section offset, level: proven, note: Zero terminates the chain}
+```
+
 ## Parts
 
 Ashina Castle's map-piece and object names, model references, positions, rotations and scales agree bit for bit with
 an independent SoulsFormats decode. That comparison does not cover the other Sekiro part kinds. :observed{games="sekiro"}
-Every part of every kind in Elden Ring's map-layout comparison agrees with SoulsFormatsNEXT. :proven{games="elden-ring"}
+The whole-install Elden Ring comparison covers all 935 MSBs, all 457,108 parts of every kind and all 227 spawn
+points, with no refusals. Model names, part transforms, IDs, shadow controls, hit filters and spawn-point values
+agree with SoulsFormatsNEXT. :proven{games="elden-ring"}
 
 ```layout
 title: MSBS part header — selected fields
@@ -84,10 +100,10 @@ fields:
   - {at: 32, size: 12, type: "f32[3]", name: position, level: proven}
   - {at: 44, size: 12, type: "f32[3]", name: rotation in degrees, level: proven}
   - {at: 56, size: 12, type: "f32[3]", name: scale, level: proven}
-  - {at: 96, size: 8, type: u64, name: entity data offset, level: observed, note: Entity block occupies 0x40 bytes}
-  - {at: 104, size: 8, type: u64, name: type data offset, level: observed}
-  - {at: 112, size: 8, type: u64, name: graphics configuration offset, level: observed}
-  - {at: 120, size: 8, type: u64, name: scene configuration offset, level: observed}
+  - {at: 96, size: 8, type: u64, name: entity data offset, level: proven, note: Entity block occupies 0x40 bytes}
+  - {at: 104, size: 8, type: u64, name: type data offset, level: proven}
+  - {at: 112, size: 8, type: u64, name: graphics configuration offset, level: proven}
+  - {at: 120, size: 8, type: u64, name: scene configuration offset, level: proven}
 ```
 
 Within entity data, the entity ID is at `+0` and eight group IDs start at `+0x1c`. Enemy type data stores the NPC

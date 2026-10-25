@@ -14,7 +14,9 @@ and payload together; BHF4 holds an index whose payload is in a separate BDF4 fi
 [DCX envelope](/engines/fromsoft/archives/dcx/) are separate layers. :observed
 
 Every top-level BND4 member of both installed archive sets decodes to the same bytes as SoulsFormats or
-SoulsFormatsNEXT. This establishes member contents, not the runtime purpose of every binder flag. :proven
+SoulsFormatsNEXT. The strict reader checks header constants, record sizes, names, IDs, payload bounds and byte
+coverage for every top-level BND4 in both installs. This establishes the BND4 layouts below and member contents,
+not the runtime purpose of every binder flag. :proven
 
 ## Header and member records
 
@@ -22,25 +24,25 @@ The header selects integer endianness, flag-bit ordering, name encoding and opti
 IDs are independently optional; a member need not have both. :sourced[SoulsFormatsNEXT]
 
 ```layout
-title: BND4 or BHF4 header
+title: BND4 header
 size: 64
 note: Integer byte order is selected at offset 9. Offsets are file-relative.
 fields:
-  - {at: 0, size: 4, type: "char[4]", name: magic, level: observed, note: BND4 or BHF4}
+  - {at: 0, size: 4, type: "char[4]", name: magic, level: proven, note: BND4}
   - {at: 4, size: 2, type: "u8[2]", name: unknown booleans, level: unknown, note: Each is 0 or 1}
-  - {at: 6, size: 3, type: "u8[3]", name: padding, level: observed, value: 0}
+  - {at: 6, size: 3, type: "u8[3]", name: padding, level: proven, value: 0}
   - {at: 9, size: 1, type: u8, name: big endian, level: sourced}
   - {at: 10, size: 1, type: u8, name: bit ordering flag, level: sourced}
-  - {at: 11, size: 1, type: u8, name: padding, level: observed, value: 0}
+  - {at: 11, size: 1, type: u8, name: padding, level: proven, value: 0}
   - {at: 12, size: 4, type: u32, name: member count, level: proven}
-  - {at: 16, size: 8, type: u64, name: header size, level: observed, value: 64}
+  - {at: 16, size: 8, type: u64, name: header size, level: proven, value: 64}
   - {at: 24, size: 8, type: "char[8]", name: version string, level: sourced}
   - {at: 32, size: 8, type: u64, name: member record size, level: proven}
-  - {at: 40, size: 8, type: u64, name: header end, level: observed, note: Zero in BHF4}
+  - {at: 40, size: 8, type: u64, name: header end, level: proven}
   - {at: 48, size: 1, type: u8, name: Unicode names, level: sourced}
   - {at: 49, size: 1, type: u8, name: format flags, level: sourced}
   - {at: 50, size: 1, type: u8, name: extended mode, level: sourced}
-  - {at: 51, size: 5, type: "u8[5]", name: padding, level: observed, value: 0}
+  - {at: 51, size: 5, type: "u8[5]", name: padding, level: proven, value: 0}
   - {at: 56, size: 8, type: u64, name: hash table offset, level: sourced}
 ```
 
@@ -50,7 +52,7 @@ size: variable
 note: Optional fields appear in the order listed; format flags are shown after bit-order normalization.
 fields:
   - {at: 0, size: 1, type: u8, name: member flags, level: sourced, note: Bit 0 marks compression}
-  - {at: 1, size: 3, type: "u8[3]", name: padding, level: observed, value: 0}
+  - {at: 1, size: 3, type: "u8[3]", name: padding, level: proven, value: 0}
   - {at: 4, size: 4, type: i32, name: sentinel, level: unknown, note: Observed -1}
   - {at: 8, size: 8, type: u64, name: stored size, level: proven}
   - {at: 16, size: "8 if format & 0x20", type: u64, name: decoded size, level: sourced}
@@ -66,7 +68,8 @@ set; the non-Unicode form is a narrow string. :sourced[SoulsFormatsNEXT]
 
 ## Split payload
 
-BHF4 records point into BDF4, while names and the lookup table remain in BHF4. Map `.hkxbhd`/`.hkxbdt` collision
+BHF4 uses the same 64-byte header arrangement as BND4, with a zero field at offset 40. Its records point into BDF4,
+while names and the lookup table remain in BHF4. Map `.hkxbhd`/`.hkxbdt` collision
 pairs and `.tpfbhd`/`.tpfbdt` texture pairs use this arrangement. :observed
 
 ```layout

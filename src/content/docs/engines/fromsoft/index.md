@@ -37,13 +37,13 @@ not include its field definitions. :sourced[Paramdex]
 | Compression | DCX `KRAK` (Oodle Kraken) | DCX `KRAK`; `ZSTD` for the params | :proven |
 | Params | `param/gameparam/gameparam.parambnd.dcx` in the archives | `regulation.bin` beside the executable, AES-256-CBC encrypted | :proven |
 | `NPC_PARAM_ST` | data version 14, 896-byte rows | data version 9, 736-byte rows | :proven |
-| Map layout | MSBS, eight sections | MSBE, six sections; shared section-chain mechanism, different part headers | :observed |
+| Map layout | MSBS, eight sections | all 935 MSBs use MSBE, six sections; shared section-chain mechanism, different part headers | :observed{games="sekiro"} :proven{games="elden-ring"} |
 | World structure | separate map areas (`m11_01` Ashina Castle, ...) | map areas plus open-world tiles of 256 m (`m60`, `m61`), each inside larger parent tiles | :observed |
 | Material definitions | MTD | MATBIN | :proven |
 | Compiled shaders | DXBC (Direct3D 11) | DXIL (Direct3D 12) | :observed |
 | Collision | Havok 2016.2 | Havok 2018.1 | :observed |
-| Light banks (BTL) | version 16 | version 18; the same 232-byte light record | :observed |
-| Event scripts (EMEVD) | 64-bit little-endian layout, version `0xCD` | the same layout | :observed |
+| Light banks (BTL) | checked banks use version 16 | 107 decoded version-18 banks; two version-15 banks refused; shared 232-byte decoded light record | :observed{games="sekiro"} :proven{games="elden-ring"} |
+| Event scripts (EMEVD) | all 11 scripts use the 64-bit little-endian layout, version `0xCD` | examined scripts use the same layout | :proven{games="sekiro"} :observed{games="elden-ring"} |
 | Traversal data | EDGE grapple, hang and wall-hug records | No equivalent established here | :observed{games="sekiro"} |
 | Animation | Havok skeleton and motion, TAE actions; player companion binders | Havok skeleton and motion, TAE actions; divided companion binders | :observed |
 

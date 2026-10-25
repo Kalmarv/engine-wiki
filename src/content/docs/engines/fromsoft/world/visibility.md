@@ -33,19 +33,23 @@ fields:
   - {at: 200, size: 192, type: "u8[192]", name: padding, level: sourced, value: 0}
 ```
 
+The Elden Ring shadow-byte comparison covers every part of all 935 installed MSBs with no refusals.
+:proven{games="elden-ring"}
+
 ## Shadow bytes
 
 Offsets below are relative to the part's entity-data block, not its header. The cast, receive and shadow-only flags
-are independent stored bytes. :observed
+are independent stored bytes.
+:observed{games="sekiro"} :proven[all 457,108 parts]{games="elden-ring"}
 
 | Offset | Meaning | Stored encoding | Confidence |
 |---|---|---|---|
-| `0x0a` | Point-light shadow cast | MSBS: `0/1`; MSBE: `0/0xff` | :observed |
-| `0x0c` | Cast shadow | `0/1` | :observed |
+| `0x0a` | Point-light shadow cast | MSBS: `0/1`; MSBE: `0/0xff` | :observed{games="sekiro"} :proven[all parts]{games="elden-ring"} |
+| `0x0c` | Cast shadow | `0/1` | :observed{games="sekiro"} :proven[all parts]{games="elden-ring"} |
 | `0x0d` | Static shadow control | Raw byte; renderer meaning unresolved | :unknown |
 | `0x0e` | Cascade-3 shadow control | Raw byte; renderer meaning unresolved | :unknown |
-| `0x11` | Receive shadow | `0/1` | :observed |
-| `0x12` | Shadow only | `0/1` | :observed |
+| `0x11` | Receive shadow | `0/1` | :observed{games="sekiro"} :proven[all parts]{games="elden-ring"} |
+| `0x12` | Shadow only | `0/1` | :observed{games="sekiro"} :proven[all parts]{games="elden-ring"} |
 
 :::open[What is the exact visibility predicate?]
 The presence of arrays and their community names do not establish bit intersections, collision activation,

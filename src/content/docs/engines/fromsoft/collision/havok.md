@@ -1,0 +1,72 @@
+---
+title: Havok containers and compressed meshes
+description: Tagfile sections, type compendia, packed vertices, shape keys and custom primitives.
+sources:
+  - title: HKLib
+    url: https://github.com/The12thAvenger/HKLib
+  - title: Havoc
+    url: https://github.com/PredatorCZ/Havoc
+implementations:
+  - name: primase Havok tagfile reader
+    url: https://github.com/Kalmarv/primase/blob/main/toolkit/havok/src/tagfile.rs
+  - name: primase compressed mesh reader
+    url: https://github.com/Kalmarv/primase/blob/main/toolkit/havok/src/mesh.rs
+---
+
+Map collision uses Havok tagfiles with `hknpCompressedMeshShape` geometry and FromSoftware-specific `fsnp` metadata.
+Map HKX members share types through a compendium in their split binder; object HKX files can carry their own type
+definitions. :observed
+
+| Game | SDK string in examined collision | Confidence |
+|---|---|---|
+| Sekiro | `20160200` (2016.2) | :observed{games="sekiro"} |
+| Elden Ring | `20180100` (2018.1) | :observed{games="elden-ring"} |
+
+## Tagfile structure
+
+One `TAG0` root contains `SDKV`, `DATA`, either `TYPE` or `TCRF`, and `INDX` sections. `TYPE` carries class layouts;
+`TCRF` names an external compendium by its eight-byte ID. Item and patch tables resolve typed objects and references
+into `DATA`; type index zero denotes null. :observed
+
+```layout
+title: Havok section header
+size: 8
+note: The first word is big-endian; its top two bits are flags, the remaining 30 bits are total section length including this header.
+fields:
+  - {at: 0, size: 4, type: u32, name: flags and section length, level: observed}
+  - {at: 4, size: 4, type: "char[4]", name: section signature, level: observed}
+```
+
+Container sections have flags zero and contain child sections rather than raw leaf data. :observed
+
+## Compressed mesh tree
+
+The mesh tree divides primitives into sections. Section-local vertices use packed 11/11/10-bit coordinates, decoded
+with section scale and offset; shared vertices use 21/21/22-bit coordinates over the mesh domain's minimum and
+maximum. An index below the section's packed-vertex count addresses local vertices; higher indices address its
+shared-vertex index array. :observed
+
+A primitive stores four indices `[a,b,c,d]`. Equal `c,d` gives triangle `(a,b,c)`; otherwise the quad also gives
+`(a,c,d)`. `[0xde,0xad,0xde,0xad]` is a dead primitive. :observed The right-aligned shape key is
+`(section << 8) | (primitive << 1) | half`, where `half` selects the quad triangle. Stored keys in the material table
+are left-aligned and become this value after shifting right by `32 - numShapeKeyBits`. :observed
+
+## Custom primitives and extern shapes
+
+Equal second and fourth indices identify a custom primitive, rather than an ordinary triangle or quad. Its first
+index addresses data in the shared-vertex index stream, after accounting for the section's packed vertices.
+:observed
+
+| Pattern | Interpretation | Confidence |
+|---|---|---|
+| Indices `[k,k,4,k]`, words `[146,w,lo,hi]` | Extern shape index `lo | (hi << 16)`; `w` is uninterpreted | :observed{games="elden-ring"} |
+| First word with low byte `0x52`, including `0x2252` | Payload meaning is unresolved | :unknown |
+
+:only[elden-ring] `externShapes` contains shape references with their own transforms. In the examined data, each
+extern shape is referenced exactly once by a custom primitive and the stored scale is one. The transform supplies
+three rotation columns and a translation in compressed-mesh space. :observed{games="elden-ring"}
+
+:::open[What does the 0x52 custom payload represent?]
+The record is distinct from triangles and extern references. Interpreting its words as a vertex index and half float
+is only a lead; no established geometry interpretation is available.
+:::

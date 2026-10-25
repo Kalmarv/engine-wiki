@@ -50,9 +50,64 @@ fields:
 
 ## Geometry and composites
 
+```layout
+title: Geometry bound fields
+size: 304
+note: Begins with the 112-byte common header described above.
+fields:
+  - {at: 0, size: 112, type: BoundHeader, name: common header, level: observed}
+  - {at: 112, size: 8, type: bytes, name: undescribed fields, level: unknown}
+  - {at: 120, size: 8, type: pointer, name: shrunk vertices, level: sourced}
+  - {at: 128, size: 4, type: bytes, name: unknown, level: unknown}
+  - {at: 132, size: 4, type: u32, name: shrunk vertex count, level: sourced}
+  - {at: 136, size: 8, type: pointer, name: polygons, level: observed}
+  - {at: 144, size: 12, type: vec3, name: coordinate quantum, level: observed}
+  - {at: 156, size: 4, type: bytes, name: unknown, level: unknown}
+  - {at: 160, size: 12, type: vec3, name: coordinate centre, level: observed}
+  - {at: 172, size: 4, type: bytes, name: unknown, level: unknown}
+  - {at: 176, size: 8, type: pointer, name: quantized vertices, level: observed}
+  - {at: 184, size: 8, type: pointer, name: vertex colours, level: observed}
+  - {at: 192, size: 16, type: bytes, name: undescribed fields, level: unknown}
+  - {at: 208, size: 4, type: u32, name: vertex count, level: observed}
+  - {at: 212, size: 4, type: u32, name: polygon count, level: observed}
+  - {at: 216, size: 24, type: bytes, name: undescribed fields, level: unknown}
+  - {at: 240, size: 8, type: pointer, name: materials, level: observed}
+  - {at: 248, size: 32, type: bytes, name: undescribed fields, level: unknown}
+  - {at: 280, size: 8, type: pointer, name: polygon material indices, level: observed}
+  - {at: 288, size: 1, type: u8, name: material count, level: observed}
+  - {at: 289, size: 15, type: bytes, name: undescribed tail, level: unknown}
+```
+
+```layout
+title: Composite bound
+size: 176
+fields:
+  - {at: 0, size: 112, type: BoundHeader, name: common header, level: observed}
+  - {at: 112, size: 8, type: pointer, name: child bound pointers, level: observed}
+  - {at: 120, size: 8, type: pointer, name: child transforms, level: observed}
+  - {at: 128, size: 8, type: bytes, name: undescribed fields, level: unknown}
+  - {at: 136, size: 8, type: pointer, name: child bounding boxes, level: sourced}
+  - {at: 144, size: 8, type: pointer, name: child flags, level: observed}
+  - {at: 152, size: 8, type: pointer, name: second child flags, level: observed}
+  - {at: 160, size: 2, type: u16, name: child count, level: observed}
+  - {at: 162, size: 14, type: bytes, name: undescribed tail, level: unknown}
+```
+
 Geometry vertices are signed 16-bit coordinate triples decoded component-wise as `integer * quantum + centre`.
 Polygon records include triangles, spheres, capsules, boxes and cylinders. Triangle indices carry flags in their
 high bits, alongside signed neighboring-polygon indices (`-1` means absent) and area. :observed
+
+```layout
+title: Triangle polygon
+size: 16
+fields:
+  - {at: 0, size: 4, type: u32, name: area and polygon kind, level: observed, note: "low 3 bits select kind 0; clearing them gives the float area bits"}
+  - {at: 4, size: 6, type: "u16[3]", name: vertex indices and flags, level: observed, note: "bit 15 is a flag; low 15 bits index vertices"}
+  - {at: 10, size: 6, type: "i16[3]", name: edge neighbors, level: observed, note: "-1 means absent"}
+```
+
+Sphere, capsule and cylinder vertex words use all 16 bits as indices, unlike triangle words. Removing bit 15 from
+every polygon kind changes legitimate large vertex indices. :sourced[CodeWalker]
 
 Geometry materials are two-word records. The low byte of the first word identifies the material type; the records
 also carry procedural ID, room, ped density, flags and colour index. Each polygon has a byte index into the material

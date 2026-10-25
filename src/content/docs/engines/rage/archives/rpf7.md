@@ -98,11 +98,13 @@ maps bytes through a lookup table before mixing, so ordinary joaat is not interc
 :sourced[CodeWalker]
 
 The community key-material layout provides NG keys, decrypt tables, the hash lookup table and an optional AES key;
-CodeWalker describes extraction from a game executable. :sourced[CodeWalker] The inspected Enhanced cipher reader
-records no AES archives in its Enhanced corpus; AES support does not establish that this edition ships an AES
-archive. :observed
+CodeWalker describes extraction from a game executable. :sourced[CodeWalker]
+
+Recounting every archive record in the retained listing gives 5,405 NG and two AES archives. The AES archives are
+`x64c.rpf/anim/cutscene/cuts_random_event.rpf` and `x64c.rpf/anim/cutscene/cuts_trevor_4.rpf`. Enhanced therefore cannot
+be treated as an NG-only corpus. :observed[5,407 unique archive paths]
 
 :::open[Which ciphers occur in other builds?]
-AES is a defined archive variant, but its presence in another edition or update needs a separate archive census.
-:unknown
+The two AES archives occur in the inspected listing. Their presence or absence in another edition or update needs
+a separate archive census. :unknown
 :::

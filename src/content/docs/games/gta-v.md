@@ -31,6 +31,10 @@ The [RPF7 archive](/engines/rage/archives/rpf7/) carries directory, binary and r
 [mount rules](/engines/rage/archives/mounts/) select active replacements and distinguish Story from Online; reading
 all copies at once does not reproduce either state. :observed
 
+The retained [archive census](/engines/rage/archives/install-census/) contains 5,407 archive paths and 393,673 file
+entries, counting nested archives and overridden copies. Those units are distinct from active world placements.
+:observed
+
 ## Enhanced-specific data
 
 [RSC7](/engines/rage/data-model/rsc7/) remains the resource envelope, while Enhanced drawables use version 159,

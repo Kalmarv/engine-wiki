@@ -46,7 +46,7 @@ key:
 so `c3` is the key's value and `c2` its outgoing slope; the incoming slope of the next key is the derivative at the segment's
 end. The first frame is at time `−f32::MAX` and gives every curve's initial value; the last is at `+∞` and has no keys. A
 segment whose coefficients are not finite is a **step**. :observed{games="skatebird sledding"} The slopes are per second:
-a consumer that scales a slope by the segment length reads each tangent twice scaled. :observed{games="skatebird"}
+scaling a slope by the segment length again would count the length twice. :observed{games="skatebird"}
 
 A curve with only its initial entry is constant. Frames that do not end at +∞, a key of a curve beyond the count, and times that
 go backwards are not valid streamed data. :observed

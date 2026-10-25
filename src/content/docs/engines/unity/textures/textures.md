@@ -81,7 +81,7 @@ Sledding Game covers the formats listed above.
 
 `m_ColorSpace` 1 marks a texture Unity samples as sRGB; 0 means the raw values are used as linear data. **A linear texture
 used as a base colour** is sampled as linear, but glTF base colour slots are always decoded as sRGB, so such a texture used
-as it is renders darker than in the game (SnowIceURP base maps up to 52/255 off); the values need to be re-encoded.
+as it is renders darker than in the game (SnowIceURP base maps up to 52/255 off).
 :observed{games="sledding"}
 
 A normal map has usage mode 3 (DXT5nm: x in alpha, y in green) or 4 (plain: x in red). Unity's normal maps are green up with

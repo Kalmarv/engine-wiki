@@ -34,12 +34,15 @@ They are invisible in the game: the player's `Main Camera` has the culling mask 
 only the `Objective Map Camera (for escape menu)`, which renders to a texture, has `0xf003ff17`, which adds layer 28.
 :proven{games="skatebird"}
 
-`0xe003ff17` draws layers 0, 1, 2, 4, 8 to 17 and 29 to 31; `0xf003ff17` adds 28. :proven{games="skatebird"} Both scenes
-read (`level1`, `level12`) have these two cameras and no others: the main camera at depth −1, field of view 75°, near 0.1 and
-far 5000, and the map camera at depth 0, near 0.3, far 1000 (field of view 80° and 60°). :observed{games="skatebird"}
+`0xe003ff17` draws layers 0, 1, 2, 4, 8 to 17 and 29 to 31; `0xf003ff17` adds 28. :proven{games="skatebird"} Every scene of the
+install has this arrangement or a simpler one: scenes 0 to 7, 12 and 13 have exactly the `Main Camera` (mask `0xe003ff17`, depth
+−1, near 0.1, far 5000) and the `Objective Map Camera (for escape menu)` (mask `0xf003ff17`, depth 0, near 0.3, far 1000, target
+texture object 1283 of the same file); the credits scene (6) adds a `Credits Camera` with mask `0xffffffff` at depth 10 that draws
+every layer to the screen; the loading scene (8) has one `Main Camera` with every layer; scenes 9 to 11 have no camera.
+:proven{games="skatebird"} The main camera's field of view is 75° (40° in the title scene) and the map camera's varies by scene
+(60° to 92.2°). :proven{games="skatebird"}
 
-A renderer on a layer that no screen camera's mask draws is never seen. A level exported without applying the cameras' masks
-shows layer 28's spheres. :observed{games="skatebird"}
+A renderer on a layer that no screen camera's mask draws is not seen by the player. :sourced[Unity manual]
 
 ## Other uses of layers
 

@@ -53,6 +53,15 @@ the chain from the root, `Matrix4x4.TRS(position, rotation, scale)` at each step
 stored local `x` and `y` can be stale: they come from its anchors: the parent rectangle's minimum plus its size times the
 anchors interpolated at the pivot, plus the anchored position. :observed{games="sledding"}
 
+## Prefabs
+
+A prefab instance placed in a scene is not recorded as such in a build: the scene file holds its GameObjects, Transforms and
+components like any others, and no `PrefabInstance` object (class 1001) occurs in the SkateBIRD playground or its `sharedassets0`,
+Sledding Game's mountain or `sharedassets1`, PEAK's island scene or Big Walk's world scene. :observed A prefab that something
+refers to by object, such as a terrain tree prototype, is a hierarchy of objects in an assets file with a root GameObject.
+:observed{games="sledding"} The scene therefore does not say which prefab an object came from; repeated structure shows as repeated
+names (`Generated_Rail_Node*`, `Combined Mesh (root: scene) N`). :inferred
+
 ## Inactive state
 
 A GameObject can be stored inactive and a component stored disabled. Unity draws or uses an object only when none of the

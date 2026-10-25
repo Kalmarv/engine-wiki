@@ -25,7 +25,7 @@ The generated `FishNet.Serializing.Generated` readers and writers (`GRead___…`
 ## Where the serialized objects are not the whole story
 
 These are the places where reading the scene's objects gives the wrong picture of the game. They come from reading the mountain
-scene (`level1`) of this build against the running game's behaviour and an earlier exporter's results. :inferred{games="sledding"}
+scene (`level1`) and have not been rechecked. :inferred{games="sledding"}
 
 | Trap | What the data holds | What the game does | Confidence |
 |---|---|---|---|
@@ -42,14 +42,13 @@ scene (`level1`) of this build against the running game's behaviour and an earli
 - **PlayerSettings layout.** The AssetRipper type tree package shipped in UnityPy 1.25.4 has no 6000.3.12f1 entry; its
   6000.3.11f1 layout for `PlayerSettings` is 4 bytes short of the 940-byte object ([type trees](/engines/unity/data-model/type-trees/#a-short-layout)).
   :observed{games="sledding"}
-- **Linear base maps.** A Texture2D with `m_ColorSpace` 0 used as a base map must be re-encoded to be seen as in the game
+- **Linear base maps.** A Texture2D with `m_ColorSpace` 0 used as a base map is sampled as linear data, darker than an sRGB base map
   ([textures](/engines/unity/textures/textures/#colour-space-and-normal-maps)). :observed{games="sledding"}
 - **Variable bone counts.** 21 skinned meshes store more than four influences per vertex, and the game draws them all
   ([skinning](/engines/unity/geometry/skinning-and-blend-shapes/)). :observed{games="sledding"}
 - **Field name families.** Physic material fields are `m_`-prefixed in this build ([type trees](/engines/unity/data-model/type-trees/#field-names-differ-by-version)).
   :proven{games="sledding"}
-- **Additive planes.** Aurora planes use an additive shader on large quads; a renderer that does not blend additively draws
-  them as opaque 3 km slabs. :inferred{games="sledding"}
+- **Additive planes.** Aurora planes are large quads (about 3 km) on an additive shader. :inferred{games="sledding"}
 
 ## The lodge
 

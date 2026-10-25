@@ -67,8 +67,17 @@ The extra `Boundary Fill Light` directional lights of the bedrooms (intensity 0.
 :observed{games="skatebird"}
 
 SkateBIRD's lights carry bake types (`m_Lightmapping`: 4 realtime, 2 baked, 1 mixed). `level1` has ten mixed point lights;
-`level7` has twenty mixed and two baked point lights; every other light measured is realtime. The build ships no baked
-lighting: every scene's lighting data asset is null and there are no lightmap textures. :observed{games="skatebird"}
+`level7` has twenty mixed and two baked point lights; every other light measured is realtime. 
+
+## Lightmaps
+
+A scene's baked lighting is described by its `LightmapSettings` object (class 157): the list of lightmaps (`m_Lightmaps`), the
+lighting data asset (`m_LightingDataAsset`, in newer versions), the light probes (`m_LightProbes`, a `LightProbes` object) and the lightmap mode.
+:sourced[Unity scripting reference] The `LightProbes` object (class 258) is in the shared assets: one in SkateBIRD's `sharedassets0`
+and one in Sledding Game's `sharedassets1`. :observed In every scene read, `m_Lightmaps` is empty and there is no lighting data asset: the ten level
+scenes of SkateBIRD (0 to 7, 12 and 13), both scenes of Sledding Game and PEAK's five loose scenes. :proven{games="skatebird sledding"}
+:observed{games="peak"} The games draw with realtime lighting, reflection probes and ambient probes only, even where lights are
+flagged mixed or baked. :observed
 
 ## Shadow settings by quality level
 

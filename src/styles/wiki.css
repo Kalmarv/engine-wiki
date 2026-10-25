@@ -1,3 +1,8 @@
+/* Reference pages are table-heavy: a wider text column than Starlight's default 45rem. */
+:root {
+  --sl-content-width: 56rem;
+}
+
 /* Confidence colours: one per level, readable on Starlight's dark (default) and light themes. */
 :root {
   --lv-proven: #3fb950;
@@ -181,3 +186,5 @@
 .cov-empty { color: var(--sl-color-gray-4); text-align: center; }
 .cov-missing { font-size: var(--sl-text-sm); }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.engine-pages__desc { color: var(--sl-color-gray-3); }

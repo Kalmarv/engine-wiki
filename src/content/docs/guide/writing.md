@@ -154,8 +154,11 @@ Notes from investigations, code comments and older documents are the raw materia
 
 ```sh
 pnpm install
-pnpm build        # fails on any schema, link, directive or layout error
-pnpm dev          # http://localhost:4321 to read it
+pnpm check                       # every page: frontmatter, links, badges, scopes, layouts (seconds, writes nothing)
+pnpm check src/content/docs/engines/fromsoft     # only these files or folders
+pnpm build                       # the whole site, as it deploys
+pnpm dev                         # http://localhost:4321 to read it
 ```
 
-A change is ready when `pnpm build` passes and the page reads well in the browser.
+A change is ready when `pnpm check` and `pnpm build` pass and the page reads well in the browser. `pnpm check` is
+safe to run while others edit the same checkout; `pnpm build` is not (one at a time).

@@ -31,6 +31,9 @@ const group = (label, directory, collapsed = false) =>
 export default defineConfig({
   site,
   base,
+  // Several writers building in one checkout at once each give their own output and cache folders.
+  ...(process.env.WIKI_OUT ? { outDir: process.env.WIKI_OUT } : {}),
+  ...(process.env.WIKI_CACHE ? { cacheDir: process.env.WIKI_CACHE } : {}),
   trailingSlash: 'always',
   markdown: {
     processor: satteri({ mdastPlugins: [wikiMarkdown({ base })] }),

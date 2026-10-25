@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "check": "node scripts/check.mjs"
   },
   "engines": {
     "node": ">=24.22.1"
@@ -14,7 +15,8 @@
     "@astrojs/markdown-satteri": "0.4.5",
     "@astrojs/starlight": "0.42.7",
     "astro": "7.4.2",
-    "js-yaml": "^4.3.2"
+    "js-yaml": "^4.3.2",
+    "satteri": "0.10.5"
   },
   "packageManager": "pnpm@10.5.2"
 }

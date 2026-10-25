@@ -46,7 +46,3 @@ its files, how it hashes archive paths, which keys open its archives) are each g
 | Event scripts (EMEVD) | 64-bit little-endian layout, version `0xCD` | the same layout | :proven |
 
 Each row is described on the system page it belongs to; the archive rows in [BHD5 and BDT archives](/engines/fromsoft/archives/bhd5-bdt/).
-
-## Systems
-
-- **Archives and files:** [BHD5 and BDT archives](/engines/fromsoft/archives/bhd5-bdt/), [DCX envelopes](/engines/fromsoft/archives/dcx/).

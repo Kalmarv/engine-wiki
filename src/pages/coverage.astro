@@ -73,6 +73,7 @@ const engineBlocks = engines
   .filter((b) => b.rows.length);
 const empty = engines.filter((e) => !engineBlocks.some((b) => b.e.id === e.id));
 const firstPage = (c) => [...c.pages].sort()[0];
+const hubs = new Set(docs.filter((d) => d.id.startsWith('games/')).map((d) => d.id.slice('games/'.length)));
 ---
 
 <StarlightPage frontmatter={{ title: 'Coverage', description: 'What the wiki knows, per engine, system and game, and how surely.', tableOfContents: false }}>
@@ -93,7 +94,7 @@ const firstPage = (c) => [...c.pages].sort()[0];
           const n = sum(t);
           return (
             <tr id={g.id}>
-              <td>{g.name}</td>
+              <td>{hubs.has(g.id) ? <a href={`${base}/games/${g.id}/`}>{g.name}</a> : g.name}</td>
               <td><a href={`${base}/engines/${g.engine}/`}>{engines.find((e) => e.id === g.engine).name}</a></td>
               <td class="num">{n || '—'}</td>
               <td>{n > 0 ? <span class="bar wide">{segs(t).map((s) => <span class={`seg lv-${s.id}`} style={`flex:${s.n}`} title={`${s.label}: ${s.n}`} />)}</span> : <span class="muted">nothing written yet</span>}</td>

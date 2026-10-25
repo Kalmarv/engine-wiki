@@ -1,7 +1,9 @@
 ---
 // Starlight's Markdown content, with the games a page applies to above it and its sources and implementations below.
+// An engine's overview also lists the engine's pages by system, so that list is never kept by hand.
 import Default from '@astrojs/starlight/components/MarkdownContent.astro';
-import { gameById, engineById, systemById } from '../lib/registry.mjs';
+import { getCollection } from 'astro:content';
+import { gameById, engineById, systemById, systems } from '../lib/registry.mjs';
 import { pageMeta } from '../lib/page-meta.mjs';
 
 const route = Astro.locals.starlightRoute;
@@ -10,6 +12,16 @@ const isDoc = entry && entry.data.template !== 'splash';
 const meta = isDoc ? pageMeta(entry) : null;
 const { sources = [], implementations = [] } = isDoc ? entry.data : {};
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const isEngineOverview = meta?.engine && entry.id === `engines/${meta.engine}`;
+const enginePages = isEngineOverview
+  ? (await getCollection('docs', (e) => e.id.startsWith(`engines/${meta.engine}/`)))
+      .map((e) => ({ e, m: pageMeta(e) }))
+      .sort((a, b) => a.e.data.title.localeCompare(b.e.data.title))
+  : [];
+const bySystem = systems
+  .map((s) => ({ s, pages: enginePages.filter((p) => p.m.system === s.id) }))
+  .filter((g) => g.pages.length);
 ---
 
 {
@@ -34,7 +46,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </div>
   )
 }
-<Default><slot /></Default>
+<Default>
+  <slot />
+  {
+    bySystem.length > 0 && (
+      <section class="engine-pages">
+        <h2 id="pages">Pages</h2>
+        {bySystem.map(({ s, pages }) => (
+          <>
+            <h3 id={`system-${s.id}`}>{s.name}</h3>
+            <ul>
+              {pages.map(({ e }) => (
+                <li>
+                  <a href={`${base}/${e.id}/`}>{e.data.title}</a>
+                  {e.data.description && <span class="engine-pages__desc"> — {e.data.description}</span>}
+                </li>
+              ))}
+            </ul>
+          </>
+        ))}
+      </section>
+    )
+  }
+</Default>
 {
   (sources.length > 0 || implementations.length > 0) && (
     <footer class="page-refs sl-markdown-content">

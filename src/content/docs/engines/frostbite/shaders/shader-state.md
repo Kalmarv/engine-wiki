@@ -84,8 +84,14 @@ id and GUID pointer at `0` and `8`, followed by its compute GUID at `0x10`. The 
 
 A stock-data census counts 20,429 CompiledBytecode resource entries across twelve TOCs. All embedded containers
 have DXIL chunks; eight entries in globals contain two `DXBC` signatures and the remainder contain one. The
-wrapper begins `u16 6, u16 2` and contains an `RC2S` block at `0x20`; observed DXBC starts range from 88 to 294
+ordinary wrapper begins `u16 6, u16 2` and contains an `RC2S` block at `0x20`; observed DXBC starts range from 88 to 294
 bytes. Trailing wrapper data is common. :observed
+
+Two-container ray-tracing wrappers use `RPTR` at `0x20`. The embedded DXBC length is stored at container `+24`;
+container bytes and surrounding wrapper bytes are separate extents. :observed
+
+Register mappings and vertex-input structures are described under
+[bindings and input layouts](/engines/frostbite/shaders/bindings-and-input-layouts/).
 
 ReSkate's map merge keeps base programs and does not accept map-supplied shader bytecode. Studio's private
 `vertex_blend` program is therefore subject to loader behaviour beyond a valid container layout.

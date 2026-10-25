@@ -76,3 +76,11 @@ bounds, which can change [overlay draw order](/engines/frostbite/effects/decals-
 
 The emission path and GI limits are detailed under [lighting](/engines/frostbite/lighting/lighting-and-time-of-day/);
 collision grouping has separate [thresholds](/engines/frostbite/collision/physics-and-grinds/).
+
+Measured compiler memory grows at about 0.263 GB per million compiled triangles: 54.1 million uses 14.1 GB,
+and 73.0 million uses 19.2 GB. These are observations of that input family, not a hard triangle-format limit.
+One measured tile spends about half its 142-second compile in packaging. :observed
+
+Two compiles of one export differ in 201,352 of 506,104 manifest rows because identities are regenerated.
+Raw binary differences between such compiles therefore do not independently demonstrate changed source content.
+:observed

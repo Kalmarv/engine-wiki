@@ -61,6 +61,32 @@ the previous archive identifier, flag `1` supplies a compact four-byte identifie
 an eight-byte identifier. Offsets and stored lengths are big-endian 32-bit integers. :observed
 
 ```layout
+title: TOC bundle record
+size: 16
+note: Big-endian; table starts at the bundle record table offset.
+fields:
+  - {at: 0, size: 4, type: u32, name: name offset, level: observed, note: Bit offset for Huffman data; byte offset for plain names.}
+  - {at: 4, size: 4, type: u32, name: region size and flags, level: observed, note: "Low 30 bits are size; upper two bits equal one for the measured inline regions."}
+  - {at: 8, size: 8, type: u64, name: region offset, level: observed}
+```
+
+```layout
+title: Bundle region header
+size: 36
+note: Big-endian; offsets are relative to the region start.
+fields:
+  - {at: 0, size: 4, type: u32, name: inline manifest offset, level: observed}
+  - {at: 4, size: 4, type: u32, name: inline manifest size, level: observed}
+  - {at: 8, size: 4, type: u32, name: file flags offset, level: observed}
+  - {at: 12, size: 4, type: u32, name: file count, level: observed}
+  - {at: 16, size: 4, type: u32, name: file table offset, level: observed}
+  - {at: 20, size: 4, type: u32, name: repeated table offset, level: observed}
+  - {at: 24, size: 4, type: u32, name: repeated table offset, level: observed}
+  - {at: 28, size: 4, type: u32, name: unknown, level: unknown, note: Zero in measured Studio output.}
+  - {at: 32, size: 4, type: u32, name: repeated file count, level: observed}
+```
+
+```layout
 title: Extended archive identifier
 size: 8
 note: Big-endian integer; bit ranges are described in the notes.

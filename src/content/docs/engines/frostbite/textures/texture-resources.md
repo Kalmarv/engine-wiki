@@ -30,7 +30,9 @@ fields:
   - {at: 28, size: 2, type: u16, name: slices, level: observed}
   - {at: 30, size: 1, type: u8, name: mip count, level: observed}
   - {at: 31, size: 1, type: u8, name: first mip, level: sourced}
-  - {at: 32, size: 8, type: bytes, name: unknown, level: unknown}
+  - {at: 32, size: 1, type: u8, name: unknown, level: unknown, note: Zero in most measured items.toc textures whose first mip is zero.}
+  - {at: 33, size: 1, type: u8, name: repeated mip count, level: observed, note: Matches level count in the measured items.toc texture census.}
+  - {at: 34, size: 6, type: bytes, name: unknown, level: unknown}
   - {at: 40, size: 16, type: GUID, name: pixel chunk GUID, level: observed}
   - {at: 56, size: 60, type: "u32[15]", name: mip byte sizes, level: observed}
   - {at: 116, size: 4, type: u32, name: chunk size, level: observed}
@@ -54,6 +56,16 @@ Arrays and cubes store all images of one mip together, followed by all images of
 comparison validates this arrangement on 559 decodable layered textures. Their chunk size is
 `sum(mip_sizes) * layer_count`. The nine measured volume textures have one mip; its size describes the whole
 volume, including a `128³` BC7 texture occupying 2,097,152 bytes. :observed
+
+When `first_mip > 0`, the bundle manifest can describe only the lower-resolution tail of a chunk, at a logical
+offset corresponding to earlier mip bytes. The TOC chunk table locates the whole mip chain, including all images.
+Treating the manifest tail as a complete texture gives a size mismatch rather than evidence of corrupt pixels.
+:observed
+
+Across 987 texture references from fifteen bundles, the depot reference's second GUID resolves an EBX
+TextureAsset or TextureArrayAsset and its Resource field resolves a Texture resource. Only 353 of those
+assets/resources are in the material's own bundle; 634 are found in other install bundles. The streamable
+texture-set bytes contain neither the resource id nor the referenced GUID in that sample. :observed
 
 All 5,112 normal textures in a measured stock material census use BC7; masks use BC1 or BC3. This is a content
 measurement, not a requirement that a normal map use BC7. :observed

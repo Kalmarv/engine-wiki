@@ -48,8 +48,6 @@ The mountain scene has 151,088 objects, among them 18,069 mesh renderers, 2,507 
   :proven{games="sledding"}
 - **Networking.** FishNet with Epic Online Services and Dissonance voice ([networking](/engines/unity/runtime/networking/)).
   :observed{games="sledding"}
-- **Texture transcoding.** Basis Universal output has two format traps ([Basis and KTX2](/engines/unity/textures/basis-ktx2/)).
-  :observed{games="sledding"}
 
 ## Layout of the store package
 

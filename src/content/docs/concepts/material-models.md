@@ -17,6 +17,8 @@ register need not identify the same thing. Each row links to the page that state
 | Unity / documented players | Material objects reference Shader objects and store named textures, scales, offsets, floats and colours | Keywords and the supported subshader/pass determine programs; pass state and material properties control blending and culling | [Materials](/engines/unity/materials/materials/), [draw keywords](/engines/unity/shaders/draw-keywords/) |
 | Insomniac / Sunset Overdrive | Model material entries store `.material` path and name offsets | The submesh material-index interpretation follows ALERT and remains inferred in the model layout | [Model materials](/engines/insomniac/geometry/model/) |
 | SEGA Ninja / SA2B | Ginja mesh parameters express GX state, persisting between meshes and from opaque into translucent lists | VertexDiffuse selects vertex colour versus the DiffuseColor register; texture tile words select per-axis wrapping | [Ginja material state](/engines/ninja/geometry/landtables-and-models/) |
+| MonoGame / STUNTBOOST | Level glTFs contain bake, physics and prop materials; every stored material has `OPAQUE` alpha mode | Bake materials bind their base-colour atlas and use the specular-colour texture for a direct-light mask. MGFX tables map parameters to samplers and constant-buffer offsets | [Level materials](/engines/monogame/materials/level-materials/), [baked lighting](/engines/monogame/lighting/baked-lighting/), [MGFX bindings](/engines/monogame/shaders/mgfx-effects/) |
+| Unreal / MECCHA CHAMELEON custom-map imports | Interchange imports glTF materials as material instances of a chosen parent | This describes the documented import route; the game's cooked material layouts and bindings are not established | [Custom-map import](/engines/unreal/mod-loading/custom-maps/), [asset-format scope](/engines/unreal/) |
 
 ## Texture identity and register identity
 
@@ -25,6 +27,10 @@ register 7. Anvil likewise distinguishes the template's shader register from the
 ForzaTech, some different parameter hashes even have the same displayed name, and shader maps select the active hash.
 See [FLVER logical slots](/engines/fromsoft/materials/flver-bindings/), [Anvil selectors](/engines/anvil/materials/material/)
 and [ForzaTech parameter identities](/engines/forzatech/materials/materialbin/).
+
+STUNTBOOST's stored `OPAQUE` material mode does not determine every node's draw batch. Its `Transparent(a)` call
+multiplies the shader colour by `a`; only `a < 1` enters the back-to-front batch, while `a >= 1` draws immediately as
+opaque. See [transparent nodes](/engines/monogame/materials/level-materials/).
 
 ## Layering is shader-specific
 

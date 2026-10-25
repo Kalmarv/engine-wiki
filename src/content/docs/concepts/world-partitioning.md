@@ -19,6 +19,8 @@ that states it, with its confidence.
 | Unity / SkateBIRD | Each playable scene is a self-contained level; Transforms link a flat object list into a hierarchy | Scenes refer to shared asset files instead of embedding their materials and textures | [Scenes](/engines/unity/data-model/scenes-and-hierarchy/), [file references](/engines/unity/archives/serialized-files/) |
 | Unity / PEAK | Build 3.0.0 has 208 generated scenes in seven level bundles plus loose player scenes | Earlier 2.6.b instead ships a player-data bundle; its exact contents beside the levels are not established | [Level bundles](/engines/unity/archives/unityfs-bundles/) |
 | SEGA Ninja / SA2B | A stage module can contain several landtables listing placed geometry; SET files supply stage-object placements | Stage code also draws sky and background models outside the landtable | [Landtables](/engines/ninja/geometry/landtables-and-models/), [SET placement](/engines/ninja/world/set-files/) |
+| MonoGame / STUNTBOOST | Levels comprise XNB-wrapped glTF parts, with level, room and skybox roles; a JSON sidecar supplies the part count | Level and room are separate bake groups; the skybox scene supplies a cubemap. These are documented part roles, not an established streaming-cell hierarchy | [Levels and parts](/engines/monogame/world/levels/) |
+| Unreal / MECCHA CHAMELEON custom maps | A content-only plugin contains one World Partition level | The map kit turns streaming off and uses stock StaticMeshActors and lights; shipped-game level internals are not described | [Custom-map level](/engines/unreal/mod-loading/custom-maps/), [asset-format scope](/engines/unreal/) |
 
 ## Membership is broader than an origin
 

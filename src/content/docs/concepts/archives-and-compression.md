@@ -18,6 +18,8 @@ page that states it, with its confidence.
 | Insomniac / Sunset Overdrive | A central `toc` maps 32-bit asset ids to copies in twenty archives; assets contain DAT1 containers | The toc uses zlib; archives are plain concatenations. All measured zones are individually LZ4-compressed | [Archive index](/engines/insomniac/archives/toc-and-archives/), [zones](/engines/insomniac/world/zone/) |
 | SEGA Ninja / SA2B | Stage data lives in relocatable REL modules; Chao stages can add a PRS wrapper | SA Tools loads PRS where flagged, then SaCompGC, then applies REL fixups. PRS also wraps GVM textures | [Stage modules](/engines/ninja/archives/stage-modules/) |
 | Unity / documented players | Serialized files hold object tables; UnityFS bundles hold files across compressed blocks. SkateBIRD uses loose files, Sledding adds Addressables, Big Walk packs its player data | Measured UnityFS blocks use LZ4HC or stored bytes; the documented flag table also names LZMA, LZ4 and LZHAM | [Serialized files](/engines/unity/archives/serialized-files/), [UnityFS](/engines/unity/archives/unityfs-bundles/) |
+| MonoGame / STUNTBOOST | XNB version 5 wraps individual assets with a type-reader table; game-specific readers hold glTF JSON, buffers and derived collision | All 1,873 shipped XNB files are uncompressed. MonoGame documents LZ4 and LZX compression flags, neither present in this install | [XNB containers](/engines/monogame/archives/xnb-containers/) |
+| Unreal / MECCHA CHAMELEON | IoStore pairs a `.utoc` index with `.ucas` data; the game also ships a version-11 pak and a separate global container | Main IoStore data uses Oodle or stored blocks in a 65,536-byte address-space division; the global container is stored. Neither IoStore container is encrypted or signed; the pak's exact contents are not established | [IoStore and pak files](/engines/unreal/archives/iostore-containers/) |
 
 ## Compression belongs to a layer
 
@@ -25,6 +27,10 @@ FromSoftware's [DCX envelope](/engines/fromsoft/archives/dcx/) wraps one file, w
 Frostbite [CAS blocks](/engines/frostbite/archives/cas/) instead reconstruct an asset by concatenating decoded blocks.
 UnityFS file offsets refer to the concatenated decoded data, independently of compressed block boundaries; see
 [UnityFS directories](/engines/unity/archives/unityfs-bundles/).
+
+Unreal's IoStore chunk offsets likewise address uncompressed data, with a separate table locating compressed blocks in
+the `.ucas`. Its compression-method table names `Oodle`; that page does not identify a more specific Oodle codec.
+See [IoStore blocks](/engines/unreal/archives/iostore-containers/).
 
 ForzaTech's track geometry and textures are readable without the key needed for its TFIT-protected database and
 settings. Its localized string tables are ordinary DEFLATE ZIPs. Encryption therefore does not characterize every

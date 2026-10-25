@@ -23,11 +23,11 @@ Tex1's forward shader establishes the roughness convention: it clamps the stored
 
 | Template | Class | Checked class-writing permutations | Confidence |
 |---|---:|---:|---|
-| Tex1_TerrainBlend | 3 | 20 | :observed[every control-flow path] |
-| Clutters_Grass | 4 | 8 | :observed[every control-flow path] |
-| Tex1_Leaves | 5 | 32 | :observed[every control-flow path] |
-| Bark | 5 | 8 | :observed[every control-flow path] |
-| Tex1_Rocks | 5 | 8 | :observed[every control-flow path] |
+| Tex1_TerrainBlend | 3 | 20 | :proven[every class-writing permutation and control-flow path] |
+| Clutters_Grass | 4 | 8 | :proven[every class-writing permutation and control-flow path] |
+| Tex1_Leaves | 5 | 32 | :proven[every class-writing permutation and control-flow path] |
+| Bark | 5 | 8 | :proven[every class-writing permutation and control-flow path] |
+| Tex1_Rocks | 5 | 8 | :proven[every class-writing permutation and control-flow path] |
 
 These programs do not write class 1; the deferred non-metal branch uses F0 .04 rather than reading their o1.w as metalness. TerrainBlend's class-writing permutations never read its material property labelled Metalness. Other permutations with UAV atomics belong to the fragment-recording pass and do not establish an alternative shading class for an ordinary G-buffer draw. :observed[all listed class writers and consumer]
 

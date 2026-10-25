@@ -13,7 +13,7 @@ Riders Republic uses three distinct water geometries: distant FakeWater boxes or
 
 FakeWaterMeshComponent appears on 512 stored entities, representing 256 base/patch tile identities. Each references a FakeWaterComponentChunk and embeds a FakeWaterMeshInstance, bounds, a Visual tail and three vec4 values describing centre/minimum/maximum. Its instance-matrix count is zero on all 512 bodies. Seventy bodies also hold a small half-float triangle mesh. :proven[all 512 component bodies]
 
-The boxes form 1024-metre world tiles in a 16×16 grid. Every Entity rotation is identity, and Entity x/y translation agrees with the box centre to one metre; the half-float vertices lie within their world boxes. These are world positions, so applying the Entity translation again double-translates them. Half precision reaches four-metre steps at coordinate magnitudes 4096–8192. :proven[all 512 transform/box checks] :observed[70 mesh bounds]
+The boxes form 1024-metre world tiles in a 16×16 grid. Every Entity rotation is identity, and Entity x/y translation agrees with the box centre to one metre; the half-float vertices lie within their world boxes. These are world positions, so applying the Entity translation again double-translates them. Half precision reaches four-metre steps at coordinate magnitudes 4096–8192. :proven[all 512 transform/box checks] :proven[all 70 stored FakeWater mesh bounds]
 
 ## Rivers and cascades
 
@@ -32,13 +32,14 @@ Thirty-six WaterComponent bodies parse completely; 35 have atlases. Their WaterM
 ```layout
 title: WaterPatchDesc
 size: 49
+note: All 2,062 patches of the 36 stored WaterComponents are consumed exactly.
 fields:
-  - {at: 0, size: 1, type: u8, name: pointer byte, value: 0, level: observed}
-  - {at: 1, size: 8, type: u64, name: object identity, level: observed}
-  - {at: 9, size: 4, type: u32, name: WaterPatchDesc class, value: "0x6FBE4670", level: observed}
+  - {at: 0, size: 1, type: u8, name: pointer byte, value: 0, level: proven}
+  - {at: 1, size: 8, type: u64, name: object identity, level: proven}
+  - {at: 9, size: 4, type: u32, name: WaterPatchDesc class, value: "0x6FBE4670", level: proven}
   - {at: 13, size: 12, type: float3, name: world minimum corner and water level, level: proven}
   - {at: 25, size: 4, type: bytes, name: stored bytes, level: unknown, note: "00 00 01 02 in the examined patch profile"}
-  - {at: 29, size: 16, type: float4, name: atlas rectangle, level: observed, note: "u0 v0 u1 v1"}
+  - {at: 29, size: 16, type: float4, name: atlas rectangle, level: proven, note: "u0 v0 u1 v1"}
   - {at: 45, size: 4, type: u32, name: level, level: proven, note: "square side = 512 >> level metres"}
 ```
 
@@ -50,7 +51,7 @@ All 2,062 patches match a quadtree-node minimum corner and `512>>level` side. Le
 | Params | RGB encoded water type `sqrt(p/(40,100,40))`; A coverage | :proven[executed real-patch shader] |
 | LocalProfile | RG ripple/shore direction, B magnitude, A shading class | :observed[atlas joins] :proven[class passthrough execution] |
 
-LocalProfile alpha stores byte 48, class 6, on 20 lakes and byte 80, class 10, on thirteen lakes without flow data. Two atlas sets have no water pixels. Atlas colours require the established BGRA byte order of format 0. :observed[all 35 atlas statistics]
+LocalProfile alpha stores byte 48, class 6, on 20 lakes and byte 80, class 10, on thirteen lakes without flow data. Two atlas sets have no water pixels. Atlas colours require the established BGRA byte order of format 0. :proven[all 35 atlas sets]
 
 ## Lake shader and lighting
 

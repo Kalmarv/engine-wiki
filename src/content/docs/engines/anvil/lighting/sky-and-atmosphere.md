@@ -15,15 +15,15 @@ The visible sky is evaluated from precomputed scattering data and controller val
 
 | Resource | Stored role | Confidence |
 |---|---|---|
-| AmbianceAndTimeOfDayPreset | 29-byte body: byte 1, nine-byte Season link, ten-byte Forecast reference, hour f32, angle f32 and one byte | :observed[290 entries] |
-| Season | Look name, controller references, WorldAmbiance and parent | :observed[75 entries] |
+| AmbianceAndTimeOfDayPreset | 29-byte body: byte 1, nine-byte Season link, ten-byte Forecast reference, hour f32, angle f32 and one byte | :proven[all 290 preset bodies] |
+| Season | Look name, controller references, WorldAmbiance and parent | :observed[references across 75 season entries] |
 | ForecastPreset | Byte and twelve floats; named examples correlate with snow, wetness, dust, fog and cirrus | :observed[framing] :inferred[several float meanings] |
-| WorldAmbiance | LayeredSky, overlay, flare images, environment cube and rain/snow/dust textures | :observed[110 resources] |
+| WorldAmbiance | LayeredSky, overlay, flare images, environment cube and rain/snow/dust textures | :observed[reference positions across 110 resources] |
 | LayeredSky | Sun/moon parameters, sky textures, cloud parameters and scattering keyframes | :proven[48 complete registry-ordered bodies] |
 
 The preset's second float is an angle in degrees; its precise runtime meaning is unresolved. It must not be equated with the sun azimuth solely from its range. :observed[values] :unknown[angle role]
 
-Property controllers address fields by paths of CRC-32 names and store float, float4 or byte tracks. Packed track headers include the first key's time in their upper half. A track reader must follow the nested property path and track length, rather than searching floating-point payloads for coincidental class IDs. :observed[registry-ordered controller bodies]
+Property controllers address fields by paths of CRC-32 names and store float, float4 or byte tracks. Packed track headers include the first key's time in their upper half. The registry-ordered read covers every one of the 20,741 entries across all 140 time-of-day and 63 weather-controller bodies, leaving exactly each entry's 13-byte trailer, or five bytes on the last entry. :proven[all 203 controller bodies]
 
 ## LayeredSky profiles
 
@@ -32,18 +32,19 @@ Forty-seven LayeredSky bodies are 3,442,710 bytes with 24 hourly keyframes; Whit
 ```layout
 title: Scattering keyframe prefix
 size: 42
+note: The registry-ordered read consumes all 48 LayeredSky bodies exactly.
 fields:
-  - {at: 0, size: 8, type: u64, name: object identity, level: observed}
-  - {at: 8, size: 4, type: u32, name: keyframe class, value: "0x5CDF6DE9", level: observed}
-  - {at: 12, size: 1, type: u8, name: managed byte, level: observed}
+  - {at: 0, size: 8, type: u64, name: object identity, level: proven}
+  - {at: 8, size: 4, type: u32, name: keyframe class, value: "0x5CDF6DE9", level: proven}
+  - {at: 12, size: 1, type: u8, name: managed byte, level: proven}
   - {at: 13, size: 4, type: f32, name: TimeOfDay, level: proven}
-  - {at: 17, size: 4, type: u32, name: LUTCRC, level: observed}
-  - {at: 21, size: 4, type: u32, name: TransmittanceWidth, value: 256, level: observed}
-  - {at: 25, size: 4, type: u32, name: TransmittanceHeight, value: 64, level: observed}
-  - {at: 29, size: 4, type: u32, name: InscatterWidth, value: 32, level: observed}
-  - {at: 33, size: 4, type: u32, name: InscatterHeight, value: 32, level: observed}
-  - {at: 37, size: 4, type: u32, name: InscatterDepth, value: 16, level: observed}
-  - {at: 41, size: 1, type: u8, name: IsDataGenerated, value: 1, level: observed}
+  - {at: 17, size: 4, type: u32, name: LUTCRC, level: proven}
+  - {at: 21, size: 4, type: u32, name: TransmittanceWidth, value: 256, level: proven}
+  - {at: 25, size: 4, type: u32, name: TransmittanceHeight, value: 64, level: proven}
+  - {at: 29, size: 4, type: u32, name: InscatterWidth, value: 32, level: proven}
+  - {at: 33, size: 4, type: u32, name: InscatterHeight, value: 32, level: proven}
+  - {at: 37, size: 4, type: u32, name: InscatterDepth, value: 16, level: proven}
+  - {at: 41, size: 1, type: u8, name: IsDataGenerated, value: 1, level: proven}
 ```
 
 Each 143,422-byte keyframe then contains five counted buffers. Their dimensions and sizes account for its entire remaining body. :proven[all sky keyframes]

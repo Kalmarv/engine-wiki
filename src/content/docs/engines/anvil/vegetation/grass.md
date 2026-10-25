@@ -18,27 +18,27 @@ The only examined GrassPatternLibrary is 30,247 bytes and closes exactly: byte 1
 ```layout
 title: GrassPatternElement
 size: 94
-note: Includes the twelve-byte object header.
+note: Includes the twelve-byte object header; all 218 rules of the complete installed library are consumed exactly.
 fields:
-  - {at: 0, size: 8, type: u64, name: object identity, level: observed}
-  - {at: 8, size: 4, type: u32, name: GrassPatternElement class, value: "0xA6FC073D", level: observed}
-  - {at: 12, size: 2, type: u16, name: GrassModelIndex, level: observed}
-  - {at: 14, size: 1, type: u8, name: TilingLogCount, level: observed}
-  - {at: 15, size: 4, type: f32, name: Density, level: observed}
-  - {at: 19, size: 4, type: f32, name: TiltFactor, level: observed}
-  - {at: 23, size: 1, type: u8, name: ScalingEnabled, level: observed}
-  - {at: 24, size: 4, type: f32, name: ScaleA, level: observed}
-  - {at: 28, size: 4, type: f32, name: ScaleB, level: observed}
-  - {at: 32, size: 1, type: u8, name: HeightScalingEnabled, level: observed}
-  - {at: 33, size: 4, type: f32, name: HeightScaleA, level: observed}
-  - {at: 37, size: 4, type: f32, name: HeightScaleB, level: observed}
+  - {at: 0, size: 8, type: u64, name: object identity, level: proven}
+  - {at: 8, size: 4, type: u32, name: GrassPatternElement class, value: "0xA6FC073D", level: proven}
+  - {at: 12, size: 2, type: u16, name: GrassModelIndex, level: proven}
+  - {at: 14, size: 1, type: u8, name: TilingLogCount, level: proven}
+  - {at: 15, size: 4, type: f32, name: Density, level: proven}
+  - {at: 19, size: 4, type: f32, name: TiltFactor, level: proven}
+  - {at: 23, size: 1, type: u8, name: ScalingEnabled, level: proven}
+  - {at: 24, size: 4, type: f32, name: ScaleA, level: proven}
+  - {at: 28, size: 4, type: f32, name: ScaleB, level: proven}
+  - {at: 32, size: 1, type: u8, name: HeightScalingEnabled, level: proven}
+  - {at: 33, size: 4, type: f32, name: HeightScaleA, level: proven}
+  - {at: 37, size: 4, type: f32, name: HeightScaleB, level: proven}
   - {at: 41, size: 4, type: f32, name: unnamed float, level: unknown, note: "5 on 145 rules; 0 on 66; also 2.5"}
   - {at: 45, size: 49, type: bytes, name: remaining fields, level: unknown, note: "includes byte 100, a u16, ten floats and six final bytes; semantics not established"}
 ```
 
-Model settings include ZOffset, terrain-normal following, softness, normal bend, translucency and impostor controls. Their trailing LOD table commonly stores `00 01 02 03 03` and distance triples 5/10/20, 10/20/40 or 20/40/80. The interpretation of the latter as metre distances follows names and values. :observed[46 settings objects] :inferred[distance units]
+Model settings include ZOffset, terrain-normal following, softness, normal bend, translucency and impostor controls. Their trailing LOD table commonly stores `00 01 02 03 03` and distance triples 5/10/20, 10/20/40 or 20/40/80. The interpretation of the latter as metre distances follows names and values. :proven[all 46 settings objects] :inferred[distance units]
 
-Each model Entity directly names a GrassMesh_Model with three ranges carrying the same material, representing model LODs rather than three independently chosen materials. The material family is Clutters_Grass. :observed[46 model/mesh joins]
+Each model Entity directly names a GrassMesh_Model with three ranges carrying the same material, representing model LODs rather than three independently chosen materials. The material family is Clutters_Grass. :proven[all 46 model/mesh joins]
 
 ## Terrain group and weight
 

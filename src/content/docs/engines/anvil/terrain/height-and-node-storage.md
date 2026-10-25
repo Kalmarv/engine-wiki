@@ -87,15 +87,15 @@ A chunk contains byte 1, u32 body length minus 5, u16 `0xFEED`, u16 tag, nine le
 
 ## Block coding
 
-Blocks 0 and 2–7 start with a little-endian u32 N. Stream A is bytes 4 through N, and B is the remainder. A uses the H.264 CABAC arithmetic mechanism with range 510, 50 contexts initialized to state 0/MPS 0 and the standard LPS/state tables. B supplies big-endian raw bits. Arithmetic reads may run past the nominal A boundary into B, as in the engine decoder. :observed[decoder implementation and exhaustive node invariants]
+Blocks 0 and 2–7 start with a little-endian u32 N. Stream A is bytes 4 through N, and B is the remainder. A uses the H.264 CABAC arithmetic mechanism with range 510, 50 contexts initialized to state 0/MPS 0 and the standard LPS/state tables. B supplies big-endian raw bits. Arithmetic reads may run past the nominal A boundary into B, as in the engine decoder. :proven[all 611,667 coded blocks; raw-bit lengths and independent node invariants]
 
-Rasters start B with chunk length, palette count and palette bytes. Samples traverse an order-8 Hilbert curve, first step +x, clipped to 132×132. A context-8 decision marks uniform chunks; other samples use unary rank lengths, raw suffix bits and a one-based adaptive symbol list. A rank above one swaps with rank/2. :observed[decoder and all-node validation]
+Rasters start B with chunk length, palette count and palette bytes. Samples traverse an order-8 Hilbert curve, first step +x, clipped to 132×132. A context-8 decision marks uniform chunks; other samples use unary rank lengths, raw suffix bits and a one-based adaptive symbol list. A rank above one swaps with rank/2. :proven[all six raster blocks of every one of the 87,381 nodes]
 
 Heights use unary prefix contexts `min(j,15)`, a raw suffix, `v=2^k-1+suffix`, and signed reconstruction `(v+1)/2` for odd v or `-v/2` for even v. Accumulations down the first column, across the first row, vertically for later rows, then horizontally reconstruct the raster. World height is `decoded × 5000 × 2^(8-L-20)`. :observed[engine decoder] :proven[all 87,381 nodes' height-bound and edge checks]
 
 All 611,667 coded blocks decode across the detailed quadtree; palettes, material masks, height bounds, raw-bit lengths and four-sample neighbour strips supply independent invariants. Each tile has a 128-sample core and four samples shared with its +x/+y neighbours. :proven[whole-node validation]
 
-The BC tiles decompress to 8,712 bytes: 1,089 eight-byte blocks, with all endpoint portions followed by all index portions. Re-interleaving these planes yields ordinary BC1 or BC4 blocks. :observed
+The BC tiles decompress to 8,712 bytes: 1,089 eight-byte blocks, with all endpoint portions followed by all index portions. Re-interleaving these planes yields ordinary BC1 or BC4 blocks. Both blocks 1 and 8 have the expected decoded size on every one of the 87,381 nodes. :proven[all 174,762 BC tile blocks]
 
 The terrain's physical sample origin is offset by (2,2) in the 132×132 tile; this differs from treating the first stored sample as the visible 128×128 core's corner. :observed[physics builder and sampled surfaces]
 

@@ -18,10 +18,10 @@ title: Material body prefix
 size: variable
 note: Little-endian; after the resource identity and class header.
 fields:
-  - {at: 0, size: 1, type: u8, name: managed byte, value: 1, level: observed}
-  - {at: 1, size: 10, type: reference, name: MaterialTemplate, level: observed}
-  - {at: 11, size: 10, type: reference, name: TextureSet, level: observed}
-  - {at: 21, size: 102, type: bytes, name: material prelude, level: observed, note: "includes render flags; individual fields below"}
+  - {at: 0, size: 1, type: u8, name: managed byte, value: 1, level: proven}
+  - {at: 1, size: 10, type: reference, name: MaterialTemplate, level: proven}
+  - {at: 11, size: 10, type: reference, name: TextureSet, level: proven}
+  - {at: 21, size: 102, type: bytes, name: material prelude, level: proven, note: "includes render flags; individual fields below"}
   - {at: 123, size: 4, type: u32, name: property count, level: proven}
   - {at: 127, size: variable, type: "Property[]", name: properties, level: proven, note: "the last property ends the body on all 13,579 entries"}
 ```
@@ -56,18 +56,18 @@ title: TextureParameter
 size: 37
 note: Starts at the inner repeated class marker; the Material payload also has an eight-byte object identity before it.
 fields:
-  - {at: 0, size: 4, type: u32, name: TextureParameter class, value: "0x7D08460D", level: observed}
+  - {at: 0, size: 4, type: u32, name: TextureParameter class, value: "0x7D08460D", level: proven}
   - {at: 4, size: 1, type: u8, name: stored byte, level: unknown, note: "0 in the measured records"}
   - {at: 5, size: 4, type: u32, name: TextureSpecificationMethod, level: observed, note: "channel; distinct from the shader texture register"}
   - {at: 9, size: 4, type: u32, name: MapType, level: observed, note: "TextureSet slot"}
   - {at: 13, size: 4, type: u32, name: stored word, level: unknown, note: "0 in the measured records"}
-  - {at: 17, size: 10, type: reference, name: set reference, level: observed}
-  - {at: 27, size: 10, type: reference, name: texture reference, level: observed}
+  - {at: 17, size: 10, type: reference, name: set reference, level: proven}
+  - {at: 27, size: 10, type: reference, name: texture reference, level: proven}
 ```
 
 Template binding records link graph operators. TextureObject operators contain a TextureSelector and SamplerMode; constant operators contain default scalar, integer or vector values; UVTransformOperator contains the default transform. Reading every binding's operator across all templates establishes the stored defaults, independently of whether a Material supplies an override. :proven[all template operators]
 
-The custom texture operator `0x1181BD58` also carries a selector. All 36 such operator objects across 14 template names identify their custom definition as `TextureObject`. Waterfall's height-map selector and the cactus normal-map selector agree with the corresponding TextureSet entries. Treating it as a texture fetch is supported by these joins; the engine's complete resolution routine is not established. :observed[all 36 objects and two content controls] :inferred[custom resolution]
+The custom texture operator `0x1181BD58` also carries a selector. All 36 such operator objects across 14 template names identify their custom definition as `TextureObject`. Waterfall's height-map selector and the cactus normal-map selector agree with the corresponding TextureSet entries. Treating it as a texture fetch is supported by these joins; the engine's complete resolution routine is not established. :proven[all 36 stored custom operators] :observed[two selector/content controls] :inferred[custom resolution]
 
 A data-based resolution model uses a Material property first, the Material's set slot for channel 0 next, then the template's default image for channels 1 or 2. Generic `Texture` labels require the selector's slot/channel as well as the label hash. Null overrides and the engine's final substitute for an unfilled mask remain unresolved; a white mask is consistent with authored tints and AO settings but is not an observed runtime binding. :inferred
 
@@ -85,9 +85,9 @@ The [complete texture-label vocabulary](/engines/anvil/materials/texture-labels/
 | `1 - Diffuse Alpha `, with a trailing space | `0x918FB02B` | :proven |
 | `2 - Normal Map` | `0x443BF980` | :proven |
 | `1 - Albedo (RGB) + Opacity (A)` | `0x463E0755` | :proven |
-| `Texture` | `0x4DDB34EE` | :observed |
+| `Texture` | `0x4DDB34EE` | :proven[complete label join] |
 
-Sixteen template entries have an empty descriptor run rather than a nonempty marker run. They include default/error templates, video, snow-trail, vertex-colour display and FakeForest families. Descriptor counts do not bound binding-record counts. :observed
+Of all 432 stored template entries, sixteen have an empty descriptor run rather than a nonempty marker run. They include default/error templates, video, snow-trail, vertex-colour display and FakeForest families. Descriptor counts do not bound binding-record counts. :proven[all 432 template entries]
 
 ```layout
 title: Template binding record

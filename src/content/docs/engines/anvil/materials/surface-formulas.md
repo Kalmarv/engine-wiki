@@ -73,7 +73,7 @@ AO = qA*(1+OnOffAO*(maskA.b-1)) + qB*(1+OnOffAO*(maskB.b-1))
 
 The material G-buffer's emissive scalar is divided by the exposure texture t23 in the executed emissive families. The ambient lighting path multiplies it by albedo, so a scalar alone is not an absolute radiance or a directly portable luminous intensity. :proven[executed emissive paths] :observed[lighting consumer disassembly]
 
-TextureMap's transfer flag, not a role guessed from its label, selects colour-space treatment. Some normal-labelled BC7 maps carry flag 1 and some albedo-labelled maps carry flag 0. Their exceptions are stored data, not evidence that every normal is linear or every diffuse is sRGB. :observed[all 35,918 texture-property joins]
+TextureMap's transfer flag, not a role guessed from its label, selects colour-space treatment. :observed[runtime resource-format comparisons] In the complete join of all 35,918 stored texture properties, some normal-labelled BC7 maps carry flag 1 and some albedo-labelled maps carry flag 0. Their exceptions are stored data, not evidence that every normal is linear or every diffuse is sRGB. :proven[all 35,918 texture-property joins]
 
 See [specialized materials](/engines/anvil/materials/specialized-surfaces/) for world-space, ice, screen and procedural families, and [G-buffer classes](/engines/anvil/shaders/gbuffer/) for the different meanings of the output channels.
 

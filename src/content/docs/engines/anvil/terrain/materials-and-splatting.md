@@ -29,7 +29,7 @@ fields:
 
 The pixel shader's per-material buffer has 68-byte records; flags at +40, detail scale at +44, inverse scale at +48, slope-normal strength at +52 and slope-normal slice at +56 match the corresponding source material fields. Detail repetition is `globalFactor × materialScale`; the source f32 at body +6 is not read as a repeat distance in this record. :observed[104 runtime/source record matches]
 
-TerrainProceduralSetBank references 132 procedural sets. TerrainProceduralMaterial contains three TerrainMaterial references and no vegetation reference in the 479 examined bodies; procedural terrain recipes therefore are not stored tree or grass position lists. :observed[complete procedural-material body survey]
+TerrainProceduralSetBank references 132 procedural sets. TerrainProceduralMaterial contains three TerrainMaterial references and no vegetation reference in the 479 examined bodies; procedural terrain recipes therefore are not stored tree or grass position lists. :proven[all 479 procedural-material bodies]
 
 ## Near colour and normal
 

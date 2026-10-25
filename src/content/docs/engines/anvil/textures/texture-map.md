@@ -17,28 +17,30 @@ Breakpoint also uses TextureMaps and TextureSets, supports separately stored hig
 
 ## TextureMap header
 
+The complete six-forge header/body census reads 46,338 TextureMaps to their exact body end and refuses 27 of the 46,365 entries. The proven framing below applies to those 46,338 accepted bodies, not to every codec or every mip-chain interpretation. :proven[46,338 read; 27 refused]{games="riders-republic"}
+
 ```layout
 title: TextureMap body header
 games: [riders-republic]
 size: 51
 note: Little-endian; excludes the resource identity and class prefix.
 fields:
-  - {at: 0, size: 1, type: u8, name: managed byte, value: 1, level: observed}
-  - {at: 1, size: 4, type: u32, name: width, level: observed}
-  - {at: 5, size: 4, type: u32, name: height, level: observed}
-  - {at: 9, size: 4, type: u32, name: depth, level: observed}
-  - {at: 13, size: 4, type: u32, name: array size, level: observed}
-  - {at: 17, size: 4, type: u32, name: format code, level: observed}
-  - {at: 21, size: 4, type: u32, name: dimension, level: observed, note: "1 flat; 2 cube; 3 volume"}
+  - {at: 0, size: 1, type: u8, name: managed byte, value: 1, level: proven}
+  - {at: 1, size: 4, type: u32, name: width, level: proven}
+  - {at: 5, size: 4, type: u32, name: height, level: proven}
+  - {at: 9, size: 4, type: u32, name: depth, level: proven}
+  - {at: 13, size: 4, type: u32, name: array size, level: proven}
+  - {at: 17, size: 4, type: u32, name: format code, level: proven}
+  - {at: 21, size: 4, type: u32, name: dimension, level: proven, note: "1 flat; 2 cube; 3 volume"}
   - {at: 25, size: 4, type: u32, name: transfer flag, level: observed, note: "0 linear; 1 requests sRGB treatment for supporting formats"}
-  - {at: 29, size: 4, type: u32, name: mip count, level: observed, note: "zero is a single-level image in 15 measured maps"}
+  - {at: 29, size: 4, type: u32, name: mip count, level: proven, note: "zero is a single-level image in 15 measured maps"}
   - {at: 33, size: 14, type: bytes, name: remaining header fields, level: unknown, note: "retained; meanings not assigned here"}
-  - {at: 47, size: 4, type: u32, name: external mip count r, level: observed}
+  - {at: 47, size: 4, type: u32, name: external mip count r, level: proven}
 ```
 
-The external list uses nine bytes per mip: zero tag byte and u64 identity. The compiled header follows another nine bytes, beginning at `60+9r`. This list uses a different envelope from the ten-byte references inside Materials. :observed{games="riders-republic"}
+The external list uses nine bytes per mip: zero tag byte and u64 identity. The compiled header follows another nine bytes, beginning at `60+9r`. This list uses a different envelope from the ten-byte references inside Materials. :proven[46,338 read; 27 refused]{games="riders-republic"}
 
-The 60-byte compiled header starts with `0x13237FE9` (`CompiledTextureMap`), u32 1, then width, height, depth, array size, mip count, format, dimension and transfer flag. Sixteen more bytes precede its pixel-byte length. The metadata repeats the outer header, and the held pixel span closes the resource body. :observed{games="riders-republic"}
+The 60-byte compiled header starts with `0x13237FE9` (`CompiledTextureMap`), u32 1, then width, height, depth, array size, mip count, format, dimension and transfer flag. Sixteen more bytes precede its pixel-byte length. The metadata repeats the outer header, and the held pixel span closes the resource body. :proven[46,338 read; 27 refused]{games="riders-republic"}
 
 Held levels run largest first from level r to the last mip. Width and height halve per level with a minimum of one. A block-compressed flat level occupies `ceil(width/4)*ceil(height/4)*blockBytes`; uncompressed levels occupy `width*height*pixelBytes`. Two maps declare two mips while their pixels hold a complete ten-level chain, so the declared count alone does not always describe the held bytes. :observed[measured map framing and storage census]{games="riders-republic"}
 

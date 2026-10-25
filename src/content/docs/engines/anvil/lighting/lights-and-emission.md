@@ -7,26 +7,26 @@ implementations:
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/light.rs
 ---
 
-Riders Republic separates punctual light objects from emissive surfaces. The six installed forges contain 32 SpotLight resources and 32 corresponding LightInstance entities, all in WhiteRoom, counting base and patch copies. Open-world lamp fixtures instead use emissive materials; the examined open-world resource and entity scans find no punctual-light objects of the known light classes. :observed[forge and entity class census]
+Riders Republic separates punctual light objects from emissive surfaces. The six installed forges contain 32 SpotLight resources and 32 corresponding LightInstance entities, all in WhiteRoom, counting base and patch copies. Open-world lamp fixtures instead use emissive materials; the examined open-world resource and entity scans find no punctual-light objects of the known light classes. :proven[all six forge indexes and all Entity/EntityGroup class scans]
 
 ## SpotLight storage
 
 ```layout
 title: SpotLight body, selected fields
 size: 328
-note: Body offsets; intervening bytes are not fully interpreted.
+note: Body offsets; fields checked on all 16 base resources and their 16 equal patch copies. Intervening bytes are not fully interpreted.
 fields:
-  - {at: 34, size: 4, type: u32, name: LightColor class, value: "0xA79767ED", level: observed}
-  - {at: 38, size: 16, type: float4, name: colour RGBA, level: observed}
+  - {at: 34, size: 4, type: u32, name: LightColor class, value: "0xA79767ED", level: proven}
+  - {at: 38, size: 16, type: float4, name: colour RGBA, level: proven}
   - {at: 54, size: 4, type: f32, name: intensity-like value, level: inferred, note: "schema label Intensity; stored values reach 3e10"}
   - {at: 58, size: 4, type: f32, name: luminance-like value, level: inferred, note: "schema label Luminance; physical units not established"}
-  - {at: 308, size: 4, type: f32, name: inner cone angle, level: observed, note: "radians"}
-  - {at: 312, size: 4, type: f32, name: outer cone angle, level: observed, note: "radians"}
-  - {at: 320, size: 4, type: f32, name: range, level: observed, note: "2 to 30 metres in the WhiteRoom set"}
+  - {at: 308, size: 4, type: f32, name: inner cone angle, level: proven, note: "radians"}
+  - {at: 312, size: 4, type: f32, name: outer cone angle, level: proven, note: "radians"}
+  - {at: 320, size: 4, type: f32, name: range, level: proven, note: "2 to 30 metres in the WhiteRoom set"}
   - {at: 324, size: 4, type: f32, name: near distance, level: inferred, note: "0.1 or 0.001; ShadowNear in related schemas"}
 ```
 
-The placed light's position and direction come from its Entity transform, while the referenced SpotLight supplies colour and cone values. The 311-byte LightInstance has a managed reference at offset 44 with prefix **`03 01`**, then u64 identity. It is not the null form of a generic Material reference. All 32 identities resolve to SpotLight resources. :observed[all placed WhiteRoom lights]
+The placed light's position and direction come from its Entity transform, while the referenced SpotLight supplies colour and cone values. The 311-byte LightInstance has a managed reference at offset 44 with prefix **`03 01`**, then u64 identity. It is not the null form of a generic Material reference. All 32 identities resolve to SpotLight resources. :proven[all 32 installed LightInstance bodies and reference targets]
 
 The fill light's colour is (1,.891,.560), its two intensity-like values are `5.3e9` and `3.4e7`, cone angles 12 degrees and range 20 metres. Those values do not establish a conversion to lumens, candela or lux. :observed[WhiteRoom fill] :unknown[physical calibration]
 

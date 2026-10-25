@@ -34,6 +34,10 @@ Sekiro commonly stores intensity as a separate `<colour-name>-Intensity` paramet
 fifth colour component. :observed A true Elden Ring SAT boolean uploads word `0x00000001`, not float 1.0's
 `0x3F800000`. Zero-valued booleans cannot distinguish these encodings. :observed{games="elden-ring"}
 
+Stored runtime override payloads are documented separately under
+[MaterialEx action data](/engines/fromsoft/effects/material-events/); that payload layout does not establish its
+complete application order or transition rule. :unknown{games="elden-ring"}
+
 ## Texture groups and centered tiling
 
 The metaparam joins each `Texture2D_N` to a UV group. The corresponding definition parameter is

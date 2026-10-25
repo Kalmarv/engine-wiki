@@ -40,6 +40,35 @@ The community reader constructs the local transform, in row-vector notation, as
 `Scale * RotationX * RotationZ * RotationY * Translation`. A parent index of `-1` marks a root.
 :sourced[SoulsFormatsNEXT]
 
+### Skeleton mappings
+
+For FLVER version `0x2001A`, the skeleton set after the texture table maps hierarchy entries back to nodes.
+The community reader calls the two lists BaseSkeleton and AllSkeletons; the latter includes control and ragdoll
+hierarchies. :sourced[SoulsFormatsNEXT]
+
+```layout
+title: FLVER2 skeleton-set descriptor
+size: 32
+fields:
+  - {at: 0, size: 2, type: i16, name: base skeleton count, level: sourced}
+  - {at: 2, size: 2, type: i16, name: all skeletons count, level: sourced}
+  - {at: 4, size: 4, type: u32, name: base skeleton offset, level: sourced}
+  - {at: 8, size: 4, type: u32, name: all skeletons offset, level: sourced}
+  - {at: 12, size: 20, type: bytes, name: reserved, value: 0, level: observed}
+```
+
+```layout
+title: FLVER2 skeleton mapping entry
+size: 16
+fields:
+  - {at: 0, size: 2, type: i16, name: parent index, level: sourced}
+  - {at: 2, size: 2, type: i16, name: first child index, level: sourced}
+  - {at: 4, size: 2, type: i16, name: next sibling index, level: sourced}
+  - {at: 6, size: 2, type: i16, name: previous sibling index, level: sourced}
+  - {at: 8, size: 4, type: i32, name: node index, level: sourced}
+  - {at: 12, size: 4, type: u32, name: reserved, value: 0, level: observed}
+```
+
 ## Rigid and dynamic data
 
 Static vertices with a stored normal W use that integer to identify their rigid bone, at implicit weight one.
@@ -53,6 +82,10 @@ its largest joint index with nonzero weight is 101. :observed{games="elden-ring"
 Twenty captured c3000 skinned draws bind a 12,288-byte joint buffer: 256 affine matrices of 48 bytes, despite
 the shader declaring only six rows. Reflection's declared array extent is therefore not the bound palette size.
 :observed{games="elden-ring"}
+
+Explicit stored weights need not sum to one. The inspected Sekiro c1010 model has byte-quantized weights
+summing to `253/255` or `252/255` on some vertices; those sums are stored data, not evidence of a decoding error.
+:observed{games="sekiro"}
 
 Smithbox leaves a static mesh as stored when neither a normal W nor a valid NodeIndex supplies a bone.
 :sourced[Smithbox] The corresponding game behaviour is not established. :unknown

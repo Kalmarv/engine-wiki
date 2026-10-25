@@ -5,6 +5,9 @@ sources:
   - title: SoulsFormatsNEXT
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats/FLVER/FLVER2
     note: Material, Texture and GXList readers
+  - title: RunDevelopment GX investigation
+    url: https://github.com/JKAnderson/SoulsFormats/issues/14
+    note: GXMD framing and optional flag records
 implementations:
   - name: primase worlds/fromsoft (materials.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/materials.rs
@@ -74,6 +77,32 @@ fields:
 The terminator identifier is `0x7FFFFFFF` or `0xFFFFFFFF`, with version word 100 and zero payload padding.
 Ordinarily its length includes the 12-byte header; where the FLVER header's low word at `0x68` is 5, it counts
 padding alone, as on Elden Ring SpeedTree files. :observed
+
+### GXMD payloads
+
+GXMD contains a 32-bit item count followed by typed ID/value entries, without a trailing sentinel. IDs can appear
+in any order. Sekiro and Elden Ring can add a type-0 boolean record sharing the preceding value's ID; its meaning
+is unresolved. :sourced[RunDevelopment]
+
+```layout
+title: GXMD item prefix
+size: 8
+fields:
+  - {at: 0, size: 4, type: i32, name: item ID, level: sourced}
+  - {at: 4, size: 4, type: i32, name: value type, level: sourced}
+```
+
+| Type | Following value | Confidence |
+|---|---|---|
+| 0 | One boolean word, 0 or 1; optional flag for an existing ID | :sourced[RunDevelopment] |
+| 1 | One float | :sourced[RunDevelopment] |
+| 2 | Two floats | :sourced[RunDevelopment] |
+| 3 | Three floats | :sourced[RunDevelopment] |
+| 11 | Five floats | :sourced[RunDevelopment] |
+
+For the inspected Sekiro `MetallicValue` and `MetallicValue_MeshDecal` shader families, GXMD version 123 item
+237 corresponds to the scalar named `snp_0_float_0_0`; their G-buffer programs read `cb2[20].x` for the metallic
+mixture. This association is not established for other shader families or flagged values. :observed{games="sekiro"}
 
 :::open[What do all GX payloads and trailing texture floats mean?]
 The structural records do not establish the semantics of every extension or the three floats at texture offset 20.

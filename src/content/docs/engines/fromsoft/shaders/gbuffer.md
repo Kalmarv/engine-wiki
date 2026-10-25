@@ -41,6 +41,10 @@ Sekiro reconstructs `F0 = RT3.rgb * RT3.rgb` and uses it in the Schlick term
 `F0 + (1-F0)*(1-dot(L,H))^5`. Elden Ring instead forms `F0 = lerp(0.04,albedo,metallic)`.
 :observed
 
+In the inspected Sekiro Multiple, MultipleGround and Multiple_Emissive switch population, the constant dielectric
+encoding is RGB float bits `0x3E315CAC`, whose square is approximately 0.03. Multiple switch 18 has variable
+reflectance, so the constant value is not a rule for every switch. :observed{games="sekiro"}
+
 Sekiro's target-3 alpha selects the light group: `int(alpha*255)*18` identifies its first row in the light buffer.
 The target-1 green value modifies the diffuse wrap term with factors 10 and 20 where it is positive.
 :observed{games="sekiro"}

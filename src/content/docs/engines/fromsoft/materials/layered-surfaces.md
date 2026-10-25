@@ -56,6 +56,9 @@ The inspected Fur family multiplies the strand-card texture at slot 1 by a colou
 cloth permutations with switch 18 select back-face colour from slot 8 using `SV_IsFrontFace`.
 :observed{games="elden-ring"}
 
+The [detail-blend equations](/engines/fromsoft/materials/detail-blend/) describe the separately executed character
+family, including Sekiro's different slot assignment and reflectance encoding.
+
 :::open[Which equations generalize across permutations?]
 Family and switch names do not prove an identical blend graph. The formulas above remain scoped to the inspected
 programs; runtime snow, instance colour and secondary UV inputs require their own bindings. :unknown

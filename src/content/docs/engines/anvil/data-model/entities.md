@@ -19,27 +19,27 @@ The common prefix is `01 03`. In 830 bodies, `01 00` introduces an inline Hierar
 title: "Entity body with null Hierarchy"
 size: "var"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Mechanical framing is proven on the strict six-archive profile: 585,234 Entity bodies consumed exactly, 29,876 refused; 38,825 EntityGroup bodies consumed exactly, 18,012 refused. Metadata-derived meanings and newer link variants retain their separate confidence."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "observed"}
-  - {"at": 1, "size": 1, "type": "u8", "name": "tag", "value": "03", "level": "observed"}
+  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "proven"}
+  - {"at": 1, "size": 1, "type": "u8", "name": "tag", "value": "03", "level": "proven"}
   - {"at": 2, "size": 64, "type": "matrix4", "name": "placement", "level": "observed", "note": "column-major; translation at 50..61; last row 0 0 0 1"}
-  - {"at": 66, "size": 4, "type": "u32", "name": "component count n", "level": "observed"}
-  - {"at": 70, "size": "C", "type": "bytes", "name": "components", "level": "observed", "note": "n × the Component box, in order"}
-  - {"at": "70+C", "size": 43, "type": "bytes", "name": "run", "level": "observed", "note": "the Run box"}
+  - {"at": 66, "size": 4, "type": "u32", "name": "component count n", "level": "proven"}
+  - {"at": 70, "size": "C", "type": "bytes", "name": "components", "level": "proven", "note": "n × the Component box, in order"}
+  - {"at": "70+C", "size": 43, "type": "bytes", "name": "run", "level": "proven", "note": "the Run box"}
   - {"at": "113+C", "size": 4, "type": "u32", "name": "FakeCellIndex", "level": "observed", "note": "Entity.FakeCellIndex (registry u32): 0xFFFFFFFF on 18,913 of 21,000, a cell index on 2,087"}
   - {"at": "117+C", "size": 4, "type": "f32", "name": "Scale", "level": "observed", "note": "uniform (registry Scale)"}
   - {"at": "121+C", "size": 40, "type": "bytes", "name": "bounds", "level": "observed", "note": "BoundingVolume, relative to the translation"}
-  - {"at": "161+C", "size": 8, "type": "u64", "name": "EntityDescriptor id", "value": "0", "level": "observed"}
-  - {"at": "169+C", "size": 4, "type": "u32", "name": "EntityDescriptor type", "value": "0x60121A9E", "level": "observed"}
+  - {"at": "161+C", "size": 8, "type": "u64", "name": "EntityDescriptor id", "value": "0", "level": "proven"}
+  - {"at": "169+C", "size": 4, "type": "u32", "name": "EntityDescriptor type", "value": "0x60121A9E", "level": "proven"}
   - {"at": "173+C", "size": 4, "type": "u32", "name": "DescriptorType", "level": "observed", "note": "EntityDescriptor.DescriptorType (enum, table not found): 0 on 20,995 of 21,000 sampled, 1 on 3, 3 on 1"}
   - {"at": "177+C", "size": 4, "type": "u32", "name": "SubDescriptorType", "level": "observed", "note": "EntityDescriptor.SubDescriptorType (u32): 0 on 20,999, 3 on 1"}
   - {"at": "181+C", "size": 4, "type": "u32", "name": "NetworkType", "level": "observed", "note": "EntityDescriptor.NetworkType (enum, table not found): 0 on 15,214, 1 on 5,781, 2 on 1"}
   - {"at": "185+C", "size": 1, "type": "u8", "name": "IsPickableByPlayer", "level": "observed", "note": "EntityDescriptor.IsPickableByPlayer (bool): 0 on all sampled"}
-  - {"at": "186+C", "size": 8, "type": "u64", "name": "DataLayerFilter id", "value": "0", "level": "observed"}
-  - {"at": "194+C", "size": 4, "type": "u32", "name": "DataLayerFilter type", "value": "0xDB1D406E", "level": "observed"}
-  - {"at": "198+C", "size": 4, "type": "u32", "name": "action count k", "level": "observed"}
-  - {"at": "202+C", "size": "25·k", "type": "bytes", "name": "DataLayerActions", "level": "observed", "note": "the DataLayerAction box: the event or season layers it belongs to"}
+  - {"at": "186+C", "size": 8, "type": "u64", "name": "DataLayerFilter id", "value": "0", "level": "proven"}
+  - {"at": "194+C", "size": 4, "type": "u32", "name": "DataLayerFilter type", "value": "0xDB1D406E", "level": "proven"}
+  - {"at": "198+C", "size": 4, "type": "u32", "name": "action count k", "level": "proven"}
+  - {"at": "202+C", "size": "25·k", "type": "bytes", "name": "DataLayerActions", "level": "proven", "note": "the DataLayerAction box: the event or season layers it belongs to"}
   - {"at": "202+C+25k", "size": 4, "type": "u32", "name": "UIVisualsDisplayOrder link count M", "level": "observed", "note": "M nine-byte links follow; offsets below assume M = 0."}
   - {"at": "206+C+25k", "size": "var", "type": "bytes", "name": "tail", "level": "observed", "note": "ResetData pointer: 03 null, or inline GameStateData."}
 ```
@@ -50,12 +50,12 @@ The count after DataLayer actions counts links: tag `00` or `01` plus u64. Nonze
 title: "Component (\u00d7n)"
 size: "13 + body bytes"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Mechanical framing is proven on the strict six-archive profile: 585,234 Entity bodies consumed exactly, 29,876 refused; 38,825 EntityGroup bodies consumed exactly, 18,012 refused. Metadata-derived meanings and newer link variants retain their separate confidence."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "04 or 00", "level": "observed"}
-  - {"at": 1, "size": 8, "type": "u64", "name": "id", "level": "observed"}
-  - {"at": 9, "size": 4, "type": "u32", "name": "type", "level": "observed"}
-  - {"at": 13, "size": "var", "type": "bytes", "name": "body", "level": "observed", "note": "Type-specific grammar; no universal stored component length."}
+  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "04 or 00", "level": "proven"}
+  - {"at": 1, "size": 8, "type": "u64", "name": "id", "level": "proven"}
+  - {"at": 9, "size": 4, "type": "u32", "name": "type", "level": "proven"}
+  - {"at": 13, "size": "var", "type": "bytes", "name": "body", "level": "proven", "note": "Type-specific grammar; no universal stored component length."}
 ```
 
 Component headers normally use `04`, with `00` on some UI and embedded objects. The registry identifies 291 Component-derived classes. Ids need not be consecutive and can use high-bit encodings; proximity to the Entity id is not a valid boundary rule. :observed
@@ -66,11 +66,11 @@ Component headers normally use `04`, with `00` on some UI and embedded objects. 
 title: "EntityGroup body"
 size: "variable"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Mechanical framing is proven on the strict six-archive profile: 585,234 Entity bodies consumed exactly, 29,876 refused; 38,825 EntityGroup bodies consumed exactly, 18,012 refused. Metadata-derived meanings and newer link variants retain their separate confidence."
 fields:
-  - {"at": 0, "size": "E", "type": "bytes", "name": "Entity prefix", "level": "observed"}
-  - {"at": "E", "size": 4, "type": "u32", "name": "member count C", "level": "observed"}
-  - {"at": "E+4", "size": "10C", "type": "references", "name": "members", "level": "observed"}
+  - {"at": 0, "size": "E", "type": "bytes", "name": "Entity prefix", "level": "proven"}
+  - {"at": "E", "size": 4, "type": "u32", "name": "member count C", "level": "proven"}
+  - {"at": "E+4", "size": "10C", "type": "references", "name": "members", "level": "proven"}
   - {"at": "E+4+10C", "size": 4, "type": "u32", "name": "link count M", "level": "observed"}
   - {"at": "E+8+10C", "size": "9M", "type": "links", "name": "member links", "level": "observed"}
   - {"at": "E+8+10C+9M", "size": 4, "type": "u32", "name": "GroupOptimizationState", "level": "observed", "note": "0 NotOptimized, 1 OptimizedAndEditable, 2 OptimizedAndSealed."}
@@ -84,3 +84,5 @@ See [visual instances](/engines/anvil/data-model/visual-instances/), [flags](/en
 :::open[What do opaque and nested components contribute?]
 Retaining their bytes does not establish their behavior. An embedded Entity header alone does not prove an independently rendered placement. :unknown
 :::
+
+The strict sequential profile consumes exactly 585,234 Entity and 38,825 EntityGroup bodies from the complete six-archive census, refusing 29,876 and 18,012 respectively. That proves the accepted framing only. The later header-delimited opaque-body census above does not establish those missing component grammars. :proven[accepted strict profile]

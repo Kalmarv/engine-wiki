@@ -45,12 +45,12 @@ DefaultLoadingDistances is a fixed array without a stored count: five u16 values
 title: "GridPartition body"
 size: "var"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Every one of the eight GridPartitions and 66,359 GridCellDataBlocks across all six installed forges consumes exactly with no refusals. Named activation semantics are separate from stored count framing."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "observed"}
-  - {"at": 1, "size": 4, "type": "u32", "name": "level count", "level": "observed", "note": "8 in the open world's ShortRange and TerrainWorldSmall"}
-  - {"at": 5, "size": 4, "type": "u32", "name": "cell count c", "level": "observed", "note": "the levels' squared dimensions summed (21,845 for 8 levels from 128)"}
-  - {"at": 9, "size": "21·c", "type": "bytes", "name": "cells", "level": "observed", "note": "the GridCell box; a cell's number is its position: level 0 first, row by row from the bottom-left (the notes' best fit)"}
+  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "proven"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "level count", "level": "proven", "note": "8 in the open world's ShortRange and TerrainWorldSmall"}
+  - {"at": 5, "size": 4, "type": "u32", "name": "cell count c", "level": "proven", "note": "the levels' squared dimensions summed (21,845 for 8 levels from 128)"}
+  - {"at": 9, "size": "21·c", "type": "bytes", "name": "cells", "level": "proven", "note": "the GridCell box; a cell's number is its position: level 0 first, row by row from the bottom-left (the notes' best fit)"}
   - {"at": "9+21c", "size": 4, "type": "u32", "name": "zero", "value": "0", "level": "unknown", "note": "Stored bytes; meaning is not established."}
 ```
 
@@ -58,24 +58,24 @@ fields:
 title: "GridCell (21 bytes, \u00d7c)"
 size: 21
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Every one of the eight GridPartitions and 66,359 GridCellDataBlocks across all six installed forges consumes exactly with no refusals. Named activation semantics are separate from stored count framing."
 fields:
-  - {"at": 0, "size": 8, "type": "u64", "name": "id", "value": "0", "level": "observed"}
-  - {"at": 8, "size": 4, "type": "u32", "name": "type", "value": "0x3435AD40", "level": "observed"}
-  - {"at": 12, "size": 1, "type": "u8", "name": "tag", "value": "00", "level": "observed"}
-  - {"at": 13, "size": 8, "type": "u64", "name": "data block", "level": "observed", "note": "a GridCellDataBlock's ClassID, or 0: an empty cell"}
+  - {"at": 0, "size": 8, "type": "u64", "name": "id", "value": "0", "level": "proven"}
+  - {"at": 8, "size": 4, "type": "u32", "name": "type", "value": "0x3435AD40", "level": "proven"}
+  - {"at": 12, "size": 1, "type": "u8", "name": "tag", "value": "00", "level": "proven"}
+  - {"at": 13, "size": 8, "type": "u64", "name": "data block", "level": "proven", "note": "a GridCellDataBlock's ClassID, or 0: an empty cell"}
 ```
 ```layout
 title: "GridCellDataBlock body"
 size: "17 + 10n bytes"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Every one of the eight GridPartitions and 66,359 GridCellDataBlocks across all six installed forges consumes exactly with no refusals. Named activation semantics are separate from stored count framing."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "observed"}
-  - {"at": 1, "size": 4, "type": "u32", "name": "object count n", "level": "observed"}
-  - {"at": 5, "size": "10·n", "type": "ref·n", "name": "objects", "level": "observed", "note": "Entities, EntityGroups, GIDynResources and others, in stored order"}
+  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "proven"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "object count n", "level": "proven"}
+  - {"at": 5, "size": "10·n", "type": "ref·n", "name": "objects", "level": "proven", "note": "Entities, EntityGroups, GIDynResources and others, in stored order"}
   - {"at": "5+10n", "size": 4, "type": "u32", "name": "NumberOfObjectsToActivate", "level": "observed", "note": "GridCellDataBlock.NumberOfObjectsToActivate (registry u32): n less the references to GIDynResources, on every block measured"}
-  - {"at": "9+10n", "size": 8, "type": "u64", "name": "key", "level": "observed", "note": "its cell's number (equal to its position in the GridPartition), or a DataLayer's ClassID"}
+  - {"at": "9+10n", "size": 8, "type": "u64", "name": "key", "level": "proven", "note": "its cell's number (equal to its position in the GridPartition), or a DataLayer's ClassID"}
 ```
 
 Cells are finest-level-first, then successively coarser levels. Within each level they are row-major: after subtracting the level start, `x = k mod dimension`, `y = k div dimension`. This order gives overlapping world bounds on 7,769 of 7,803 sampled listings, far more than the examined alternatives. :observed

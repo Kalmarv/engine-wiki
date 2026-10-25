@@ -11,9 +11,9 @@ implementations:
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/animation.rs
 ---
 
-Animation (`0x0FA3067F`) stores clip metadata, bone-name mappings and keyframe tracks. The complete track enumeration across DataPC, DataPC patch, USNAT, USNAT patch and base WhiteRoom contains 9,087 clips, 1,396,592 tracks and 25,241,022 keys; every clip's track framing consumes exactly to its body end. Event payloads remain opaque and use a following-object anchor, so this is complete track framing rather than complete event decoding. :proven[track framing]
+Animation (`0x0FA3067F`) stores clip metadata, bone-name mappings and keyframe tracks. The complete track enumeration across DataPC, DataPC patch, USNAT, USNAT patch and base WhiteRoom contains 9,087 clips, 1,396,592 tracks and 25,241,022 keys; every clip's track framing consumes exactly to its body end. Event payloads remain opaque and use a following-object anchor, so this is complete track framing rather than complete event decoding. :observed[five archives]
 
-All 9,087 checked clips use the [extended resource header](/engines/anvil/data-model/resources/). There are 1,923 clips with events, 4,053 with TTECLAnimation objects and 390 with a nonzero boolean flag in that enumeration. :proven[complete enumeration]
+All 9,087 checked clips use the [extended resource header](/engines/anvil/data-model/resources/). There are 1,923 clips with events, 4,053 with TTECLAnimation objects and 390 with a nonzero boolean flag in that enumeration. :observed[five archives]
 
 ## Body order
 
@@ -38,7 +38,7 @@ fields:
 
 After the events comes AnimTrackData: `00 + u64 id + type 0x0181EFE8`, a u32 hash field, a mapping count, mapping objects, and a u16. Each mapping is `u64 id + type 0x653CAA76 + u32 bone-name CRC-32`; zero names root-motion tracks. Mappings and tracks correspond one-to-one in order. :observed
 
-Next is ECLAnimation: `03` null, or `00 + u64 + type 0xAC692A57` followed by byte, u32, u16 and byte arrays, each counted. Then come buffer `B832D26F` (`u32 byte length + bytes`), u32 `CB4E5F18`, track count and track blocks. This order is checked on all 9,087 clips and differs from registry field order. :proven[body framing]
+Next is ECLAnimation: `03` null, or `00 + u64 + type 0xAC692A57` followed by byte, u32, u16 and byte arrays, each counted. Then come buffer `B832D26F` (`u32 byte length + bytes`), u32 `CB4E5F18`, track count and track blocks. This order is checked on all 9,087 clips and differs from registry field order. :observed[five archives]
 
 ## Track blocks
 
@@ -90,4 +90,4 @@ AnimComponent (`0x8C8AA19D`) contains four base bytes, u32 count and ten-byte An
 Linear, Nearest, Cardinal, Natural and HermiteVel classes exist in the registry, but exact used-kind interpolation is not established. Event elements, high mask bits, kind-seven's top bit and kinds 16–25 still have unresolved semantics. The rider's Kino graph is not decoded here. :unknown
 :::
 
-The complete six-archive index has 9,111 stored Animation entries. WhiteRoom patch contributes 24 entries outside the five-archive exact-end check above. :observed
+The complete six-archive index has 9,111 stored Animation entries. WhiteRoom patch contributes 24 entries outside the five-archive exact-end check above. All six archive tables are counted, with no index-reader refusals. :proven[inventory count]

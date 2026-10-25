@@ -11,42 +11,44 @@ implementations:
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/shape.rs
 ---
 
-CollisionMaterial (`0x74F7311D`) identifies a physical surface, separately from render Material. Its 778-byte profile contains a debug color, ContactType, reaction and fluid references and collision filters. The profile and registry names are checked on 263 resources. :observed
+CollisionMaterial (`0x74F7311D`) identifies a physical surface, separately from render Material. Its 778-byte profile contains a debug color, ContactType, reaction and fluid references and collision filters. Every one of the 263 resources in all six installed archives is exactly 778 bytes and is byte-accounted by this profile; no body is excluded. :proven
+
+The field names are corroborated by the inspected runtime registry; enum spellings and runtime physics semantics have their own confidence below. :observed
 
 ```layout
 title: "CollisionMaterial body"
 size: 778
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Every one of the 263 CollisionMaterial bodies across all six installed forges is byte-accounted in the 778-byte profile; no bodies are excluded. Enum spelling evidence and runtime friction behavior are separate."
 fields:
   - {"at": 0, "size": 1, "type": "u8", "name": "ManagedObject byte", "value": "01", "level": "unknown", "note": "Stored bytes; meaning is not established."}
-  - {"at": 1, "size": 1, "type": "u8", "name": "NoWeatherExposed", "level": "observed", "note": "registry bool: 1 on 249 of 263, 0 on 14"}
-  - {"at": 2, "size": 8, "type": "u64", "name": "DebugColor: object id", "level": "observed"}
-  - {"at": 10, "size": 4, "type": "u32", "name": "DebugColor: class id", "value": "0xA79767ED", "level": "observed", "note": "= 0xA79767ED, the class `Color`"}
-  - {"at": 14, "size": 16, "type": "vec4", "name": "DebugColor: R G B A", "level": "observed", "note": "registry DebugColor (Color.R, G, B, A; alpha 1.0 on all)"}
-  - {"at": 30, "size": 4, "type": "u32", "name": "ContactType", "level": "observed", "note": "ContactMaterial enum; confirmed and candidate names are distinguished in the surface table."}
-  - {"at": 34, "size": 10, "type": "ref", "name": "surface material (AC9E437F)", "level": "observed", "note": "registry AC9E437F, a CollisionReactionEntryBase reference: 253 bodies point to a 0xEDFC54A6 entry (Syn_Plastic_GEN, Grounds_Dirt_GEN, Wood_Hard_GEN ...), 10 are null"}
-  - {"at": 44, "size": 10, "type": "ref", "name": "fluid characteristics (C8DB4746)", "level": "observed", "note": "registry C8DB4746, a MoldedFluidCharacteristics reference: 247 point to a 0xC13A9A56 entry, 16 are null"}
+  - {"at": 1, "size": 1, "type": "u8", "name": "NoWeatherExposed", "level": "proven", "note": "registry bool: 1 on 249 of 263, 0 on 14"}
+  - {"at": 2, "size": 8, "type": "u64", "name": "DebugColor: object id", "level": "proven"}
+  - {"at": 10, "size": 4, "type": "u32", "name": "DebugColor: class id", "value": "0xA79767ED", "level": "proven", "note": "= 0xA79767ED, the class `Color`"}
+  - {"at": 14, "size": 16, "type": "vec4", "name": "DebugColor: R G B A", "level": "proven", "note": "registry DebugColor (Color.R, G, B, A; alpha 1.0 on all)"}
+  - {"at": 30, "size": 4, "type": "u32", "name": "ContactType", "level": "proven", "note": "ContactMaterial enum; confirmed and candidate names are distinguished in the surface table."}
+  - {"at": 34, "size": 10, "type": "ref", "name": "surface material (AC9E437F)", "level": "proven", "note": "registry AC9E437F, a CollisionReactionEntryBase reference: 253 bodies point to a 0xEDFC54A6 entry (Syn_Plastic_GEN, Grounds_Dirt_GEN, Wood_Hard_GEN ...), 10 are null"}
+  - {"at": 44, "size": 10, "type": "ref", "name": "fluid characteristics (C8DB4746)", "level": "proven", "note": "registry C8DB4746, a MoldedFluidCharacteristics reference: 247 point to a 0xC13A9A56 entry, 16 are null"}
   - {"at": 54, "size": 1, "type": "u8", "name": "DEC061D8", "level": "unknown", "note": "registry bool (name not found), the first of the two bit fields: 1 on 21 of 263"}
   - {"at": 55, "size": 1, "type": "u8", "name": "5107A4E0", "level": "unknown", "note": "registry bool (name not found): 1 on 2 of 263"}
-  - {"at": 56, "size": 8, "type": "u64", "name": "CollisionFilterInfo: object id", "level": "observed", "note": "0"}
-  - {"at": 64, "size": 4, "type": "u32", "name": "CollisionFilterInfo: class id", "value": "0x43EF99C2", "level": "observed", "note": "= 0x43EF99C2"}
+  - {"at": 56, "size": 8, "type": "u64", "name": "CollisionFilterInfo: object id", "level": "proven", "note": "0"}
+  - {"at": 64, "size": 4, "type": "u32", "name": "CollisionFilterInfo: class id", "value": "0x43EF99C2", "level": "proven", "note": "= 0x43EF99C2"}
   - {"at": 68, "size": 1, "type": "u8", "name": "642F141F", "level": "unknown", "note": "CollisionFilterInfo bool (name not found): 1 on all 263"}
   - {"at": 69, "size": 1, "type": "u8", "name": "4A4D57A9", "level": "unknown", "note": "CollisionFilterInfo bool (name not found): 1 on 259 of 263"}
-  - {"at": 70, "size": 8, "type": "u64", "name": "QueryFlags: object id", "level": "observed", "note": "0"}
-  - {"at": 78, "size": 4, "type": "u32", "name": "QueryFlags: class id", "value": "0xA2FFD626", "level": "observed", "note": "= 0xA2FFD626, the class `QueryLayerBits` (the field is named QueryFlags)"}
-  - {"at": 82, "size": 8, "type": "u64", "name": "QueryFlags.Static", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 241 of 263"}
+  - {"at": 70, "size": 8, "type": "u64", "name": "QueryFlags: object id", "level": "proven", "note": "0"}
+  - {"at": 78, "size": 4, "type": "u32", "name": "QueryFlags: class id", "value": "0xA2FFD626", "level": "proven", "note": "= 0xA2FFD626, the class `QueryLayerBits` (the field is named QueryFlags)"}
+  - {"at": 82, "size": 8, "type": "u64", "name": "QueryFlags.Static", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 241 of 263"}
   - {"at": 90, "size": 8, "type": "u64", "name": "QueryFlags.89CA5860", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 242 of 263 (name not found)"}
-  - {"at": 98, "size": 8, "type": "u64", "name": "QueryFlags.Dynamic", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
-  - {"at": 106, "size": 8, "type": "u64", "name": "QueryFlags.CameraCollision", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 249 of 263"}
+  - {"at": 98, "size": 8, "type": "u64", "name": "QueryFlags.Dynamic", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
+  - {"at": 106, "size": 8, "type": "u64", "name": "QueryFlags.CameraCollision", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 249 of 263"}
   - {"at": 114, "size": 8, "type": "u64", "name": "QueryFlags.4ADD89EC", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
-  - {"at": 122, "size": 8, "type": "u64", "name": "QueryFlags.CameraOcclusion", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 247 of 263"}
+  - {"at": 122, "size": 8, "type": "u64", "name": "QueryFlags.CameraOcclusion", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 247 of 263"}
   - {"at": 130, "size": 8, "type": "u64", "name": "QueryFlags.18E32EB8", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 247 of 263 (name not found)"}
   - {"at": 138, "size": 8, "type": "u64", "name": "QueryFlags.742A8CFD", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
   - {"at": 146, "size": 8, "type": "u64", "name": "QueryFlags.33242F07", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 2 of 263 (name not found)"}
-  - {"at": 154, "size": 8, "type": "u64", "name": "QueryFlags.Character", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 1 of 263"}
-  - {"at": 162, "size": 8, "type": "u64", "name": "QueryFlags.WaterLevel", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 2 of 263"}
-  - {"at": 170, "size": 8, "type": "u64", "name": "QueryFlags.Particle", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
+  - {"at": 154, "size": 8, "type": "u64", "name": "QueryFlags.Character", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 1 of 263"}
+  - {"at": 162, "size": 8, "type": "u64", "name": "QueryFlags.WaterLevel", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 2 of 263"}
+  - {"at": 170, "size": 8, "type": "u64", "name": "QueryFlags.Particle", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
   - {"at": 178, "size": 8, "type": "u64", "name": "QueryFlags.409BC772", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 1 of 263 (name not found)"}
   - {"at": 186, "size": 8, "type": "u64", "name": "QueryFlags.5A43CF09", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
   - {"at": 194, "size": 8, "type": "u64", "name": "QueryFlags.1B600894", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 2 of 263 (name not found)"}
@@ -54,17 +56,17 @@ fields:
   - {"at": 210, "size": 8, "type": "u64", "name": "QueryFlags.CD19DFD6", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 3 of 263 (name not found)"}
   - {"at": 218, "size": 8, "type": "u64", "name": "QueryFlags.27A1301D", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 3 of 263 (name not found)"}
   - {"at": 226, "size": 8, "type": "u64", "name": "QueryFlags.A34FF649", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 3 of 263 (name not found)"}
-  - {"at": 234, "size": 8, "type": "u64", "name": "QueryFlags.Raycast", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 263 of 263"}
-  - {"at": 242, "size": 8, "type": "u64", "name": "QueryFlags.OcclusionHeightTest", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
-  - {"at": 250, "size": 8, "type": "u64", "name": "QueryFlags.Targeting", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
+  - {"at": 234, "size": 8, "type": "u64", "name": "QueryFlags.Raycast", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 263 of 263"}
+  - {"at": 242, "size": 8, "type": "u64", "name": "QueryFlags.OcclusionHeightTest", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
+  - {"at": 250, "size": 8, "type": "u64", "name": "QueryFlags.Targeting", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263"}
   - {"at": 258, "size": 8, "type": "u64", "name": "QueryFlags.92EF3F19", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 1 of 263 (name not found)"}
   - {"at": 266, "size": 8, "type": "u64", "name": "QueryFlags.D527A7C3", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
   - {"at": 274, "size": 8, "type": "u64", "name": "QueryFlags.901DDA28", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263 (name not found)"}
-  - {"at": 282, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod0", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
-  - {"at": 290, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod1", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
-  - {"at": 298, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod2", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
-  - {"at": 306, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod3", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
-  - {"at": 314, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod4", "level": "observed", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
+  - {"at": 282, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod0", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
+  - {"at": 290, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod1", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
+  - {"at": 298, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod2", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
+  - {"at": 306, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod3", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
+  - {"at": 314, "size": 8, "type": "u64", "name": "QueryFlags.TerrainLod4", "level": "proven", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 213 of 263"}
   - {"at": 322, "size": 8, "type": "u64", "name": "QueryFlags.D45E6F42", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 2 of 263 (name not found)"}
   - {"at": 330, "size": 8, "type": "u64", "name": "QueryFlags.1F1A0AB5", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 3 of 263 (name not found)"}
   - {"at": 338, "size": 8, "type": "u64", "name": "QueryFlags.E2332913", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
@@ -121,8 +123,8 @@ fields:
   - {"at": 738, "size": 8, "type": "u64", "name": "883E5FCA.1F1A0AB5", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
   - {"at": 746, "size": 8, "type": "u64", "name": "883E5FCA.DF5300A3", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
   - {"at": 754, "size": 8, "type": "u64", "name": "883E5FCA.50FF8AA5", "level": "unknown", "note": "bit field of the embedded object, stored as a u64 (kind 0x09): 1 on 0 of 263 (name not found)"}
-  - {"at": 762, "size": 4, "type": "f32", "name": "Friction", "level": "observed", "note": "registry Friction: 10.0 (203), 2.5 (15), 5.0 (10), 0.0 (5)"}
-  - {"at": 766, "size": 4, "type": "f32", "name": "Restitution", "level": "observed", "note": "registry Restitution: 0.05 (249), 0.1, 0.01, 0.001"}
+  - {"at": 762, "size": 4, "type": "f32", "name": "Friction", "level": "proven", "note": "registry Friction: 10.0 (203), 2.5 (15), 5.0 (10), 0.0 (5)"}
+  - {"at": 766, "size": 4, "type": "f32", "name": "Restitution", "level": "proven", "note": "registry Restitution: 0.05 (249), 0.1, 0.01, 0.001"}
   - {"at": 770, "size": 8, "type": "bytes", "name": "unaccounted", "level": "unknown", "note": "8 bytes: 0x5368D4A5 then a zero u32, on all 263. The class lists Stiffness and Damping after Restitution (their values in the live objects are 1e12 and 0, the class defaults); these 8 bytes are not them, and 0x5368D4A5 is a CRC-32 with no known name"}
 ```
 

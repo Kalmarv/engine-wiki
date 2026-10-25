@@ -12,7 +12,7 @@ sources:
 ---
 
 Anvil is Ubisoft's engine lineage also known as Scimitar; its archive signature retains the name `scimitar`. :sourced[Breakpoint format reference]
-[Riders Republic](/games/riders-republic/) stores data in forge version 27 archives with typed resources identified by CRC-32 type hashes and 64-bit resource identities. :observed{games="riders-republic"}
+[Riders Republic](/games/riders-republic/) stores data in forge version 27 archives with typed resources identified by CRC-32 type hashes and 64-bit resource identities. All six archive headers and index tables read without refusals; the name-hash evidence is graded per entry in the type inventory. :proven{games="riders-republic"}
 [Ghost Recon Breakpoint](/games/ghost-recon-breakpoint/) shares this archive generation and naming scheme. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 
 The shared envelope does not make serialized bodies interchangeable: compression versions, resource grouping and class-specific serializers vary. :observed{games="riders-republic"} :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}

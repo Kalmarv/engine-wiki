@@ -23,7 +23,7 @@ The six forge archives sit beside the executable. The main open world is MAD_USN
 | `DataPC_MAD_WhiteRoom.forge` | 8,951,822 | :observed |
 | `DataPC_MAD_WhiteRoom_patch_01.forge` | 1,021,872 | :observed |
 
-The archive index census contains 1,301,684 entries spanning 905 type ids, including null/meta entries and both base and patch copies. These are not unique runtime resources. See the [complete type inventory](/engines/anvil/data-model/type-inventory/) for per-forge counts and independently graded names. :observed
+Every table of the six installed forges reads without refusals; their complete index census contains 1,301,684 entries spanning 905 type ids, including null/meta entries and both base and patch copies. These are not unique runtime resources. See the [complete type inventory](/engines/anvil/data-model/type-inventory/) for per-forge counts and independently graded names. :proven
 
 ## Data systems
 

@@ -20,16 +20,16 @@ An ordinary Riders Republic entry contains two consecutive blocks: metadata deco
 title: "Data block"
 size: "variable"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Framing, sizes and checksums validated on every Mesh (147,289) and MeshShape (25,162) payload across all six installed forges; no refusals for those types. Other entry types are outside this stated scope."
 fields:
-  - {"at": 0, "size": 8, "type": "u64", "name": "magic", "value": "0x1004FA9957FBAA33", "level": "observed"}
-  - {"at": 8, "size": 2, "type": "u16", "name": "version", "value": "2", "level": "observed"}
-  - {"at": 10, "size": 1, "type": "u8", "name": "algorithm", "value": "5", "level": "observed", "note": "zstd"}
+  - {"at": 0, "size": 8, "type": "u64", "name": "magic", "value": "0x1004FA9957FBAA33", "level": "proven"}
+  - {"at": 8, "size": 2, "type": "u16", "name": "version", "value": "2", "level": "proven"}
+  - {"at": 10, "size": 1, "type": "u8", "name": "algorithm", "value": "5", "level": "proven", "note": "zstd"}
   - {"at": 11, "size": 2, "type": "u16", "name": "unknown", "level": "unknown", "note": "observed 0"}
   - {"at": 13, "size": 2, "type": "u16", "name": "unknown", "level": "unknown", "note": "observed 32772"}
-  - {"at": 15, "size": 4, "type": "u32", "name": "chunk count n", "level": "observed"}
-  - {"at": 19, "size": "8·n", "type": "u32[2]·n", "name": "chunk sizes", "level": "observed", "note": "each chunk's decoded and stored size"}
-  - {"at": "19+8n", "size": "var", "type": "chunks", "name": "chunks", "level": "observed", "note": "per chunk: Adler-32 (from 0) of its stored bytes, then the bytes; a chunk whose stored size equals its decoded size is raw"}
+  - {"at": 15, "size": 4, "type": "u32", "name": "chunk count n", "level": "proven"}
+  - {"at": 19, "size": "8·n", "type": "u32[2]·n", "name": "chunk sizes", "level": "proven", "note": "each chunk's decoded and stored size"}
+  - {"at": "19+8n", "size": "var", "type": "chunks", "name": "chunks", "level": "proven", "note": "per chunk: Adler-32 (from 0) of its stored bytes, then the bytes; a chunk whose stored size equals its decoded size is raw"}
 ```
 
 | Rule | Riders Republic | Ghost Recon Breakpoint | Confidence |
@@ -60,3 +60,5 @@ fields:
 :::open[Does Breakpoint reject every raw chunk?]
 The community reference reports failed raw-block cloth loads and successful Mermaid loads, while its reader permits equal-size raw chunks. Later notes identify an incorrect block-size header as another independent hang cause. These observations do not establish universal rejection of raw chunks. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 :::
+
+The block reader accounts for every byte and checks each stored checksum on all 147,289 Mesh and 25,162 MeshShape payloads across the six installed archives, with no refusals for those types. This proves their block profile, not that every resource type uses it; GlobalMetaFile is a separate form. :proven

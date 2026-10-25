@@ -30,12 +30,12 @@ fields:
 title: "Section"
 size: "size bytes"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Section framing, face/material counts and tail buffers read across all 25,162 MeshShapes of the six installed forges with no refusals. Tree decoding semantics remain scoped to 724 sampled shapes."
 fields:
-  - {"at": 0, "size": 2, "type": "u16", "name": "section type", "level": "observed"}
-  - {"at": 2, "size": 2, "type": "u16", "name": "marker", "value": "0xECD7", "level": "observed"}
-  - {"at": 4, "size": 4, "type": "i32", "name": "size", "level": "observed", "note": "its 8 header bytes included"}
-  - {"at": 8, "size": "size-8", "type": "bytes", "name": "payload", "level": "observed"}
+  - {"at": 0, "size": 2, "type": "u16", "name": "section type", "level": "proven"}
+  - {"at": 2, "size": 2, "type": "u16", "name": "marker", "value": "0xECD7", "level": "proven"}
+  - {"at": 4, "size": 4, "type": "i32", "name": "size", "level": "proven", "note": "its 8 header bytes included"}
+  - {"at": 8, "size": "size-8", "type": "bytes", "name": "payload", "level": "proven"}
 ```
 
 ```layout
@@ -72,16 +72,16 @@ fields:
 title: "Tail"
 size: "42 + m + 10n bytes"
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. Section framing, face/material counts and tail buffers read across all 25,162 MeshShapes of the six installed forges with no refusals. Tree decoding semantics remain scoped to 724 sampled shapes."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "OneCollisionMaterialOnly", "level": "observed", "note": "MeshShape.OneCollisionMaterialOnly (registry bool): 1 on 668 of 724 sampled (one material), 0 on 56 (a material per face)"}
-  - {"at": 1, "size": 1, "type": "u8", "name": "MaterialUniqeIndex", "level": "observed", "note": "MeshShape.MaterialUniqeIndex (registry spelling, a byte): 0 on 724 of 724 sampled"}
-  - {"at": 2, "size": 4, "type": "u32", "name": "IndicesMaterialData count m", "level": "observed", "note": "0 (kind 1) or F (kind 0) (MeshShape.IndicesMaterialData, an array of bytes)"}
-  - {"at": 6, "size": "m", "type": "u8·m", "name": "IndicesMaterialData", "level": "observed", "note": "index into the references, covering 0..n-1"}
-  - {"at": "6+m", "size": 4, "type": "u32", "name": "TriangleMaterialData count n", "level": "observed"}
-  - {"at": "10+m", "size": "10·n", "type": "ref·n", "name": "TriangleMaterialData", "level": "observed", "note": "every one a CollisionMaterial 0x74F7311D (registry array of CollisionMaterial)"}
-  - {"at": "10+m+10n", "size": 16, "type": "vec4", "name": "MinLocalAABBox", "level": "observed", "note": "the positions' box; w 1.0 (registry vec4)"}
-  - {"at": "26+m+10n", "size": 16, "type": "vec4", "name": "MaxLocalAABBox", "level": "observed", "note": "w 1.0 (registry vec4)"}
+  - {"at": 0, "size": 1, "type": "u8", "name": "OneCollisionMaterialOnly", "level": "proven", "note": "MeshShape.OneCollisionMaterialOnly (registry bool): 1 on 668 of 724 sampled (one material), 0 on 56 (a material per face)"}
+  - {"at": 1, "size": 1, "type": "u8", "name": "MaterialUniqeIndex", "level": "proven", "note": "MeshShape.MaterialUniqeIndex (registry spelling, a byte): 0 on 724 of 724 sampled"}
+  - {"at": 2, "size": 4, "type": "u32", "name": "IndicesMaterialData count m", "level": "proven", "note": "0 (kind 1) or F (kind 0) (MeshShape.IndicesMaterialData, an array of bytes)"}
+  - {"at": 6, "size": "m", "type": "u8·m", "name": "IndicesMaterialData", "level": "proven", "note": "index into the references, covering 0..n-1"}
+  - {"at": "6+m", "size": 4, "type": "u32", "name": "TriangleMaterialData count n", "level": "proven"}
+  - {"at": "10+m", "size": "10·n", "type": "ref·n", "name": "TriangleMaterialData", "level": "proven", "note": "every one a CollisionMaterial 0x74F7311D (registry array of CollisionMaterial)"}
+  - {"at": "10+m+10n", "size": 16, "type": "vec4", "name": "MinLocalAABBox", "level": "proven", "note": "the positions' box; w 1.0 (registry vec4)"}
+  - {"at": "26+m+10n", "size": 16, "type": "vec4", "name": "MaxLocalAABBox", "level": "proven", "note": "w 1.0 (registry vec4)"}
 ```
 
 Across the 724-shape tree sample, root node zero reaches every node and face exactly once; all non-root nodes have one parent. The six inset bytes describe child-box sides in 255ths of the parent's extent, and flag bits 2–7 select the inset child for each side. :observed
@@ -94,4 +94,4 @@ OneCollisionMaterialOnly selects a single surface; otherwise IndicesMaterialData
 Noncoplanar groups prevent a universal polygon-id invariant. The eight zero bytes of section `0x0301` also have no established meaning. :unknown
 :::
 
-The complete six-archive section reader accepts all 25,162 MeshShape entries; the more detailed tree and polygon-id meanings above remain scoped to the 724-shape sample. :observed
+The complete six-archive section reader accepts all 25,162 MeshShape entries; the more detailed tree and polygon-id meanings above remain scoped to the 724-shape sample. Every section and tail is byte-accounted, without refusals. :proven[framing only]

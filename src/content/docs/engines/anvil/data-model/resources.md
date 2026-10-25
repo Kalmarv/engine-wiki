@@ -54,11 +54,11 @@ The extended header occurs on all 9,087 clips in the five-archive Animation enum
 title: "Reference"
 size: 10
 games: [riders-republic]
-note: "Little-endian. Offsets are relative to this structure."
+note: "Little-endian. All 48,862 LODSelector, 13,579 Material and 10,027 TextureSet resources across the six installed forges read without refusals; resource-reference tag/id framing is covered. Mode semantics remain unknown."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "observed", "note": "03 and nine zero bytes: refers to nothing"}
+  - {"at": 0, "size": 1, "type": "u8", "name": "tag", "value": "01", "level": "proven", "note": "03 and nine zero bytes: refers to nothing"}
   - {"at": 1, "size": 1, "type": "u8", "name": "mode", "level": "unknown", "note": "1 on every entry read"}
-  - {"at": 2, "size": 8, "type": "u64", "name": "class id", "level": "observed", "note": "the resource referred to"}
+  - {"at": 2, "size": 8, "type": "u64", "name": "class id", "level": "proven", "note": "the resource referred to"}
 ```
 
 Ten-byte references are measured across LODSelector, Material and TextureSet resources: `01`, mode, u64 ClassID; or `03` and nine zero bytes for null. This is not a universal pointer grammar: an instance's `03 01 + id` combines a null pointer and separate link. :observed{games="riders-republic"}
@@ -68,3 +68,5 @@ Owned and embedded objects generally store `u64 object id + u32 type + body`. Po
 :::open[What does the reference mode select?]
 Modes 1 and 4 occur, but their complete runtime meaning is not established. :unknown{games="riders-republic"}
 :::
+
+The ordinary resource envelope (payload length, name, ClassID and extension) is validated as an exact-end record for all 147,289 Mesh and 25,162 MeshShape entries across all six installed forges, with no refusals in those populations. Extended-header rows and their Animation population remain separately scoped above. :proven[ordinary envelope]

@@ -162,3 +162,6 @@ pnpm dev                         # http://localhost:4321 to read it
 
 A change is ready when `pnpm check` and `pnpm build` pass and the page reads well in the browser. `pnpm check` is
 safe to run while others edit the same checkout; `pnpm build` is not (one at a time).
+
+Publishing: `bash scripts/verify-and-push.sh` builds the committed `HEAD` in a clean worktree (so uncommitted pages in a
+shared checkout can't hide a broken link) and pushes exactly that commit; pushes to `main` deploy the site.

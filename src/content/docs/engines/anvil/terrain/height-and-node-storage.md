@@ -41,6 +41,20 @@ The reconstructed word is `lo+(hi-lo)*index/3`; blocks and cells run row-major w
 
 The trailer holds zero u32, f32 scale .0618794 (`0x3D7D7540`), f32 338.86, float3 origin (−8192,−8192,−3584), zero u32, dimensions 8192,8192, and 15 further bytes. The scale's interpretation as metres per word agrees within .16% with a robust fit to 20,000 ground-related entities; the vertical offset of about 925–929 metres is a fit, not a stored decoded origin. :observed[trailer and fit] :inferred[vertical offset]
 
+```layout
+title: FloorHeightData trailer
+size: 51
+fields:
+  - {at: 0, size: 4, type: u32, name: stored word, level: unknown, note: "0"}
+  - {at: 4, size: 4, type: f32, name: height scale, level: observed, note: "0.0618794; interpretation supported by the entity fit"}
+  - {at: 8, size: 4, type: f32, name: unnamed float, level: unknown, note: "338.86"}
+  - {at: 12, size: 8, type: float2, name: grid XY origin, level: observed, note: "-8192, -8192"}
+  - {at: 20, size: 4, type: f32, name: stored Z origin, level: unknown, note: "-3584; relation to decoded height unresolved"}
+  - {at: 24, size: 4, type: u32, name: stored word, level: unknown, note: "0"}
+  - {at: 28, size: 8, type: "u32[2]", name: cell dimensions, level: proven, note: "8192, 8192 in USNAT"}
+  - {at: 36, size: 15, type: bytes, name: remaining fields, level: unknown, note: "01 01; u32 4; f32 2; 01; u32 1 in USNAT"}
+```
+
 ## TerrainNodeLayer and TNLChunk
 
 The layer contains byte 1, u32 count n, n 25-byte items and n repeated as a u32. All 87,381 node positions fill a nine-level quadtree: level L starts at `(4^L-1)/3`, and its local index is row-major over `2^L` columns. Leaf level 8 has 256×256 nodes of 64 metres. :proven[whole layer and all node positions]
@@ -56,7 +70,7 @@ fields:
   - {at: 17, size: 8, type: u64, name: TNLChunk identity, level: proven}
 ```
 
-A chunk contains byte 1, u32 body length minus 5, u16 `0xFEED`, u16 tag, nine length-prefixed blocks, two f32 height bounds and a 32-byte material mask. Leaf chunks append a tenth length-prefixed block. The tag's version is `tag&0x3FF` = .`0x14`, flags `tag&0x7C00` = `0x1C00`, and bit 15 indicates the tenth block. Tags are `0x1C14` internal and `0x9C14` leaf. :proven[all chunk framing]
+A chunk contains byte 1, u32 body length minus 5, u16 `0xFEED`, u16 tag, nine length-prefixed blocks, two f32 height bounds and a 32-byte material mask. Leaf chunks append a tenth length-prefixed block. The tag's version is `tag&0x3FF` = `0x14`, flags `tag&0x7C00` = `0x1C00`, and bit 15 indicates the tenth block. Tags are `0x1C14` internal and `0x9C14` leaf. :proven[all chunk framing]
 
 | File block | Data / runtime destination | Confidence |
 |---:|---|---|

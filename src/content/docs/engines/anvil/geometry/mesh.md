@@ -31,6 +31,23 @@ fields:
 
 The ranged prefix continues with a u32 at `M+17`, vertex-format byte at `M+21`, three u32 stream strides at `M+22`, a u32 at `M+34`, centre and half-extent float3 values at `M+38` and `M+50`, a byte at `M+62`, range count at `M+63`, and eight bytes before the first range at `M+75`. :proven[29,174 split meshes]{games="riders-republic"}
 
+```layout
+title: Ranged compiled header after the layout class
+games: [riders-republic]
+size: 58
+note: Offsets start at M+17; measured over all 29,174 split meshes.
+fields:
+  - {at: 0, size: 4, type: u32, name: stored word, level: unknown, note: "2 throughout the split census"}
+  - {at: 4, size: 1, type: u8, name: vertex format, level: proven}
+  - {at: 5, size: 12, type: "u32[3]", name: stream strides, level: proven}
+  - {at: 17, size: 4, type: u32, name: stored word, level: unknown, note: "0 throughout the split census"}
+  - {at: 21, size: 12, type: float3, name: centre, level: proven}
+  - {at: 33, size: 12, type: float3, name: half extent, level: proven}
+  - {at: 45, size: 1, type: u8, name: stored byte, level: unknown, note: "0 throughout the split census"}
+  - {at: 46, size: 4, type: u32, name: range count, level: proven}
+  - {at: 50, size: 8, type: bytes, name: stored words, level: unknown, note: "two zero u32 values throughout the split census"}
+```
+
 | Format | Kind | Stream strides in bytes | Confidence |
 |---|---:|---|---|
 | static16 | 11 | 16, 0, 0 | :observed{games="riders-republic"} |
@@ -43,6 +60,19 @@ The ranged prefix continues with a u32 at `M+17`, vertex-format byte at `M+21`, 
 ## Ranged buffers
 
 Each range starts with `0x07B19A87`, a byte 1, three bytes, first-index u32 and vertex-base u32. Every range except the last has another eight bytes. The first range begins at index and vertex zero; successive range boundaries partition the buffers. Indices are u16 and relative to each range's vertex base. :proven[29,174 split meshes]{games="riders-republic"}
+
+```layout
+title: Ranged range record
+games: [riders-republic]
+size: 16
+note: Eight further bytes follow every record except the last.
+fields:
+  - {at: 0, size: 4, type: u32, name: range class, value: "0x07B19A87", level: proven}
+  - {at: 4, size: 1, type: u8, name: stored byte, level: unknown, note: "1 in the split census"}
+  - {at: 5, size: 3, type: bytes, name: stored bytes, level: unknown, note: "zero in the split census"}
+  - {at: 8, size: 4, type: u32, name: first index, level: proven}
+  - {at: 12, size: 4, type: u32, name: vertex base, level: proven}
+```
 
 After the ranges come four length-prefixed streams in order: primary attributes, positions, skin, indices. A static mesh's separate position and skin streams have zero lengths. Split position records are 12 bytes; skin records are 8 or 16 bytes. :proven[split census]{games="riders-republic"}
 
@@ -85,6 +115,20 @@ Every one of the 1,170 multi-mesh entries contains two to four objects, uses 24-
 ## Material list
 
 The common material list is a u32 count, eight bytes, one 28-byte descriptor per range, another u32 count, six bytes, one 31-byte group per range and a 20-byte trailer. Each descriptor starts with `0x0B1D34C1`, four bytes, zero byte, u16 vertex count, zero byte, u64 Material identity and eight bytes. The group's identity at offsets 8 and 17 repeats the descriptor's identity. :proven[split and inline multi-mesh censuses]{games="riders-republic"}
+
+```layout
+title: Mesh material descriptor
+games: [riders-republic]
+size: 28
+fields:
+  - {at: 0, size: 4, type: u32, name: descriptor marker, value: "0x0B1D34C1", level: proven}
+  - {at: 4, size: 4, type: bytes, name: stored bytes, level: unknown, note: "not interpreted"}
+  - {at: 8, size: 1, type: u8, name: stored byte, level: unknown, note: "0 in the measured layouts"}
+  - {at: 9, size: 2, type: u16, name: vertex count modulo 65536, level: observed}
+  - {at: 11, size: 1, type: u8, name: stored byte, level: unknown, note: "0 in the measured layouts"}
+  - {at: 12, size: 8, type: u64, name: Material identity, level: proven}
+  - {at: 20, size: 8, type: bytes, name: final bytes, level: observed, note: "last split descriptor has u32 31 then f32 position scale; others are zero"}
+```
 
 The descriptor vertex count is the range count modulo 65,536, rather than a limit on the mesh's number of vertices. Two sampled inline meshes contain 72,260 and 93,906 vertices. :observed{games="riders-republic"}
 

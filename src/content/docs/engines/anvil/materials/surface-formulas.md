@@ -27,7 +27,11 @@ The Tex1 formula matches 40 random colour/surface cases to at most `5.1e-7`; Fak
 
 HSV tint adds Hue, Saturation and Luminosity to HSV coordinates, saturating saturation and value. The hue fraction retains a negative sign: `h' = sign(h+H)*frac(abs(h+H))`, rather than wrapping negative results into `[0,1)`. Ordinary wrapped HSV differs by up to 0.06 in the random checks. :proven[Tex1 execution]
 
-Tex1_Wind and Decals1 use different binding tables from Tex1. Decals1 has no material UV transform in the traced path; Tex1_Wind reads its own later constant rows. Tex1_Emissive uses an emissive mask and scale, and an Alpha scalar. :observed[template bindings and pixel disassembly]
+Tex1_Wind and Decals1 use different binding tables from Tex1. Tex1_Wind binds normal t75, diffuse t76 and mask t77, with Hue/Saturation/Luminosity in cb3[14–16], AO at 17, translucency at 18 and UV rows at 19–20. Its roughness and metalness are raw Normal.A/B, with no Tex1 offset curve, metalness scalar or vertex-colour multiplier. Forty WARP cases with random decoy values in wind constants cb3[1–13] match colour and surface formulas within `5.8e-7`; those earlier constants do not affect the pixel outputs. :proven[executed Tex1_Wind]
+
+Decals1 binds normal t75 and diffuse t76 at the mesh UV directly. It applies HSV tint without a mask, uses `S(sat(Normal.A+RoughnessOffset))` and `Normal.B*Metalness`, and AO 1. Its largest material buffer ends at cb3[5]: it has no Tex1 UV rows, AO switch or vertex-colour factor. Forty WARP cases match within `5.2e-7`. :proven[executed Decals1]
+
+Tex1_Emissive uses an emissive mask and scale, and an Alpha scalar. The traced emissive output is mask red times scale divided by t23. :observed[template bindings and pixel data flow]
 
 ## Tex2 height blending
 

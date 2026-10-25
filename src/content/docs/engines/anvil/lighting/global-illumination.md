@@ -11,6 +11,8 @@ GIDynResource describes the geometry and visibility inputs for dynamic global il
 
 ## Spatial organization
 
+The [GIDynResource storage page](/engines/anvil/data-model/gidyn-resource/) describes its serialized framing and four streams.
+
 USNAT's base forge has one `GIDyn_<n>` resource for each of the 16,384 cells of its 128×128 grid. Patch copies cover changed cells. The sampled resource's position offset is the cell centre, and its half-float probe coordinates are relative offsets in metres. :observed[complete base index and sampled resources]
 
 The inspected one-volume/one-box profile has a voxel-to-probe grid, probe positions, encoded sample data and encoded directional data. Reading 418 bodies establishes this profile's framing and length relations; it does not establish that every GI resource uses only that profile. :observed[418 bodies]

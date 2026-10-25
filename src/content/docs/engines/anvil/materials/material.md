@@ -77,6 +77,8 @@ A property descriptor consists of eight zero bytes, class `0xD933DB50`, a link t
 
 The second string is the exact property label. Every one of the 35,918 Material texture records matches its key to the CRC-32 of that string in its referenced template; there are 125 distinct matched labels and no unresolved keys or distinct-byte collisions among those matches. CRC-32 covers the exact ASCII bytes, excluding length and NUL, with reflected polynomial `0xEDB88320` and all-ones initial/final XOR. :proven[all stored texture properties]
 
+The [complete texture-label vocabulary](/engines/anvil/materials/texture-labels/) lists every matched label, key and stored occurrence count.
+
 | Exact label | Key | Confidence |
 |---|---|---|
 | `1 - Diffuse Alpha` | `0xE4B6CC48` | :proven |
@@ -110,6 +112,7 @@ fields:
 | `(3,6)` | UV matrix starting at `cb3[f2]`; shaders use the first two rows on `(u,v,1)` | :proven[shader execution in covered families] |
 
 See [surface formulas](/engines/anvil/materials/surface-formulas/) for what the texture channels and constants compute.
+The [render-state page](/engines/anvil/materials/render-state/) describes the prelude flags; [UV transforms](/engines/anvil/materials/uv-transforms/) distinguishes measured matrix forms from unresolved composition and animation rules.
 
 :::open[What is the exact runtime texture fallback order?]
 The stored selector and defaults are established. The complete runtime precedence, null-override treatment and unfilled-slot substitute have not been established from the engine's binding code. :unknown

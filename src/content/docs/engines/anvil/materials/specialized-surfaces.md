@@ -16,7 +16,7 @@ Its parallax march takes up to 24 groups of four explicit-LOD samples of t78.R. 
 
 `MAD_Tex1_UniqueNormalGradient` adds dirt-controlled A/B/C colour zones to medium and micro detail maps. The triplanar variant samples world-space planes and blends them by the geometric normal; the world-space projection and zone correspondence are traced but the triplanar variant is not executed. :proven[UniqueNormalGradient] :observed[triplanar disassembly]
 
-`MAD_Tex1_UniqueNormal_DiffuseBlend` adds an object normal and a separately tiled detail normal by adding XY and multiplying reconstructed Z, with a mask-driven diffuse blend. `MAD_Tex1_Graffiti_Monster` adds a second detail normal, team/custom colour and view-dependent emission; on its placed materials, the relevant colour alpha and EmissivePower are zero, leaving diffuse colour and zero emission. :proven[executed permutations and placed constants]
+`MAD_Tex1_UniqueNormal_DiffuseBlend` adds an object normal and a separately tiled detail normal by adding XY and multiplying reconstructed Z. Albedo is t75 RGB, roughness is the detail normal t77 A, metalness is object normal t76 B, and `AO=1+UseAO*(t78.B*t79.B-1)`. The masks affect AO rather than establishing a diffuse colour blend from the template's name. `MAD_Tex1_Graffiti_Monster` adds a second detail normal, team/custom colour and view-dependent emission; on its placed materials, the relevant colour alpha and EmissivePower are zero, leaving diffuse colour and zero emission. :proven[executed permutations and placed constants]
 
 ## Roads, ground and distant surfaces
 
@@ -31,6 +31,10 @@ Its parallax march takes up to 24 groups of four explicit-LOD samples of t78.R. 
 | `MAD_Raw_TerrainBlend`, `MAD_OutBorder` | Read terrain tile tables and blend their outputs with terrain-dependent details | :observed[disassembly] |
 | `MAD_Cliffs_TriPlanar` | World-space projections control cliff detail sampling | :proven[executed template] |
 | `MAD_Tex1_Rocks`, `MAD_Bark`, `MAD_Tex1_Leaves` | Use the non-metal G-buffer layout, with AO and specular occlusion in different channels from ordinary Tex1 | :observed[all class-writing permutations] |
+
+Road's paint is analytic: after its material UV transform, `lane = frac((v+LaneOffset)*LaneWidth) >= 1-sat(LineWidth)`, `dash = frac((u+LineOffset)*LineFrequency) >= LineGap`, and `paint=max(lane*dash,sat(Luminosity))`. Colour is `(hueColour*paint)^2.2`, with a saturated hue-ramp colour mixed toward white by saturation. Roughness is Normal.A, metalness Normal.B times Metalness, and emission is mask red times scale divided by t23. :proven[executed spatial Road cases]
+
+The placed Road material has Saturate −1, Luminosity .3, LineWidth .05, LineFrequency .5 and LineGap .5. Its hue colour therefore becomes white, giving linear road colour `.3^2.2 ≈ .0707` and white paint. Its Alpha constant is not read by the executed `0x400000` key. :proven[placed constants and executed program]
 
 ## Screens and overlays
 

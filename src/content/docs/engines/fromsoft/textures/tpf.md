@@ -132,7 +132,7 @@ rules across formats, not a census of which codes Sekiro or Elden Ring actually 
 | 8, 9, 105 | RGBA8, BGRA8, RGBA8 respectively | :sourced[SoulsFormatsNEXT] |
 
 The reference source is internally inconsistent on some remaining codes: its comments call 22 a half-float
-format while its DXGI table uses 16-bit UNORM, and comments call 108â€“110 sRGB while that table gives linear BC
+format while its DXGI table uses 16-bit UNORM, and comments call 108–110 sRGB while that table gives linear BC
 formats. These mappings cannot establish a runtime colour view. :sourced[SoulsFormatsNEXT]
 
 DDS block-compressed formats identify both block packing and, for DXGI formats, linear or sRGB transfer.
@@ -140,7 +140,7 @@ Sekiro area-texture pixel comparisons match an independent BC decoder exactly, a
 decoders within one channel level where those readers support the format. Two m25 sky textures are explicit
 unsupported-format cases for the C# reader. :observed{games="sekiro"}
 
-BC blocks cover 4Ã—4 texels; a sub-4Ã—4 mip still occupies a whole block. BC1 and BC4 use eight-byte blocks;
+BC blocks cover 4×4 texels; a sub-4×4 mip still occupies a whole block. BC1 and BC4 use eight-byte blocks;
 BC2, BC3, BC5, BC6H and BC7 use sixteen-byte blocks. :sourced[bcdec]
 
 Normal maps and masks are read as linear data; albedo sampling can require an sRGB view. In Elden Ring's Academy
@@ -152,7 +152,7 @@ at linear formats. This payload correlation does not prove every runtime resourc
 The DDS payload provides a concrete pixel-format declaration. An exhaustive per-game mapping from the separate
 TPF format byte to that declaration is not established here, nor are all optional metadata word meanings.
 :unknown
-The conflicting reference descriptions for codes 22 and 108â€“110 also require comparison with actual DDS payloads
+The conflicting reference descriptions for codes 22 and 108–110 also require comparison with actual DDS payloads
 and resource views. :unknown
 :::
 

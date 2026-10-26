@@ -61,5 +61,5 @@ The captured cull state follows the face set rather than a single material-wide 
 
 :::open[What selects every runtime permutation and render state?]
 The material switch does not explain every instance-dependent pass choice. The cited capture does not establish
-blend modes 3â€“5 or a material field predicting every depth-bias change. :unknown{games="sekiro"}
+blend modes 3–5 or a material field predicting every depth-bias change. :unknown{games="sekiro"}
 :::

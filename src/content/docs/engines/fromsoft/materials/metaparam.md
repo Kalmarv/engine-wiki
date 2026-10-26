@@ -143,7 +143,7 @@ fields:
   - {at: 72, size: 8, type: bytes, name: reserved, value: 0, level: proven}
 ```
 
-MtdParam type 0 is bool; types 1â€“4 are float through float4. Colour is type 12 in Sekiro and 13 in Elden Ring,
+MtdParam type 0 is bool; types 1–4 are float through float4. Colour is type 12 in Sekiro and 13 in Elden Ring,
 with RGBA and a fifth intensity component. These codes differ from MATBIN's parameter codes. :proven[version-6 bundle census]
 
 The override key is a CRC-32 of the UTF-16LE logical parameter name, or zero when there is no override; that logical

@@ -38,7 +38,7 @@ Three meshes of `AEG801_258` are exceptions to taking the two byte members as th
 Half4 UV5 member as the normal input. The input selected by the program determines its role. :proven[executed vertex programs]
 
 The stored frame unpacks as `x*2-1`. Its pixel program applies sampled normal X along the stored tangent `T` and
-Y along `-w*(NÃ—T)`; this differs from the ordinary layered-program convention. :observed
+Y along `-w*(N×T)`; this differs from the ordinary layered-program convention. :observed
 
 The stored rest positions are in the model file's frame and line up with the asset's collision. :observed
 `AEG801_258`, with the three exceptional meshes, is placed 194 times. :observed A SpeedTree model's binder also

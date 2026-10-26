@@ -1,7 +1,7 @@
 ---
 title: Texture format codes
 description: Anvil image codecs, storage sizes, channel-order disagreements and sRGB interpretation.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
   - name: primase Anvil texture format mapping
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/texture.rs
@@ -38,4 +38,26 @@ Normal and surface channels are commonly packed together in BC7. A census of tex
 
 :::open[What is format 15?]
 Three of its four stored maps fit four bytes per pixel, but the codec is not established. The remaining map's framing also needs a separate explanation. :unknown
+:::
+
+## Format codes in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Shaun White Skateboarding's `TextureMap` format codes are a smaller set than the later engine's. Over the 6,461 textures of level 01 and the extra forge: :observed
+
+| Code | Codec | Textures | Evidence |
+|---:|---|---:|---|
+| 2 | BC1 | 3,675 | Stored sizes and an independent block decoder agree |
+| 3 | BC1 | 31 | As code 2 |
+| 4 | BC2 | 250 | As code 2 |
+| 5 | BC3 | 2,461 | As code 2 |
+| 12 | BC3-sized storage of a normal map | 44 | Stored sizes; neutral blocks decode to green and alpha 128 and red and blue 255 and 0 |
+
+Code 12 is not the one-byte format that the same code means in Riders Republic. Reading it as a four-float format would not fit the stored sizes. :observed
+
+The stored normal maps carry the X component in alpha and the Y component in green, with Z rebuilt by the shader, according to the game's shader source. Which direction green points is not stored; the tangent frames of 30,784 triangles fit green as up with the tangent along the U axis. Normal maps occur in level 01 only on characters (17 materials) and water effects (3); levels 03, 05 and 06 use them for water only. :observed[level 01 and the shader source]
+
+:::open[What is the orientation of the stored normal maps?]
+The convention for the green channel's direction is a fit to tangent-frame data and is not read from the engine; the orientation of code 12 content is left as stored. :inferred
 :::

@@ -1,7 +1,7 @@
 ---
 title: "Visuals and mesh instances"
 description: "Visual references, LOD slots, instance matrices and material replacements."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -138,3 +138,35 @@ fields:
 :::open[How do all shader-constant views affect rendering?]
 Registry names and sampled values identify the views, but the material view's exact channel meanings and non-null optional-pointer variants remain incomplete. :unknown
 :::
+
+## Visuals in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+A Visual component shows one object. In level 01 the shown object is a Mesh on 3,587 Visuals, a LODSelector on 200, a ParticleSystem on 122, an OmniLight on 110, a SpotLight on 79, a RealTreeMesh on 30, an object of class `0xC3120087` on 20 and a DynamicMesh on 7; a further 3,021 name objects of other cells or entries. Of 6,861 entities, 5,797 have at least one Visual. :observed[level 01]
+
+A Visual is `[component base object][InstanceData pointer][44 unnamed bytes]`. The instance data is one of the following. :observed
+
+| Instance data | Layout | Confidence |
+|---|---|---|
+| `MeshInstanceData` (`0x536E963B`) | `[Mesh pointer, external][PRT id][n x inline pointer to SubMeshInstanceData {SubMesh link, AO id}][inline pointer to CompiledMeshInstance]` | :observed |
+| `CompiledMeshInstance` | `[Data byte array][u32 21][u32 32][u64 hash][u32 key]` | :observed |
+| `LightInstance` | `[Light pointer, external][Flare: LightFlare]` | :observed |
+| `LODSelectorInstance` | as in Assassin's Creed II | :inferred |
+
+The Mesh pointer of a MeshInstanceData is always external and the SubMesh pointer is always a link. :observed
+
+```layout
+title: "LODSelector body"
+size: 100
+games: [shaun-white-skateboarding]
+note: "Little-endian. Exact on 221 of 221 selectors of level 01."
+fields:
+  - {"at": 0, "size": 9, "type": "bytes", "name": "managed byte, id, class", "level": "observed"}
+  - {"at": 9, "size": 4, "type": "u32", "name": "Category", "level": "observed", "note": "enum"}
+  - {"at": 13, "size": 1, "type": "u8", "name": "Generated", "level": "observed"}
+  - {"at": 14, "size": 85, "type": "LODDescriptor[5]", "name": "slots", "level": "observed", "note": "per slot, 17 bytes: 8 bytes before the object id (first slot's object id is at byte 22 of the body), u32 object id, f32 SwitchDistance, u8 flag"}
+  - {"at": 99, "size": 1, "type": "u8", "name": "trailing byte", "level": "unknown"}
+```
+
+Slot 0 is LOD 0: vertex counts fall with the slot index in 214 of the 214 selectors that reach two or more known meshes. An object id of 0 marks an unused slot. The switch distances are not monotonic across the slots. :observed[level 01]

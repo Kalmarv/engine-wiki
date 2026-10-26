@@ -1,7 +1,7 @@
 ---
 title: "Entities and groups"
 description: "Entity framing, component headers, inline hierarchies and group members."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -86,3 +86,39 @@ Retaining their bytes does not establish their behavior. An embedded Entity head
 :::
 
 The strict sequential profile consumes exactly 585,234 Entity and 38,825 EntityGroup bodies from the complete six-archive census, refusing 29,876 and 18,012 respectively. That proves the accepted framing only. The later header-delimited opaque-body census above does not establish those missing component grammars. :proven[accepted strict profile]
+
+## Entities in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+A level cell holds Entity objects that carry a world matrix, a list of components and a bounding volume. The layout has no layer actions and no 64-bit ids; it follows the Assassin's Creed II generation. :inferred[from the AC2-profile reader fitting its data]
+
+```layout
+title: "Shaun White Entity body"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian. Sequential decoding reaches the last byte for 3,316 of 6,861 entities of level 01 and 15,889 of 31,577 in all forges; the flag bytes through the tail verify on 6,758 of level 01."
+fields:
+  - {"at": 0, "size": 1, "type": "u8", "name": "managed", "level": "observed"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "observed"}
+  - {"at": 5, "size": 4, "type": "u32", "name": "class", "value": "0x0984415E", "level": "proven", "note": "CRC-32 of Entity"}
+  - {"at": 9, "size": 64, "type": "f32[16]", "name": "GlobalMatrix", "level": "observed"}
+  - {"at": 73, "size": "var", "type": "pointer", "name": "Hierarchy", "level": "observed", "note": "null (tag 3) on 6,857 of the 6,861 entities of level 01, inline on 4"}
+  - {"at": "73+h", "size": "var", "type": "u32 + objects", "name": "Components", "level": "observed", "note": "count, then for each a pointer tag 0 and the inline object"}
+  - {"at": "var", "size": 34, "type": "u8[34]", "name": "flag bytes", "level": "unknown", "note": "named only by position"}
+  - {"at": "var", "size": "var", "type": "BoundingVolume", "name": "bounds", "level": "observed", "note": "Min v3, Max v3, enum; world axes, relative to the origin"}
+  - {"at": "var", "size": 12, "type": "bytes", "name": "EntityDescriptor", "level": "unknown"}
+  - {"at": "var", "size": 2, "type": "u8[2]", "name": "null pointers", "value": "03 03", "level": "observed"}
+  - {"at": "var", "size": "var", "type": "GameStateData", "name": "ResetData", "level": "observed", "note": "u32, then two byte arrays"}
+  - {"at": "var", "size": 16, "type": "bytes", "name": "tail", "level": "unknown"}
+```
+
+The matrix is applied as `world = v_local * M`, with the 16 `f32` of `M` stored as rows 0 to 2 for the local X, Y and Z axes in world space and row 3 for the origin. Z is up. For 178 entities turned 90 degrees, the entity's bounding volume equals the box of its mesh bounds transformed this way to within 0.5 m, where the transposed reading fits none. :observed[178 rotated entities of level 01]
+
+The translations of the entities of one cell cluster in 32 m squares. :observed
+
+Coverage is partial: components of classes with no known layout stop sequential decoding of the other 3,545 entities of level 01. The classes that stop the most are `0x5CDCA222` (661 entities; the skate guidance system), `0xE7E3A114` (524), `0x0873AE87` (300), `0x19D48AF6` (255) and `0xA0933257` (246). :observed[level 01]
+
+:::open[Which components remain without a layout?]
+Components of the classes `0xE7E3A114`, `0x0873AE87`, `0x19D48AF6`, `0xA0933257`, `0x089D59CA`, `0x734E7ADA` and `0x51734E21`, and classes such as `Scene`, `Trajectory` and `TriggerComponent`, do not decode field by field. The 34 flag bytes, the 12-byte descriptor and the 16-byte tail of the Entity are not interpreted. :unknown
+:::

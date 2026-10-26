@@ -1,7 +1,7 @@
 ---
 title: "Runtime class registry"
 description: "Class descriptors, stored field kinds and confidence in CRC-based names."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -80,3 +80,41 @@ Enum descriptors are 16 bytes: pointer, enum-name CRC-32, count. Each target ent
 :::open[Which serializers depart from registry order?]
 The metadata is not a complete serialization program. Custom orders and shader-constant blocks require class-specific evidence; an unknown class cannot safely be decoded solely from field names. :unknown
 :::
+
+## Class ids in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+The class of an object is the CRC-32 of its class name, and the forge's name records do not carry it (see [forge archives](/engines/anvil/archives/forge/)). Level 01 holds 59 classes; 41 of them have a name in the Assassin's Creed II schema of a community tool, the rest are known only by id unless a name below matches. :observed[level 01]
+
+The names below were checked by computing the CRC-32 of each name and comparing it with the stored id. :proven[the CRC-32 equals the id for every name listed]
+
+| Class | Id | Role | Id equals CRC-32 of the name |
+|---|---|---|---|
+| `GridCellDataBlock` | `0xAC2BBF68` | First object of a level cell; lists the cell's objects | :proven |
+| `Entity` | `0x0984415E` | Placement and component list | :proven |
+| `CompiledMesh` | `0xFC9E1595` | Vertex and index data of a mesh | :proven |
+| `SKGenericMaterial` | `0xB71F6261` | The material class of every drawn surface | :proven |
+| `TextureMap` | `0xA2B7E917` | A texture with its pixels | :proven |
+| `CompiledTextureMap` | `0x13237FE9` | The pixel part of a texture, embedded in a TextureMap | :proven |
+| `TextureMapSpec` | `0x989DC6B2` | A material's reference to a TextureMap | :proven |
+| `MeshShape` | `0xB22B3E61` | Triangle collision shape | :proven |
+| `InertComponent` | `0x0E5A450A` | Rigid body of a static prop | :proven |
+| `RigidBody` | `0x228F402A` | Embedded in an InertComponent | :proven |
+| `CollisionFilterInfo` | `0x43EF99C2` | Collision layer box | :proven |
+| `SWCollisionMaterial` | `0xEF0C7E58` | Surface type of a collision triangle | :proven |
+| `SkyLight` | `0x77EEEBB4` | The level's sun and ambient colour | :proven |
+| `SWSkateGuidanceSystem` | `0x5CDCA222` | Grind edges of an entity | :proven |
+| `SWSkateFreeFormGuidanceSystem` | `0x359BE54E` | Free-form grind edges | :proven |
+| `Animation` | `0x0FA3067F` | Block-allocator class | :proven |
+| `NavMeshManager` | `0x0B4CE0E0` | Block-allocator class | :proven |
+| `RealTreeComponent` | `0x7338CDF5` | A procedural tree on an entity | :proven |
+| `ActivateRealTreeGrowthEvent` | `0xCB394D43` | Event that grows the trees | :proven |
+| `LightMapData` | `0xAA9C9CB4` | Baked light map reference | :proven |
+| `VertexLightData` | `0x37542FA0` | Per-instance baked vertex colours | :proven |
+| `CompositeLightingStaticComponent` | `0x95DC9CD6` | Baked spherical-harmonic lighting | :proven |
+
+The name of the class `0x3C6C77C8` (the box that begins every component), the surface-object classes other than `SWCollisionMaterial`, `0x9C878790` and `0x4497D578` are not known. :unknown
+
+The material class name is present in the game executable; the CRC-32 of the name does not match the property hashes the material's fields use, which are separate hashes of qualified names such as the `InfluenceHidePixelMode` property (`0x7DACF81C`). :observed
+The role of each class is read from the contents of its objects in the cells. :observed

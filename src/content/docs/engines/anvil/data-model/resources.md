@@ -1,7 +1,7 @@
 ---
 title: "Resource headers and references"
 description: "Type hashes, ClassIDs, extended file headers and member objects."
-games: ["riders-republic", "ghost-recon-breakpoint"]
+games: ["riders-republic", "ghost-recon-breakpoint", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -70,3 +70,54 @@ Modes 1 and 4 occur, but their complete runtime meaning is not established. :unk
 :::
 
 The ordinary resource envelope (payload length, name, ClassID and extension) is validated as an exact-end record for all 147,289 Mesh and 25,162 MeshShape entries across all six installed forges, with no refusals in those populations. Extended-header rows and their Animation population remain separately scoped above. :proven[ordinary envelope]
+
+## Object streams (Shaun White Skateboarding)
+
+:only[shaun-white-skateboarding]
+
+An entry of Shaun White Skateboarding does not hold one resource with a type, name and 64-bit ClassID header. In a level cell the first data block is an object directory and the second holds that many objects back to back. Object ids are 32 bits. :observed{games="shaun-white-skateboarding"}[all 1,624 cell entries]
+
+```layout
+title: "Object directory (first block)"
+size: "2 + 8·N"
+games: [shaun-white-skateboarding]
+note: "Little-endian. Exact for 45,032 of 45,032 objects of the 253 cells of level 01 and for the 194,062 objects of all 1,624 cell entries; the objects of the second block add up to its length."
+fields:
+  - {"at": 0, "size": 2, "type": "u16", "name": "object count N", "level": "observed"}
+  - {"at": 2, "size": "8·N", "type": "u32[2][N]", "name": "objects", "level": "observed", "note": "per object: its id, then the byte size of its header and body together"}
+```
+
+```layout
+title: "Object header"
+size: "13 + name length"
+games: [shaun-white-skateboarding]
+note: "Little-endian. Header plus declared body size equals the directory size for every class except the two block-allocator classes below."
+fields:
+  - {"at": 0, "size": 4, "type": "u32", "name": "class", "level": "observed", "note": "CRC-32 of the class name"}
+  - {"at": 4, "size": 4, "type": "u32", "name": "declared body size", "level": "observed"}
+  - {"at": 8, "size": 4, "type": "u32", "name": "name length L", "level": "observed"}
+  - {"at": 12, "size": "L", "type": "char[]", "name": "name", "level": "observed", "note": "the object's name, for example a mesh or entity name"}
+  - {"at": "12+L", "size": 1, "type": "u8", "name": "NUL", "level": "observed", "note": "absent on Animation and NavMeshManager"}
+```
+
+The first object of a cell is its `GridCellDataBlock`, and its id is the entry's index id. :observed
+
+`Animation` (`0x0FA3067F`) and `NavMeshManager` (`0x0B4CE0E0`) are block-allocator classes: they have no NUL after the name, their body begins with the words `0x201` and `k`, and a table of `8 + 12·k` bytes follows the declared body. :observed
+
+The body of a class derived from `ManagedObject` begins `[managed u8][id u32][class u32]` and then the fields. The id equals the directory id and the class equals the header class on every top-level object; the managed byte is 0 or 1 (1 on 5,581 and 0 on 1,562 decoded components). Classes that are not managed objects start `[id][class]`. :observed[level 01]
+
+The same id repeats across cells of one forge: the 45,032 objects of level 01 carry 23,961 distinct ids. Repeats are byte-identical for `SoundBao`, `TextureMap`, `TextureMapSpec`, `Animation` and `MeshShape` objects and for the material class, but not for `Mesh`, where 1,445 repeats differ. :observed[level 01]
+
+| Field kind | Stored form | Confidence |
+|---|---|---|
+| Handle or reference | One bare `u32` id | :observed |
+| Object pointer | `u8` tag: 0 object inline, 1 external with `u32` id, 2 link with `u32` id, 3 null | :observed |
+| Array | `u32` count then the elements; byte arrays are raw | :observed |
+| String | `u32` length, the bytes, a NUL | :observed |
+| Matrix | 16 `f32` | :observed |
+
+Riders Republic uses ten-byte references with 64-bit ids instead. :observed
+
+Every component starts with an inline non-managed object of class `0x3C6C77C8`: id, class, a kind byte (`0xFF` on 5,880 Visuals of level 01, `0xFE` on 1,296) and a target id. The meaning of `0xFE` is unknown. :observed
+
+An entry named `*_DataBlock` is a level cell (253 in `DataPC_01`, 1,624 in all forges). Of the 17,905 ids the cells of level 01 list, 12,585 are objects of the same cell and 5,320 belong to other entries; all resolve. Materials, textures, sounds, the per-instance lighting objects and most meshes are reached only by reference. :observed[level 01]

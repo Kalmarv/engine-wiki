@@ -60,6 +60,17 @@ Each 66-byte item is `00 + u64 + type`, two u32, u8, two `ValueWithRandom` objec
 
 The unnamed component `0xE139F584` has `113 + 9k` bytes on 1,990 of 2,014 checked bodies: EventListener, counted links, null handle and SoundInstance. The 24 `COL_Relic_*` exceptions contain nested event objects. :observed
 
+## What some opaque components hold
+
+Several component types without a length rule have been identified by their owners and registry classes, which tells what they contribute without a byte grammar. :observed[six-forge census]
+
+| Component | Bodies | Content | Confidence |
+|---|---:|---|---|
+| BillboardComponent | 1,148 | Only on `MAD_HUD_*_GROUP` minimap Entities, beside WidgetGroup and Layout and never a Visual: HUD markers | :observed |
+| GrassVisual | 46 | The grass model library; see [grass](/engines/anvil/vegetation/grass/) | :observed |
+| VisualTerrainComponent | 2 | On `Terrain_TemplateMap`, with PhysicsTerrain and PhysicsProps: terrain tuning values | :observed |
+| StaticDDecalComponent | 2 | A deferred decal; see [terrain deferred decals](/engines/anvil/terrain/deferred-decals/) | :observed |
+
 :::open[Which fixed-length rules generalize beyond their samples?]
 One- and two-body measurements establish those bodies only. The opaque-component census and exceptions prevent treating every row as an exhaustive schema. :unknown
 :::

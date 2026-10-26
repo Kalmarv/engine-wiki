@@ -24,6 +24,8 @@ The community describes no official SDK and relies on AnvilToolkit unpacking and
 
 The [archive-resolution page](/engines/anvil/runtime/archive-resolution/) distinguishes global from scoped lookup; higher patch priority is not established as a universal rule for all paths. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 
+In Riders Republic most patch copies equal their base copies. Of 178,814 Entity identities stored in both a base and a patch forge, 550 have different bodies; all 61,699 Mesh identities stored in both are byte-identical. Among the 550, 78 change body length; four inspected cases add one 25-byte DataLayer action. All 550 keep the same component count and first component header, so those leading fields are not patch-version markers. :observed{games="riders-republic"}
+
 :::open[Does Riders Republic expose the same mod-loading route?]
 Its base/patch data pairing is observed, but custom forge mounting and live replacement behavior are not established by the offline archive reader. :unknown{games="riders-republic"}
 :::

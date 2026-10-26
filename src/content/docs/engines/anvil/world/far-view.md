@@ -30,7 +30,9 @@ AutoFakeOrchestratorComponent (`0xD4B44556`) stores index spans related to the f
 
 The interpretation that a loaded near object hides its own spans in the merged cell fits these fields, but target-to-span mapping and live behavior are not established. :inferred
 
-Projected triangle area averages only 8.3% of cell area in 23 campus-neighborhood cells and 6.8% in 29 Area 52-neighborhood cells, contradicting continuous-ground interpretation. :observed
+Projected triangle area averages only 8.3% of cell area in 23 campus-neighborhood cells and 6.8% in 29 Area 52-neighborhood cells, contradicting continuous-ground interpretation. Per cell the proxies cover 3–37% of the area, and 32–34% of their triangles face up. :observed
+
+Coarser terrain levels reproduce the leaf heights closely: decoded at level 5 with `decoded × 5000 × 2^(8-L-20)`, they differ from level 8 by 0.46 m RMS around CITYSCHOOL and 1.18 m around Area 52. :observed[two areas]
 
 :::open[When do FarFake spans draw or disappear?]
 Draw distance, near-object mapping and suppression against terrain remain unresolved. Morton numbering is established independently. :unknown

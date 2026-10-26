@@ -17,6 +17,10 @@ Breakpoint also stores primitives with material assignments and several packed v
 
 Offsets are relative to the resource body, after its resource identity and type header. The compiled marker is at `M = 61 + 81 × boneCount`, where `boneCount` is the little-endian u32 at body offset 16. :proven[all mesh headers]{games="riders-republic"}
 
+The 16 bytes before the bone count are, in the runtime class registry's order, the ManagedObject byte, DescriptorMask, Generated, VertexStride and MaxCullingDistance (f32), then eight bytes that are zero on every header and that the registry's list does not itemise. DescriptorMask takes the values 0, 1, 2, 8, 16, 17, 18, 32, 64 and 128; MaxCullingDistance values include 0, 100, 660, 820 and 2,580. :observed[85,577 Mesh headers]{games="riders-republic"}
+
+Each 81-byte bone record before `M` is a MeshBone; see [vertex formats](/engines/anvil/geometry/vertex-formats/) for its fields. :observed{games="riders-republic"}
+
 ```layout
 title: Compiled mesh prefix
 games: [riders-republic]
@@ -76,7 +80,20 @@ fields:
 
 After the ranges come four length-prefixed streams in order: primary attributes, positions, skin, indices. A static mesh's separate position and skin streams have zero lengths. Split position records are 12 bytes; skin records are 8 or 16 bytes. :proven[split census]{games="riders-republic"}
 
-The index buffer is followed by a length-prefixed block of 32 bytes per range, two more length-prefixed streams, `MeshData`, the primitive records, four length-prefixed runs and the material list. All four final runs are empty in every split mesh; some static meshes carry copies of their vertex and index buffers there. :proven[29,174 split bodies; static copies observed]{games="riders-republic"}
+The index buffer is followed by a length-prefixed block of 32 bytes per range (PrimitiveDescData, below), two more length-prefixed streams, `MeshData`, the primitive records, four length-prefixed runs and the material list. All four final runs are empty in every split mesh; some static meshes carry copies of their vertex and index buffers there. :proven[29,174 split bodies; static copies observed]{games="riders-republic"}
+
+```layout
+title: PrimitiveDescData record
+games: [riders-republic]
+size: 32
+note: "One per range, after the index buffer. Field names from the runtime class registry."
+fields:
+  - {at: 0, size: 12, type: float3, name: centre, level: observed, note: "equals the compiled header's centre on all 1,820 checked single-range meshes"}
+  - {at: 12, size: 12, type: float3, name: half extent, level: observed, note: "equals the compiled header's half extent on the same 1,820"}
+  - {at: 24, size: 1, type: u8, name: primitive type, level: observed, note: "1 in the checked records"}
+  - {at: 25, size: 3, type: u24, name: index count, level: observed, note: "three times the range's triangle count on 5,205 of 5,205 checked"}
+  - {at: 28, size: 4, type: u32, name: first index, level: observed, note: "equals the range's first index on 2,617 of 2,617 checked"}
+```
 
 ```layout
 title: MeshData declaration and count
@@ -87,7 +104,7 @@ fields:
   - {at: 0, size: 1, type: u8, name: index width selector, level: observed, note: "0 means u16; 1 means u32"}
   - {at: 1, size: 1, type: u8, name: vertex format, level: observed}
   - {at: 2, size: 3, type: "u8[3]", name: stream strides, level: observed}
-  - {at: 5, size: 1, type: u8, name: declaration value, level: unknown, note: "4 in static24 and four-influence split meshes; 8 in eight-influence split meshes"}
+  - {at: 5, size: 1, type: u8, name: NbBonesPerVertex, level: observed, note: "registry name; 4 in static24 and four-influence split meshes, 8 in eight-influence split meshes"}
   - {at: 6, size: 4, type: u32, name: object count, level: observed}
 ```
 
@@ -131,6 +148,26 @@ fields:
 ```
 
 The descriptor vertex count is the range count modulo 65,536, rather than a limit on the mesh's number of vertices. Two sampled inline meshes contain 72,260 and 93,906 vertices. :observed{games="riders-republic"}
+
+The count can also be stale. `GFX_WireFrame_Wall_01_LOD0` declares 8,845 vertices and 5,593 triangles in both its primitive record and its material descriptor, while its buffers hold 2,490 vertices and 1,992 triangles; the decoded positions agree with the stored bounds, and an independent reader decodes the same buffers. The buffers, not the declared count, describe that mesh. :observed{games="riders-republic"}
+
+## Registry names
+
+The runtime class registry names the compiled structures, and its field order agrees with the stored bytes. :observed[85,577 Mesh headers and 83,800 ranged bodies]{games="riders-republic"}
+
+| Stored structure | Registry class or field | Confidence |
+|---|---|---|
+| Ranged layout class `0xC351EE43` | ClusteredMeshData, the compiled mesh's pointer; the inline form stores it null, so its selector byte is the pointer tag | :observed{games="riders-republic"} |
+| Ranged header words | Version (2), VertexFormat, three strides, ClusterCount (0), Center, HalfExtend, IsFixedClusterSize (0), DrawPrims count | :observed{games="riders-republic"} |
+| Range record `0x07B19A87` | ClusteredPrimitiveInfo: ClusterCount (1), IndexStart, VertexStart | :observed{games="riders-republic"} |
+| Streams | VertexDataStatic, VertexDataDynamic (positions), VertexDataIndexWeight (skin), IndexData, PrimitiveDescData | :observed{games="riders-republic"} |
+| Inline object record | MeshPrimitive: MinIndex, IsUsingDepthOnlyBuffers (0), NumVertices, StartIndex, PrimitiveCount, Type (1) | :observed{games="riders-republic"} |
+| Final four runs | VertexBufferDataStatic, VertexBufferDataDynamic, VertexBufferDataIndexWeight, IndexBufferData; the middle two are empty on all 83,800 bodies, the first and last filled on 2,160 | :observed{games="riders-republic"} |
+| Descriptor `0x0B1D34C1` | MeshInstancingData; the last descriptor's u32 31 is PlatformVersion (31 on all 83,800) and its f32 is QuantizationFactor, the position scale | :observed{games="riders-republic"} |
+| 31-byte group | DynamicReference `0x9F1640AF`, whose ObjectReference and ObjectHandle both equal the descriptor's Material on all 127,219 groups; six bytes remain unattributed | :observed{games="riders-republic"} |
+| 20-byte trailer | Sixteen Mesh bool bytes, then u32 UserCategory | :observed{games="riders-republic"} |
+
+The first trailer bool is 1 on exactly the 2,160 meshes with filled CPU-side runs, which fits a flag such as Dynamic; the individual names of these 16 bytes are not established. :observed{games="riders-republic"} :inferred[flag name]{games="riders-republic"}
 
 See [vertex formats](/engines/anvil/geometry/vertex-formats/) for stream decoding and [LOD levels](/engines/anvil/geometry/lod/) for geometry selection.
 

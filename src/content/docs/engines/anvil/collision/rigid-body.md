@@ -73,7 +73,7 @@ fields:
   - {"at": "843+h", "size": 4, "type": "u32", "name": "Zones count", "level": "observed", "note": "PhysicsActivityZone.Zones (an array of ActivityZoneDesc): its count, 0 491,971, 2 1"}
 ```
 
-Usual body length is 847 or 855 bytes depending on a null/present handle. The final PhysicsActivityZone has a counted ActivityZoneDesc array, so these sizes are not universal: the high-resolution NPC puppet carries two 27-byte items and totals 901 bytes. :observed
+Usual body length is 847 or 855 bytes depending on a null/present handle. The final PhysicsActivityZone has a counted ActivityZoneDesc array, so these sizes are not universal: the high-resolution NPC puppet (`MAD_Entity_NPC_HighResPuppet`) carries two 27-byte items and totals 901 bytes. Each item is a u64 id, type `0x56F0AAEA` (ActivityZoneDesc), a u32, two f32 and three bytes; every other body stores a zero count. :observed
 
 Some `MAD_COL_*` Entities have only RigidBodyComponent and no Visual. A closed-gate owner references `MAD_COL_GEN_MAM_Campus_ClosedGate_A`; these are invisible collision blockers rather than missing render meshes. Checked Area 52 and The Deck listings contain 44 and 12 such owners respectively. :observed
 

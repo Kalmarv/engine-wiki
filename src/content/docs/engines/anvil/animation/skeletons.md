@@ -29,9 +29,13 @@ A Bone starts with its name hash, parent pointer, a second bone pointer and null
 
 The rest includes a byte, enum, empty BoneModifier array, u32 array, constant word seven, float one and a packed word whose low 16 bits are array position and high 16 bits descendant count in checked data. SkeletonPoseBone has a custom 16-byte body not described by its registry list. :observed
 
-SkeletonComponent (`0x71FDA747`) has four base bytes, main Skeleton reference, counted addon Skeleton references, ExpressionPack reference, counted 20-byte AnimTrackDefinition objects and embedded WindForce. Length is `56 + 10 × addons + 20 × track definitions` in the checked profile, including 56-byte NPC and 116-byte bike examples. :observed
+SkeletonComponent (`0x71FDA747`) has four base bytes, main Skeleton reference, counted addon Skeleton references (mode byte `04`), ExpressionPack reference (null as `03` and nine zero bytes), counted 20-byte AnimTrackDefinition objects (`u64 + type 0xA8037D53 + 8 bytes`) and embedded WindForce (`u64 + type 0xE7F9A244 + 12 bytes`). The addon Skeletons are the `MAD_CHR_SkelAddon_*` rigs a character's parts add (head, upper and lower body, outfit, hair); they repeat the main skeleton's upper chain, and bones join by name hash. 146 SkeletonComponents are stored. Length is `56 + 10 × addons + 20 × track definitions` in the checked profile, including 56-byte NPC and 116-byte bike examples. :observed
 
 For the checked rider pose, the Skeleton's own transform replaces the root bone's local transform rather than multiplying an additional offset onto it. The runtime pose snapshot distinguishes replacement from composition; mesh inverse bind matrices correspond to stored global transforms. :observed
+
+The engine's runtime pose array holds 48-byte records (position vec4, rotation vec4, scale). For `MAD_CHR_Skel_U` its root is at (0, 0, 0.964) with a +90° turn about z, the Skeleton's own transform, and the other bones hold their stored locals. For `MAD_CHR_Skel_Bike_U` the stored root local turns −90° and the own transform +90°, and the runtime root turns +90°: composing the two would give identity, so the own transform replaces the root local. In 1,033 of 1,120 Skeletons the stored root local already equals the own transform. :observed[runtime pose snapshot of two skeletons; stored census]
+
+Every Skeleton has exactly one parentless bone, bone 0, the root. Stored bone globals exclude the own transform. Rider clips are authored with it applied: of 1,238 rider-root clip tracks, the median first-key z is 0.901, and 69% lie within 0.2 of 0.964. A rider faces +x in bone space (toes +x, left +y), which is the game's +y forward after the quarter turn. :observed
 
 :::open[How do all skeleton modifiers and pose records execute?]
 Stored bones and bind transforms do not establish IK, Reflex constraint execution, the complete 16-byte pose-bone packing or all addon assembly rules. :unknown

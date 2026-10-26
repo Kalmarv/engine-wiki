@@ -38,6 +38,8 @@ fields:
 | 81–83 | ExcludeWaterClipMaterial, IgnoreWaterDepthTest, WaterClipMaterial | :observed |
 | 84 | Name hash `42452A12`; meaning unresolved | :unknown |
 
+The rest of the 102-byte prelude (body offsets 21 to 122) is mostly constant. Bytes 21–40 are eight zero bytes, u32 `0xDF5D6C0E` (the CRC-32 of `Mask`) and eight zero bytes; bytes 85–106 are `03`, seventeen zero bytes and u32 `0x92B95F74`, the hash AnvilToolkit registers for the class `Mask16`. Bytes 85–94 have the shape of a null ten-byte reference. Bytes 107, 108, 110, 117 and 120 take only 0 or 1; the remaining bytes after 106 are zero. Of the 445 distinct preludes, none departs from these constants. What the constant run and the Mask16 hash stand for is not established. :proven[all 13,579 Material preludes] :unknown[meaning]
+
 The engine divides AlphaTestValue by 255 to obtain the alpha reference, enabling it through AlphaTestEnabled in the ordinary opaque/cut-out path. Other pass kinds have different conditions, including AlphaDisplayMode 2 or nonzero blend mode. A nonzero threshold byte alone does not establish that a draw alpha-tests. :observed[state update methods]
 
 TwoSided disables culling; it changes the pixel permutation's back-face logic only with FlipNormalOnBackFace and template support. ZTestDisabled disables depth testing. Depth writes use the opaque-disable flag for blend mode 0 and the alpha-disable flag otherwise. :observed[state and key-composition methods]

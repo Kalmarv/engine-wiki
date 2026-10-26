@@ -19,6 +19,10 @@ implementations:
 
 The inspected runtime image contains class-registration strings and field metadata absent from the packed executable's disk image. A registration string whose CRC-32 matches the id corroborates a class name; an arbitrary matching word does not. :observed
 
+The registration table is built while the game starts. A guest-memory snapshot taken at the main menu holds the plaintext class names, and their CRC-32 values name 604 of the 607 forge type ids that no tool or dictionary had named; a snapshot about 50 seconds after process start, at the splash screen, holds none of them. :observed
+
+A dictionary word with a matching CRC-32 can be an accidental collision: 25 of 298 ids previously named from word lists had a different registered class, for example `0x7AAB07A6` is CameraManager rather than `unexaminable`, and `0x18A4E465` is DBAIEquipmentSet rather than `clip_max_yremainders`. :observed
+
 | Name evidence | What it establishes | Confidence |
 |---|---|---|
 | Runtime class-registration string, matching CRC-32 | Class name in the inspected image | :observed |

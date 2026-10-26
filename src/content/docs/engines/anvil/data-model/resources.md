@@ -48,7 +48,7 @@ fields:
   - {"at": 8, "size": "12R", "type": "bytes", "name": "rows", "level": "unknown", "note": "Twelve-byte rows; meanings not established."}
 ```
 
-The extended header occurs on all 9,087 clips in the five-archive Animation enumeration (WhiteRoom patch excluded), the empty AnimTrackBuiltinTracksTable and three ProxyTextures resources. :observed{games="riders-republic"}
+The extended header occurs on all 9,087 clips in the five-archive Animation enumeration (WhiteRoom patch excluded), the AnimTrackBuiltinTracksTable (`0x46A37798`) and three ProxyTextures resources: 9,091 resources of the 1.3 million entries. The one stored AnimTrackBuiltinTracksTable is empty, so a table mapping track tags to classes is not stored in the data. :observed{games="riders-republic"}
 
 ```layout
 title: "Reference"

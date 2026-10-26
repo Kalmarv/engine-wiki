@@ -26,6 +26,8 @@ FXCommand stores CommandType, SkipIntro, SkipOutro, FX reference, TimeScale and 
 
 FX elements include spawned entities, material overlays, post effects, world changes and target-entity properties. `MAD_FX_UFOBeam` references an ordinary beam-mesh Entity and a SplashFX Entity; effect sequencing itself is not the mesh. :observed
 
+Effects are concentrated in a few places. The CITYSCHOOL campus, X Games and Eagle Park areas have no effect Entities; Area 52 has 17 UFO beams; 23 of the SplashFX Visuals are spotlight flares in skate bowls and 130 are glows along one road. The beam mesh (`MAD_FX_Mesh_UFOBeam`, an additive unlit gradient), the flare sprite, glow dots and emissive switches by time of day are the effect visuals that are static geometry or single sprites. :observed[area censuses]
+
 :::open[How is every wildlife feedback chain connected?]
 WildlifeFxData → WildlifeFxPack → Feedback is resolved, but the final Feedback-to-Splash hop is not decoded for all profiles. Group positions and runtime spawning counts are outside the direct-Entity census. :unknown
 :::

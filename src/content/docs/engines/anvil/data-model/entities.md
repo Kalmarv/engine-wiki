@@ -58,7 +58,7 @@ fields:
   - {"at": 13, "size": "var", "type": "bytes", "name": "body", "level": "proven", "note": "Type-specific grammar; no universal stored component length."}
 ```
 
-Component headers normally use `04`, with `00` on some UI and embedded objects. The registry identifies 291 Component-derived classes. Ids need not be consecutive and can use high-bit encodings; proximity to the Entity id is not a valid boundary rule. :observed
+Component headers normally use `04`, with `00` on some UI and embedded objects. The registry identifies 291 Component-derived classes. Ids need not be consecutive and can use high-bit encodings; proximity to the Entity id is not a valid boundary rule. Component ids are 41-bit numbers, a few stored as `bit63 | number << 20 | small index`, and ids within one Entity differ by up to about 1.8e12. Because `00`-tagged embedded objects inside payloads look like headers, counts and the first component's tag are needed to tell them apart. :observed
 
 135 component types comprising 105,315 instances remain opaque in the full structural census. Header-delimited coverage does not establish a sequential length rule for them. :observed
 

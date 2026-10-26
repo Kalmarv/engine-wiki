@@ -31,6 +31,8 @@ Tex1's forward shader establishes the roughness convention: it clamps the stored
 
 These programs do not write class 1; the deferred non-metal branch uses F0 .04 rather than reading their o1.w as metalness. TerrainBlend's class-writing permutations never read its material property labelled Metalness. Other permutations with UAV atomics belong to the fragment-recording pass and do not establish an alternative shading class for an ordinary G-buffer draw. :observed[all listed class writers and consumer]
 
+In those five templates the other o1-writing permutations (16, 8, 8, 2 and 2 of them) increment a structured u6 counter with `imm_atomic_iadd` and store a record to u7; their o0 is `cb1[85]` or a t70 record, o1.xyz a normal and o1.w zero, with no class byte. :observed[every o1-writing permutation of the five templates]
+
 :::open[What does the fragment-recording pass feed?]
 Its target and UAV writes are established, but the full downstream use is not. :unknown
 :::

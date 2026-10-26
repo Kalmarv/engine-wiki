@@ -43,6 +43,8 @@ fields:
 
 The Riders Republic property-object profiles include SoundSwitch (33-byte body), KinoRTCPSetterEnum (19), KinoRTCPSetterBasicType (28), KinoReplaceIdentifier (28) and KinoLoadTagIdentifier (28). Solver bodies are 59 bytes for MaterialPropertyPathNodeSolver, 34 for VisualPropertyNodeSolver and six for ShaderConstantLayoutNodeSolver, measured on their occurrences. :observed{games="riders-republic"}
 
+Rider bodies are assembled from BuildTables, not from Visuals on the rider Entities, which have none. `MAD_CHR_ICON_BUNDLE` lists slot tables `MAD_CHR_SLOT_{HEADW,EYEW,NECKW,UBODY,BP,FOOTW,LBODY,OUTFITS}`. A slot table's rows are part tables (for example `MAD_CHR_UBODY_001_U_1001`, which leads to male and female LODSelectors, a SkelAddon and `_Materials` and `_Addons` tables) and `T###_V###` variant tables with `_Plugs`. A part's low LOD meshes bind to `MAD_CHR_Skel_U` alone; its high LODs also need the part's SkelAddon. Rider Entities reference the Kino animation graph (`Steep_Graph`, `0x3527D1AE`, with a KinoExternalResourceHolder) for their clips. :observed{games="riders-republic"}
+
 Breakpoint's exported XML distinguishes the root's 64-bit resource identity from file-local object handles such as `0xF8000000+`. These handle spaces must not be conflated. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 
 :::open[What does each property path do at runtime?]

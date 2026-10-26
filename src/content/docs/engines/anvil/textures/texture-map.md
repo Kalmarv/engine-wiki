@@ -44,6 +44,8 @@ The 60-byte compiled header starts with `0x13237FE9` (`CompiledTextureMap`), u32
 
 Held levels run largest first from level r to the last mip. Width and height halve per level with a minimum of one. A block-compressed flat level occupies `ceil(width/4)*ceil(height/4)*blockBytes`; uncompressed levels occupy `width*height*pixelBytes`. Two maps declare two mips while their pixels hold a complete ten-level chain, so the declared count alone does not always describe the held bytes. :observed[measured map framing and storage census]{games="riders-republic"}
 
+RRAssetStudio's PNG export is flipped vertically against the stored texel order. On the TerrainMaterials detail maps, the correlation between a normal map's green channel and its height map's row gradient is −0.21 and −0.31 on the exported PNGs and +0.18 and +0.30 decoded in stored order, while red is unchanged. Comparisons that depend on rows (normal green, UV v, atlas rows, terrain rasters) need the two orders reconciled first. :observed[TerrainMaterials detail maps]{games="riders-republic"}
+
 ## External mip body
 
 ```layout

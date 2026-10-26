@@ -25,6 +25,8 @@ Instance matrices act in the owner's frame. Among 38,877 group instances with no
 | Group members | Referenced Entities/groups; membership alone proves no parent matrix | :observed |
 | Collision shape | Shape-local transform, then owner placement | :observed |
 
+Stored matrices can place a visual far from where it appears to belong, without a lost parent transform. Two `SpeedBoost_Arrow_A` props on the CITYSCHOOL campus (`_447`, `_448`) sit at z 2254–2255, 80–90 m under the ground at their x/y, while 17 siblings sit at z 2332–2346. Their bodies are byte-identical in flags, descriptor, filter and tail to above-ground siblings, with one Visual, no parent or attachment component, no DataLayer action and neither hidden nor phantom set; a level-0 cell lists them directly; their stored BoundingVolume z extent matches the tilted matrix; and none of the 38,903 parsed EntityGroups lists them as members. :observed[two Entities and their siblings]
+
 One six-forge placement census finds 349,009 instanced Visuals among 576,844 then-readable Entities, with matrices in slot zero and none in the other mesh slots. That does not establish that the renderer never instances coarser LODs. :observed
 
 :::open[Does owner Scale affect instances?]

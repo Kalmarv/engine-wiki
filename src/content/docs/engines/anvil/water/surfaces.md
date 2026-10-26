@@ -11,13 +11,17 @@ Riders Republic uses three distinct water geometries: distant FakeWater boxes or
 
 ## FakeWater
 
-FakeWaterMeshComponent appears on 512 stored entities, representing 256 base/patch tile identities. Each references a FakeWaterComponentChunk and embeds a FakeWaterMeshInstance, bounds, a Visual tail and three vec4 values describing centre/minimum/maximum. Its instance-matrix count is zero on all 512 bodies. Seventy bodies also hold a small half-float triangle mesh. :proven[all 512 component bodies]
+FakeWaterMeshComponent (`0x961F3B5D`) is the only component of 512 stored `WaterVisualEntity_Fake_*` entities, representing 256 base/patch tile identities. Each references a FakeWaterComponentChunk (a forge resource of type `0x4CB7E94B`, which community word lists name FakeWaterMesh) and embeds a FakeWaterMeshInstance (`0xC3457872`), bounds, a Visual tail and three vec4 values describing centre/minimum/maximum. Its instance-matrix count is zero on all 512 bodies. Seventy bodies also hold a small half-float triangle mesh. :proven[all 512 component bodies]
 
 The boxes form 1024-metre world tiles in a 16×16 grid. Every Entity rotation is identity, and Entity x/y translation agrees with the box centre to one metre; the half-float vertices lie within their world boxes. These are world positions, so applying the Entity translation again double-translates them. Half precision reaches four-metre steps at coordinate magnitudes 4096–8192. :proven[all 512 transform/box checks] :proven[all 70 stored FakeWater mesh bounds]
 
 ## Rivers and cascades
 
 River_Mesh_generation entities use Visual → LODSelector → Mesh plus a rigid-body mesh shape. The stored set includes 10,667 named river LOD meshes, with waterfall and skirt variants among the related entities. :observed[resource and entity joins]
+
+There are 2,905 `River_Mesh_generation_[x,y]_PACK_*` Entities in the base forge and 2,885 in the patch, counting the waterfall and skirt variants, and all parse with the ordinary Entity grammar. Grids list them at several levels: TerrainWorldSmall level 0 lists 2,995, level 1 1,346 and level 2 230, and LongRange level 0 lists 106, so the finest cells alone do not reach every river. :observed[complete entity and listing census]
+
+All 10,667 river LOD meshes use one Material, `WaterMaterial_USNAT`, of the FlowingWater_River template; it has no TextureSet and carries two foam texture records, and the patch forge stores it again. :observed[every river LOD mesh]
 
 FlowingWater_River writes a five-target water G-buffer. Its mesh UV supplies a flow vector `2*uv-1`, while texture samples use world XY. The sampled river Material repeats at .128 per metre, about 7.8 metres per tile; normal waves combine animated wave frames and noise. :observed[river vertex/pixel programs and constants]
 
@@ -26,6 +30,8 @@ The river's encoded water type is `sqrt(sat(p/(40,100,40)))`, with placed type `
 Waterfalls use MAD_Waterfall's unlit tinted-alpha cascade, with a sampled tint (.204,.302,.322). Skirts use an alpha foam strip, scaling sampled foam alpha by Contrast Vertex, 3 on the examined material. They do not use the same depth response as the river water body. :observed[programs and material constants]
 
 ## Lake patch storage
+
+Lakes are the 36 `WaterVisualEntity_###_###` Entities of the base forge, each a WaterComponent (`0x996DF94F`) and a RigidBodyComponent on its own `_ColMesh` MeshShape. Only TerrainWorldSmall levels 2–4 list them, never level 0. :observed[all 36 Entities]
 
 Thirty-six WaterComponent bodies parse completely; 35 have atlases. Their WaterMesh resource has a 12-byte body rather than stored surface vertices. The component embeds a RiverQuadTree, WaterPatchDesc records and three references in Flow, Params, LocalProfile order. :proven[36 component envelopes] :observed[referenced resources]
 

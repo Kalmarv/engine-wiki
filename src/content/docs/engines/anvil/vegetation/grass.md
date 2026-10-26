@@ -11,6 +11,8 @@ Grass and low clutter use a world-level library and terrain rules. The stored ch
 
 The whole-world cell lists GrassEntityGroup, which reaches SETUP_GrassUS_NAT. Its GrassComponent references the library, GrassSettings and 46 managed model Entities. A model index is its position in that array, matching GrassModelID and its library settings index on all 46 models; it is not the number in its Entity name. :proven[46-way identity join] :observed[world chain]
 
+Each of the 46 `GrassEntity_Model N` Entities has a GrassVisual, a Visual-derived class with one extra stored byte, whose instance is a GrassVisualInstance (`0xD4569683`, derived from MeshInstanceData) holding zero matrices. These Entities are the model library; plant positions are not stored in them. The setup GrassComponent bodies on `SETUP_GrassUS_NAT` (two stored copies) are 988 and 1,012 bytes. :observed[all 46 model Entities]
+
 ## Library structure
 
 The only examined GrassPatternLibrary is 30,247 bytes and closes exactly: byte 1, u32 model count, byte 0, 46 pairs of 72-byte GrassModel and 60-byte BoundingVolume objects, zero u32, 190 groups and a 443-byte tail. The groups contain 218 rules: 61 empty groups, 57 with one rule, 55 with two and 17 with three. :proven[complete library]

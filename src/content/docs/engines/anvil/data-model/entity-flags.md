@@ -38,7 +38,7 @@ fields:
   - {"at": 3, "size": 1, "type": "u8", "name": "IsPhantom", "level": "observed", "note": "Entity bool 4 of the serialized run (registry order); 1 on 6,006"}
   - {"at": 4, "size": 1, "type": "u8", "name": "IsHidden", "level": "observed", "note": "Entity bool 5 of the serialized run (registry order); 1 on 383"}
   - {"at": 5, "size": 4, "type": "u32", "name": "2B4BF1D9", "level": "unknown", "note": "Entity enum (target 0x060EC220, name not found; its table was not found in the image): low byte 4 on 10,951, 0 on 5,475, 3 on 1,749, 2 on 1,404, 1 on 1,402."}
-  - {"at": 9, "size": 1, "type": "u8", "name": "RenderLast", "level": "observed", "note": "Entity bool (registry order)"}
+  - {"at": 9, "size": 1, "type": "u8", "name": "RenderLast", "level": "observed", "note": "Entity bool (registry order); 1 on all 512 FakeWaterMeshComponent Entities, so bytes 6-10 are 00 00 00 01 00 there rather than zero"}
   - {"at": 10, "size": 1, "type": "u8", "name": "ForceIncludedInReflection", "level": "observed", "note": "Entity bool (registry order); 1 on 18"}
   - {"at": 11, "size": 1, "type": "u8", "name": "ForceExcludedFromReflection", "level": "observed", "note": "Entity bool (registry order); 1 on 20,894 (0 on 103)"}
   - {"at": 12, "size": 1, "type": "u8", "name": "IsCharacter", "level": "observed", "note": "Entity bool (registry order); 1 on 5"}

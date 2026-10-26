@@ -42,7 +42,11 @@ DDecalModel bodies are 115 bytes in all 70 stored entries. Four references suppl
 | o2.z | Normal A, roughness | :observed |
 | o3.x | Mask1 R | :observed |
 
-Alpha is `Mask1.B*(1-fade)*AlphaScale`, with discard below .4 in the examined terrain-family program. Fifty-three of 69 classified models use this family. All 5,490 USNAT instancers have ForTerrain enabled, CellMinSize 50 and CellMarge 5. :observed[model classification, instancer census and interpreted real-record execution]
+Alpha is `Mask1.B*(1-fade)*AlphaScale`, with discard below .4 in the examined terrain-family program. Fifty-three of 69 classified models use this family, drawn by three pixel programs; a model belongs to it when its body bytes 48 and 49, the fields `6FBE0FE4` and WriteGBufferRoughness, are both zero. All 5,490 USNAT instancers have ForTerrain enabled, CellMinSize 50 and CellMarge 5. :observed[model classification, instancer census and interpreted real-record execution]
+
+Their distribution is uneven: the CITYSCHOOL campus area holds no terrain-family decal instances, while Area 52 holds 2,861. :observed[two area censuses]
+
+Two Entities carry a StaticDDecalComponent instead, for example `MAD_PRP_GraffitiSEAMONSTERS_Back_FrontRockRight_A_002`. The class derives from DDecalComponent and Visual; its instance (`0x4A483387`) has a null mesh reference and embeds a StaticDDecalLibrary and StaticDDecalSettings. :observed[both bodies]
 
 :::open[How are all terrain decal permutations scheduled?]
 The examined outputs and stored projection data are established; the full runtime ordering and compositing of every decal permutation with VT updates is not. :unknown

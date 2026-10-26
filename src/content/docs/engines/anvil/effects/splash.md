@@ -26,7 +26,7 @@ In the 256-resource effective SplashFX population (four archives, patch copies r
 
 The measured birth-action population contains 366 Loop, 112 AllAtOnce and 49 Once actions. Glows and spotlight flares can use single-particle camera-facing sprites, whereas waterfall spray, falling leaves, smoke and trails require their animated state. A static sprite or mesh alone does not establish particle simulation. :observed
 
-SplashFXInstanceData starts with instance count and matrices, BoundingVolume, optional shader constants and a resource link. Some UI reticles include a present SplashFX pointer, unlike the common null form, so one fixed 179-byte rule does not cover every Visual instance. :observed
+SplashFXInstanceData starts with instance count and matrices, BoundingVolume, optional shader constants and a resource link. Some UI reticles include a present SplashFX pointer, unlike the common null form, so one fixed 179-byte rule does not cover every Visual instance: the two `SplashFX_ReticuleCenter` Visuals are 256 bytes with the pointer present, against 206 bytes for the 22 null ones of the same family. :observed
 
 :::open[What is the complete particle simulation algorithm?]
 State/action metadata and sampled values do not establish all emission, lifetime, random-seed, collision-test or billboard-selection behavior. :unknown

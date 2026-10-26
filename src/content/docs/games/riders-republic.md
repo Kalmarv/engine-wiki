@@ -6,9 +6,14 @@ sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
+  - title: "Games Explained: From Game Engines to Going Gold (Ubisoft News)"
+    url: https://news.ubisoft.com/en-us/article/P8R9SX3LGlQrlXuTuwAfQ
+    note: Ubisoft names Anvil as the engine of Assassin's Creed, Riders Republic, For Honor and Ghost Recon.
 ---
 
-Riders Republic is Ubisoft Annecy's outdoor sports game using the Anvil engine. The recorded install is Steam app 2290180, build **25394987**; its executable is `RidersRepublic.exe`, with Ubisoft Connect and a `RidersRepublic_BE.exe` BattlEye launcher present. :observed
+Riders Republic is Ubisoft Annecy's outdoor sports game. Ubisoft names Anvil, developed by Ubisoft Montreal, as its engine. :sourced[Ubisoft News]
+
+The recorded install is Steam app 2290180, build **25394987**; its executable is `RidersRepublic.exe`, with Ubisoft Connect and a `RidersRepublic_BE.exe` BattlEye launcher present. :observed
 
 ## Installed data
 
@@ -37,7 +42,11 @@ The world uses [grids](/engines/anvil/world/grids/), [entities and groups](/engi
 
 The checked executable is 41,742,840 bytes and has no raw `.text` bytes on disk. Its `.upx0`, `.upx1` and `.upx2` names resemble UPX, but the file lacks UPX magic and the UPX recognizer rejects it. Those section names alone do not establish UPX packing. :observed
 
-The unpacked runtime image contains [class registration strings and field metadata](/engines/anvil/data-model/class-registry/) absent from the disk image. Static string scans of the packed file therefore cannot establish that a class name is absent from the engine. :observed
+The entry point, RVA `0x06780029`, lies in `.upx2`; the span of `.upx2` from RVA `0x48F3000` to `0x66F3000` has byte entropy 8.0, consistent with encrypted content. The entry stub pushes values with calls and rewrites the return slots, so recursive-descent disassembly of the file yields junk instructions rather than the engine's code. :observed
+
+The unpacked runtime image contains [class registration strings and field metadata](/engines/anvil/data-model/class-registry/) absent from the disk image. Static string scans of the packed file therefore cannot establish that a class name is absent from the engine; a scan of its 279,045 strings finds none of the forge type ids' names. :observed
+
+The unpacked image is resident once the game reaches its main menu: a guest-memory snapshot there holds 99.8% of the executable's image, including the unpacked `.text`, and one taken in the open world holds 47.9%. :observed
 
 :::open[What are the exact engine revision and offline-mode requirements?]
 Neither a precise public Anvil revision nor independent offline Zen Mode availability is established by the archive and runtime-image evidence. :unknown

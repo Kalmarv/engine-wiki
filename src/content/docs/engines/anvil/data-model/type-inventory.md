@@ -41,6 +41,7 @@ The following measurements use a fixed decoding profile. Acceptance means the pr
 | SphereShape | 241 | 0 | Six-archive body profile | :proven[counts; accepted profile only] |
 | CapsuleShape | 290 | 0 | Six-archive body profile | :proven[counts; accepted profile only] |
 | BoxShape | 29 | 0 | Six-archive body profile | :proven[counts; accepted profile only] |
+| TrailRecord | 39,753 | 0 | Generic registry-ordered reader | :proven[counts; accepted profile only] |
 
 Full Entity and EntityGroup framing, when unknown component bodies are retained between recognized headers, reaches all 615,110 and 56,837 records respectively. This does not erase the distinction between interpreted and opaque components. :observed
 

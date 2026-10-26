@@ -35,8 +35,8 @@ fields:
   - {at: 60, size: 4, type: u32, name: bucket mask, level: proven}
 ```
 
-The inspected shader census has one preset-word value, `0x6D657461`; the word alone does not distinguish material
-families. Effect identity, parameters and render state carry that distinction. :proven
+All 721,634 shaders of the full-install census have one preset-word value, `0x6D657461`; the word alone does not
+distinguish material families. Effect identity, parameters and render state carry that distinction. :proven
 
 The parameter-info header is eight bytes: buffer, texture, other, sampler and parameter counts, two zero bytes,
 then buffer-copy count. Eight-byte parameter records follow. :proven
@@ -63,6 +63,12 @@ texture pointer is a stored absence, not a named white texture. :proven
 CodeWalker's conversion XML maps Enhanced names to Legacy names. For example, `Specular` corresponds to
 `specularFalloffMult`, and `SpecularColor` to `specularIntensityMult`. Exported Legacy names therefore do not
 necessarily reproduce the original Enhanced parameter identifiers. :sourced[CodeWalker]
+
+The same XML gives each material constant's buffer and byte offset. For `normal_spec_decal`, buffer 1 holds
+`Fresnel` at 0, `Specular` at 4, `SpecularColor` at 8 and `specMapIntMask` at 16. :sourced[CodeWalker]
+
+An `AlphaTest` parameter exists in only 12 tree effects of the XML's list. :sourced[CodeWalker] The alpha reference
+of other cutout materials is therefore not a material constant but part of the render state. :inferred
 
 The program binding tables independently relate current material hashes, program identifiers and constant-buffer
 offsets. A material's constants and engine-global constants have different owners even when both are shader inputs.

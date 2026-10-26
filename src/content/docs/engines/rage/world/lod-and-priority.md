@@ -33,8 +33,8 @@ The distant city has authored SLOD models, separate from the high/medium/low/ver
 [drawables](/engines/rage/geometry/drawables/). These are two distinct levels of detail organization. :observed
 
 A mesh name containing `slod` is not a sufficient definition of its placement role: SLOD-looking geometry also
-occurs in ordinary HD placements. A reported Del Perro pier example is `m_sm_slod3sjm`, above the deck; its name alone
-does not establish which runtime pass uses it. :inferred
+occurs in ordinary HD placements. On Del Perro pier, a section of `m_sm_slod3sjm` is placed as HD geometry 0.74 m
+above the deck. :observed Its name alone does not establish which runtime pass uses it. :inferred
 
 ## Content flags
 

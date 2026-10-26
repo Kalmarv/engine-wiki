@@ -119,7 +119,8 @@ Sequence blocks span `sequenceFrameLimit + 1` frames and overlap by one frame. T
 interpretation is `i * duration / (frameCount - 1)`, placing the final frame at duration rather than one frame
 interval before it. :observed
 
-Sampled stored rotation tracks fit skeleton rest rotations more closely as stored than inverted. Ordinary map
+Sampled stored rotation tracks fit skeleton rest rotations more closely as stored than inverted: a median
+difference of 17° as stored against 62° inverted. Ordinary map
 entity quaternion inversion therefore does not establish a rule to invert animation rotations. :observed
 
 :::open[How do tags, properties and unnamed tracks affect playback?]

@@ -37,11 +37,15 @@ records and startup change sets determine the mounted archives. :observed
 all packs' startup groups precede the map groups, which then run in pack order. Level conditions such as
 `$level=` restrict changes to the named level. :observed
 
+Every `GROUP_MAP` change set that changes anything belongs to a multiplayer compatibility pack; `spupgrade`'s is empty.
+The map change sets therefore describe the Online map, not Story. :observed
+
 This ordering matters for downtown: `mpheist` invalidates Story's `downtown_01_metadata.rpf` and enables `hei_` maps,
 while `patchday27ng` carries a later Story overlay. Running each pack's map group immediately after its startup
-can reintroduce the Story copy alongside the Online maps. :observed CodeWalker skips `patchday27ng` as an explicit
-workaround, so agreement with its selected map is not by itself proof of the game's transition sequence.
-:sourced[CodeWalker]
+can reintroduce the Story copy alongside the Online maps: downtown is then placed twice, 96,910 doubled placements
+map-wide. :observed CodeWalker skips `patchday27ng` as an explicit workaround, so agreement with its selected map is
+not by itself proof of the game's transition sequence. :sourced[CodeWalker] A map selected by CodeWalker's mount
+code is the Online map without `patchday27ng`'s files. :inferred
 
 Title-update paths under `update:/dlc_patch/<pack>/` replace pack files. Some packs also have `dlc1.rpf` and other
 subarchives containing files absent from the pack's main archive. :observed

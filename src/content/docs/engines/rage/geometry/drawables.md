@@ -172,8 +172,8 @@ fields:
   - {at: 288, size: 16, type: bytes, name: unknown tail, level: unknown}
 ```
 
-`prop_gascyl_02b.yft` contains non-finite tangent components in its high-detail vertices. A finite position stream does
-not establish that every auxiliary stream is finite. :observed
+`prop_gascyl_02b.yft` stores NaN tangent components in 16 of its 634 high-detail vertices. A finite position stream
+does not establish that every auxiliary stream is finite. :observed
 
 :::open[What do the remaining render masks and packed declaration bits mean?]
 Their stored locations are known; the interpretation above covers only the fields consumed by the inspected layout.

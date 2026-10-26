@@ -72,6 +72,16 @@ activate that map in a particular save. :observed
 Story and Online select different active files through [mount changes](/engines/rage/archives/mounts/). Keeping both
 sets simultaneously without their state conditions can duplicate mutually exclusive world content. :observed
 
+## Content outside the maps
+
+Some visible world objects are in no map file. The Del Perro pier Ferris wheel, `prop_ld_ferris_wheel`, is spawned
+by scripts (`am_ferriswheel.ysc`, `bigwheel.ysc`, `armenian1.ysc`, `finalec2.ysc`) with its hub at
+(−1663.97, −1126.70, 30.70) and 16 `prop_ferris_car_01` cars at radius 15.5 m, every 22.5°. :observed
+
+Street litter such as bottles, cans and paper is absent from the map placements. :observed It is spawned as
+procedural objects, which the procedural ID of [collision materials](/engines/rage/collision/bounds/) selects.
+:inferred
+
 :::open[What is the complete startup IPL and interior-entity-set state?]
 Map and archetype files describe available content; they do not establish all script requests for a save or mission.
 :unknown

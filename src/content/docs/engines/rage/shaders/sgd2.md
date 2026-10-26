@@ -23,15 +23,17 @@ Both inspected databases parse to their final byte: eight program groups followe
 records, with no unexplained trailing bytes. This establishes the outer framing, not the meaning of every byte
 inside a retained table. :proven[both complete databases]
 
-| Group index | Stage | Confidence |
-|---|---|---|
-| 0 | Vertex | :proven |
-| 1 | Pixel | :proven |
-| 2 | Geometry | :proven |
-| 3 | Domain | :proven |
-| 4 | Hull | :proven |
-| 5 | Compute | :proven |
-| 6–7 | Empty in both inspected files; stage meaning unknown | :unknown |
+| Group index | Stage | Programs in `sga_win32_60_final.awc` | Confidence |
+|---|---|---|---|
+| 0 | Vertex | 3,707 | :proven |
+| 1 | Pixel | 7,594 | :proven |
+| 2 | Geometry | 0 | :proven |
+| 3 | Domain | 458 | :proven |
+| 4 | Hull | 406 | :proven |
+| 5 | Compute | 240 | :proven |
+| 6–7 | Empty in both inspected files; stage meaning unknown | 0 | :unknown |
+
+The main database therefore holds 12,405 programs, followed by 388 effect records. :proven[complete main database]
 
 Each group begins with a little-endian u32 program count. Programs have length-prefixed NUL-terminated names,
 a tag byte, a sized DXIL container with `DXBC` magic, a fixed 152-byte table and another sized table.
@@ -50,6 +52,18 @@ fields:
   - {at: "after fixed table", size: 4, type: u32, name: binding table length, level: proven}
   - {at: "after binding table length", size: "binding table length", type: bytes, name: binding table, level: proven}
 ```
+
+## What the programs use
+
+A census of the main database's programs finds the following. :observed[census of the main database's programs]
+
+- 1,275 programs belong to tessellation pipelines, named `VS_…`, `HS_…` and `DS_…_PNTri_*_Wrapped`: the 406 hull and
+  458 domain programs, and 411 vertex programs, none of which writes `SV_Position`.
+- 5,697 pixel programs index an unbounded sampler array (register `s0`, space 2) with a dynamic index.
+- 30 programs use ray queries; three use quad operations.
+
+The game's effect list `common/shaders/preload.list`, also in `update/update2.rpf`, names every effect that the
+install's drawables use. :observed
 
 ## Effect framing
 
@@ -204,4 +218,11 @@ from effect names. :observed
 :::open[What do the program tags and retained state-table bytes mean?]
 Outer framing and named fields are decoded, but the three program-tag values and unnamed table fields have no
 established semantic meaning. :unknown
+
+Read as raw words, the effect bytes after the program lists hold seven u32 words at offset `0x18` with the values
+6, 6, 2, 0, 2, 3, 2. A flags word follows them: `0x1002` in `default`, `emissive` and `cloth`, `0x10` in glass and
+decal effects, and `0x2` in `cutout_fence`. A further word varies by effect (`0x11000011`, `0x11000111` with the
+`0x100` bit in glass, `0x13000011`). The values are observed on those effects; how these words relate to the decoded
+state tables and to the flag-8 classification of `cloth_*` effects on
+[deferred decals](/engines/rage/effects/deferred-decals/) is not established. :unknown
 :::

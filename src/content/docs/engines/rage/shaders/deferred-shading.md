@@ -29,6 +29,9 @@ use a different encoding. :observed[program evaluation and disassembly]
 | 3 | A | Ambient-path flag; values above one half select an additional multiplier | :observed |
 | 4 | R/G | Previous-frame screen displacement in pixels | :observed |
 
+Target 0 holds the square root of the diffuse colour: the sampled point- and sun-light programs square it before
+use. :observed[light-program execution]
+
 Normal encoding varies: the twiddle effects quantize RGB as `floor(128*N + 128)/256` and carry residual bits in alpha.
 Other inspected effects write `saturate(128*N.z - 127)` in alpha. A fourth normal component is not a material opacity
 channel. :observed[program evaluation]

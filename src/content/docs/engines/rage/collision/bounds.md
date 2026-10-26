@@ -128,6 +128,11 @@ the acceleration structure. :unknown
 YBN names prefixed with `hi@` or `ma@` distinguish finer collision copies associated with weapons and vehicles from
 plain map bounds used for walking or rolling. :sourced[CodeWalker]
 
+Drawn geometry and collision can describe one object differently. At the Vespucci skatepark (`vb_34_skate`), two
+round rails are drawn as pairs of crossed flat strips with the alpha-tested `railing_whiterail_basic_a` material,
+while their collision models round bars of radius 0.10 m; a third rail (`rsn_os_skatemetal`) is drawn as a real
+tube. :observed
+
 Static collision streams by bound boxes. A YBN can be live only in Story or only in Online, so collision ownership
 must retain the same [map-state distinction](/engines/rage/archives/mounts/) as placements. A file in one state is
 not globally active simply because its bounds intersect a region. :observed
@@ -137,9 +142,9 @@ not globally active simply because its bounds intersect a region. :observed
 The inspected drawable layout has an embedded-bound pointer at `gtaDrawable + 0xC8`. Fragments reach the first
 physics-LOD bound through `fragType + 0xF0`, then LOD-group `+0x10`, then physics-LOD `+0xE8`. :observed
 
-The live Story drawable census finds embedded bounds in YDRs and fragments' first physics LOD, but none in YDD
-entries or the fragment main drawable's own bound field. This is a corpus result, not a structural prohibition on
-future resources. :observed[live Story drawables]
+The live Story drawable census finds embedded bounds in 13,133 YDRs and in the first physics LOD of 40,658 YFTs, but
+none in YDD entries or the fragment main drawable's own bound field (`FragDrawable + 0xF0`). This is a corpus result,
+not a structural prohibition on future resources. :observed[live Story drawables]
 
 Entity flag value `4` is named “disable embedded collisions” by CodeWalker. :sourced[CodeWalker]
 

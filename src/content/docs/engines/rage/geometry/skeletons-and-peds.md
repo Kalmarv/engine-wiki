@@ -55,7 +55,8 @@ transforms loses the authored bind relationship. :observed
 
 Some fragment poses are singular: the inspected corpus identifies all-zero poses on `z_z_alien`, `z_z_fred`,
 `z_z_fred_large`, `z_z_wilma`, `z_z_wilma_large` and `cs_bradcadaver`. A blanket assumption that every fragment pose is
-an invertible rotation is therefore invalid. :observed
+an invertible rotation is therefore invalid. :observed Every other posed fragment's pose is a rotation to within
+1e-4, and none in the install is mirrored. :observed
 
 ## Component peds
 

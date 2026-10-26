@@ -40,6 +40,9 @@ In `terrain_cb_w_4lyr`, the dry specular intensity is `SpecularColor²` and the 
 there is no independent specular material per layer. `materialWetnessMultiplier[4]` controls wetness, not four dry
 specular values. The inspected terrain output fixes Fresnel at `0.98`. :observed[shader disassembly]
 
+Ambient occlusion in the terrain output (G-buffer target 3) comes from the vertex, not from the layers, and the
+output has no metalness term. :observed[shader disassembly]
+
 For `terrain_cb_w_4lyr_pxm_spm`, let `S` be the weighted sum of each layer's height-map green channel. Intensity uses
 `specularIntensityMultSpecMap * lerp(1, S², specIntensityAdjust)`; the corresponding falloff expression uses
 `specularFalloffMultSpecMap * lerp(1, S², specFalloffAdjust)`, divided by 512 at the indicated G-buffer stage.

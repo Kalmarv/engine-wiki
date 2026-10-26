@@ -17,7 +17,7 @@ select a palette column or contribute to emission. :observed[shader inspection]
 
 | Input | Use | Confidence |
 |---|---|---|
-| `COLOR0.a` | For sampled decal/alpha effects, opacity is texture alpha times vertex alpha | :observed[shader disassembly] |
+| `COLOR0.a` | Opacity is texture alpha times vertex alpha in 150 of the 336 effects scanned | :observed[shader disassembly] |
 | `COLOR0.r/g` | Natural/artificial ambient-occlusion inputs in sampled deferred effects | :observed[shader evaluation] |
 | `COLOR0.b` | Palette column in common `_tnt` effects | :observed[vertex shader inspection] |
 | `COLOR1.b` | Palette column in some tree effects | :observed[vertex shader inspection] |
@@ -36,6 +36,10 @@ describe the authored gradient. :inferred
 
 The sampled `cpv_only` G-buffer shader writes white albedo; vertex colour supplies ambient occlusion. A grey colour
 substitution changes the surface colour rather than reproducing that shader. :observed[shader disassembly]
+
+In `normal_spec_detail`, albedo is `DiffuseTex * (1 - detailSettings.x * specA * (d1 + d2 - 1))` and vertex colour
+again supplies only ambient occlusion. :observed[shader disassembly] Here `specA` is the specular map's alpha and
+`d1`, `d2` are the two detail-map samples. :inferred
 
 `*_geomnightonly` vertex shaders collapse the geometry during the day. The stored mesh remains present in the file;
 its daytime disappearance is shader behaviour. :observed[vertex shader inspection]

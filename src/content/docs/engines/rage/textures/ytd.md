@@ -93,6 +93,10 @@ CodeWalker's Gen9-to-Legacy conversion can be lossy: R16 UNORM becomes A8, and u
 A8R8G8B8. A converted texture's format is therefore not evidence for its original Enhanced storage format.
 :sourced[CodeWalker]
 
+CodeWalker's BC5 decoder (`DDSIO.DecompressBC5Block`, at commit `485d56b`) decodes the second channel into red with
+the first channel's endpoints and leaves green at 255. BC5 normal maps, about 2% of the city's normal maps, then
+decode as a flat `y = +1, z = 0` normal; an independent BC5 decoder gives the correct channels. :observed
+
 ## Lookup
 
 Texture parenting comes from live `gtxd.ymt` RBF data, `mph4_gtxd.ymt` and enabled `GTXD_PARENTING_DATA` XML.

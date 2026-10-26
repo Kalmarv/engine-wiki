@@ -15,8 +15,9 @@ sources:
 ---
 
 Grand Theft Auto V Enhanced is the PC Enhanced edition of GTA V, using Rockstar's RAGE engine.
-:sourced[CodeWalker] The observations in this section concern a Steam PC Enhanced install inspected in October 2026;
-the exact executable build number is not established by the retained format evidence. :unknown
+:sourced[CodeWalker] The observations in this section concern a Steam PC Enhanced install inspected in October 2026,
+whose `GTA5_Enhanced.exe` has file version 1.0.1158.16. :observed The censuses do not record the executable they ran
+against, so a game update in that month would not show in the evidence. :unknown
 
 ## Data in the install
 
@@ -61,7 +62,7 @@ corpus contains 25,961 unique archived dictionary paths and 267,536 animations. 
 Water uses [quad configuration](/engines/rage/water/quad-data/); local lights have authored
 [records and hour masks](/engines/rage/lighting/lights/). :observed
 
-:::open[Which exact executable build does the corpus represent?]
-The edition, platform and inspection period are known, but a versioned executable identity is needed before these
-observations can be assigned to a precise patch. :unknown
+:::open[Was every census taken on executable 1.0.1158.16?]
+The install's executable version is recorded, but the individual censuses do not record theirs. Assigning every
+observation to that patch needs the censuses rerun with the version recorded. :unknown
 :::

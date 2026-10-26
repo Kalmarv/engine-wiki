@@ -68,7 +68,10 @@ fields:
 
 The low 24 time-flag bits select hours; a zero hour mask means always on in the documented light interpretation.
 Sampled street lamps carry `0xF0003F`, selecting 00–05 and 20–23. Their `emissivenight` lamp-head materials are also
-dark by day. :observed
+dark by day; `Prop_StreetLight_head` has `EmissiveMultiplier` 16. :observed
+
+Night therefore has three hour-keyed parts: light records by their time flags, emissive night materials, and
+[night-only geometry](/engines/rage/materials/vertex-colours/) that its vertex shader collapses by day. :observed
 
 ## Shader window
 
@@ -77,10 +80,27 @@ diffuse terms share a global scale `G`: point lighting uses `G * colour * intens
 while sunlight uses `G * sun * albedo * NdotL`. The point-light radial window is `s / ((1-k)*s + k)`, with
 `s = saturate(1 - d²/R²)`. This is evidence for these compiled programs and tested inputs. :proven[WARP execution]
 
+The programs are `PS_pointCM_standard_6a549d93` (variant 0) and `PS_directional_just_dir_789981ad`. Over 112 point
+and 20 sun cases, the formulas match the executed programs to a relative error of at most 1.5e-7. Neither has a
+`1/π`, a factor of two or an exposure term; the albedo they read is the square root stored in the
+[G-buffer](/engines/rage/shaders/deferred-shading/), squared. :proven[WARP execution]
+
+| Constant | Meaning in the point-light program | Confidence |
+|---|---|---|
+| `lighting_locals` (`cb9`, space 1) row 3 `xyz` | Light colour | :proven |
+| `lighting_locals` row 3 `w` | Intensity `I` | :proven |
+| `lighting_locals` row 4 `z` | `1/R²` | :proven |
+| `lighting_locals` row 7 `x` | Falloff scalar `k` | :proven |
+| `misc_globals` row 14 `z` | Global scale `G`, shared with the sun program | :proven |
+
 The shader window is not inverse-square attenuation. CodeWalker's renderer uses a different curve,
 `(1-d)/(1+k*d²)`, which does not establish the game's compiled shader response. :observed[shader disassembly]
 
 :::open[How do authored light values become shader constants?]
 The CPU mapping from `falloff_exponent` to shader `k`, the absolute photometric units and any CPU intensity scale
 are unresolved. Shader execution establishes the constant-to-pixel equation, not those upstream mappings. :unknown
+
+The stored exponents range from 8 to 256 over the 107 lights of the Legion Square area. :observed The mapping
+matters: at half the radius the window is `0.75 / (0.75 + 0.25k)`, so with `k` equal to the exponent, lights of
+exponent 8, 32 and 64 are 2.75, 8.75 and 16.75 times dimmer there than with `k = 1`. :inferred
 :::

@@ -51,6 +51,14 @@ are independent stored bytes.
 | `0x11` | Receive shadow | `0/1` | :observed{games="sekiro"} :proven[all parts]{games="elden-ring"} |
 | `0x12` | Shadow only | `0/1` | :observed{games="sekiro"} :proven[all parts]{games="elden-ring"} |
 
+Sekiro's bytes agree with SoulsFormats on all 5,310 map-piece and object parts of `m11_01` for the eight shadow
+and draw flags compared. Among them, `m400090_6000`, a flat ground piece in the spawn courtyard, is shadow-only.
+:observed{games="sekiro"}
+
+:only[sekiro] Around Ashina Castle's keep, objects `m015091` to `m015098` and one submesh of `m015051` draw
+near-black boxes with the texture `m11_black_a` and the program `GXFlver_ColDif`. :observed{games="sekiro"} That they are
+blocker or occluder cards rather than scenery is a guess. :inferred{games="sekiro"}
+
 :::open[What is the exact visibility predicate?]
 The presence of arrays and their community names do not establish bit intersections, collision activation,
 occlusion, camera dependence or LOD handoff. Nor is precedence established when shadow-only and cast-shadow

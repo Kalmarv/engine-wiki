@@ -63,6 +63,9 @@ installs is one of them. :proven
 
 Whether Sekiro or Elden Ring ship any `DFLT` envelope is not established. :unknown
 
+The payload size is not exact in every header: in Sekiro's `Data5`, the entry with path hash `a28b84c8` declares a
+larger compressed size in its `KRAK` header than its stored payload. :inferred{games="sekiro"}
+
 The game's Oodle library and oozextract decode the Kraken payloads to the same bytes, so a reader does not need the
 game's library where oozextract is available. :observed
 

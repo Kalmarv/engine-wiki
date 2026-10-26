@@ -41,6 +41,7 @@ Elden Ring's list, and which of its pairs may be absent, is the one UXM's `Elden
 the whole install. :observed
 
 Sekiro's five indexes list 8,765 files, of which UXM's path dictionary names 8,752. :proven{games="sekiro"}
+`Data5` holds the map files: its salt is `NTC_map` and its index lists 5,449 of them. :observed{games="sekiro"}
 
 ## The index is wrapped in RSA
 

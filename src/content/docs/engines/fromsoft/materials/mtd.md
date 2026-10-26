@@ -12,7 +12,8 @@ implementations:
 ---
 
 MTD defines a material's shader, description, typed parameters and texture declarations. Sekiro groups these
-definitions in `/mtd/allmaterialbnd.mtdbnd.dcx`. :observed
+definitions in `/mtd/allmaterialbnd.mtdbnd.dcx`. :observed The binder holds 3,170 definitions under 3,169 names
+(`M[ARSN]_4m.mtd` appears twice). :observed{games="sekiro"}
 
 Every definition in that binder is compared with an independent reader, including all decoded strings, parameters
 and textures. Parsing reaches the exact end of each file. :proven[all binder definitions]
@@ -36,6 +37,7 @@ fields:
 
 Some stock blocks overstate their lengths. Typed counts, nested structure and markers still describe the complete
 file; this discrepancy does not establish whether the game uses or ignores the declared lengths. :proven[all binder definitions]
+The definitions with an overstated length are 83 of the 3,170. :inferred{games="sekiro"}
 
 | Block kind | Version | Contents | Confidence |
 |---|---:|---|---|

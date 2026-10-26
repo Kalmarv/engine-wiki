@@ -35,7 +35,9 @@ Both games' writers encode a world normal as `n * 0.5 + b`, where `b` has float 
 
 The surface-only gloss interpretation is `roughness = 1 - 0.95*sqrt(gloss)`. The directional light additionally
 uses `sqrt(k*gloss)`, with `k = 1 - 0.75*0.1/w`, where `w` is a light-direction constant; the captured runtime
-distribution of that constant is not established. :observed
+distribution of that constant is not established. :observed Elden Ring's directional light forms
+`r = 1 - 0.95*sqrt(k*gloss)` per light and uses `α = r²` in its GGX distribution, which therefore evaluates `r⁴`.
+:observed{games="elden-ring"}
 
 Sekiro reconstructs `F0 = RT3.rgb * RT3.rgb` and uses it in the Schlick term
 `F0 + (1-F0)*(1-dot(L,H))^5`. Elden Ring instead forms `F0 = lerp(0.04,albedo,metallic)`.
@@ -51,6 +53,11 @@ The target-1 green value modifies the diffuse wrap term with factors 10 and 20 w
 
 ## Emission and normal-map basis
 
+A normal texture's blue channel is not the normal's Z: the programs rebuild Z from red and green. :observed In
+Ashina Castle's normal maps, blue averages 38 to 64 of 255, far from the Z that red and green imply.
+:observed{games="sekiro"} Elden Ring's inspected G-buffer programs write normal-texture blue as gloss (target 1 G).
+:observed{games="elden-ring"}
+
 Among 100 Elden Ring G-buffer programs inspected from c2010, c2050, c2120 and Liurnia, target-4 RGB carries either
 zero or radiance, not a mask or velocity. Emissive families multiply colour, intensity and the emissive map by
 `SC_PreExposure`; the alpha lane has a separate unresolved meaning. :observed{games="elden-ring"}
@@ -58,6 +65,13 @@ zero or radiance, not a mask or velocity. Emissive families multiply colour, int
 For the inspected ordinary layered programs, sampled normal X follows `cross(N,T)*T.w`, and sampled normal Y
 follows `T`. SpeedTree programs use a different stored tangent convention, described under
 [SpeedTree](/engines/fromsoft/vegetation/speedtree/). :observed
+
+## Combining the light :only[elden-ring]
+
+After the lights accumulate, `GXLightCmbAlbedo` outputs `A*(1-m)` from target-2 albedo and target-1 metallic and is
+drawn with blend `DEST_COLOR / ZERO`, so it multiplies the accumulated diffuse light by the diffuse albedo.
+`GXLightComposite` then sums diffuse, specular and emission. The programs and a Limgrave capture agree on both.
+:observed{games="elden-ring"}
 
 :::open[What do the remaining channels encode?]
 The inspected lighting programs do not consume every target or lane. Elden Ring's target-1 blue and target-2

@@ -16,6 +16,8 @@ The observed Sekiro renderer submits draws on deferred D3D11 contexts. Capturing
 those draws. Constant-buffer observations must therefore follow the context and the bound constant range.
 :observed{games="sekiro"}
 
+The castle-interior capture records 222,552 draws using 180 pixel programs. :observed{games="sekiro"}
+
 In a castle-interior capture of layered G-buffer draws, vertex slot 11 supplies a 64-byte `cbTexScroll`: four
 `[1,1,0,0]` vectors. The sampled draws use identity texture scroll. This does not establish the scroll state of
 animated objects or other scenes. :observed{games="sekiro"}
@@ -24,7 +26,9 @@ animated objects or other scenes. :observed{games="sekiro"}
 
 The skinned vertex program's declared six matrix rows do not limit the bound resource to two matrices. Captured
 register-5 constant buffers include 12,288 bytes (256 matrices of 48 bytes) and 3,072 bytes (64 matrices), depending
-on the draw. Readback contains nonzero matrices beyond the declared rows. :observed{games="elden-ring"}
+on the draw. Readback contains nonzero matrices beyond the declared rows. :observed{games="elden-ring"} In the
+256-matrix buffers 232 to 253 matrices are nonzero, the last at index 255; in the 64-matrix buffer 61 are, the last
+at index 62. Non-skinned draws bind 512 bytes at that register. :observed{games="elden-ring"}
 
 The examined `c3000` model has empty per-mesh bone-index tables and uses skeleton joint indices directly. Its
 captured 256-matrix binding therefore does not imply a per-mesh table of 256 bones or a skeleton of that size.
@@ -34,6 +38,12 @@ captured 256-matrix binding therefore does not imply a per-mesh table of 256 bon
 The bound sizes vary. The observed maximum is not a proven global engine limit, and Sekiro's texture-scroll capture
 does not measure its skinning-palette size.
 :::
+
+## Executables
+
+:only[sekiro] Sekiro's 1.06 executable (file version 1.6.0.0) is SteamStub-wrapped, with its `.text` section
+encrypted on disk. :observed{games="sekiro"} :only[elden-ring] Elden Ring's 1.17.2 executable has more than one executable
+section named `.text`, so code can lie outside the first. :observed{games="elden-ring"}
 
 ## Material identity and dynamic constants
 

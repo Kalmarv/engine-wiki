@@ -32,6 +32,17 @@ and GX26 items, and a water material's GX07. No layered material in that scan ca
 :observed The specific rule `offset = speed*time` remains an inference without a capture of those moving surfaces.
 :inferred
 
+The scan covers the install's 14,459 FLVERs and 43,435 materials. Twelve items on four map pieces (and their `_S`
+twins where listed) carry nonzero values; layered materials carry only GX00 and GX04 items.
+:observed{games="sekiro"}
+
+| Map piece | Material | Items | Confidence |
+|---|---|---|---|
+| `m25_00_00_00_906000` and `_S` | `M[A]_al` | GX20, V −0.03 and −0.05 | :observed{games="sekiro"} |
+| `m17_00_00_00_106000` and `_S` | `M[A]_al_NoLight` | GX20, 0.005 and 0.005 | :observed{games="sekiro"} |
+| `m20_00_00_00_920000`, a river | `M[ARSN]` | GX20 (0, −0.08); GX26 (0, −0.04) | :observed{games="sekiro"} |
+| `m25_00_00_00_300010` | `M[ARSN]_Water_3normaltet` | GX07 | :observed{games="sekiro"} |
+
 `M[Flow]_Water` and `Character_AMSN_Scroll*` instead multiply MTD float2 parameters by `FC_GlobalTime` inside
 their material programs. :observed
 

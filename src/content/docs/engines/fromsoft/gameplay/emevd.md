@@ -179,10 +179,34 @@ only while every nonzero `(flag,state)` pair fails, restarting when flags change
 | `20004112` | Object | `2005:3` | :observed{games="sekiro"} |
 | `20004114` | Collision | `2011:1` | :observed{games="sekiro"} |
 
+In `m11_01` the calls come from the map script's event 50. A target is a part's entity ID or any of its group IDs.
+With every flag off, these calls switch 259 parts, four of them world collision: 118 are enabled, and 138
+placements belonging to other states are not. Map-piece group 1117201 (36 intact pieces) is enabled while
+1117204 (33 charcoal pieces) and 1117203 (7) are not, and 1117210 (1) is disabled in either state; object groups
+1116200 and 1116201 are enabled and 1116203 and 1116204 are not; collision 1114820 is enabled and 1114310, 1114311
+and 1114821 are not. :observed{games="sekiro"}
+
 Ashina Castle's charcoal-layer wall group is hidden while flag 8302 is off. A live save with 8301, 8302 and 8306 off
 shows the intact walls, supporting that polarity for this area. :observed{games="sekiro"}
+
+Other mechanisms change presence too. `m11_00` also calls common functions 20004115 (collision pairs) and
+20004120 (object animation), and `m11_01` has 219 story-event instructions that name entities directly: event
+11115943, for example, swaps the keep's top between `m015070` and `m015072` on flags 11110100, 8301 and 11115921.
+:observed{games="sekiro"}
 
 :::open[Which other events determine world presence?]
 Substituted calls, story-event control flow and other common functions can change the same parts. The three
 functions above are not a complete world-state interpreter, and their Sekiro IDs do not establish Elden Ring rules.
 :::
+
+## Elden Ring scripts :only[elden-ring]
+
+All 589 scripts in `/event/*.emevd.dcx` read with the layout above, and SoulsFormatsNEXT classifies Elden Ring's
+header as the same variant as Sekiro's. The scripts use 316 distinct instructions; `2000:6` (initialize common
+event) is the most frequent, with 10,480 calls. :observed{games="elden-ring"}
+
+Elden Ring has no counterpart to Sekiro's three state functions. Of the 257 common functions in
+`/event/common_func.emevd.dcx`, 27 use the part-state instructions `2012:1`, `2005:3` or `2011:1` (among them
+90005424, 90005458, 90005525, 90005620, 90005725 and 91005600). Each waits on a flag or condition (`1003:x`,
+`3:x`) before it enables or disables an asset, a fog wall or an NPC or boss setup, so world presence follows from
+the control flow of these functions rather than from a fixed argument pattern. :observed{games="elden-ring"}

@@ -77,6 +77,11 @@ using the corresponding Paramdex definition. This does not validate the meanings
 The bits select a model's marked meshes; the enemy placement supplies the NPC row. See
 [character parts and masks](/engines/fromsoft/data-model/character-parts/). :sourced[SoulsFormatsNEXT]
 
+## BonfireWarpParam :only[elden-ring]
+
+Each warp row names a target entity and an event. In 1.17.2, row 100008 names entity 10001958 and event 71008,
+and row 61423700 entity 1042371950 and event 76111. :observed{games="elden-ring"}
+
 :::open[How do PARAM revisions affect fields beyond the checked masks?]
 Definitions can remove or introduce fields at regulation versions. A matching type name or data-version number
 alone does not establish the offsets of every field across updates.

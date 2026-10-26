@@ -80,16 +80,22 @@ Static vertices with a stored normal W use that integer to identify their rigid 
 Where the layout stores no normal W, the mesh's NodeIndex supplies the bone instead. Dynamic vertices are stored
 in model bind space. :observed
 
+In Ashina Castle, map pieces' bones are identity, so their vertices need no bone transform. Objects' rigid bones
+are not: the cannon cart `o114670`, for example, has a bone scale of 0.00937, and its vertices are stored in that
+bone's space. :observed{games="sekiro"}
+
 An empty mesh bone palette means that vertex indices name skeleton joints directly; a nonempty palette supplies
 the local-to-skeleton mapping. :observed Elden Ring's c3000 model has 368 nodes and 49 meshes with empty palettes;
 its largest joint index with nonzero weight is 101. :observed{games="elden-ring"}
+Sekiro's `c1010` has 400 nodes and 81 meshes, all dynamic with empty palettes; its highest used index is 109.
+The five equipment parts of the Another's Memory: Ashina costume also have empty palettes. :observed{games="sekiro"}
 
 Twenty captured c3000 skinned draws bind a 12,288-byte joint buffer: 256 affine matrices of 48 bytes, despite
 the shader declaring only six rows. Reflection's declared array extent is therefore not the bound palette size.
 :observed{games="elden-ring"}
 
 Explicit stored weights need not sum to one. The inspected Sekiro c1010 model has byte-quantized weights
-summing to `253/255` or `252/255` on some vertices; those sums are stored data, not evidence of a decoding error.
+summing to `253/255` or `252/255` on 31,544 of its 140,330 vertices; those sums are stored data, not evidence of a decoding error.
 :observed{games="sekiro"}
 
 Smithbox leaves a static mesh as stored when neither a normal W nor a valid NodeIndex supplies a bone.

@@ -61,6 +61,16 @@ The `N` in `Texture2D_N` identifies a logical texture across material and progra
 metaparam slot/register: Sekiro's DetailBlend base albedo `Texture2D_7` is at register 1, while detail albedo
 `Texture2D_2` is at register 7. :observed{games="sekiro"}
 
+:only[elden-ring] Elden Ring's captured tiling rows are likewise indexed by the metaparam slot, not by `N`.
+:observed{games="elden-ring"} A reading of Elden Ring's G-buffer programs instead equates `N` with the MATBIN sampler's register.
+:inferred{games="elden-ring"}
+
+:::open[Is Texture2D_N a register number in Elden Ring?]
+The tiling rows separate `N` from the metaparam slot, as in Sekiro. The program reading that equates `N` with the
+sampler's register comes with no comparison against the registers bound at a draw, so which register carries a
+given `N` is not settled for Elden Ring.
+:::
+
 The FLVER record layouts below are checked in the whole-install model population: 14,459 Sekiro files
 and 22,050 reference-readable Elden Ring files. The reference refuses another 119 Elden Ring SpeedTree files;
 those have a separate stream check. One Sekiro archive entry fails before model inspection and is excluded.

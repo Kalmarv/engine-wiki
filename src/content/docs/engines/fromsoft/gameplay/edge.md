@@ -38,6 +38,14 @@ fields:
   - {at: 55, size: 9, type: "u8[9]", name: padding, level: observed, value: 0}
 ```
 
+## Counts in the Ashina maps :only[sekiro]
+
+| Map | Hang segments | Wall-hug segments | Grapple points | Confidence |
+|---|---|---|---|---|
+| `m11_01` Ashina Castle | 963, 7,280 m | 1,326, 6,267 m | none | :observed{games="sekiro"} |
+| `m11_00` Ashina Outskirts | 584, 2,813 m | 974, 3,818 m | 4 | :observed{games="sekiro"} |
+| `m11_02` Ashina Reservoir | 211, 702 m | 229, 778 m | none | :observed{games="sekiro"} |
+
 :::open[What are the point and variation conventions for every traversal kind?]
 The records distinguish traversal classes, but complete point roles, eligibility flags, direction conventions and
 runtime activation rules remain unresolved.

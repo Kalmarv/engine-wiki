@@ -17,6 +17,8 @@ population, with identity instance transforms, finest LOD and wind disabled. Pos
 normalized normals and tangents agree within `1e-6`. This establishes the windless decoding under those inputs,
 not animated wind behaviour. :proven[executed vertex programs]
 
+Elden Ring places them 70,014 times in 1,349 layouts. :observed
+
 ## Stored and runtime streams
 
 The first member word splits into a low 16-bit stream number and a high 16-bit modifier. Modifier `0x8000` marks
@@ -38,12 +40,17 @@ Half4 UV5 member as the normal input. The input selected by the program determin
 The stored frame unpacks as `x*2-1`. Its pixel program applies sampled normal X along the stored tangent `T` and
 Y along `-w*(NÃ—T)`; this differs from the ordinary layered-program convention. :observed
 
+The stored rest positions are in the model file's frame and line up with the asset's collision. :observed
+`AEG801_258`, with the three exceptional meshes, is placed 194 times. :observed A SpeedTree model's binder also
+holds an ordinary FLVER, `<model>_1.flver`. :inferred
+
 ## Wind and billboard cards
 
 The checked wind-off input sets row 3, Y of `VC_SpeedTreeWind` to 1. All-zero wind constants can produce NaN,
 so a zero-filled constant buffer is not a neutral wind state. :proven[executed vertex programs]
 
-Billboard layouts instead store Float4 UV2 and Float2 UV3. Their program turns the card toward the camera and
+Each mesh has one face set, at LOD level 0, 1 or 2; billboard cards are level 3 and draw with the
+`SpeedTree_billboard` programs. :observed Billboard layouts instead store Float4 UV2 and Float2 UV3. Their program turns the card toward the camera and
 selects an atlas image by view angle; their stored members do not directly give a fixed rest-space surface.
 :observed
 

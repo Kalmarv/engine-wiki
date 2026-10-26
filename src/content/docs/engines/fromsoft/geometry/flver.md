@@ -142,6 +142,9 @@ fields:
 | `0x80000000` | Motion-blur face set | :sourced[SoulsFormatsNEXT] |
 | `(flags & 0x87000000) == 0` | Neither a coarser LOD nor a motion-blur set | :observed |
 
+Sekiro's `c1010` meshes have LOD0, LOD1 and LOD2 face sets, each with a motion-blur twin (flags `0`, `0x01000000`
+and `0x02000000`, each also with `0x80000000`), and no strips. :observed{games="sekiro"}
+
 For strips, `0xFFFF` restarts the strip and resets parity. Degenerate triples emit no triangle but still advance
 parity; odd triples reverse the index order. Whole-install comparisons include the resulting index ordering.
 :proven[whole-install reference population]

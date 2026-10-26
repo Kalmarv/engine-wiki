@@ -28,6 +28,8 @@ The sampled Sekiro `M[LandScape]_Mountain` material family also appears among un
 all-one buffer contents conflict with the non-unit scale stated by the matching material candidates. This is
 not evidence of a universal landscape-specific scale rule. :observed{games="sekiro"}
 
+Elden Ring's terrain base layers carry a UV-group scale of 300. :inferred{games="elden-ring"}
+
 See [constant binding and tiling](/engines/fromsoft/materials/constant-binding/) for the discriminating captures
 and the limits of the current precedence rule.
 

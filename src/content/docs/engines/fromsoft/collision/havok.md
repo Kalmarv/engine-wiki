@@ -22,6 +22,18 @@ definitions. :observed
 | Sekiro | `20160200` (2016.2) | :observed{games="sekiro"} |
 | Elden Ring | `20180100` (2018.1) | :observed{games="elden-ring"} |
 
+:only[sekiro] A map's collision is split by set into binders named `h` (player and world collision), `l` (a coarser
+copy) and `f` (role not established). In Ashina Castle (`m11_01_00_00`) the `h` binder holds 228 files with 1,671,788
+triangles, the `l` binder 228 files with 234,196, and the `f` binder 192 files whose shapes are `hknpExternMeshShape`
+around small `hkGeometry` meshes. The `h` files take their type information from `h11_01_00_00.compendium` (`TCM0`).
+:observed{games="sekiro"}
+
+Each `h` file's object tree is `hkRootLevelContainer` → `hknpPhysicsSceneData` → `hknpPhysicsSystemData.bodyCinfos[]`.
+Each body's shape is an `fsnpCustomParamCompressedMeshShape`: a `hknpCompressedMeshShapeData` mesh tree (sections,
+primitives, packed and shared vertices, a bounding-volume tree) and a `pParam` reference to the
+`fsnpCustomMeshParameter` that holds the [material tables](/engines/fromsoft/collision/materials-and-bodies/).
+:observed{games="sekiro"}
+
 ## Tagfile structure
 
 One `TAG0` root contains `SDKV`, `DATA`, either `TYPE` or `TCRF`, and `INDX` sections. `TYPE` carries class layouts;
@@ -57,6 +69,11 @@ Equal second and fourth indices identify a custom primitive, rather than an ordi
 index addresses data in the shared-vertex index stream, after accounting for the section's packed vertices.
 :observed
 
+For first index `k`, the data starts at `sharedVerticesIndex[k - numPackedVertices + firstSharedVertexIndex]` of
+its section. Over 80.5 million primitives of Elden Ring asset and map collision and Sekiro object and map collision,
+no ordinary triangle or quad has equal second and fourth indices, so the test does not catch real geometry. Read as
+a triangle, a custom primitive indexes past the end of the vertex arrays. :observed
+
 | Pattern | Interpretation | Confidence |
 |---|---|---|
 | Indices `[k,k,4,k]`, words `[146,w,lo,hi]` | Extern shape index `lo | (hi << 16)`; `w` is uninterpreted | :observed{games="elden-ring"} |
@@ -65,6 +82,13 @@ index addresses data in the shared-vertex index stream, after accounting for the
 :only[elden-ring] `externShapes` contains shape references with their own transforms. In the examined data, each
 extern shape is referenced exactly once by a custom primitive and the stored scale is one. The transform supplies
 three rotation columns and a translation in compressed-mesh space. :observed{games="elden-ring"}
+
+Twenty-two Elden Ring asset collision files use extern shapes, among them `aeg257_001_l`, the lift of the Academy
+of Raya Lucaria. The referenced shapes are boxes, convex polytopes and cylinders. Each instance's `hkTransform` is
+stored as 16 floats, in the order HKLib reads as `Matrix4x4` M11 to M44. :observed{games="elden-ring"}
+
+Custom primitives whose first word has low byte `0x52` occur in Sekiro's `o205010` and `o205300` and in Elden Ring's
+`aeg004_545_l`. :observed
 
 :::open[What does the 0x52 custom payload represent?]
 The record is distinct from triangles and extern references. Interpreting its words as a vertex index and half float

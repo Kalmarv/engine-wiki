@@ -53,7 +53,7 @@ their presence in either game's examined clips is not established here. :sourced
 
 :::open[What do the optional 16 trailing zero bytes encode?]
 Some examined 2018.1 blocks have a further 16 zero bytes before the next block when float data starts on a 16-byte
-boundary. Their presence is observed; a semantic role beyond alignment is not established.
+boundary: 711 of Elden Ring's 1,568 such blocks have them, and none of Sekiro's 2,309. Their presence is observed; a semantic role beyond alignment is not established.
 :::
 
 ## Absent components
@@ -72,6 +72,10 @@ values, supporting the same fallback without a direct runtime pose comparison. :
 
 Sampled spline values agree with a second decoder derived from HavokLib, including fractional frames. This checks
 implementation agreement; shared format assumptions remain shared assumptions. :observed
+
+Smithbox's decoder agrees on 609 Elden Ring animations: over 1,979,936 values no component differs in whether it
+is present, and the largest differences are 5e-6 in position, 1.5e-7 in rotation and 1.4e-6 in scale.
+:observed{games="elden-ring"}
 
 The all-character Sekiro scan explicitly identifies `c1090/hkx/a000_205000.hkx` as SDK 2015.1, outside the 2016.2
 layout, rather than treating it as a malformed 2016.2 clip. :observed{games="sekiro"}

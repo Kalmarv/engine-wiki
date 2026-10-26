@@ -175,7 +175,8 @@ pnpm dev                         # http://localhost:4321 to read it
 
 A change is ready when `pnpm check` and `pnpm build` pass and the page reads well in the browser. `pnpm check` is
 safe to run while others edit the same checkout; `pnpm build` is not (one at a time). The check also refuses local
-paths, and the private names (machines, accounts) listed in the file `WIKI_PRIVATE_NAMES_FILE` names, when that is set.
+paths, and, when `WIKI_PRIVATE_NAMES_FILE` names a file of private names (machines, accounts), those names on whole
+pages; a name that is also a file or folder name in the repository counts as the wiki's own word.
 
 ## Publishing
 

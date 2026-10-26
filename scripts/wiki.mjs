@@ -257,7 +257,7 @@ function run(cmd, args, opts = {}) {
   // JavaScript one through this Node. A bare `pnpm` on Windows is a .cmd, which only starts through a shell.
   const pnpm = cmd === 'pnpm' ? process.env.npm_execpath : undefined;
   const [file, argv] = pnpm ? (/\.[cm]?js$/.test(pnpm) ? [process.execPath, [pnpm, ...args]] : [pnpm, args]) : [cmd, args];
-  const r = spawnSync(file, argv, { cwd: opts.cwd ?? ROOT, encoding: 'utf8', shell: process.platform === 'win32' && file === 'pnpm', env: process.env, maxBuffer: 256 << 20 });
+  const r = spawnSync(file, argv, { cwd: opts.cwd ?? ROOT, encoding: 'utf8', shell: process.platform === 'win32' && file === 'pnpm', env: opts.env ?? process.env, maxBuffer: 256 << 20 });
   if (r.error) throw r.error;
   if (r.status !== 0 && !opts.allowFail) throw new Error(`${cmd} ${args.join(' ')} failed (${r.status}):\n${(r.stderr || r.stdout).trim()}`);
   return { out: (r.stdout ?? '').trim(), err: (r.stderr ?? '').trim(), code: r.status };
@@ -339,7 +339,10 @@ function cmdPublish(args) {
         return 1;
       }
       run('pnpm', ['install', '--frozen-lockfile', '--prefer-offline', '--silent'], { cwd: wt });
-      const check = run('pnpm', ['-s', 'check'], { cwd: wt, allowFail: true });
+      // Private names were checked above, on what the commits add: text already on main isn't held to a list that
+      // grows with every new name.
+      const { WIKI_PRIVATE_NAMES_FILE: _names, ...env } = process.env;
+      const check = run('pnpm', ['-s', 'check'], { cwd: wt, allowFail: true, env });
       if (check.code !== 0) {
         console.error(`${check.err}\n${check.out}\n✗ the checks fail on ${sha.slice(0, 7)}; nothing was pushed.`);
         return 1;

@@ -3,7 +3,10 @@
 // files live and who found something stay out of it (guide/writing.md, "What the wiki does not say").
 //
 // The names come from the file WIKI_PRIVATE_NAMES_FILE names, one per line ('#' starts a comment), matched as whole
-// words in any case. The repository itself never lists them.
+// words in any case; a name that is also a file or folder name here is the wiki's own word and isn't checked. The
+// repository itself never lists them. Publishing checks them on what the commits add; `pnpm check` with the variable
+// set checks whole pages (an audit).
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const LOCAL = [
@@ -14,8 +17,11 @@ const LOCAL = [
 
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** The private names from WIKI_PRIVATE_NAMES_FILE (none when it isn't set). */
-export function privateNames(env = process.env) {
+/**
+ * The private names from WIKI_PRIVATE_NAMES_FILE (none when it isn't set), less the file and folder names of the
+ * repository (`words`): a name that is also a page or a folder here (`far-view`, `texture-map`) is the wiki's word.
+ */
+export function privateNames(env = process.env, words = repoWords()) {
   const file = env.WIKI_PRIVATE_NAMES_FILE;
   if (!file) return [];
   let text;
@@ -24,7 +30,21 @@ export function privateNames(env = process.env) {
   } catch (e) {
     throw new Error(`WIKI_PRIVATE_NAMES_FILE: can't read ${file}: ${e.message}`);
   }
-  return [...new Set(text.split(/\r?\n/).map((l) => l.replace(/#.*/, '').trim()).filter(Boolean))];
+  const names = text.split(/\r?\n/).map((l) => l.replace(/#.*/, '').trim()).filter(Boolean);
+  return [...new Set(names)].filter((n) => !words.has(n.toLowerCase()));
+}
+
+/** Every file and folder name the repository tracks, with and without its extension, lower-case. */
+function repoWords() {
+  const r = spawnSync('git', ['ls-files', '-z'], { encoding: 'utf8', maxBuffer: 64 << 20 });
+  const words = new Set();
+  for (const f of r.status === 0 ? r.stdout.split('\0') : []) {
+    for (const s of f.split('/').filter(Boolean)) {
+      words.add(s.toLowerCase());
+      words.add(s.replace(/\.[^.]*$/, '').toLowerCase());
+    }
+  }
+  return words;
 }
 
 /** A checker for lines of text: returns what is wrong with a line, or null. */

@@ -1,7 +1,7 @@
 ---
 title: Mesh and MeshData
 description: Compiled mesh framing, vertex streams, primitive ranges and inline multi-mesh index origins.
-games: [riders-republic, ghost-recon-breakpoint]
+games: [riders-republic, ghost-recon-breakpoint, "shaun-white-skateboarding"]
 sources:
   - title: GRB modding reference
     url: https://github.com/dataterminals/grb-modding-knowledgebase/blob/main/docs/10-meshes-and-skeletons.md
@@ -174,3 +174,60 @@ See [vertex formats](/engines/anvil/geometry/vertex-formats/) for stream decodin
 :::open[What do the remaining compiled fields control?]
 The values retained around stream declarations, object records and the trailer do not all have established runtime meanings. A constant value alone does not establish a reserved field. :unknown{games="riders-republic"}
 :::
+
+## Meshes in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+A drawable mesh is a `Mesh` object that holds a `CompiledMesh` inline: the vertex and index buffers, the draw ranges and the list of material ids are all in the mesh's own body. Level 01 holds 3,451 such meshes. The mesh body ends exactly after the material list in all 3,451. :observed{games="shaun-white-skateboarding"}[level 01]
+
+```layout
+title: "Mesh body (Shaun White Skateboarding)"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian. Body offsets. The compiled part is located by its class hash; it starts at body offset 33 in the 3,181 meshes without bones and at other offsets in the 270 that have them."
+fields:
+  - {"at": 0, "size": 1, "type": "u8", "name": "managed", "level": "observed"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "observed"}
+  - {"at": 5, "size": 4, "type": "u32", "name": "class", "level": "observed"}
+  - {"at": 9, "size": 4, "type": "u32", "name": "Category", "level": "observed", "note": "enum"}
+  - {"at": 13, "size": 1, "type": "u8", "name": "Generated", "level": "observed"}
+  - {"at": 14, "size": 4, "type": "u32", "name": "SubMeshes count", "level": "observed", "note": "0 for compiled meshes; 35 meshes keep raw sub-meshes instead"}
+  - {"at": 18, "size": 4, "type": "u32", "name": "Bones count", "level": "observed"}
+  - {"at": 22, "size": 11, "type": "bytes", "name": "unknown", "level": "unknown", "note": "stored bytes between the counts and the compiled part"}
+  - {"at": 33, "size": 4, "type": "u32", "name": "CompiledMesh class", "value": "0xFC9E1595", "level": "proven", "note": "CRC-32 of CompiledMesh"}
+  - {"at": 37, "size": 4, "type": "u32", "name": "Data length L", "level": "observed"}
+  - {"at": 41, "size": "L", "type": "bytes", "name": "Data", "level": "observed", "note": "the compiled buffers, below"}
+  - {"at": "41+L", "size": 4, "type": "u32", "name": "PlatformVersion", "value": "16", "level": "observed", "note": "3,451 of 3,451"}
+  - {"at": "45+L", "size": 4, "type": "u32", "name": "SDKVersion", "value": "32", "level": "observed", "note": "3,451 of 3,451"}
+  - {"at": "49+L", "size": 4, "type": "u32", "name": "material count n", "level": "observed"}
+  - {"at": "53+L", "size": "4n", "type": "u32[n]", "name": "material ids", "level": "observed", "note": "bare ids of the material objects"}
+```
+
+```layout
+title: "CompiledMesh data"
+size: "L"
+games: [shaun-white-skateboarding]
+note: "Little-endian. Offsets relative to the start of Data."
+fields:
+  - {"at": 0, "size": 4, "type": "u32", "name": "version", "value": "16", "level": "observed"}
+  - {"at": 4, "size": 4, "type": "u32", "name": "extra stream count m", "level": "observed", "note": "0 to 3; 6,231 of 6,301 distinct meshes of the level cells have 0, 57 have 1, 12 have 2 and 1 has 3"}
+  - {"at": 8, "size": 4, "type": "u32", "name": "stride", "level": "observed", "note": "bytes per vertex, 24 to 48"}
+  - {"at": 12, "size": 4, "type": "u32", "name": "vertex bytes", "level": "observed"}
+  - {"at": 16, "size": 4, "type": "u32", "name": "stride x (m + 1)", "level": "observed"}
+  - {"at": 20, "size": 4, "type": "u32", "name": "vertex bytes x (m + 1)", "level": "observed"}
+  - {"at": 24, "size": 4, "type": "u32", "name": "index bytes", "level": "observed"}
+  - {"at": 28, "size": 4, "type": "u32", "name": "unknown", "value": "0", "level": "unknown"}
+  - {"at": 32, "size": 4, "type": "u32", "name": "flags", "level": "observed", "note": "values 0, 1, 4, 6, 64, 65, 68 and 70 occur"}
+  - {"at": 36, "size": 4, "type": "u32", "name": "range count A", "level": "observed"}
+  - {"at": 40, "size": 4, "type": "u32", "name": "range count B", "level": "observed"}
+  - {"at": 44, "size": 4, "type": "u32", "name": "total", "level": "observed", "note": "vertex bytes + index bytes + 24 x (A + B)"}
+  - {"at": 48, "size": "vertex bytes x (m + 1)", "type": "bytes", "name": "vertex streams", "level": "observed", "note": "stream 0 is the base mesh; each further stream is a whole vertex array of the same layout"}
+  - {"at": "var", "size": "index bytes", "type": "u16[]", "name": "indices", "level": "observed", "note": "global into the vertex buffer"}
+  - {"at": "var", "size": "24 x (A + B)", "type": "range[A + B]", "name": "ranges", "level": "observed", "note": "six u32 each"}
+  - {"at": "var", "size": 120, "type": "bytes", "name": "tail", "level": "unknown", "note": "stored bytes after the ranges"}
+```
+
+A range is `[primitive type 4 (triangle list)][first vertex][vertex count][first index, in u16 units][triangle count][tag]`. The first A ranges partition the index buffer one-to-one with the mesh's materials: A equals the number of materials, range i uses material i, and the triangles of the A ranges add up to the index count. The B ranges are a second partition of the same indices. This holds for the 3,416 meshes whose ranges parse. The tag word is unknown. :observed[3,416 meshes of level 01]
+
+The further vertex streams are shape morphs of the gameplay objects that grow or deform (the `InfGP` bump, vert and pool shapes). Of 26 morph meshes in level 01, 30 morph targets in all, eight further streams also change the UVs or colours. :observed[level 01]

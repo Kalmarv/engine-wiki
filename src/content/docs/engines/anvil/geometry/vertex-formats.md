@@ -1,7 +1,7 @@
 ---
 title: Packed vertex formats
 description: Positions, signed UVs, colour, normal frames and skin streams in Riders Republic meshes.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
   - name: primase Anvil vertex decoder
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/vertex.rs
@@ -63,4 +63,32 @@ fields:
 
 :::open[Which spherical vector reaches each pixel path?]
 The two kind-11 vectors have an established vertex decode, but their downstream roles need a per-permutation trace. :unknown
+:::
+
+## Vertex layout in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+A vertex has an explicit stride, 24 to 48 bytes, and a flags word in the compiled mesh data selects which optional elements it carries. The position is three `f32` at offset 0 in every mesh. The elements follow in this order: position, normal, tangent (if any), colour (if any), first UV, then the further 8-byte elements. :observed{games="shaun-white-skateboarding"}[level 01]
+
+| Element | Size | Present when | Confidence |
+|---|---:|---|---|
+| Position | 12 | always (`f32` × 3) | :observed |
+| Normal | 4 | always (`u8` × 3 and a pad byte); the median dot product with the face normals is 1.0 and fronts are counter-clockwise | :observed |
+| Tangent | 4 | when the stride leaves room for it; absent on 24-byte vertices (`u8` × 4, orthogonal to the normal; `w` is only +1 or −1) | :observed |
+| Vertex colour | 4 | flag bit 64 (a Direct3D colour, byte order B, G, R, A) | :observed |
+| First UV | 8 | always (`f32` × 2) | :observed |
+| Further 8-byte elements | 8 each | flag bits 4, 2 and 1 | :inferred |
+| Four unexplained bytes | 4 | 111 meshes, before the skinning indices | :unknown |
+
+The flags 68 give the 40-byte vertex: position at 0, normal at 12, tangent at 16, vertex colour at 20, first UV at 24 and an 8-byte element at 32. In level 01 that element holds two `f32` equal to the position's X and Y times 100 in the meshes examined. The stride minus the sizes of position, normal, first UV, the vertex colour and the flagged 8-byte elements is 4 where a tangent follows the normal, 8 on the 111 meshes that also carry the four unexplained bytes, and 0 on meshes without a tangent. :observed[level 01]
+
+The vertex colour is stored as a Direct3D colour (B, G, R, A in memory), not as RGBA. A runtime capture of the vertex declarations the game creates while level 01 loads shows all 23 distinct declarations use the colour format for `COLOR0`, and the same capture shows the second vertex stream of instanced draws and the morph colour use it as well. Swapping red and blue of the stored bytes makes the third-layer mural of the metro station appear, as it does in the game, and a raw RGBA reading does not. :observed{games="shaun-white-skateboarding"}[a runtime trace of level 01 and a rendering comparison]
+
+The runtime declarations also include a second vertex stream with a Direct3D colour as `TEXCOORD2`, taken per instance, which carries the baked vertex lighting, and morph streams with `POSITION1`, `NORMAL1` as `UBYTE4` and `COLOR1`. :observed
+
+Morph streams repeat the whole base vertex layout (position, normal, optional colour, first UV); in them flag bit 4 adds no second UV. Thirty-eight of the 502 vertices of one bump shape have NaN in both UV components, all with vertex alpha 0. :observed[level 01]
+
+:::open[Which vertex formats remain unread?]
+Two vertex formats of level 01 do not fit the table above, and the stride of the skinned meshes carries four bytes whose use is unknown. :unknown
 :::

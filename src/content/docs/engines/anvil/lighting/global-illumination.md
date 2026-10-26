@@ -1,7 +1,7 @@
 ---
 title: Global illumination and environment data
 description: Dynamic surfel GI, probe positions, world transfer maps and ambiance environment cubemaps.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
   - name: primase Anvil GI reader
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/gidyn.rs
@@ -34,3 +34,23 @@ WorldAmbiance selects the environment cube for a look. All 17 examined BC6H cube
 :::open[How does stored visibility become irradiance?]
 Sample decoding, the directional-table remainder, grid flags and the complete resource-to-GPU construction are not all established. No baked irradiance values can be claimed merely by decoding probe positions. :unknown
 :::
+
+## Baked lighting in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+The static world of Shaun White Skateboarding is lit by baked data, not by the stored omni and spot lights. Three stored kinds of baked data take part. :observed{games="shaun-white-skateboarding"}[level 01 and the shader sources]
+
+| Class | Id | Size | Holds |
+|---|---|---:|---|
+| `LightMapData` | `0xAA9C9CB4` | 75 bytes | A reference to a light-map texture named `LMP_ColLightMapTexture*` (BC3, one mip) |
+| `VertexLightData` | `0x37542FA0` | 71 bytes | Per-instance baked vertex colours, held with the placement's mesh instance data (class `0x536E963B`), in a block of class `0x4368101B`: a header of nine `u32`, then 4 bytes per vertex |
+| `CompositeLightingStaticComponent` | `0x95DC9CD6` | variable | Seven `float4` of spherical-harmonic coefficients, a direction and two `float4` for the uninfluenced state |
+
+The class ids equal the CRC-32 of the class names `LightMapData`, `VertexLightData` and `CompositeLightingStaticComponent`. :proven[computed from the names]
+
+A stored baked value is decoded as `value · scale + bias`, with the pair stored in a `StaticColorModification` object (class `0x40F951DA`) as the bias `float4` followed by the scale `float4`. The bias equals the level's sky ambient colour in all six levels: 70, 70, 70, 90, 70 and 50 of 255 for levels 01 to 06 (0.2745, 0.2745, 0.2745, 0.3529, 0.2745, 0.1961). :observed[all six levels]
+
+The shader permutations for the generic effect are named `STATIC_LIGHTMAP`, `STATIC_VERTEXLIGHTING` (the per-instance colour stream) and `COMPOSITELIGHTING` (the spherical harmonics plus ambient). The attenuation function for omni lights is compiled in only for the tool build. :observed
+
+Stored local lights therefore do not reach dark places: in the level 05 tunnel the nearest omni light is 24.8 m from the spot and has a range of 25 m, and in level 06 the 16 lights are at least 150 m away. A black box mesh (`05A_CoridorBlackBox01`, material `Gen_Black_Mat`) faces inward around the tunnel, so the darkness is authored. :observed[levels 05 and 06]

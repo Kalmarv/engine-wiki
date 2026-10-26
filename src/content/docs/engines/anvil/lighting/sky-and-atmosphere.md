@@ -1,7 +1,7 @@
 ---
 title: Sky, atmosphere and time of day
 description: The season-to-sky chain, authored controllers, hourly scattering tables, clouds and stars.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
   - name: primase Anvil sky reader
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/sky.rs
@@ -76,3 +76,20 @@ Cloud fields include cover, altitude, thickness, movement and cirrus textures. D
 :::open[How are sky tables and controllers evaluated together?]
 The runtime interpolation between hourly tables, full sun trajectory and azimuth frame, cloud model, star-buffer source and full exposure-to-display pipeline remain unresolved. The WARP sky result is a program-level check with explicit inputs, not a matched game screenshot. :unknown
 :::
+
+## The sky light of Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Each world's root entry holds one `SkyLight` object (`0x77EEEBB4`, named `01_SkyLight` in level 01, body 200 bytes): a 106-byte prefix and an inline `SunLight`. The sun colour, intensity and the ambient colour are fixed by the executable's property descriptors and its serialiser. :observed{games="shaun-white-skateboarding"}[level 01 and the executable]
+
+| Body offset | Size | Value in level 01 | Meaning | Confidence |
+|---:|---:|---|---|---|
+| 9 | 12 | (0.46, 0.27, 0.85) | A direction vector; its sign convention is not established | :observed |
+| 29 | 4 | `FFF9F1DE` | Sun colour, packed | :observed |
+| 33 | 4 | 2.5 | `SunLightIntensity` | :observed |
+| 62 | 12 | three small finite floats | A `Vec3` property; not references | :unknown |
+| 74 | 16 | (70, 70, 70, 50) of 255 | `AmbientColor`, a `Vec4` | :observed |
+| 90 | 16 | (120, 120, 120, 0) of 255 | A `Vec4` whose property hash is `0xEA0E031C`; unlabelled | :unknown |
+
+The ambient colour of the six levels is grey, 70, 70, 70, 90, 70 and 50 of 255. The fog and the global ambient controls of the sky are not described. :observed[all six levels]

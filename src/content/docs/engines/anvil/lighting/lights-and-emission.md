@@ -1,7 +1,7 @@
 ---
 title: Lights and emissive fixtures
 description: WhiteRoom spotlights, managed light references, open-world emissive geometry and intensity limits.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
   - name: primase Anvil light reader
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/light.rs
@@ -43,3 +43,22 @@ Emission in the traced materials is exposure-referenced and passes through the m
 :::open[What are the punctual lights' physical units?]
 The stored intensity-like fields and cone/range values are readable, but their physical calibration and all shadow flag meanings are not established. :unknown
 :::
+
+## Lights in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Level 01 places 110 `OmniLight` and 79 `SpotLight` objects through Visual components (one Visual per light, at the owning entity's matrix), and its root entry holds one `SkyLight`. The light layouts are those of the Assassin's Creed II schema with changes: a graphic-object category and generated flag (5 bytes), five bools before the intensity and a `u32` shadow-map resolution. :observed{games="shaun-white-skateboarding"}[level 01]
+
+| Class | Body size | Fields in order | Confidence |
+|---|---:|---|---|
+| `OmniLight` | 102 | Dynamic, CastShadows, AffectCharacters, AffectEnvironment, DirtyFlag, Intensity, Flare, a `u32` (1 to 3), Near, Far | :observed |
+| `SpotLight` | 118 | the same, then LittleAlpha, BigAlpha, Cookie id, one more `u32`, Near, Far | :observed |
+| `SunLight` | 94 | the sun fields inside the sky light | :observed |
+| `LightFlare` | 43 | non-managed inline object | :observed |
+
+All 110 omni and all 79 spot lights of level 01 decode exactly. :observed[level 01]
+
+On street-light placements the spot light's local +Y axis points down. :inferred[from the placements' orientation]
+
+The photometric units, the colour encoding of the light colour and the intensity scale are not calibrated against rendered output. :unknown

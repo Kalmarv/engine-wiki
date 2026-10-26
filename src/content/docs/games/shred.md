@@ -64,3 +64,4 @@ The descriptions above are the database's. The display strings the menus show we
 - [PAK archives](/engines/rme/archives/pak/), [CSTR streams](/engines/rme/archives/cstr/), [The disc and its file names](/engines/rme/archives/disc/).
 - Geometry: [Model libraries](/engines/rme/geometry/model-quartets/), [Vertex formats](/engines/rme/geometry/vertex-formats/), [Placements](/engines/rme/geometry/placements/), [Triangle winding](/engines/rme/geometry/winding/), [Skinned streams](/engines/rme/geometry/skinned-streams/).
 - Materials: [Material banks](/engines/rme/materials/material-banks/).
+- Textures: [Textures (THP and TXP)](/engines/rme/textures/gcm-textures/).

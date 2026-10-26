@@ -19,22 +19,7 @@ The reference reader names Elden Ring part arrays `DisplayGroups`, `DrawGroups` 
 semantics unknown. Sekiro's corresponding structure is named `CollisionMask` with 48 words.
 :sourced[SoulsFormatsNEXT]
 
-```layout
-title: Elden Ring part visibility-related structure
-size: 392
-games: [elden-ring]
-fields:
-  - {at: 0, size: 32, type: "u32[8]", name: DisplayGroups, level: unknown, note: Community field name; meaning unresolved}
-  - {at: 32, size: 32, type: "u32[8]", name: DrawGroups, level: unknown, note: Community field name; meaning unresolved}
-  - {at: 64, size: 128, type: "u32[32]", name: CollisionMask, level: unknown, note: Community field name; meaning unresolved}
-  - {at: 192, size: 4, type: "u8[4]", name: conditions and unknown bytes, level: unknown, note: Named Condition1; Condition2; UnkC2; UnkC3 by the reference}
-  - {at: 196, size: 2, type: i16, name: unknown, level: unknown, note: Reference reports -1 in retail}
-  - {at: 198, size: 2, type: i16, name: unknown, level: unknown, note: Reference reports 0 or 1 in retail}
-  - {at: 200, size: 192, type: "u8[192]", name: padding, level: sourced, value: 0}
-```
-
-The Elden Ring shadow-byte comparison covers every part of all 935 installed MSBs with no refusals.
-:proven{games="elden-ring"}
+Elden Ring's structure is laid out in its section below.
 
 ## Shadow bytes
 
@@ -55,12 +40,37 @@ Sekiro's bytes agree with SoulsFormats on all 5,310 map-piece and object parts o
 and draw flags compared. Among them, `m400090_6000`, a flat ground piece in the spawn courtyard, is shadow-only.
 :observed{games="sekiro"}
 
-:only[sekiro] Around Ashina Castle's keep, objects `m015091` to `m015098` and one submesh of `m015051` draw
-near-black boxes with the texture `m11_black_a` and the program `GXFlver_ColDif`. :observed{games="sekiro"} That they are
-blocker or occluder cards rather than scenery is a guess. :inferred{games="sekiro"}
+The Elden Ring shadow-byte comparison covers every part of all 935 installed MSBs with no refusals.
+:proven{games="elden-ring"}
 
 :::open[What is the exact visibility predicate?]
 The presence of arrays and their community names do not establish bit intersections, collision activation,
 occlusion, camera dependence or LOD handoff. Nor is precedence established when shadow-only and cast-shadow
 controls appear contradictory. These bytes must not be collapsed into a single unconditional visibility flag.
 :::
+
+## Sekiro
+
+### Black boxes around the keep
+
+:only[sekiro] Around Ashina Castle's keep, objects `m015091` to `m015098` and one submesh of `m015051` draw
+near-black boxes with the texture `m11_black_a` and the program `GXFlver_ColDif`. :observed{games="sekiro"} That they are
+blocker or occluder cards rather than scenery is a guess. :inferred{games="sekiro"}
+
+## Elden Ring
+
+### Part visibility-related structure
+
+```layout
+title: Elden Ring part visibility-related structure
+size: 392
+games: [elden-ring]
+fields:
+  - {at: 0, size: 32, type: "u32[8]", name: DisplayGroups, level: unknown, note: Community field name; meaning unresolved}
+  - {at: 32, size: 32, type: "u32[8]", name: DrawGroups, level: unknown, note: Community field name; meaning unresolved}
+  - {at: 64, size: 128, type: "u32[32]", name: CollisionMask, level: unknown, note: Community field name; meaning unresolved}
+  - {at: 192, size: 4, type: "u8[4]", name: conditions and unknown bytes, level: unknown, note: Named Condition1; Condition2; UnkC2; UnkC3 by the reference}
+  - {at: 196, size: 2, type: i16, name: unknown, level: unknown, note: Reference reports -1 in retail}
+  - {at: 198, size: 2, type: i16, name: unknown, level: unknown, note: Reference reports 0 or 1 in retail}
+  - {at: 200, size: 192, type: "u8[192]", name: padding, level: sourced, value: 0}
+```

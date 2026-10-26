@@ -64,6 +64,24 @@ Reducing an ID modulo 100 groups repeated class numbers; treating the higher dig
 decoded bitfield. :inferred A class named “None” does not by itself establish an invisible blocker in another game.
 :inferred
 
+## Object and asset collision
+
+Where each game keeps object and asset collision is in its section below.
+
+Stored convex cores contain vertices, planes, faces and a convex radius where that shape class supplies them.
+`hknpConvexShape` stores vertices without explicit faces or planes; a sphere stores one centre vertex and its radius.
+:observed The radius describes a rounded convex shape. Intersecting outward-shifted planes constructs an
+approximation and does not reproduce its rounded edges. :inferred
+
+:::open[What do motion-type values mean at runtime?]
+Values 0, 1 and 2 fit static, dynamic and keyframed bodies in the sampled objects, but that labeling remains inferred
+until a runtime comparison establishes it.
+:::
+
+## Sekiro
+
+### Ashina Castle's hit classes
+
 :only[sekiro] By area, Ashina Castle's `h` collision is class 1 (30.4%), 4 (26.0%), 29 (16.6%), 3 (6.9%), 16 (3.5%),
 30 (3.2%), 616 (3.1%), 401 (2.2%), 22 (1.2%) and 32 (1.2%). Of its 1,671,788 triangles, 31 have no material.
 :observed{games="sekiro"} Its class-29 surfaces are 2,233 large triangles that almost never coincide with a drawn surface:
@@ -74,32 +92,28 @@ the share of top-down pixels where collision and the placed render meshes agree 
 By slope, 25.7% of that collision's area is within 5° of horizontal (43% of it class 29) and 46.9% is steeper
 than 75°. :observed{games="sekiro"}
 
-## Object and asset collision
+### Object collision
 
 :only[sekiro] An object binder can hold `<object>.hkx` and a broken-state `<object>_1.hkx`. Examined bodies include
 compressed meshes, `hknpBoxShape`, `hknpConvexPolytopeShape` and `hknpCapsuleShape`; body poses are in object space.
 In Ashina Castle, 207 of 222 object models have their own collision. :observed{games="sekiro"}
 
+Independent Havoc comparisons cover the sampled Sekiro bodies' names, motion values, poses, convex-core fields and
+capsule segments bit for bit. They do not independently validate decoded compressed-mesh triangles or their material
+assignments. :observed{games="sekiro"}
+
+## Elden Ring
+
+### Asset collision
+
 :only[elden-ring] An asset `AEGnnn_mmm` has collision in
 `asset/aeg/aegnnn/aegnnn_mmm_l.geomhkxbnd.dcx`, with a high-resolution `_h` counterpart for a subset of assets.
 :observed{games="elden-ring"}
 
-Stored convex cores contain vertices, planes, faces and a convex radius where that shape class supplies them.
-`hknpConvexShape` stores vertices without explicit faces or planes; a sphere stores one centre vertex and its radius.
-:observed The radius describes a rounded convex shape. Intersecting outward-shifted planes constructs an
-approximation and does not reproduce its rounded edges. :inferred
+### Zero-thickness cores
 
 :only[elden-ring] Map and asset files also store cores of zero thickness and radius 0: flat boxes up to 256 m across,
 and flat polytopes whose only planes face +Y and −Y. Their planes enclose no volume, so intersecting them gives an
 unbounded or degenerate result; the stored faces are the surface. :observed{games="elden-ring"} On thin boxes about 300 m from
 their body origin, the stored planes and vertices agree only to within about four f32 ULPs, coarser than a fixed
 0.01 mm tolerance. :observed{games="elden-ring"}
-
-Independent Havoc comparisons cover the sampled Sekiro bodies' names, motion values, poses, convex-core fields and
-capsule segments bit for bit. They do not independently validate decoded compressed-mesh triangles or their material
-assignments. :observed{games="sekiro"}
-
-:::open[What do motion-type values mean at runtime?]
-Values 0, 1 and 2 fit static, dynamic and keyframed bodies in the sampled objects, but that labeling remains inferred
-until a runtime comparison establishes it.
-:::

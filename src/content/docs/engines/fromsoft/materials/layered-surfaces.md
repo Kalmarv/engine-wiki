@@ -9,7 +9,9 @@ implementations:
 Layered materials combine multiple sampled surfaces using vertex attributes, masks and material constants. A
 material's apparent base colour is therefore not necessarily any one albedo texture. :observed
 
-## Sekiro Multiple and MultipleGround
+## Sekiro
+
+### Multiple and MultipleGround
 
 The shared vertex programs pass normalized-byte FLVER members to the pixel program as follows. The UV member
 numbers below identify stored attributes, not separate two-lane interpretations of their bytes. :observed{games="sekiro"}
@@ -45,7 +47,9 @@ This establishes execution agreement for the supplied states, not the correctnes
 Some layered programs read a second coordinate set in `TEXCOORD0.zw`. Stored UV1 differs from UV0 in sampled meshes
 from both m10_00 and m11_01, and need not be an affine transform of UV0. :observed{games="sekiro"}
 
-## Elden Ring masked blends and overlays
+## Elden Ring
+
+### Masked blends and overlays
 
 The inspected `M[AMSN][Mb2][Ov_AN]_Gbuf.ppo` uses
 `w2 = saturate(1 - 1.4*s*(mask.r + 1 - 2*v))`, where `v = TEXCOORD1.x` and `s` is `snp_0_float_1`.

@@ -43,14 +43,6 @@ Sekiro reconstructs `F0 = RT3.rgb * RT3.rgb` and uses it in the Schlick term
 `F0 + (1-F0)*(1-dot(L,H))^5`. Elden Ring instead forms `F0 = lerp(0.04,albedo,metallic)`.
 :observed
 
-In the inspected Sekiro Multiple, MultipleGround and Multiple_Emissive switch population, the constant dielectric
-encoding is RGB float bits `0x3E315CAC`, whose square is approximately 0.03. Multiple switch 18 has variable
-reflectance, so the constant value is not a rule for every switch. :observed{games="sekiro"}
-
-Sekiro's target-3 alpha selects the light group: `int(alpha*255)*18` identifies its first row in the light buffer.
-The target-1 green value modifies the diffuse wrap term with factors 10 and 20 where it is positive.
-:observed{games="sekiro"}
-
 ## Emission and normal-map basis
 
 A normal texture's blue channel is not the normal's Z: the programs rebuild Z from red and green. :observed In
@@ -66,15 +58,29 @@ For the inspected ordinary layered programs, sampled normal X follows `cross(N,T
 follows `T`. SpeedTree programs use a different stored tangent convention, described under
 [SpeedTree](/engines/fromsoft/vegetation/speedtree/). :observed
 
-## Combining the light :only[elden-ring]
-
-After the lights accumulate, `GXLightCmbAlbedo` outputs `A*(1-m)` from target-2 albedo and target-1 metallic and is
-drawn with blend `DEST_COLOR / ZERO`, so it multiplies the accumulated diffuse light by the diffuse albedo.
-`GXLightComposite` then sums diffuse, specular and emission. The programs and a Limgrave capture agree on both.
-:observed{games="elden-ring"}
-
 :::open[What do the remaining channels encode?]
 The inspected lighting programs do not consume every target or lane. Elden Ring's target-1 blue and target-2
 alpha are read, but their complete meaning remains unresolved; target-4 alpha cannot be inferred from RGB's
 emission role. :unknown
 :::
+
+## Sekiro
+
+### Reflectance, light groups and diffuse wrap
+
+In the inspected Sekiro Multiple, MultipleGround and Multiple_Emissive switch population, the constant dielectric
+encoding is RGB float bits `0x3E315CAC`, whose square is approximately 0.03. Multiple switch 18 has variable
+reflectance, so the constant value is not a rule for every switch. :observed{games="sekiro"}
+
+Sekiro's target-3 alpha selects the light group: `int(alpha*255)*18` identifies its first row in the light buffer.
+The target-1 green value modifies the diffuse wrap term with factors 10 and 20 where it is positive.
+:observed{games="sekiro"}
+
+## Elden Ring
+
+### Combining the light
+
+After the lights accumulate, `GXLightCmbAlbedo` outputs `A*(1-m)` from target-2 albedo and target-1 metallic and is
+drawn with blend `DEST_COLOR / ZERO`, so it multiplies the accumulated diffuse light by the diffuse albedo.
+`GXLightComposite` then sums diffuse, specular and emission. The programs and a Limgrave capture agree on both.
+:observed{games="elden-ring"}

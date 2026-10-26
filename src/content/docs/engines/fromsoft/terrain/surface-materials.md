@@ -20,6 +20,13 @@ Ground-family texture repetition is controlled per slot, with metaparam UV group
 `CommonUV-UVParam` parameters. The captured transform scales about the texture center, with an offset of
 `(1-scale)/2`. :observed
 
+Elden Ring's terrain base layers carry a UV-group scale of 300. :inferred{games="elden-ring"}
+
+See [constant binding and tiling](/engines/fromsoft/materials/constant-binding/) for the discriminating captures
+and the limits of the current precedence rule.
+
+## Sekiro
+
 The inspected Sekiro layered meshes include distinct secondary UV sets that cannot in general be recovered by
 scaling and offsetting the primary set. Some primary UVs repeat or overlap, so one primary texture coordinate
 can identify different surface points with different secondary coordinates. :observed{games="sekiro"}
@@ -27,11 +34,6 @@ can identify different surface points with different secondary coordinates. :obs
 The sampled Sekiro `M[LandScape]_Mountain` material family also appears among unresolved tiling captures: four
 all-one buffer contents conflict with the non-unit scale stated by the matching material candidates. This is
 not evidence of a universal landscape-specific scale rule. :observed{games="sekiro"}
-
-Elden Ring's terrain base layers carry a UV-group scale of 300. :inferred{games="elden-ring"}
-
-See [constant binding and tiling](/engines/fromsoft/materials/constant-binding/) for the discriminating captures
-and the limits of the current precedence rule.
 
 :::open[Is there a separate terrain geometry representation?]
 The ground-material observations do not establish a separate heightfield format, terrain tessellation algorithm,

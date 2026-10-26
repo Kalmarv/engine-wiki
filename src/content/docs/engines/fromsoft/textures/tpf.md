@@ -148,7 +148,17 @@ material sample, 96 GSBlendMap albedo bindings point at DX10 sRGB DDS formats an
 at linear formats. This payload correlation does not prove every runtime resource-view format.
 :observed{games="elden-ring"}
 
-## Map textures :only[sekiro]
+:::open[Which package-format codes occur in each install?]
+The DDS payload provides a concrete pixel-format declaration. An exhaustive per-game mapping from the separate
+TPF format byte to that declaration is not established here, nor are all optional metadata word meanings.
+:unknown
+The conflicting reference descriptions for codes 22 and 108â€“110 also require comparison with actual DDS payloads
+and resource views. :unknown
+:::
+
+## Sekiro
+
+### Map textures
 
 Map textures are stored one per TPF in the split binders `/map/mXX/mXX_000N.tpfbhd`/`.tpfbdt`, each with a
 low-resolution `_l` twin; other textures are in `/other/*.tpf` and in objects' own TPFs. :observed{games="sekiro"} The `m11`
@@ -166,11 +176,3 @@ archives hold 3,522 textures, mostly 256 to 1,024 px, with sky and cloud texture
 
 129 of Ashina Castle's 347 BC1 albedos use BC1's punch-through mode: in a three-colour block, index 3 is
 transparent black, so a decoder that ignores the mode loses their alpha. :observed{games="sekiro"}
-
-:::open[Which package-format codes occur in each install?]
-The DDS payload provides a concrete pixel-format declaration. An exhaustive per-game mapping from the separate
-TPF format byte to that declaration is not established here, nor are all optional metadata word meanings.
-:unknown
-The conflicting reference descriptions for codes 22 and 108â€“110 also require comparison with actual DDS payloads
-and resource views. :unknown
-:::

@@ -28,7 +28,9 @@ orders 1.3% to 4.5%. :observed{games="sekiro"}
 FLVER bone rotations are radians; their local transform follows the same X-Z-Y axis order. Parent transforms
 compose above the local transform to give model space. :sourced[SoulsFormatsNEXT]
 
-## MapOffset
+## Sekiro
+
+### MapOffset
 
 :only[sekiro] MSB parts already occupy the shared world frame. MapOffset instead places map-local collision using
 `world = Ry(yaw) × local + translation`; applying it again to part positions translates them twice.

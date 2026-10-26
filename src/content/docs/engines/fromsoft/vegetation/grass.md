@@ -18,7 +18,9 @@ Sekiro pivot families include `Translucency_Pivot`, `Pivot_Parent` and `snake_Pi
 `Vesitation` families also store Half4 pivots, transformed by their vertex programs as positions.
 See [vertex formats](/engines/fromsoft/geometry/vertex-formats/). :observed
 
-## Grass type references :only[elden-ring]
+## Elden Ring
+
+### Grass type references
 
 Map-part grass configuration names six GrassTypeParam row IDs. Those rows name the detailed and simplified
 models and flat or billboard textures, with density, spacing and LOD range. Reading references in m10_00_00_00,

@@ -32,7 +32,12 @@ bundles without a stage mismatch; Elden Ring's cited check is limited to one are
 | `.hpo` | Hull | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
 | `.dpo` | Domain | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
 
-## Passes and switches
+The binding metadata is described in [METAPARAM](/engines/fromsoft/materials/metaparam/); material upload rules in
+[constant binding](/engines/fromsoft/materials/constant-binding/).
+
+## Sekiro
+
+### Passes and switches
 
 Sekiro layered materials select `<family>_<switch>_Gbuf.ppo` using `GXFT_SATStaticSwitch`. The unskinned vertex
 program is `<family>_Gbuf.vpo`, and the skinned variant is `<family>_Gbuf_Skin.vpo`. :observed{games="sekiro"}
@@ -53,9 +58,6 @@ In a castle-interior capture, Sekiro uses reversed depth with `GreaterEqual`, an
 materials carrying `g_GX_bDisableDepthWrite`. Matched `g_BlendMode = 2` forward draws use additive
 `SrcAlpha / InvSrcAlpha` colour blending and `One / Zero` alpha blending; G-buffer draws do not blend.
 The captured cull state follows the face set rather than a single material-wide value. :observed{games="sekiro"}
-
-The binding metadata is described in [METAPARAM](/engines/fromsoft/materials/metaparam/); material upload rules in
-[constant binding](/engines/fromsoft/materials/constant-binding/).
 
 :::open[What selects every runtime permutation and render state?]
 The material switch does not explain every instance-dependent pass choice. The cited capture does not establish

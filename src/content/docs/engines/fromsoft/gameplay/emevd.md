@@ -30,25 +30,6 @@ files, followed by byte-length/offset pairs for argument and string blocks.
 :proven[all 11 scripts]{games="sekiro"} :observed{games="elden-ring"}
 
 ```layout
-title: EMEVD header (Elden Ring)
-size: 144
-games: [elden-ring]
-fields:
-  - {at: 0, size: 4, type: "char[4]", name: magic, value: "EVD\\0", level: observed}
-  - {at: 4, size: 4, type: "u8[4]", name: format bytes, level: sourced, note: "00 ff 01 ff"}
-  - {at: 8, size: 4, type: u32, name: version, value: "0xCD", level: observed}
-  - {at: 12, size: 4, type: u32, name: file size, level: observed}
-  - {at: 16, size: 16, type: "i64[2]", name: event count and offset, level: observed}
-  - {at: 32, size: 16, type: "i64[2]", name: instruction count and offset, level: observed}
-  - {at: 48, size: 16, type: "i64[2]", name: unknown table count and offset, level: unknown, note: Count is zero in examined scripts}
-  - {at: 64, size: 16, type: "i64[2]", name: layer count and offset, level: observed}
-  - {at: 80, size: 16, type: "i64[2]", name: substitution count and offset, level: observed}
-  - {at: 96, size: 16, type: "i64[2]", name: linked-file count and offset, level: observed}
-  - {at: 112, size: 16, type: "i64[2]", name: argument length and offset, level: observed}
-  - {at: 128, size: 16, type: "i64[2]", name: string length and offset, level: observed}
-```
-
-```layout
 title: EMEVD header (Sekiro)
 size: 144
 games: [sekiro]
@@ -68,17 +49,22 @@ fields:
 ```
 
 ```layout
-title: EMEVD event record (Elden Ring)
-size: 48
+title: EMEVD header (Elden Ring)
+size: 144
 games: [elden-ring]
 fields:
-  - {at: 0, size: 8, type: i64, name: event ID, level: observed}
-  - {at: 8, size: 8, type: i64, name: instruction count, level: observed}
-  - {at: 16, size: 8, type: i64, name: instruction offset, level: observed, note: Relative to the instruction table}
-  - {at: 24, size: 8, type: i64, name: substitution count, level: observed}
-  - {at: 32, size: 8, type: i64, name: substitution offset, level: observed, note: Relative to the substitution table}
-  - {at: 40, size: 4, type: u32, name: rest behavior, level: sourced, note: 0 default; 1 restart; 2 end}
-  - {at: 44, size: 4, type: u32, name: padding, level: observed, value: 0}
+  - {at: 0, size: 4, type: "char[4]", name: magic, value: "EVD\\0", level: observed}
+  - {at: 4, size: 4, type: "u8[4]", name: format bytes, level: sourced, note: "00 ff 01 ff"}
+  - {at: 8, size: 4, type: u32, name: version, value: "0xCD", level: observed}
+  - {at: 12, size: 4, type: u32, name: file size, level: observed}
+  - {at: 16, size: 16, type: "i64[2]", name: event count and offset, level: observed}
+  - {at: 32, size: 16, type: "i64[2]", name: instruction count and offset, level: observed}
+  - {at: 48, size: 16, type: "i64[2]", name: unknown table count and offset, level: unknown, note: Count is zero in examined scripts}
+  - {at: 64, size: 16, type: "i64[2]", name: layer count and offset, level: observed}
+  - {at: 80, size: 16, type: "i64[2]", name: substitution count and offset, level: observed}
+  - {at: 96, size: 16, type: "i64[2]", name: linked-file count and offset, level: observed}
+  - {at: 112, size: 16, type: "i64[2]", name: argument length and offset, level: observed}
+  - {at: 128, size: 16, type: "i64[2]", name: string length and offset, level: observed}
 ```
 
 ```layout
@@ -96,15 +82,17 @@ fields:
 ```
 
 ```layout
-title: EMEVD instruction (Elden Ring)
-size: 32
+title: EMEVD event record (Elden Ring)
+size: 48
 games: [elden-ring]
 fields:
-  - {at: 0, size: 4, type: i32, name: bank, level: observed}
-  - {at: 4, size: 4, type: i32, name: instruction ID, level: observed}
-  - {at: 8, size: 8, type: i64, name: argument byte count, level: observed}
-  - {at: 16, size: 8, type: i64, name: argument offset, level: observed, note: Relative to the argument block}
-  - {at: 24, size: 8, type: i64, name: layer offset, level: observed, note: Relative to layer table; -1 means none}
+  - {at: 0, size: 8, type: i64, name: event ID, level: observed}
+  - {at: 8, size: 8, type: i64, name: instruction count, level: observed}
+  - {at: 16, size: 8, type: i64, name: instruction offset, level: observed, note: Relative to the instruction table}
+  - {at: 24, size: 8, type: i64, name: substitution count, level: observed}
+  - {at: 32, size: 8, type: i64, name: substitution offset, level: observed, note: Relative to the substitution table}
+  - {at: 40, size: 4, type: u32, name: rest behavior, level: sourced, note: 0 default; 1 restart; 2 end}
+  - {at: 44, size: 4, type: u32, name: padding, level: observed, value: 0}
 ```
 
 ```layout
@@ -120,15 +108,15 @@ fields:
 ```
 
 ```layout
-title: EMEVD parameter substitution (Elden Ring)
+title: EMEVD instruction (Elden Ring)
 size: 32
 games: [elden-ring]
 fields:
-  - {at: 0, size: 8, type: i64, name: instruction index, level: observed}
-  - {at: 8, size: 8, type: i64, name: target argument byte offset, level: observed}
-  - {at: 16, size: 8, type: i64, name: source event-argument byte offset, level: observed}
-  - {at: 24, size: 4, type: u32, name: copy byte count, level: observed}
-  - {at: 28, size: 4, type: i32, name: unknown, level: unknown, note: Stored word retained without interpretation}
+  - {at: 0, size: 4, type: i32, name: bank, level: observed}
+  - {at: 4, size: 4, type: i32, name: instruction ID, level: observed}
+  - {at: 8, size: 8, type: i64, name: argument byte count, level: observed}
+  - {at: 16, size: 8, type: i64, name: argument offset, level: observed, note: Relative to the argument block}
+  - {at: 24, size: 8, type: i64, name: layer offset, level: observed, note: Relative to layer table; -1 means none}
 ```
 
 ```layout
@@ -144,15 +132,15 @@ fields:
 ```
 
 ```layout
-title: EMEVD instruction layer (Elden Ring)
+title: EMEVD parameter substitution (Elden Ring)
 size: 32
 games: [elden-ring]
 fields:
-  - {at: 0, size: 4, type: u32, name: unknown, level: unknown, note: Observed 2}
-  - {at: 4, size: 4, type: u32, name: layer mask, level: sourced}
-  - {at: 8, size: 8, type: i64, name: unknown, level: unknown, note: Observed 0}
-  - {at: 16, size: 8, type: i64, name: unknown, level: unknown, note: Observed -1}
-  - {at: 24, size: 8, type: i64, name: unknown, level: unknown, note: Observed 1}
+  - {at: 0, size: 8, type: i64, name: instruction index, level: observed}
+  - {at: 8, size: 8, type: i64, name: target argument byte offset, level: observed}
+  - {at: 16, size: 8, type: i64, name: source event-argument byte offset, level: observed}
+  - {at: 24, size: 4, type: u32, name: copy byte count, level: observed}
+  - {at: 28, size: 4, type: i32, name: unknown, level: unknown, note: Stored word retained without interpretation}
 ```
 
 ```layout
@@ -167,7 +155,21 @@ fields:
   - {at: 24, size: 8, type: i64, name: unknown, level: unknown, note: Observed 1}
 ```
 
-## Sekiro world-state functions
+```layout
+title: EMEVD instruction layer (Elden Ring)
+size: 32
+games: [elden-ring]
+fields:
+  - {at: 0, size: 4, type: u32, name: unknown, level: unknown, note: Observed 2}
+  - {at: 4, size: 4, type: u32, name: layer mask, level: sourced}
+  - {at: 8, size: 8, type: i64, name: unknown, level: unknown, note: Observed 0}
+  - {at: 16, size: 8, type: i64, name: unknown, level: unknown, note: Observed -1}
+  - {at: 24, size: 8, type: i64, name: unknown, level: unknown, note: Observed 1}
+```
+
+## Sekiro
+
+### World-state functions
 
 :only[sekiro] `2000:6` initializes common events. The following common functions take an entity or group, four event
 flags and four corresponding state bytes; zero flag IDs leave pairs unused. They disable their target and enable it
@@ -199,7 +201,7 @@ Substituted calls, story-event control flow and other common functions can chang
 functions above are not a complete world-state interpreter, and their Sekiro IDs do not establish Elden Ring rules.
 :::
 
-## Elden Ring scripts :only[elden-ring]
+## Elden Ring
 
 All 589 scripts in `/event/*.emevd.dcx` read with the layout above, and SoulsFormatsNEXT classifies Elden Ring's
 header as the same variant as Sekiro's. The scripts use 316 distinct instructions; `2000:6` (initialize common

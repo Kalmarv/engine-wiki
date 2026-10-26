@@ -21,26 +21,6 @@ Sekiro's `wp_a_0761_l` contains closed and open Loaded Umbrella forms, each with
 :observed{games="sekiro"} Elden Ring's `wp_a_1152_l` has two forms sharing mesh geometry with different materials.
 :observed{games="elden-ring"}
 
-Character model IDs name characters: `c1010` is the Ashina Soldier, `c5000` the Corrupted Monk, `c5100` the
-Guardian Ape and `c7400` Emma. :sourced[Smithbox]{games="sekiro"} The player model `c1000` holds no visible body; the
-Wolf the player sees is assembled from equipment parts. :inferred{games="sekiro"}
-
-`c1010.chrbnd.dcx` holds the FLVER, the Havok skeleton `c1010.HKX`, `c1010.hkxpwv`, `c1010_c.hkx` and
-`c1010_c.clm2`. Its animation binder holds 350 Havok 2016.2 tagfiles (`hkaAnimationContainer`), one TAE and a type
-compendium. The FLVER has 400 nodes, 81 dynamic meshes, 140,330 vertices and 76 dummies. :observed{games="sekiro"}
-
-## Textures outside the model binder
-
-:only[sekiro] Shared character detail textures `FC_A_0000_*` (60 of them: hair, fabric blends 01–05, metals,
-chainmail, seams, straw, rope, bandage, skin detail, hand and footwear) are in the standalone
-`/parts/common_body.tpf.dcx`. Characters also take textures from texture-only characters that their material
-names mention: `c1010`'s body uses `c1019_body_merge_SSS.mtd`, whose textures are in `/chr/c1019.texbnd.dcx`;
-`c1019` has no model binder. :observed{games="sekiro"}
-
-:only[sekiro] A low-resolution `_l` part binder holds `_l` textures (`BD_M_9120_a_l`) while its materials name the
-full textures (`bd_m_9120_a`), which are in the full sibling binder `parts/bd_m_9120.partsbnd`. The face's
-materials name `fc_m_0200_*` textures, kept in `parts/fc_m_0200.partsbnd`. :observed{games="sekiro"}
-
 ## Display masks
 
 A material-name mark `#XX#` assigns a mesh to display group XX. `NpcParam.modelDispMaskXX` enables that group; an
@@ -63,7 +43,36 @@ set on 245 of the 577 NPC rows that Sekiro's map placements reference, and on 52
 Animation events can change these groups during a clip; see [TAE](/engines/fromsoft/animation/tae/).
 :sourced[Smithbox]
 
-## Part-built human NPCs
+:::open[What if one mesh contains several display marks?]
+No examined character needs that combination. Neither the community description nor the checked renderer rule
+establishes whether multiple marks mean any enabled bit or all enabled bits.
+:::
+
+## Sekiro
+
+### Character binders
+
+Character model IDs name characters: `c1010` is the Ashina Soldier, `c5000` the Corrupted Monk, `c5100` the
+Guardian Ape and `c7400` Emma. :sourced[Smithbox]{games="sekiro"} The player model `c1000` holds no visible body; the
+Wolf the player sees is assembled from equipment parts. :inferred{games="sekiro"}
+
+`c1010.chrbnd.dcx` holds the FLVER, the Havok skeleton `c1010.HKX`, `c1010.hkxpwv`, `c1010_c.hkx` and
+`c1010_c.clm2`. Its animation binder holds 350 Havok 2016.2 tagfiles (`hkaAnimationContainer`), one TAE and a type
+compendium. The FLVER has 400 nodes, 81 dynamic meshes, 140,330 vertices and 76 dummies. :observed{games="sekiro"}
+
+### Textures outside the model binder
+
+:only[sekiro] Shared character detail textures `FC_A_0000_*` (60 of them: hair, fabric blends 01–05, metals,
+chainmail, seams, straw, rope, bandage, skin detail, hand and footwear) are in the standalone
+`/parts/common_body.tpf.dcx`. Characters also take textures from texture-only characters that their material
+names mention: `c1010`'s body uses `c1019_body_merge_SSS.mtd`, whose textures are in `/chr/c1019.texbnd.dcx`;
+`c1019` has no model binder. :observed{games="sekiro"}
+
+:only[sekiro] A low-resolution `_l` part binder holds `_l` textures (`BD_M_9120_a_l`) while its materials name the
+full textures (`bd_m_9120_a`), which are in the full sibling binder `parts/bd_m_9120.partsbnd`. The face's
+materials name `fc_m_0200_*` textures, kept in `parts/fc_m_0200.partsbnd`. :observed{games="sekiro"}
+
+### Part-built human NPCs
 
 :only[sekiro] The equipment link is `MSB Enemy.CharaInitID → CharaInitParam → EquipParamProtector`.
 NpcParam's display masks are a separate mechanism. :sourced[Paramdex]{games="sekiro"}
@@ -75,7 +84,7 @@ NpcParam's display masks are a separate mechanism. :sourced[Paramdex]{games="sek
 
 A negative placement initializer ID names no authored initializer. :observed{games="sekiro"}
 
-### The Wolf's outfits :only[sekiro]
+#### The Wolf's outfits
 
 CharaInitParam rows 9000 to 9002 (Original Memory: Wolf) equip protector rows 100000 (head), 101000 (body),
 102000 (arms) and 103000 (legs). EquipParamProtector maps them to models 200 (face, `fc_`), 9040 (body, `bd_`),
@@ -93,7 +102,7 @@ matches its category. :observed{games="sekiro"} That category 3 is the face is i
 `Character_AN_Blend_AMSN_[Fresnel]`) and scarf (`tops1_Maffler`, `Character_AMSN_[DetailBlend]`) blend the detail
 fabrics `FC_A_0000_Fabric_blend01` and `FC_A_0000_Fabric_blend05`. :observed{games="sekiro"}
 
-### Joining parts into one skeleton
+#### Joining parts into one skeleton
 
 Each part binder holds one FLVER, version `0x2001A`. The five Another's Memory parts have 184, 185, 161, 155 and
 422 nodes (arms, body, legs, head, face); every mesh is dynamic with an empty palette, and the UByte4Norm weights
@@ -110,9 +119,4 @@ vertex displacement. :observed{games="sekiro"}
 The checked fields do not fully establish selection among `m`, `f`, `a`, `hd`, `fc` or level-suffix alternatives.
 Choosing whichever binder exists is not evidence of the game's rule. Face generation, body shape and runtime
 equipment replacement are also outside these field interpretations.
-:::
-
-:::open[What if one mesh contains several display marks?]
-No examined character needs that combination. Neither the community description nor the checked renderer rule
-establishes whether multiple marks mean any enabled bit or all enabled bits.
 :::

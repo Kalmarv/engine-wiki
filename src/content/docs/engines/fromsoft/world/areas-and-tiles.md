@@ -9,6 +9,10 @@ implementations:
 Maps have names such as `m11_01_00_00`; layout files live at `map/mapstudio/<map>.msb.dcx`, with resources under
 `map/<map>/`. :observed
 
+## Sekiro
+
+### Map areas
+
 | Sekiro map prefix | Area | PlaceName ID | Confidence |
 |---|---|---|---|
 | `m11_00` | Ashina Outskirts | 1100 | :observed{games="sekiro"} |
@@ -18,13 +22,7 @@ Maps have names such as `m11_01_00_00`; layout files live at `map/mapstudio/<map
 
 These names are matched through collision map-name IDs and location-message entries. :observed{games="sekiro"}
 
-| Elden Ring map | Area | Confidence |
-|---|---|---|
-| `m11_00_00_00` | Leyndell, Royal Capital | :sourced[Smithbox]{games="elden-ring"} |
-| `m14_00_00_00` | Academy of Raya Lucaria | :sourced[Smithbox]{games="elden-ring"} |
-| `m60_39_54_00` | Shaded Castle, an Altus Plateau tile | :sourced[Smithbox]{games="elden-ring"} |
-
-## Map contents :only[sekiro]
+### Map contents
 
 | Map | Map pieces | Objects | Enemies | Collision parts | Confidence |
 |---|---:|---:|---:|---:|---|
@@ -46,7 +44,17 @@ is drawn by `m9` models listed in `farmodel.param`, and 284 of the castle's FLVE
 :observed{games="sekiro"} By model ID, `m0` models are detail, `m1`–`m5` large unique pieces, `m6` and `m7` mountainside out
 of reach, and `m9` the far backdrop. :inferred{games="sekiro"}
 
-## Open-world grid
+## Elden Ring
+
+### Map areas
+
+| Elden Ring map | Area | Confidence |
+|---|---|---|
+| `m11_00_00_00` | Leyndell, Royal Capital | :sourced[Smithbox]{games="elden-ring"} |
+| `m14_00_00_00` | Academy of Raya Lucaria | :sourced[Smithbox]{games="elden-ring"} |
+| `m60_39_54_00` | Shaded Castle, an Altus Plateau tile | :sourced[Smithbox]{games="elden-ring"} |
+
+### Open-world grid
 
 :only[elden-ring] `m60` and `m61` use 256 m level-0 tiles. A tile `mAA_XX_ZZ_00` has parents at levels 1 and 2,
 with indices `(XX >> L, ZZ >> L)` and side lengths 512 m and 1,024 m. Larger assets belonging to a small tile can

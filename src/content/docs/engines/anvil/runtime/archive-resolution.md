@@ -16,6 +16,8 @@ implementations:
 
 Resource references cross forge boundaries by 64-bit identity. Breakpoint's community analysis describes global, set-scoped and index-scoped lookup paths; therefore a single global priority model does not automatically describe every engine read. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 
+## Ghost Recon Breakpoint
+
 | Mechanism | Breakpoint behavior described for ChangeList 7793716 | Confidence |
 |---|---|---|
 | Base archive discovery | Composed exact names, including platform, world and graphics variants | :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"} |
@@ -26,6 +28,8 @@ Resource references cross forge boundaries by 64-bit identity. Breakpoint's comm
 | Scoped lookup | A forge, attached patches and split siblings can be searched without global priority | :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"} |
 
 These are attributed static-code conclusions. The same source leaves opening order among tied forge families unresolved and distinguishes the code's scan mechanism from validation that every proposed filename loads in game. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
+
+## Riders Republic
 
 Riders Republic's USNAT base and patch share 319,678 ids; 447,785 are base-only and 1,099 patch-only. Neither file alone contains the full listed world. The four-file union with patch copies replacing base is consistent with checked dependency closure, but its live priority rule remains inferred. :observed{games="riders-republic"} :inferred{games="riders-republic"}
 

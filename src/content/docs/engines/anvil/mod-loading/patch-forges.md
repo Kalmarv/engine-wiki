@@ -11,6 +11,10 @@ sources:
     note: Community documentation and readers.
 ---
 
+Each game's section below covers what is known of its patch forges.
+
+## Ghost Recon Breakpoint
+
 Breakpoint data mods replace or add resource ClassIDs in patch forges read by the normal archive loader. The three common targets are DataPC patch data, DataPC_Resources patch data and DataPC_extra patch data, but the resource id, not that organizational split, supplies identity. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 
 The community describes no official SDK and relies on AnvilToolkit unpacking and repacking. Extracted filenames use positional numbers; changing such a number does not change embedded ClassID. Replacements preserve an existing ClassID, whereas new resources require distinct identities and references reaching them. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
@@ -23,6 +27,8 @@ The community describes no official SDK and relies on AnvilToolkit unpacking and
 | Parenthesis in name | Opener truncates at the first `(` in the analyzed code | :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"} |
 
 The [archive-resolution page](/engines/anvil/runtime/archive-resolution/) distinguishes global from scoped lookup; higher patch priority is not established as a universal rule for all paths. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
+
+## Riders Republic
 
 In Riders Republic most patch copies equal their base copies. Of 178,814 Entity identities stored in both a base and a patch forge, 550 have different bodies; all 61,699 Mesh identities stored in both are byte-identical. Among the 550, 78 change body length; four inspected cases add one 25-byte DataLayer action. All 550 keep the same component count and first component header, so those leading fields are not patch-version markers. :observed{games="riders-republic"}
 

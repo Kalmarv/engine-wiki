@@ -50,6 +50,8 @@ fields:
 
 The extended header occurs on all 9,087 clips in the five-archive Animation enumeration (WhiteRoom patch excluded), the AnimTrackBuiltinTracksTable (`0x46A37798`) and three ProxyTextures resources: 9,091 resources of the 1.3 million entries. The one stored AnimTrackBuiltinTracksTable is empty, so a table mapping track tags to classes is not stored in the data. :observed{games="riders-republic"}
 
+The ordinary resource envelope (payload length, name, ClassID and extension) is validated as an exact-end record for all 147,289 Mesh and 25,162 MeshShape entries across all six installed forges, with no refusals in those populations. Extended-header rows and their Animation population remain separately scoped above. :proven[ordinary envelope]
+
 ```layout
 title: "Reference"
 size: 10
@@ -68,8 +70,6 @@ Owned and embedded objects generally store `u64 object id + u32 type + body`. Po
 :::open[What does the reference mode select?]
 Modes 1 and 4 occur, but their complete runtime meaning is not established. :unknown{games="riders-republic"}
 :::
-
-The ordinary resource envelope (payload length, name, ClassID and extension) is validated as an exact-end record for all 147,289 Mesh and 25,162 MeshShape entries across all six installed forges, with no refusals in those populations. Extended-header rows and their Animation population remain separately scoped above. :proven[ordinary envelope]
 
 ## Shaun White Skateboarding
 

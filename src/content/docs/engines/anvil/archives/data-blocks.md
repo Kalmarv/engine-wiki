@@ -42,24 +42,7 @@ fields:
 
 The entire size table precedes all chunk payloads. Each payload starts with its checksum; decoded chunks concatenate in order. :observed{games="riders-republic"}
 
-```layout
-title: "Breakpoint compressed block"
-size: "variable"
-games: [ghost-recon-breakpoint]
-note: "Little-endian. Offsets are relative to this structure."
-fields:
-  - {"at": 0, "size": 8, "type": "u64", "name": "magic", "value": "0x1004FA9957FBAA33", "level": "sourced"}
-  - {"at": 8, "size": 2, "type": "u16", "name": "version", "value": 3, "level": "sourced"}
-  - {"at": 10, "size": 1, "type": "u8", "name": "algorithm", "value": 3, "level": "sourced", "note": "Oodle Mermaid in the documented profile."}
-  - {"at": 11, "size": 4, "type": "u16[2]", "name": "block-size descriptor", "level": "unknown", "note": "Two words; the community reports a load-sensitive 32768 block-size value."}
-  - {"at": 15, "size": 4, "type": "i32", "name": "chunk count N", "level": "sourced"}
-  - {"at": 19, "size": "8N", "type": "i32[2][]", "name": "decoded and stored sizes", "level": "sourced"}
-  - {"at": "19+8N", "size": "variable", "type": "bytes", "name": "checksummed chunks", "level": "sourced", "note": "Adler-32 from zero, then stored bytes for each chunk."}
-```
-
-:::open[Does Breakpoint reject every raw chunk?]
-The community reference reports failed raw-block cloth loads and successful Mermaid loads, while its reader permits equal-size raw chunks. Later notes identify an incorrect block-size header as another independent hang cause. These observations do not establish universal rejection of raw chunks. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
-:::
+The block reader accounts for every byte and checks each stored checksum on all 147,289 Mesh and 25,162 MeshShape payloads across the six installed archives, with no refusals for those types. This proves their block profile, not that every resource type uses it; GlobalMetaFile is a separate form. :proven
 
 ## Shaun White Skateboarding
 
@@ -91,4 +74,23 @@ Some entries store a block entirely raw: its chunk sizes are equal. Sixty-six of
 
 The size of an entry counts its blocks only, from the first block's magic; the 440-byte [`FILEDATA` header](/engines/anvil/archives/forge/) before them is not counted. :proven{games="shaun-white-skateboarding"}[all 33 forges]
 
-The block reader accounts for every byte and checks each stored checksum on all 147,289 Mesh and 25,162 MeshShape payloads across the six installed archives, with no refusals for those types. This proves their block profile, not that every resource type uses it; GlobalMetaFile is a separate form. :proven
+## Ghost Recon Breakpoint
+
+```layout
+title: "Breakpoint compressed block"
+size: "variable"
+games: [ghost-recon-breakpoint]
+note: "Little-endian. Offsets are relative to this structure."
+fields:
+  - {"at": 0, "size": 8, "type": "u64", "name": "magic", "value": "0x1004FA9957FBAA33", "level": "sourced"}
+  - {"at": 8, "size": 2, "type": "u16", "name": "version", "value": 3, "level": "sourced"}
+  - {"at": 10, "size": 1, "type": "u8", "name": "algorithm", "value": 3, "level": "sourced", "note": "Oodle Mermaid in the documented profile."}
+  - {"at": 11, "size": 4, "type": "u16[2]", "name": "block-size descriptor", "level": "unknown", "note": "Two words; the community reports a load-sensitive 32768 block-size value."}
+  - {"at": 15, "size": 4, "type": "i32", "name": "chunk count N", "level": "sourced"}
+  - {"at": 19, "size": "8N", "type": "i32[2][]", "name": "decoded and stored sizes", "level": "sourced"}
+  - {"at": "19+8N", "size": "variable", "type": "bytes", "name": "checksummed chunks", "level": "sourced", "note": "Adler-32 from zero, then stored bytes for each chunk."}
+```
+
+:::open[Does Breakpoint reject every raw chunk?]
+The community reference reports failed raw-block cloth loads and successful Mermaid loads, while its reader permits equal-size raw chunks. Later notes identify an incorrect block-size header as another independent hang cause. These observations do not establish universal rejection of raw chunks. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
+:::

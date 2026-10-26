@@ -150,18 +150,40 @@ Notes from investigations, code comments and older documents are the raw materia
 3. Keep numbers exact and say what they were counted over ("over the 147,289 meshes of build 25394987").
 4. If two sources disagree, write both with their levels and an open question.
 
+## Finding what is already written
+
+Search before writing, and add to the page that exists rather than starting a near-duplicate.
+
+```sh
+pnpm wiki search "forge header"      # pages ranked by title, description, headings and text
+pnpm wiki show engines/anvil/archives/forge
+pnpm wiki game riders-republic       # every page about a game (or an engine), by system, with badge counts
+pnpm wiki open sekiro                # the open questions, by page
+```
+
+Each takes `--json`; `pnpm wiki export` prints every page and the registries as JSON for indexers.
+
 ## Checking your work
 
 ```sh
 pnpm install
-pnpm check                       # every page: frontmatter, links, badges, scopes, layouts (seconds, writes nothing)
+pnpm check                       # every page: frontmatter, links, badges, scopes, layouts, public text (seconds, writes nothing)
 pnpm check src/content/docs/engines/fromsoft     # only these files or folders
 pnpm build                       # the whole site, as it deploys
 pnpm dev                         # http://localhost:4321 to read it
 ```
 
 A change is ready when `pnpm check` and `pnpm build` pass and the page reads well in the browser. `pnpm check` is
-safe to run while others edit the same checkout; `pnpm build` is not (one at a time).
+safe to run while others edit the same checkout; `pnpm build` is not (one at a time). The check also refuses local
+paths, and the private names (machines, accounts) listed in the file `WIKI_PRIVATE_NAMES_FILE` names, when that is set.
 
-Publishing: `bash scripts/verify-and-push.sh` builds the committed `HEAD` in a clean worktree (so uncommitted pages in a
-shared checkout can't hide a broken link) and pushes exactly that commit; pushes to `main` deploy the site.
+## Publishing
+
+Commit, then `pnpm wiki publish`. It rebases the committed `HEAD` onto `origin/main`, checks every line the commits add
+and their messages for local paths and private names, runs `pnpm check` and the full build of that exact commit in a
+clean worktree (`.wt/head`, so uncommitted pages in a shared checkout can't hide a broken link), and pushes it to `main`,
+which deploys the site. If `main` moves meanwhile it rebases and checks again. Nothing is pushed unless all of it
+passes. It works from any branch, worktree or clone, one publish at a time per repository; when the working tree is
+clean the branch is brought level with what was pushed. `--dry-run` does everything but the push.
+
+Writers working at the same time each use their own worktree or clone; `publish` puts their commits in a line.

@@ -10,4 +10,5 @@ The short version:
 - Every statement of fact gets a badge: `:proven`, `:observed`, `:sourced`, `:inferred` or `:unknown`.
 - Say how something is known (method and scope), never who found it or which internal tool did.
 - No local paths, machine names, keys or secrets.
-- `pnpm build` must pass.
+- Search first (`pnpm wiki search`, `pnpm wiki game <id>`); publish with `pnpm wiki publish`, which checks and builds
+  the commit before it pushes.

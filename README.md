@@ -14,6 +14,7 @@ Read it at the published site, or in `src/content/docs/` as plain Markdown.
 pnpm install     # Node 24 (pnpm fetches it: .npmrc)
 pnpm dev         # http://localhost:4321
 pnpm build       # fails on any schema, link, directive or layout error
+pnpm wiki        # search, show, game, open, export, check, publish (guide/writing.md)
 ```
 
 Built with [Starlight](https://starlight.astro.build). Pushes to `main` deploy to GitHub Pages.

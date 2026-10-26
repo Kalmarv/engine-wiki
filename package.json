@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs",
+    "wiki": "node scripts/wiki.mjs"
   },
   "engines": {
     "node": ">=24.22.1"

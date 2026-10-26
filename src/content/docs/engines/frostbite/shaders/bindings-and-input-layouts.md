@@ -107,15 +107,45 @@ the stored format. :proven[all game-configuration vertex inputs]
 
 ## Render-state bytes
 
-Thirteen distinct raster shared-state values occur in a fifteen-bundle sample, with payload sizes 148–300
-bytes. Eight five-byte render-target records start at `0x8c`. Their final byte `0x0f` matches the executable's
-All colour-write mask. Most records are `02 00 01 00 0f`; two state values use `03 05 01 05 0f` for target zero.
-:observed
+A raster permutation's shared data (RasterPermutationSharedData, type `0x250047b2`) holds the program's packed
+fixed-function state. Thirteen distinct values occur in a fifteen-bundle sample, with payload sizes 148–300
+bytes. :observed The bit layouts are those of the executable's RC2 state printers (rasterizer `Skate+0x4130300`,
+depth-stencil `+0x4130430`, blend `+0x4130550`), and the decoded values agree with the pipeline descriptions the
+game hands to D3D12 at run time. :observed
 
-A possible interpretation gives the latter records blend-enable flags, source One and destination
-InvSourceAlpha. The blend-byte mapping and depth/cull/fill/stencil locations lack a validated anchor. :inferred
+```layout
+title: Raster shared-state fields
+size: variable
+note: Offsets in the payload.
+fields:
+  - {at: 120, size: 4, type: f32, name: slope-scaled depth bias, level: observed}
+  - {at: 124, size: 2, type: i16, name: depth bias, level: observed}
+  - {at: 126, size: 1, type: u8, name: forced sample count, level: observed}
+  - {at: 127, size: 1, type: bits, name: rasterizer bits, level: observed, note: "b0 fill mode; b1-2 cull None/Front/Back; b3 front counter-clockwise; b4 depth clip"}
+  - {at: 128, size: 1, type: bits, name: depth-stencil bits, level: observed, note: "b0 depth test; b1 depth write; b2 stencil test; b3-5 depth function Never, Less, Equal, LessEqual, Greater, NotEqual, GreaterEqual, Always"}
+  - {at: 129, size: 1, type: u8, name: stencil read mask, level: observed}
+  - {at: 130, size: 1, type: u8, name: stencil write mask, level: observed}
+  - {at: 135, size: 1, type: bits, name: blend bits, level: observed}
+  - {at: 140, size: 40, type: "u8[8][5]", name: render-target blend records, level: observed, note: "Final byte 0x0f is the All colour-write mask"}
+```
 
-:::open[What explains the register exceptions and render-state fields?]
+Most render-target records are `02 00 01 00 0f`; two state values use `03 05 01 05 0f` for target zero. :observed
+The per-byte blend factor mapping inside a record is not separately anchored. :inferred
+
+Over all 3,619 dingolevel_root programs the states fall into a few classes. Depth is reversed: opaque programs
+test GreaterEqual and write depth with stencil write mask `0xfe` and no bias; G-buffer programs after the depth
+prepass test Equal without writing; shadow-depth programs test GreaterEqual and write with depth bias −10 and
+slope −4. Every decal and transparent-decal program tests GreaterEqual without writing depth, tests stencil with
+read mask `0x08` (or `0xe0`), uses depth bias 200 and slope-scaled bias 0.1, and blends premultiplied into
+render targets 0–3. :observed Their consequence for overlays is described under
+[decals](/engines/frostbite/effects/decals-and-order/).
+
+A capture of the 24,218 pipeline descriptions the running game creates shows the main depth buffer as
+`DXGI_FORMAT_D32_FLOAT_S8X24_UINT`, DepthBiasClamp 0 on every pipeline, decals with stencil read `0x08` and write
+0, opaque with read `0x08` and write `0xfe`, and shadows with bias −10/−4 on D16 targets and −1000/−4 on D32
+targets. :observed
+
+:::open[What explains the register exceptions and the remaining render-state bytes?]
 The b0/b1 mismatches, fifty resource exceptions and unassigned buffers/samplers require additional binding sources
-or a narrower rule. Remaining render-state fields also lack an established decode. :unknown
+or a narrower rule. The shared-state bytes outside the fields above have no established decode. :unknown
 :::

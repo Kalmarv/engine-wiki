@@ -27,13 +27,17 @@ The mesh hash is djb2-XOR over the lowercase full resource path: start with `538
 `+0x78` and hashes for LOD names. Renaming only the manifest entry leaves these cached identities unchanged.
 :observed
 
-The material-owner cache constructs its key from a mesh name hash in the upper 32 bits and a second 32-bit value
+The material-owner cache (`Skate+0x3f56860`) and resource-name resolution (`+0x3db78d0`) compare hashes only,
+never strings. The cache constructs its key from a mesh name hash in the upper 32 bits and a second 32-bit value
 from the material entry. Its `0x58`-byte owner stores the slot table at `+0x20` and count at `+0x28`.
 Two different paths with the same hash can therefore reuse a slot table of the wrong size. :observed
 
 In a partial census of 241,857 names, seven hashes collide; the base-name subset has one collision among 101,590
 names. Identical suffixes preserve a djb2-XOR collision, so adding `_lod0` to both colliding paths cannot separate
 their hashes. :observed
+
+For a level of about 50,000 generated mesh names, the chance of at least one 32-bit collision is about 25%, by the
+birthday bound. :inferred
 
 The same recurrence hashes lowercase resource **type names**, including MeshSet `0x49b156d4`, Texture `0x6bde20ba`
 and ShaderBlockDepotResource `0x73312045`. These type ids are not resource-instance ids. :observed

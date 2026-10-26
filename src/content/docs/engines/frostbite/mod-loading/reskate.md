@@ -71,7 +71,8 @@ the `/settings/world_layers` scope. :observed
 `parameter_bits`. The full-body costume slot is `2601889598`; asset values are item keys. The loader restores
 these recipes during load. :observed
 
-A bare engine setting name in the console reads its value. Setting names are cached per game build, and the
+The console takes one setting per line; two settings on one line are refused with "Too many arguments". A
+setting that echoes `= [value]` was accepted. A bare engine setting name in the console reads its value. Setting names are cached per game build, and the
 catalogue becomes ready later than process startup. Launcher `--log-level` controls runtime logging even when
 `RESKATE_LOG_LEVEL` is set in the environment. :sourced[ReSkate]
 
@@ -89,6 +90,9 @@ Its mod icon comes from the Thunderstore icon cache rather than the installed mo
 installed unpublished package can therefore show a grey icon. The inspected README view preserves line breaks
 and does not display images. :observed
 
+The in-game menu map grid, by contrast, uses the mod folder's `icon.png` (PNG, at most 4 MB); stock maps use their
+loading screen cropped to 256 pixels, and a map without `icon.png` has no grid picture. :sourced[ReSkate]
+
 The loader redirects profile, saves, content cache and catalogue state under the user's local application-data
-directory. `RESKATE_CRASH_REPORTING=0` disables its crash-dump upload; its network block also prevents the game's
+directory; crash dumps go to `ReSkate/Game/Skate/CrashDumps` there. `RESKATE_CRASH_REPORTING=0` disables its crash-dump upload; its network block also prevents the game's
 GPU-report upload. :sourced[ReSkate]

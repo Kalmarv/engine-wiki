@@ -15,13 +15,22 @@ stores BoneNames, Hierarchy, LocalPose, ModelPose, InverseModelPose, bone hashes
 MeshSet section palettes address these bones by index. :observed
 
 The animation `Animation/Dingo/AnimBase_Default_Rig` lives in `Win32/globals.toc`, bundle
-`win32/configurations/gameconfigurations/delmargameconfiguration`. Its AntSkeletonAsset has 395 joints;
-joint records contain name offsets, hashes, parent, child, sibling and type, but no rest transforms.
-:observed
+`win32/configurations/gameconfigurations/delmargameconfiguration`. Its AntSkeletonAsset,
+`animation/dingo/animbase_default_skeleton`, has 395 joints; joint records contain a name offset into the
+NameTable, a NameHash (32-bit FNV-1 of the name), parent, child, sibling and type, but no rest transforms.
+:observed Only this skeleton has at least 386 joints; the other AntSkeletonAssets have 27, 16, 14, 137 (four of
+them), 184 and 246. The `medium`, `large` and `small_default_skeleton` documents have 176 names each. :observed
+
+In the EBX string table of `animbase_default_skeleton`, which holds 434 names starting at `Reference`, names 101–107
+are Neck, Neck1, Head, RM_Head, PS_Head_Sec (twice) and Face; a CAS hat's vertices are weighted to indices
+102–107. :observed That the string-table order is the bone order is inferred from that fit. :inferred
 
 The rig's DefaultPoseAsset supplies values keyed by DOF id. DofSetIdIndices partitions DofIds into runs associated
 with DofSetAsset documents; their LayoutData maps run order to names such as `<joint>.q`, `.t` and `.s`.
-The stored default has 2,721 DOFs and 2,644 values. :observed
+The stored default has 2,721 DOFs and 2,644 values: 968 Vector3Values, 486 Vector4Values and 1,190
+FloatValues, each keyed by a `u32` DOF id. The DOF id is not an FNV-1 or FNV-1a hash of the joint name, plain or
+lowercased, with any of about 60 tested suffixes and 11 prefixes. A separate PoseBindPoseAsset,
+`animbase_joint_poseset_0_bind`, holds 159 joints (108–272), not the head chain 101–107. :observed
 
 Composing those default transforms matches the render skeleton's ModelPose within `1.2e-6` for every shared
 bone except AITrajectory, whose difference is about one. All 386 render bones occur in the animation skeleton

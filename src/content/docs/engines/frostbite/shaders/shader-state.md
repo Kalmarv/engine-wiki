@@ -33,6 +33,16 @@ The measured program grouping has 27 families. :observed
 | `0x7d98f632` InputLayout | Vertex input declaration | :observed |
 | `0xa19b025d` BindingSet | Shader resource bindings | :observed |
 | `0x2fec6526` ShaderStateAssetId | 32-byte sublevel-associated identity | :observed |
+| `0x250047b2` RasterPermutationSharedData | Packed fixed-function state ([render-state bytes](/engines/frostbite/shaders/bindings-and-input-layouts/#render-state-bytes)) | :observed |
+| `0x879ba711` PermutationSharedData | Not decoded here | :observed |
+| `0x7a630735` StreamableTextureSet | Not decoded here | :observed |
+| `0xa8957ed6` RootSlotInitData | Not decoded here | :observed |
+| `0x589bb36e` PassBinding | Pass-supplied binding groups | :observed |
+| `0x6a5be5db` BindingSignature | Not decoded here | :observed |
+
+These type ids are djb2-XOR hashes of the lowercased full type names (ExpressionShaderDatabase,
+ExpressionShaderRasterPermutation and so on), whose strings lie in the executable's read-only data at
+`Skate+0x64dcb80`. :observed
 
 The ShaderStateAssetId's final 16 bytes equal its sublevel EBX file GUID in measured examples. Its first 16 bytes
 have no established meaning. Cell depots without this resource still resolve correctly in game. :observed
@@ -70,7 +80,9 @@ once among its record's leaves, and walking each leaf's own path returns the exp
 62,274 cases. :proven[all records and leaves in both databases]
 
 The option names and values are still hashes. Only 43 of 1,345 option-name hashes also appear in material depot
-parameters; deriving all selector values from the material alone is not supported by this measurement. :observed
+parameters; deriving all selector values from the material alone is not supported by this measurement. Most
+options share a value-hash set with others (15 of 18 sampled names). In 130 sampled records, a permutation's
+input layout depends on one or two tree levels, always including the last. :observed
 
 ## Permutations and bytecode
 

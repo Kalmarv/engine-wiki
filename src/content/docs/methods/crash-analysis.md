@@ -57,3 +57,8 @@ Observed with CDB 10.0.29617 on skate. minidumps:
   Copy unwound register values from the `.frame /r` output as literals. :observed
 - In an executable without symbols, the nearest exported name in a stack is not the function's identity. Use
   offsets from the module base. :inferred
+- A string stored beside a vtable is not a reliable class name in skate.'s executable; the name a constructor
+  stores into the object is. :observed{games="skate"}
+- skate.'s code also lives in the executable sections `.xtls` and `.tls$`, so a cross-reference scan of `.text`
+  alone finds nothing for many functions; scanning every executable section for rel32 calls, pointer tables and
+  RIP-relative references finds their callers. :observed{games="skate"}

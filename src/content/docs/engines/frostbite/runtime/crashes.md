@@ -11,8 +11,8 @@ described reproduction; an address alone does not establish the same cause in an
 
 | Address | Trigger and cause | Correction and evidence | Confidence |
 |---|---|---|---|
-| `+0x3f3b73e`; related `+0x3cbbb9b` | Wrong material or out-of-range slot after teleport in Los Santos 0.3.0. A tyre mesh with one material and a terrain mesh with two share hash `0x38e09783`; the second reuses the first's owner table. | Rename paths and rewrite stored hashes so they differ. Corrected routes have zero out-of-table slots in 189,796 and 431,850 calls. Clamping the slot survives but draws the wrong material. | :observed |
-| `+0x3f59860` | Null read about 0.7 s after teleport. Seam copies in different cell bundles share one MeshSet name but have two resource ids; compartment lookup returns null. Skipping the element moves the fault to `+0x3fe426b`. | Distinct seam-copy names. The corrected route has zero nulls in 30,008 lookups and no crash dumps. | :observed |
+| `+0x3f3b73e` (in `+0x3f3b180`); related `+0x3cbbb9b` | Wrong material or out-of-range slot after teleport in Los Santos 0.3.0. A tyre mesh with one material and a terrain mesh with two share hash `0x38e09783`; the second reuses the first's owner table. | Rename paths and rewrite stored hashes so they differ. Corrected routes have zero out-of-table slots in 189,796 and 431,850 calls. Clamping the slot survives but draws the wrong material. | :observed |
+| `+0x3f59860` | Null read about 0.7 s after teleport. Seam copies in different cell bundles share one MeshSet name but have two resource ids; the compartment lookup `+0x41b5800(compartment id, MeshSet name)` returns null. Skipping the element moves the fault to `+0x3fe426b`. | Distinct seam-copy names. The corrected route has zero nulls in 30,008 lookups and no crash dumps. | :observed |
 
 These enforce separate constraints: one name to one resource and distinct stored hashes for distinct cached
 meshes. See [resource identity](/engines/frostbite/data-model/resource-identity/).
@@ -42,6 +42,12 @@ data correction is the change with a measured effect. :observed
 At `+0x3cbba4f` the binding-table page index in R8 is 0 and the directory pointer read from the table is not a
 valid address. RAX `0x0000ffffffffffff` at that fault is the pointer mask loaded at `+0x3cbba42`, not a stored
 all-ones pointer. :observed
+
+## Level-root EBX
+
+| Address | Trigger and cause | Correction and evidence | Confidence |
+|---|---|---|---|
+| `ucrtbase!strlen` < `+0x3daa8a0` < `+0x46570bf` < `+0x46554f3` | About 3–6 s into the load of a ReSkate Studio level. The level-root DetachedSubWorldData carries an InterfaceDescriptorData DataField (Id `0x7a5f4ec0`, a CString, encoded type `0x800000e0`) whose boxed value keeps the self-relative string offset `0x5a2` of the stock `bam_levelroot` template, where it names 'Gameflow test running' after a `0x59a`-byte names list. The string itself is absent, so the offset lands 1,074–1,184 bytes past the end of the document's payload. | Give the field a string inside the document. The property copy (`+0x4657040`) places the string's pointer one page past its heap block; `strlen` faults only when that page is unmapped, when the object ends a 2-MB heap chunk, so the failure depends on layout (two of three measured launches). | :observed |
 
 ## Capacity and GPU failures
 

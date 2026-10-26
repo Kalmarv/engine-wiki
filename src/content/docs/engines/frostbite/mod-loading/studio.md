@@ -47,9 +47,22 @@ supplying a source game's separate low/medium models as authored LODs. :observed
 ## Material traps
 
 `vertex_blend: true` on decal materials uses scalar `_RESKATE_BLEND` values and writes Half4 UV0 with weight
-in z. Studio patches a decal program to multiply opacity by that weight, appends a private program, and lifts
-decal layers by `0.008 * (i+1)` metres. The resulting shader-state database has 3,620 records versus stock 3,619.
-:observed
+in z. Studio patches a decal program to multiply opacity by that weight and appends a private program. The
+resulting shader-state database has 3,620 records versus stock 3,619. :observed
+
+Studio's executable describes lifting decal layers by `0.008 * (i+1)` metres. :observed A census of compiled
+map.json levels instead finds decal positions stored verbatim as float32, with no lift, bias or order added; the
+8-mm lift appears only in Studio's Blender importer, for Mix-node decal layers. :observed
+
+:::open[Does compile-map lift decal layers for map.json input?]
+The lift is described from the executable's strings, while compiled map.json output shows none. Whether the lift
+applies only to Blender-imported layers, or only with `vertex_blend`, is not established. :unknown
+:::
+
+`domain=decal` and any `alpha=blend` material compile to row 1444/3612, and `alpha=mask` to the cutout row
+825/1891/3096; Studio's opaque row is (682, 819, 1474, 2756), whose depth and shadow copy section carries the
+prepass 3560 and shadow program 1262. The stock properties of these programs are listed under
+[decals](/engines/frostbite/effects/decals-and-order/#stock-program-properties). :observed
 
 ReSkate's stock-program-only merge can remove that private program. Measured outcomes include boot faults,
 invisible overlays on builds that boot, and a separate unresolved preparation fault. See the

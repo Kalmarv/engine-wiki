@@ -90,10 +90,14 @@ Mask channels are R metallic, G smoothness and A opacity. B is a per-material co
 but its meaning is unresolved. :observed
 
 The `u51.x` vertex value selects the secondary set for value `1`; sampled values `0`, `2`, `3`, `4` use primary.
-The selection is flat per triangle. Color0 does not interpolate between these texture sets. :observed
+The selection is flat per triangle. Color0 does not interpolate between these texture sets; it only shades the
+primary set slightly. This is measured in game on the two-set row (413, 2332, 2608, 3000), which has no per-vertex
+blend between the sets. :observed
 
 :::open[How are parameter names and block hashes generated?]
-The parameter-name hash function is unresolved despite searches against executable and EBX strings under several
-common hash families. Block hashes agree for equal measured blocks but do not match tested FNV, MD5 or SHA-1
+The parameter-name hash function is unresolved. FNV-1 and FNV-1a 64-bit (seed `0xcbf29ce484222325`), over UTF-8
+and over UTF-16 with `0xff` framing, plain and lowercased, match none of the 1,876 distinct parameter-name hashes
+in the binding sets of all 28,045 permutations of globals and dingolevel_root, tried against 128,552 candidate
+strings from every EBX document of those two TOCs. Block hashes agree for equal measured blocks but do not match tested FNV, MD5 or SHA-1
 representations. These are separate unresolved identities. :unknown
 :::

@@ -1,7 +1,7 @@
 ---
 title: "World grids and cell listings"
 description: "GridLayouts, hierarchical partitions and resource listings."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -89,3 +89,22 @@ A block's final key is normally its cell index; layer-owned blocks instead carry
 :::open[Why do 34 sampled bounds miss their cells?]
 The remaining non-overlapping listings have not been explained; the overlap relationship is not a universal invariant. :unknown
 :::
+
+## Cells without grids (Shaun White Skateboarding)
+
+:only[shaun-white-skateboarding]
+
+A world's content is a set of level cells, entries named `*_DataBlock`. In `DataPC_01` there are 233 grid cells named `CellNNNN`, holding 6,309 entities, and 20 named mission and event cells holding 552. `Cell05460` is a global cell: it holds the far-view backgrounds, the trains and all challenge start markers. :observed{games="shaun-white-skateboarding"}[level 01]
+
+The same `CellNNNN` index in another forge is a near-empty cell: the index is a grid address, not a state variant of the same place. :observed
+
+No per-entity enable or layer byte has been found that would switch entities by game state. :unknown
+
+A cell's root object (`GridCellDataBlock`) lists its members as bare ids and carries the fields below, in this order. :observed[level 01]
+
+| Field of the cell's root object | Stored form | Confidence |
+|---|---|---|
+| `Objects` | `u32` count, then bare ids; 6,744 of the 6,861 entities of level 01 are listed | :observed |
+| `CellIndex` | `i32` | :observed |
+| flag | `u8`, 0 in every cell | :unknown |
+| `Owner` | `u32` id; 0 in 169 cells of level 01, and an id found in no entry in 84 | :unknown |

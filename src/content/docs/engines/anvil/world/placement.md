@@ -1,7 +1,7 @@
 ---
 title: "Placement and instancing"
 description: "Stored transforms, metres, local instance matrices and group relationships."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -32,3 +32,11 @@ One six-forge placement census finds 349,009 instanced Visuals among 576,844 the
 :::open[Does owner Scale affect instances?]
 For one family of 32 instances with scale 1.15, stored bounds fit without owner scale and fail with it. Other instanced owners in the measured census have scale one. A universal renderer rule remains unresolved. :observed
 :::
+
+## Placement in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Entity matrices are row-major: a point is transformed as `world = v_local * M`, rows 0 to 2 are the local axes and row 3 is the origin, rather than the column-major convention above. The unit is the metre and Z is up. :observed{games="shaun-white-skateboarding"}[178 rotated entities of level 01]
+
+The coordinates that the running game keeps for the skater's feet (east, north, up) equal the stored placement frame of the world with no offset and no rotation, checked on the Stronghold world: its ground props sit at the height of the feet at the arrival point, and the objects around that point match what the screen shows. :observed

@@ -35,7 +35,7 @@ WorldAmbiance selects the environment cube for a look. All 17 examined BC6H cube
 Sample decoding, the directional-table remainder, grid flags and the complete resource-to-GPU construction are not all established. No baked irradiance values can be claimed merely by decoding probe positions. :unknown
 :::
 
-## Baked lighting in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

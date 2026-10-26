@@ -118,7 +118,7 @@ The [render-state page](/engines/anvil/materials/render-state/) describes the pr
 The stored selector and defaults are established. The complete runtime precedence, null-override treatment and unfilled-slot substitute have not been established from the engine's binding code. :unknown
 :::
 
-## SKGenericMaterial in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

@@ -1,7 +1,7 @@
 ---
 title: Water surfaces, rivers and lakes
 description: FakeWater stand-ins, river meshes, lake patches, atlas channels and depth-dependent water shading.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
   - name: primase Anvil lake reader
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/water.rs
@@ -70,3 +70,13 @@ The water G-buffer stores encoded type and foam in o0, normal/class in o1, trans
 :::open[What produces the complete animated water response?]
 Real wave/noise bindings, quality variants beyond the executed Low path, near-field ripple constants, complete deferred body colour and FakeWater chunk internals remain unresolved. River and lake absorption maps must remain distinct. :unknown
 :::
+
+## Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Water in Shaun White Skateboarding is a flag on the material, not a separate resource: the bool at byte 91 of the `SKGenericMaterial` body is set on exactly six distinct materials of the six levels (see [the material body](/engines/anvil/materials/material/)), each with a normal map, a specular map and a cube reflection and no diffuse map. :observed{games="shaun-white-skateboarding"}[all six levels]
+
+The collision side is separate: a collision surface named `Water` exists (see [surfaces](/engines/anvil/collision/materials/)), and the fountain materials carry its id in the collision-surface field of the material. No shader-template id, wave animation or reflection parameter is stored with the flag. :observed
+
+The harbour water of level 01 (`WaterPort`) has the tint (41, 60, 71) of 255 with alpha 1; its entity is placed in the global cell `Cell05460` at the source position (−296.95, 2.44, −11.0). :observed

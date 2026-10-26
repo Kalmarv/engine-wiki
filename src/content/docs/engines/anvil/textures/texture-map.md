@@ -77,7 +77,7 @@ See [format codes](/engines/anvil/textures/format-codes/) for codecs and the tra
 The sampled layered lengths establish storage, not every cube-face orientation or runtime-generated image producer. :unknown{games="riders-republic"}
 :::
 
-## TextureMap in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

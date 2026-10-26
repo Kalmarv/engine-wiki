@@ -61,7 +61,7 @@ fields:
 The community reference reports failed raw-block cloth loads and successful Mermaid loads, while its reader permits equal-size raw chunks. Later notes identify an incorrect block-size header as another independent hang cause. These observations do not establish universal rejection of raw chunks. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 :::
 
-## Version 1 and LZO2A (Shaun White Skateboarding)
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

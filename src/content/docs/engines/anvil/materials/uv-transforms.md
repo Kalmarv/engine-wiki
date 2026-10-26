@@ -38,7 +38,7 @@ Animated examples have translations with signs and zero components matching the 
 The static special cases are established. Their general product order, translation combined with rotation, animated time term and third byte remain unresolved. :unknown
 :::
 
-## Rotated UV slots in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

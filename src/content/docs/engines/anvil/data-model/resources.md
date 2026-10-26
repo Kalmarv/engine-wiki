@@ -71,7 +71,7 @@ Modes 1 and 4 occur, but their complete runtime meaning is not established. :unk
 
 The ordinary resource envelope (payload length, name, ClassID and extension) is validated as an exact-end record for all 147,289 Mesh and 25,162 MeshShape entries across all six installed forges, with no refusals in those populations. Extended-header rows and their Animation population remain separately scoped above. :proven[ordinary envelope]
 
-## Object streams (Shaun White Skateboarding)
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

@@ -90,7 +90,7 @@ A block's final key is normally its cell index; layer-owned blocks instead carry
 The remaining non-overlapping listings have not been explained; the overlap relationship is not a universal invariant. :unknown
 :::
 
-## Cells without grids (Shaun White Skateboarding)
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

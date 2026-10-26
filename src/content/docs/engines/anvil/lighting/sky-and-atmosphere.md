@@ -77,7 +77,7 @@ Cloud fields include cover, altitude, thickness, movement and cirrus textures. D
 The runtime interpolation between hourly tables, full sun trajectory and azimuth frame, cloud model, star-buffer source and full exposure-to-display pipeline remain unresolved. The WARP sky result is a program-level check with explicit inputs, not a matched game screenshot. :unknown
 :::
 
-## The sky light of Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

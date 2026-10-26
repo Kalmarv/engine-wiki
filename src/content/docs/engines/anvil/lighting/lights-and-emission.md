@@ -44,7 +44,7 @@ Emission in the traced materials is exposure-referenced and passes through the m
 The stored intensity-like fields and cone/range values are readable, but their physical calibration and all shadow flag meanings are not established. :unknown
 :::
 
-## Lights in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

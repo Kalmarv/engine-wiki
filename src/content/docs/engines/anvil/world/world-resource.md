@@ -62,7 +62,7 @@ The footer ends both checked patch Worlds; 32 × 512 m matches the 16,384 m open
 A six-byte bit-field group fits its measured size, but almost all values in both Worlds are zero, leaving field order unresolved. :unknown
 :::
 
-## World roots in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

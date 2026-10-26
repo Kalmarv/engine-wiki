@@ -175,7 +175,7 @@ See [vertex formats](/engines/anvil/geometry/vertex-formats/) for stream decodin
 The values retained around stream declarations, object records and the trailer do not all have established runtime meanings. A constant value alone does not establish a reserved field. :unknown{games="riders-republic"}
 :::
 
-## Meshes in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

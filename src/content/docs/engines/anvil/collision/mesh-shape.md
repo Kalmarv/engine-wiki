@@ -96,7 +96,7 @@ Noncoplanar groups prevent a universal polygon-id invariant. The eight zero byte
 
 The complete six-archive section reader accepts all 25,162 MeshShape entries; the more detailed tree and polygon-id meanings above remain scoped to the 724-shape sample. Every section and tail is byte-accounted, without refusals. :proven[framing only]
 
-## MeshShape in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 
@@ -123,7 +123,7 @@ The Havok SDK that produced the MOPP blob is unknown. The data is neither a pack
 
 Other collision shapes occur in cells: capsule, sphere, box, a convex shape (`BarrelShape`), a list shape (`ListShape`, `0x86EBFD8D`, whose body ends with a flag byte) and a `MultiMeshShape` (`0x9A503477`). :observed
 
-## Rigid bodies and placement
+### Rigid bodies and placement
 
 A prop's collision is an `InertComponent` (`0x0E5A450A`, 150 bytes in 1,561 cases) on its entity: the component base, a damage enum, an inline `RigidBody` (`0x228F402A`: a `CollisionFilterInfo` box with layer and part, the shape id, mass, linear and angular damping, four flag bytes and a 16-float local inertia tensor) and a walkability enum, then 12 bytes. The managed byte of the inline body can be 0. `RigidBody.Shape` is a bare id; level 01 reaches 1,152 shapes inside the cell and 409 in other entries. The inertia tensor is not the placement. :observed[level 01]
 

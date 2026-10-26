@@ -87,7 +87,7 @@ Retaining their bytes does not establish their behavior. An embedded Entity head
 
 The strict sequential profile consumes exactly 585,234 Entity and 38,825 EntityGroup bodies from the complete six-archive census, refusing 29,876 and 18,012 respectively. That proves the accepted framing only. The later header-delimited opaque-body census above does not establish those missing component grammars. :proven[accepted strict profile]
 
-## Entities in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

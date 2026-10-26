@@ -149,7 +149,7 @@ The numeric values and name hashes come from the inspected ContactMaterial enum 
 Stored values are readable but lack semantic names. Reaction and fluid references alone do not establish runtime response. :unknown
 :::
 
-## Surface objects in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

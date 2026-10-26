@@ -139,7 +139,7 @@ fields:
 Registry names and sampled values identify the views, but the material view's exact channel meanings and non-null optional-pointer variants remain incomplete. :unknown
 :::
 
-## Visuals in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

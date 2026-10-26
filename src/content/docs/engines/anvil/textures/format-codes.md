@@ -40,7 +40,7 @@ Normal and surface channels are commonly packed together in BC7. A census of tex
 Three of its four stored maps fit four bytes per pixel, but the codec is not established. The remaining map's framing also needs a separate explanation. :unknown
 :::
 
-## Format codes in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

@@ -85,7 +85,7 @@ Enum descriptors are 16 bytes: pointer, enum-name CRC-32, count. Each target ent
 The metadata is not a complete serialization program. Custom orders and shader-constant blocks require class-specific evidence; an unknown class cannot safely be decoded solely from field names. :unknown
 :::
 
-## Class ids in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

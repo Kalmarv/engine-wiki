@@ -33,7 +33,7 @@ One six-forge placement census finds 349,009 instanced Visuals among 576,844 the
 For one family of 32 instances with scale 1.15, stored bounds fit without owner scale and fail with it. Other instanced owners in the measured census have scale one. A universal renderer rule remains unresolved. :observed
 :::
 
-## Placement in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

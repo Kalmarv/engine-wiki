@@ -91,7 +91,7 @@ fields:
 
 The index record is 20 bytes and the name record 192 bytes. The community Breakpoint description calls the offset-table record 192 bytes while listing fields totaling 20 bytes; the separately checked Riders Republic layout distinguishes the two tables. :proven{games="riders-republic"} :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}
 
-## Version 26 (Shaun White Skateboarding)
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

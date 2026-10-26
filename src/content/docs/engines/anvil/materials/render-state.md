@@ -50,7 +50,7 @@ The runtime material-class mask groups pass participation. LayerMaterial selects
 Known flag uses do not establish all unnamed flags, all blend modes or every pass interaction. The template's available permutations are not a per-Material record of the state selected on a particular draw. :unknown
 :::
 
-## Render state in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

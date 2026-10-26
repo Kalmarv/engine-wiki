@@ -65,7 +65,7 @@ fields:
 The two kind-11 vectors have an established vertex decode, but their downstream roles need a per-permutation trace. :unknown
 :::
 
-## Vertex layout in Shaun White Skateboarding
+## Shaun White Skateboarding
 
 :only[shaun-white-skateboarding]
 

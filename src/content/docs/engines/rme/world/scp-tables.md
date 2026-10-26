@@ -1,13 +1,13 @@
 ---
 title: SCP scene tables
-description: "The SCP file of a level quartet: its header, the node tree with world matrices, the joint table, and the chain of typed sections (spot chunks, splines, lights and others) after it."
+description: "The SCP file of a level quartet: its header, the node tree with world matrices, the joint table, and the chain of typed sections (spot chunks, splines, lights, cameras, occluders and others) after it."
 implementations:
   - name: primase worlds/shred (scp_tables.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scp_tables.rs
 ---
 
 The **SCP** of a [model quartet](/engines/rme/geometry/model-quartets/) is the scene file. Its first table lists the mesh [placements](/engines/rme/geometry/placements/); the rest describes what a level is made of apart from geometry:
-a tree of **nodes**, a table of their world matrices, a **joint** table, and a *blob*, a chain of typed sections that hold the spot chunks, splines and lights. Every level PAK holds one or more SCPs, 547 in all. :proven[all 547 SCPs]
+a tree of **nodes**, a table of their world matrices, a **joint** table, and a *blob*, a chain of typed sections that hold the spot chunks, splines, lights and other scene objects. Every level PAK holds one or more SCPs, 547 in all. :proven[all 547 SCPs]
 
 All numbers are big-endian. Pointers inside an SCP are stored as offsets from its start; `0xFFFFFFFF` is a null. The loader turns them into pointers when it loads the file, so a stored 0 is a valid offset, not a null. :observed[static reading of the executable]
 
@@ -91,7 +91,7 @@ size: 16
 games: [shred]
 note: The data starts `data_offset` bytes into the section. The chain ends with a 16-byte record `{junk, 8, 0, 0}`.
 fields:
-  - {at: 0, size: 4, type: u32, name: flags, level: proven, note: "the high 16 bits are the type; the low 16 sometimes mean a variant (0x80 and 0x81 for splines) or are junk"}
+  - {at: 0, size: 4, type: u32, name: flags, level: proven, note: "the high 16 bits are the type; the low 16 are junk for splines and vary for the other types (an occluder's low half is its shape)"}
   - {at: 4, size: 4, type: u32, name: size, level: proven, note: "bytes of the section, header included"}
   - {at: 8, size: 4, type: u32, name: count, level: proven}
   - {at: 12, size: 4, type: u32, name: data_offset, level: proven, note: "0x10, or 0x20 to 0x40 for type 0xE"}
@@ -99,18 +99,24 @@ fields:
 
 The 411 SCPs that have a blob all walk to the end record; the `data_offset` of 0x20 to 0x40 in type `0xE` sections is what makes the chain continuous (reading it as 0x10 stops it early in 35 files). :proven[all 411 chains]
 
+The engine keeps a registry of section types: a loader and an unloader per type, registered at start-up, each receiving the section's pointer. Types 2, 3, 5 and `10` have a loader of their own; types 0, 1, 9, `a` and `c` share the spline manager, one class each. Types 4, 6, `b`, `d`, `e` and `f` have no registry entry. :observed[static reading of the executable]
+
 | Type | Content | Sections | Read |
 |---|---|---:|---|
 | 2 | [spot chunks](/engines/rme/world/spot-chunks/) | 387 | :proven |
-| 0, 1 (flags `0x80`/`0x81`), 9 | [splines](/engines/rme/world/splines/) | 186 | :proven |
+| 0, 1, 9, `a`, `c` | [splines](/engines/rme/world/splines/), one class per type | 231 | :proven |
+| 3 | [spot cameras](/engines/rme/world/scene-objects/): 48-byte records of a spot name and two frames | 10 | :proven |
 | 4 | [lights](/engines/rme/world/lights/) | 55 | :proven |
-| `b` | occluders: 16-byte records of a hash `RMOccluder<N>`, a matrix pointer, a quad pointer and flags (79 in CHARLIE) | 9 | :observed |
+| 5 | [locators](/engines/rme/world/scene-objects/): one record in `echo`, a waypoint | 1 | :proven |
+| `b` | [occluders](/engines/rme/world/scene-objects/): 16-byte records of a name, a matrix and a line outline | 9 | :proven |
 | `d` | lighting layers: names of specular cube textures (`spec_locator_N`) | 23 | :observed |
 | `f` | records of 240 bytes starting with a position (w = 1): probe or ambient volumes | 23 | :inferred |
-| `6` | small trailer sections of 32 to 432 bytes with a junk count | 175 | :unknown |
-| `1`, `3`, `5`, `a`, `c`, `e`, `10` | not decoded (`a` is 3.3 MB in the navigation layer) | | :unknown |
+| `6` | small trailer sections of 32 to 432 bytes whose count word is a leftover address and whose bytes are small-integer arrays | 175 | :unknown |
+| `e` | 128-byte records of a 64-byte matrix, an id and a parent hash, then zeros; data offset 0x20 to 0x40; no consumer found | 38 | :observed |
+| `10` | 2,096 records of a 64-byte matrix, a radius, an entity index, a box of 24 f32 (corners at ±4) and named sub-records (`snow_timebane_fence_dest`, `distancemarker_01`, `vfx_skt_cae_a_debristrash_m.ice`); the records tile every section | 40 | :observed |
 
-The section counts are over the disc's SCPs; 364 sections remain that no reader decodes. :observed
+The section counts are over the disc's SCPs. :observed
+The reading of type `10` as breakable props comes from the names and the engine's loader for the type, whose function was not read in full. :inferred
 
 ## The disc by level
 
@@ -131,5 +137,5 @@ Counted by a strict reader over the SCPs of each level's PAKs (base and layers);
 | **All** | | **166,089** | **167,503** | **53,015** | **538** |
 
 :::open[What are the remaining header tables and section types?]
-The tables at header offsets 0x28 and 0x30 are relocated by the loader but empty in every SCP read. Section types 1, 3, 5, a, c, e and 0x10 have not been decoded.
+The tables at header offsets 0x28 and 0x30 are relocated by the loader but empty in every SCP read. What the sections of types 6, `e` and `10` are for (and what consumes `e` and `f`) is not established.
 :::

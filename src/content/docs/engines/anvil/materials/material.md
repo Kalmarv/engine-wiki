@@ -1,7 +1,7 @@
 ---
 title: Material and TextureSet
 description: Material property envelopes, texture selectors, template descriptors and binding records.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
   - name: primase Anvil material reader
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/material.rs
@@ -117,3 +117,78 @@ The [render-state page](/engines/anvil/materials/render-state/) describes the pr
 :::open[What is the exact runtime texture fallback order?]
 The stored selector and defaults are established. The complete runtime precedence, null-override treatment and unfilled-slot substitute have not been established from the engine's binding code. :unknown
 :::
+
+## SKGenericMaterial in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Every drawn surface of Shaun White Skateboarding uses the material class `SKGenericMaterial` (`0xB71F6261`). It holds its texture references and colour controls inline in one fixed-size body: 647 bytes in each of the 3,843 material objects of level 01. Textures are reached through `TextureMapSpec` objects, whose last `u32` (offset 28 of its 32-byte body) is the id of a `TextureMap` in the same cell. :observed{games="shaun-white-skateboarding"}[level 01]
+
+A material class has no shader-template id and no template descriptor: which program draws a surface follows from the combination of stored slots and switches, resolved by the shader bundles the game ships. :observed
+
+```layout
+title: "SKGenericMaterial body (selected fields)"
+size: 647
+games: [shaun-white-skateboarding]
+note: "Little-endian. Offsets are body offsets; the fields not listed are stored bytes without an established meaning. Slot blocks are described separately below."
+fields:
+  - {"at": 0, "size": 1, "type": "u8", "name": "managed", "level": "observed"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "observed"}
+  - {"at": 5, "size": 4, "type": "u32", "name": "class", "value": "0xB71F6261", "level": "proven"}
+  - {"at": 21, "size": 4, "type": "u32", "name": "blend", "level": "observed", "note": "enum; 4 on alpha-blended decals (source alpha, inverse source alpha, no depth write); 6 on glow effects, probably AdditiveAlpha"}
+  - {"at": 25, "size": 1, "type": "bool", "name": "blended", "level": "inferred", "note": "1 on blended surfaces"}
+  - {"at": 26, "size": 1, "type": "bool", "name": "alpha test", "level": "inferred", "note": "1 on cut-out surfaces"}
+  - {"at": 27, "size": 1, "type": "u8", "name": "alpha test reference", "level": "inferred", "note": "119 on the Ministry metro tile decal"}
+  - {"at": 28, "size": 4, "type": "u32", "name": "display", "level": "unknown", "note": "0 on the materials examined"}
+  - {"at": 36, "size": 1, "type": "bool", "name": "TwoSided", "level": "observed", "note": "property hash 0x403525B2 = CRC-32 of the name"}
+  - {"at": 37, "size": 1, "type": "bool", "name": "InvertCulling", "level": "observed", "note": "property hash 0x4F892276 = CRC-32 of the name"}
+  - {"at": 71, "size": 4, "type": "u32", "name": "collision surface id", "level": "observed", "note": "when nonzero, the id of a collision-surface object (water fountains: Water; debug grids: Concrete, Dirt, ConcreteStairs)"}
+  - {"at": 79, "size": 1, "type": "u8", "name": "unknown", "level": "unknown", "note": "1 on 406 distinct materials (characters, vehicles, metro cars, helicopters), 2 on 37 (light paint, smoke scrolls, beams); not read by the sidedness code"}
+  - {"at": 91, "size": 1, "type": "bool", "name": "water", "level": "observed", "note": "see water below"}
+  - {"at": 118, "size": 4, "type": "u32", "name": "detail slot", "level": "observed", "note": "a tiled detail map: the fake-reflection ramp, the character skin wrap"}
+  - {"at": 132, "size": 4, "type": "u32", "name": "mask slot", "level": "observed", "note": "Gen_Mask_* textures: a grime or tint mask; the slot carries an RGBA tint"}
+  - {"at": 168, "size": 16, "type": "f32[4]", "name": "layer 1 tint", "level": "observed", "note": "RGBA"}
+  - {"at": 192, "size": 33, "type": "slot block", "name": "diffuse 1", "level": "observed"}
+  - {"at": 233, "size": 4, "type": "u32", "name": "normal map", "level": "observed", "note": "TextureMapSpec id"}
+  - {"at": 265, "size": 4, "type": "f32", "name": "HeightScale", "level": "observed", "note": "property hash 0xD963A8E7 = CRC-32 of the name; 1.0 on 788 of 798 materials with a normal map"}
+  - {"at": 277, "size": 4, "type": "u32", "name": "specular map", "level": "observed", "note": "TextureMapSpec id"}
+  - {"at": 332, "size": 16, "type": "f32[4]", "name": "Layer2_ModulationColor", "level": "observed", "note": "property hash 0xC865F2A3 = CRC-32 of the name"}
+  - {"at": 348, "size": 4, "type": "u32", "name": "Layer2_UVChannel", "level": "observed"}
+  - {"at": 360, "size": 33, "type": "slot block", "name": "diffuse 2", "level": "observed"}
+  - {"at": 401, "size": 4, "type": "u32", "name": "second specular map", "level": "observed", "note": "TextureMapSpec id"}
+  - {"at": 434, "size": 16, "type": "f32[4]", "name": "layer 3 tint", "level": "observed", "note": "RGBA"}
+  - {"at": 450, "size": 4, "type": "u32", "name": "Layer3_UVChannel", "level": "observed"}
+  - {"at": 462, "size": 33, "type": "slot block", "name": "diffuse 3", "level": "observed"}
+  - {"at": 521, "size": 4, "type": "u32", "name": "Diffuse2", "level": "observed", "note": "TextureMapSpec id"}
+  - {"at": 525, "size": 4, "type": "u32", "name": "InfluenceHidePixelMode", "level": "observed", "note": "property hash 0x7DACF81C; see influence"}
+  - {"at": 537, "size": 4, "type": "u32", "name": "generic map", "level": "observed", "note": "TextureMapSpec id; valid only when the word is an object id"}
+```
+
+```layout
+title: "Diffuse slot block"
+size: 33
+games: [shaun-white-skateboarding]
+note: "Little-endian. Offsets are relative to the block; the block starts at body offset 192, 360 or 462."
+fields:
+  - {"at": 0, "size": 4, "type": "u32", "name": "TextureMapSpec id", "level": "observed"}
+  - {"at": 4, "size": 8, "type": "f32[2]", "name": "scale", "level": "inferred", "note": "tiling; position inferred from the rotation's position after scale and offset"}
+  - {"at": 12, "size": 8, "type": "f32[2]", "name": "offset", "level": "inferred"}
+  - {"at": 20, "size": 4, "type": "f32", "name": "rotation", "level": "proven", "note": "degrees"}
+  - {"at": 24, "size": 4, "type": "u32", "name": "TexMapMode U", "level": "observed", "note": "enum, wrap or clamp style"}
+  - {"at": 28, "size": 4, "type": "u32", "name": "TexMapMode V", "level": "observed", "note": "enum"}
+  - {"at": 32, "size": 1, "type": "bool", "name": "UseTextureAlpha", "level": "observed", "note": "property hash 0xA94D8B5D; the layer's sampled alpha weights its blend"}
+```
+
+The second diffuse layer's UseTextureAlpha flag lies at body offset 392 and the third's at 494, the same 32 bytes after the start of their blocks. :observed
+
+The meaning of the TexMapMode enum values, of the display word at 28 and of the bytes between the listed fields is not established. :unknown
+
+### Water
+
+Byte 91 is a strict boolean. Over the 1,971 distinct fixed-size materials of the six levels it is set on exactly six: `WaterPort`, `WaterPool` and `WaterToxic01` of level 01, the ocean and pirate-ship water of level 03 and `ReservoireWater01` of level 04. The other 1,965 store 0, including water-named tanks, foam, fountains and effect sheets. All six set materials have a normal map, a specular map and a cube reflection and no diffuse map. No shader-template id and no water animation semantic is stored. :observed{games="shaun-white-skateboarding"}[all six levels]
+
+The tint of the harbour water at offset 168 is (41, 60, 71) of 255 with alpha 1. :observed
+
+### Materials that hide pixels
+
+See [influence](/engines/anvil/materials/influence/) for the material setting that discards a surface in one of the game's two colour states.

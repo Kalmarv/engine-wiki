@@ -1,7 +1,7 @@
 ---
 title: Material UV transforms
 description: Eight-float UV properties, runtime matrix observations and unresolved rotation and animation order.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 ---
 
 A UVTransform property stores eight floats and three bytes. Its template binding identifies the material constant-buffer rows used to transform `(u,v,1)`. The census contains 21,928 UV properties on 6,166 of the 13,579 stored Materials. :proven[all stored UV-property records]
@@ -37,3 +37,13 @@ Animated examples have translations with signs and zero components matching the 
 :::open[How are nonuniform scale, rotation and time combined?]
 The static special cases are established. Their general product order, translation combined with rotation, animated time term and third byte remain unresolved. :unknown
 :::
+
+## Rotated UV slots in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Each diffuse slot of an `SKGenericMaterial` stores a scale, an offset and a rotation in degrees (see [the slot block](/engines/anvil/materials/material/)). The setter converts the degrees to radians in double precision (multiplying by pi / 180), rounds that to `f32`, and takes the `f32` cosine and sine. With scale `(sx, sy)`, offset `(ox, oy)` and angle `a`, the two matrix rows it writes are `(sx·cos a, −sx·sin a, ox)` and `(sy·sin a, sy·cos a, oy)`. A texture coordinate is therefore `S · R(a) · uv + o`: the rotation acts about the origin first, then the scale, then the offset. :proven[the engine's own setter, run on its own inputs]
+
+The engine's setter (`0xCD7590` of the recorded build) was run in a host that mapped the executable and applied its relocations by hand; its 66 output matrix words equal the formula above exactly. The full pixel program of a material rotated by 26.27 degrees, run on a reference rasteriser with patterned textures, gave 105 colour values equal to the formula. The full original vertex program, run for a street pavement material with scale 2 by 1, gave the same derived coordinates as the formula in 70 of 70 checks, with identity and altered-rotation controls changing the outputs as expected. :proven[the engine's own code, run on constructed inputs]
+
+Materials with a nonzero rotation on a populated slot occur in every one of the six levels. :observed

@@ -1,7 +1,7 @@
 ---
 title: Material render state
 description: Blend modes, stored boolean flags, alpha reference, culling and draw-class masks.
-games: [riders-republic]
+games: [riders-republic, "shaun-white-skateboarding"]
 ---
 
 Material state controls depth, culling, alpha testing and pass participation separately from the texture formulas. The deserializer stores BlendMode, AlphaDisplayMode and AlphaTestValue, then 35 individual boolean bytes; the runtime object packs them into a flag word. :observed[deserializer and registry]
@@ -48,4 +48,42 @@ The runtime material-class mask groups pass participation. LayerMaterial selects
 
 :::open[How do all flag combinations affect draw scheduling?]
 Known flag uses do not establish all unnamed flags, all blend modes or every pass interaction. The template's available permutations are not a per-Material record of the state selected on a particular draw. :unknown
+:::
+
+## Render state in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+A material's render state is spread over a few stored fields of the `SKGenericMaterial` body: the blend mode word at 21, the blended and alpha-test switches and the alpha reference after it, and the two culling bools at 36 and 37. The shader bundle's passes read the culling bools through a runtime variable; they set no depth-bias state. :observed{games="shaun-white-skateboarding"}
+
+The blend enum's names, as the game's descriptor lists them in reverse order, are Copy 0, Additive 1, Substractive 2, Modulate 3, Alpha 4, Dodge 5 and AdditiveAlpha 6. A blended material draws with the source-alpha and inverse-source-alpha factors and no depth write. :observed
+
+### Culling
+
+| Stored bools | Culling the draw sets | Confidence |
+|---|---|---|
+| `TwoSided` set | none (`D3DCULL_NONE`) | :observed{games="shaun-white-skateboarding"}[the engine's code, read; flags of all 1,971 materials] |
+| `TwoSided` clear, `InvertCulling` clear | clockwise (`D3DCULL_CW`) | :observed{games="shaun-white-skateboarding"}[the engine's code, read] |
+| `TwoSided` clear, `InvertCulling` set | counter-clockwise (`D3DCULL_CCW`) | :observed{games="shaun-white-skateboarding"}[the engine's code, read] |
+
+The material's virtual method at slot 5 (`0xCE2BE0` in the recorded build) reads one word of the base-class bools: bit 20 (`TwoSided`) selects no culling, otherwise the cull mode is clockwise or, with bit 21 (`InvertCulling`), counter-clockwise. The material constructor binds the shader bundle's runtime variable `g_Cullmode` to a slot that holds the Direct3D render state number 22 and this value, and the pass applier writes it through the device's cached `SetRenderState`. Property hashes are plain CRC-32 of the property name: `TwoSided` is `0x403525B2`, `InvertCulling` `0x4F892276`, and the neighbouring bools `InvertAlpha` `0x2E59D963` and `Unlit` `0x4FB26019`. :observed[the engine's code, read]
+
+A second variable, `g_ShadowCullmode`, is declared in the shader source and set from the other value the method computes, but no compiled record binds it. The shadow-map and depth-only passes of the generic effect use `g_Cullmode`, like the colour pass. A one-sided material is therefore culled the same way when it casts a shadow. :observed
+
+Of 6,399 effect and state records in the high-quality bundle, 6,217 bind `g_Cullmode` to the material. Thirty-seven set render state 22 to a literal (31 no culling, 6 clockwise) and so ignore the material. The frame jobs fix their own culling (clockwise for opaque, blended, shadow and depth passes, none for sky and sprites), and a material pass applies its value after the frame job's. :observed
+
+| Level | Distinct materials | `TwoSided` | `InvertCulling` |
+|---|---:|---:|---:|
+| 01 | 1,012 | 76 | 2 |
+| 02 | 1,014 | 72 | 2 |
+| 03 | 721 | 49 | 2 |
+| 04 | 852 | 61 | 2 |
+| 05 | 270 | 40 | 0 |
+| 06 | 371 | 46 | 0 |
+| All six | 1,971 | 153 | 2 |
+
+The table counts distinct material ids with a 647-byte body; no id has different flags in two cells. `InvertCulling` is set on only the two `GEN_GFX_Bonus` materials, and both are also `TwoSided`, so no material needs its winding reversed. The `TwoSided` set holds fences and wire, foliage cards, glass, cloth, light paint and beams, and two materials with `DOUBLESIDED` in their names; a name match alone is not the evidence: one `DOUBLESIDED` wall material and its single-sided sibling have bodies identical except for byte 36 and the texture ids. :proven{games="shaun-white-skateboarding"}[all 1,971 distinct materials of the six levels]
+
+:::open[Does any code outside the shader passes read the shadow cull value?]
+That no code outside the shader bundle's passes reads the second computed cull value (`g_ShadowCullmode`'s slot) is not shown; a breakpoint on the device's cull render state during a shadow pass would settle it. :unknown
 :::

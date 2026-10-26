@@ -33,6 +33,10 @@ engines:
     name: SEGA Ninja (SA2)
     summary: "The SEGA Ninja library's data as Sonic Adventure 2 ships it (GameCube): NJS object trees, Chunk, Basic and Ginja (GX) models, GVM/GVR textures, PRS compression, REL stage modules."
 
+  - id: rme
+    name: Robomodo RME
+    summary: "Robomodo's in-house engine as Tony Hawk: SHRED ships it (PS3): PAK archives of hashed names, MLP/MMP/MGP/SCP model and scene quartets, RSX textures and shaders, Havok 7.1 collision."
+
 # In reading order. A page's system decides its sidebar group and its row in the coverage matrix.
 systems:
   - id: archives

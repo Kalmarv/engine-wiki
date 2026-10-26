@@ -124,3 +124,11 @@
   developer: Ubisoft Montreal
   year: 2010
   build: "PC executable of 26,954,360 bytes (SHA-256 c7eb65c8...128d35c4), 33 DataPC forges of the base install, 3,894 entries"
+
+- id: shred
+  name: "Tony Hawk: SHRED"
+  short: SHRED
+  engine: rme
+  developer: Robomodo
+  year: 2010
+  build: "PlayStation 3 disc, title ID BLUS30542, version 01.00 (PARAM.SFO), 1,124 files of the dumped disc"

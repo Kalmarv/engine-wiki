@@ -50,10 +50,26 @@ contains `: ` (YAML reads it as a nested mapping otherwise).
 ## How a page reads
 
 1. **Start with what the thing is for** and how the engine uses it, in a short paragraph a newcomer can follow.
-2. **Then the detail:** structure, layouts, rules, values, each with its badge.
-3. **Differences between games** where they occur: a sentence with scope chips, a table with a column per game, or
-   separate layout blocks marked with their `games`.
+2. **Then what the games share:** structure, layouts, rules, values, each with its badge. One layout for a structure
+   the games share; a field that differs is limited to its games inside it (`games` on the field), not split into a
+   second layout.
+3. **Then a section per game** (`## Elden Ring`, `## Sekiro`), in release order, for what is that game's alone:
+   anything longer than a sentence or two, such as another container version, an extra stage or a different file
+   set. A game's section holds only how it differs from the shared part and what only it has; it never repeats the
+   shared part. A game with nothing of its own has no section.
 4. **Open questions** last, or beside the section they belong to.
+
+Where each kind of difference goes:
+
+| Difference | Where |
+|---|---|
+| One sentence or one table row (another constant, a flag one game uses) | Inline, where it belongs, with a scope chip or `games` on its badge |
+| Values that line up field by field across the games (versions, limits, counts) | A table in the shared part with a column per game |
+| A field one game adds or reads differently | `games` on that field in the shared layout |
+| More than a couple of sentences, or a structure only one game has | That game's section |
+
+A reader looking for "what is special about Sekiro" reads the shared part once and then Sekiro's section, not every
+paragraph for its chips.
 
 Write in plain sentences and tables. State facts in the present tense about the game ("the record is 40 bytes"),
 not as history ("we found that..."). No first-person narrative, no dates of discovery, no task status.

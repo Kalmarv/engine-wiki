@@ -1,7 +1,7 @@
 ---
 title: "CollisionMaterial and surfaces"
 description: "Contact types, reaction references and query and collision filters."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -148,3 +148,13 @@ The numeric values and name hashes come from the inspected ContactMaterial enum 
 :::open[What do the remaining hashed flags control?]
 Stored values are readable but lack semantic names. Reaction and fluid references alone do not establish runtime response. :unknown
 :::
+
+## Surface objects in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+A collision triangle's surface is one of the objects of class `SWCollisionMaterial` (`0xEF0C7E58`, 188 bytes each) named by a MeshShape's `Materials` list. The names include `Concrete`, `ConcreteVert`, `ConcreteNonRidable`, `ConcreteStairs`, `Metal`, `Wood`, `WoodDeck`, `Asphalt`, `Glass`, `Grass`, `Dirt`, `Water` and `InvisibleWall`; the bail and robot-bail surfaces are separate from the non-ridable ones. :observed{games="shaun-white-skateboarding"}[level 01]
+
+The class id equals the CRC-32 of `SWCollisionMaterial`. :proven[computed from the name]
+
+Surface id 0 is a default whose meaning is unknown. The parameters of a surface, including grind flags, are not read from its object; only its name is. The `NonRidable`, `Unsafe` and `InvisibleWall` names do not imply water or a death zone. A death-zone scene (`01A_DeathZoneSafety`) has no visual mesh and its scripted behaviour is not decoded. :observed

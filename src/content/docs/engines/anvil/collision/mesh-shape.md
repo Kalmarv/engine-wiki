@@ -1,7 +1,7 @@
 ---
 title: "MeshShape collision"
 description: "Tagged geometry sections, adjacency, acceleration tree and materials."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -95,3 +95,38 @@ Noncoplanar groups prevent a universal polygon-id invariant. The eight zero byte
 :::
 
 The complete six-archive section reader accepts all 25,162 MeshShape entries; the more detailed tree and polygon-id meanings above remain scoped to the 724-shape sample. Every section and tail is byte-accounted, without refusals. :proven[framing only]
+
+## MeshShape in Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Collision geometry is a `MeshShape` object (`0xB22B3E61`) with explicit triangles, held apart from the render meshes. The vertices are stored as `float4` with a zero fourth component, the triangle indices as `u16` triples, one surface byte per triangle, and an opaque Havok MOPP acceleration blob that needs no Havok packfile to read the triangles. The shape is in its own local frame, Z up. :observed{games="shaun-white-skateboarding"}[level 01]
+
+```layout
+title: "MeshShape fields (Shaun White Skateboarding)"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian. Fields in stored order after the object prefix; exact on 1,561 of 1,561 shapes read."
+fields:
+  - {"at": 0, "size": "4 + 16n", "type": "u32 + f32[4][n]", "name": "Vertices", "level": "observed", "note": "w is 0"}
+  - {"at": "var", "size": "4 + m", "type": "u32 + bytes", "name": "MoppCode", "level": "observed", "note": "the Havok MOPP blob, kept opaque"}
+  - {"at": "var", "size": 16, "type": "f32[4]", "name": "MoppOffsetAndScale", "level": "observed"}
+  - {"at": "var", "size": "4 + 6t", "type": "u32 + u16[3][t]", "name": "IndicesTriangles", "level": "observed"}
+  - {"at": "var", "size": "4 + t", "type": "u32 + u8[t]", "name": "IndicesMaterial", "level": "observed", "note": "one index per triangle into Materials"}
+  - {"at": "var", "size": "4 + 4s", "type": "u32 + u32[s]", "name": "Materials", "level": "observed", "note": "bare ids of collision surface objects"}
+  - {"at": "var", "size": "var", "type": "CollisionFilterInfo", "name": "filter", "level": "observed", "note": "an inline box, class 0x43EF99C2"}
+  - {"at": "var", "size": 4, "type": "u32", "name": "MoppCodeVersionNumber", "value": "5", "level": "observed"}
+  - {"at": "var", "size": 32, "type": "f32[4][2]", "name": "local bounds", "level": "observed", "note": "minimum and maximum"}
+```
+
+The Havok SDK that produced the MOPP blob is unknown. The data is neither a packfile nor a tagfile. :observed
+
+Other collision shapes occur in cells: capsule, sphere, box, a convex shape (`BarrelShape`), a list shape (`ListShape`, `0x86EBFD8D`, whose body ends with a flag byte) and a `MultiMeshShape` (`0x9A503477`). :observed
+
+## Rigid bodies and placement
+
+A prop's collision is an `InertComponent` (`0x0E5A450A`, 150 bytes in 1,561 cases) on its entity: the component base, a damage enum, an inline `RigidBody` (`0x228F402A`: a `CollisionFilterInfo` box with layer and part, the shape id, mass, linear and angular damping, four flag bytes and a 16-float local inertia tensor) and a walkability enum, then 12 bytes. The managed byte of the inline body can be 0. `RigidBody.Shape` is a bare id; level 01 reaches 1,152 shapes inside the cell and 409 in other entries. The inertia tensor is not the placement. :observed[level 01]
+
+A `MultiInertComponent` (`0x8BBEEE57`) holds an inline `MultiMeshShape` of parallel arrays: five-byte entity handles (tag 0 and a `u32`) and bare shape ids. The container itself carries an identity matrix in the cell examined; each pair is placed at its contained entity's matrix. The pairing matched on a cell of ten children: the six shapes that resolve locally have exactly the names of their entity's Visual meshes. :observed[one cell of ten children]
+
+Level 01's collision placements number 2,074, of 1,194 unique shape objects with 49 distinct surface ids, and every shape and entity reference resolves. :observed[level 01]

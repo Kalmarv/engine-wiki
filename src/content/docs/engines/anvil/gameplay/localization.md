@@ -25,4 +25,4 @@ A fragment whose left word is 0 is the UTF-16 character in its right word (or em
 
 Decoding the English package this way gives 1,040 strings, each with a numeric id, on the first attempt. :observed
 
-The strings include the names of the city's districts and stations; see the [levels](/games/shaun-white-skateboarding/#levels) of the game for their ids. :observed
+The strings include the names of the city's districts, sub-areas and monorail stations. Other data refers to them by id: the district and station tables in the `Game Bootstrap` entry hold string references and the worlds each district contains. See the [levels](/games/shaun-white-skateboarding/#levels) of the game. :observed

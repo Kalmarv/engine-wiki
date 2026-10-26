@@ -28,23 +28,32 @@ Beside the executable are also the shader bundles `ekshadersPChigh.bin`, `ekshad
 
 ## Levels
 
-The six numbered forges are the game's main levels, named by the district strings of the English text ([localization](/engines/anvil/gameplay/localization/)). Each name below carries the id of its string. :observed
+The six numbered forges are the game's main levels, named by the game's district table and the strings of the English text ([localization](/engines/anvil/gameplay/localization/)). Each name below carries the id of its string. :observed
 
 | Forge | World id | District | String id | Evidence |
 |---|---|---|---|---|
 | `DataPC_01.forge` | `0x47AF3893` | The Midtown Quarter | 11233 | Level 01 holds the three STRIDE challenges that string 12861 places in THE MIDTOWN QUARTER; stations 0 and 1 (strings 11262, 11263) travel to this world. :observed |
 | `DataPC_02.forge` | `0x47AF38BE` | The Downtown Quarter | 11238 | Level 02 holds the WENDY'S challenges that string 12862 places in THE DOWNTOWN QUARTER; station 2 (string 11264) travels to this world. :observed |
 | `DataPC_03.forge` | `0x47AF38E9` | The Rising Island | 11242 | Station 3 (string 11265) travels to this world, whose content is an island. :observed |
-| `DataPC_04.forge` | `0x47AF3914` | The Restricted Area | 11252 | Station 4 (string 11266) travels to this world. :observed |
-| `DataPC_05.forge` | `0x817B7E55` | unknown | none found | The cells hold `05_SkateLab_*` entities; the strings 12637 (Restricted Area Complex) and 12638 (SkateLab) are adjacent. No station reaches this world. :inferred |
-| `DataPC_06.forge` | `0x47AF396A` | unknown | none found | The entities include `06_Buildings_MinistryHQ`; no string names a Ministry headquarters. :inferred |
-| `DataPC_SW.forge` | `0x954D44AF` | Shaun World | 11271, 11272 | Station 5 (string 11269, Shaun Station) travels to this world. :observed |
+| `DataPC_04.forge` | `0x47AF3914` | The Ministry Quarter | 11249 | The district table lists world 04 and the Stronghold world under this district; the station of level 04 is named Restricted Area Station (string 11266). :observed |
+| `DataPC_05.forge` | `0x817B7E55` | The Prison Quarter | 11253 | The district table lists this world under this district. :observed |
+| `DataPC_06.forge` | `0x47AF396A` | none | none | No district lists this world; it appears only in mission tables. The entities include `06_Buildings_MinistryHQ`, but no string names a Ministry headquarters. :observed |
+| `DataPC_SW.forge` | `0x954D44AF` | Shaun World | 11271, 11272 | The district table lists this world under this district; station 5 (string 11269, Shaun Station) travels to it. :observed |
 
-:::open[Is level 04 the Restricted Area or the Ministry Quarter?]
-The station table sends station 4, named Restricted Area Station, to world 04, but the content of level 04 includes power-plant entities (`04_Obj_PowerPlant*`), and the Department of Energy (string 11251) belongs to The Ministry Quarter (string 11249). Both readings rest on observed data and they disagree. :unknown
-:::
+The names come from the game's own district table, in the data block of the `Game Bootstrap` entry (entry 2) of `DataPC.forge`. A district object (class `0x8DF4697E`) holds a string reference (class `0x81A7045D`, the string id at offset 12 of the class word), then the ids of its worlds, then its sub-areas (class `0xBE759080`). The monorail station table is in the same block, with records of 114 bytes: the name string id at offset 0 and the world id at offset 89 (offset 129 for the Shaun station). :observed
 
-Strings 11233 to 11254 also name the subdistricts: Midtown Quarter (The Common Place, Midtown, The Safe Harbor, The Ministry Mall), Downtown Quarter (The Bureau of Edification, Conformity Square, Tranquility Square), The Rising Island, The Underground, The Park, Ministry Quarter (The Department of Truth, The Department of Energy) and Restricted Area (The Prison Quarter, The Department of Enlightenment). :observed
+| District | Worlds | Sub-areas (string ids) |
+|---|---|---|
+| The Midtown Quarter (11233) | 01 | The Common Place 11234, Midtown 11235, The Safe Harbor 11236 |
+| The Downtown Quarter (11238) | 02 | The Bureau of Edification 11239, Conformity Square 11240, Tranquility Square 11241 |
+| The Rising Island (11242) | 03 | The Underground 11247, The Park 11248 |
+| The Ministry Quarter (11249) | 04, 04_Stronghold (`0x8B56B7D1`) | The Department of Truth 11250, The Department of Energy 11251, The Restricted Area 11252 |
+| The Prison Quarter (11253) | 05 | The Department of Enlightenment 11254 |
+| Shaun World (11271) | SW | Shaun World 11272 |
+
+The station of level 04 is named Restricted Area Station (11266), but the world belongs to The Ministry Quarter, of which The Restricted Area is a sub-area. The English strings 11262 to 11269 name six stations: Midtown (01), Safe Harbor (01), Downtown (02), Rising Island (03), Restricted Area (04) and Shaun (SW). The in-game city map shows the Restricted Area node with the panel text of string 11249. :observed
+
+Strings 12635 to 12638 (Conformity Square Rooftops, Rising Island Park, Restricted Area Complex, SkateLab) are four string references in the same block, each followed by a world id of a multiplayer world: `02_Multi`, `03_multi`, `04_Multi` and `05_MULTI`. They name those worlds, not levels 04 and 05. :observed
 
 ## Data systems
 

@@ -61,6 +61,10 @@ Reflections are real: the first placement of CHARLIE has `m = diag(−1, 1, 1, 1
 
 Units are not stated anywhere in the data; vertex positions reach about ±6,300 in a single mesh. :unknown
 
-:::open[Which handedness is the engine's?]
-The level data looks mirrored: the root matrix of CHARLIE is `diag(−1, 1, 1)`. Read as an export mirror, it would make the engine left-handed. No game-side check (a reference screenshot) has been made, so it is reasoning only. :inferred
-:::
+## Handedness and projection
+
+The world frame is **left-handed with Y up and +Z forward**. The running game's camera matrices, read from its memory while a level was loaded, show it: the view matrix's 3×3 part has determinant +1; the player, who stands in front of the camera, has view-space z = +2.456; moving along world +X moves the projected point to the right (normalised device x +0.309); and the projection's second diagonal term is positive (y up). :proven[camera matrices read live in the running game; the convention does not depend on the scene]
+A reader that works in a right-handed frame has to mirror Z, which also reverses triangle winding ([Triangle winding](/engines/rme/geometry/winding/)). :inferred
+The projection is a row-major perspective matrix with a vertical field of view of 65.81° (98° horizontally at 16:9). :observed[one live capture]
+
+The root matrices of the level data are `diag(−1, 1, 1)`; they are probably the mirror from the authoring tools' right-handed frame into this one. :inferred

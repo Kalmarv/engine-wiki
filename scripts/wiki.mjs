@@ -378,17 +378,18 @@ function cmdPublish(args) {
 
 // ---------------------------------------------------------------- main
 
+// Exit codes go in process.exitCode, never process.exit(): writes to a pipe are asynchronous on Linux and macOS, and
+// exiting at once cuts long output (an export into jq) short.
 const argv = process.argv.slice(2);
 const json = argv.includes('--json');
 const [cmd, ...args] = argv.filter((a) => a !== '--json');
+const commands = { search: cmdSearch, show: cmdShow, game: cmdGame, open: cmdOpen, export: cmdExport, check: cmdCheck, publish: cmdPublish };
 try {
-  const commands = { search: cmdSearch, show: cmdShow, game: cmdGame, open: cmdOpen, export: cmdExport, check: cmdCheck, publish: cmdPublish };
   if (!cmd || cmd === 'help' || cmd === '--help' || !commands[cmd]) {
     console.log(USAGE);
-    process.exit(cmd && !['help', '--help'].includes(cmd) ? 2 : 0);
-  }
-  process.exit((await commands[cmd](args, json)) ?? 0);
+    process.exitCode = cmd && !['help', '--help'].includes(cmd) ? 2 : 0;
+  } else process.exitCode = (await commands[cmd](args, json)) ?? 0;
 } catch (e) {
   console.error(e instanceof UsageError ? e.message : (e.stack ?? String(e)));
-  process.exit(e instanceof UsageError ? 2 : 1);
+  process.exitCode = e instanceof UsageError ? 2 : 1;
 }

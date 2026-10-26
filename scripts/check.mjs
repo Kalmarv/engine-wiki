@@ -9,4 +9,4 @@ const { files, errors, totals } = checkPages(process.argv.slice(2));
 for (const e of errors) console.error(`✗ ${e}`);
 const n = Object.values(totals).reduce((a, b) => a + b, 0);
 console.log(`${files.length} page(s) checked, ${errors.length} error(s); ${n} badges (${Object.entries(totals).map(([k, v]) => `${k} ${v}`).join(', ')})`);
-process.exit(errors.length ? 1 : 0);
+process.exitCode = errors.length ? 1 : 0; // not process.exit(): it would cut output piped on Linux short

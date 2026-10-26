@@ -8,7 +8,7 @@
 //   pnpm wiki export                     every page and the registries as JSON (for indexers)
 //   pnpm wiki check [paths]              the checks (same as pnpm check)
 //   pnpm wiki publish                    rebase HEAD onto origin/main, check and build it in a clean worktree, push it
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { checkPages } from '../src/lib/check.mjs';
@@ -252,60 +252,77 @@ function cmdCheck(args) {
 
 // ---------------------------------------------------------------- publish
 
+// Every step runs as a child the publish waits for without blocking, so a signal (a timeout, Ctrl-C) is handled at
+// once: the child is stopped, the step fails as "stopped", and the publish unwinds through its own cleanup.
+class Stopped extends Error {
+  constructor(signal) {
+    super(`stopped by ${signal}`);
+    this.signal = signal;
+  }
+}
+let current; // the child being waited for
+let stoppedBy; // the signal that stopped this publish
+
 function run(cmd, args, opts = {}) {
   // pnpm as the pnpm running this script (it sets npm_execpath): a standalone executable is started as it is, a
   // JavaScript one through this Node. A bare `pnpm` on Windows is a .cmd, which only starts through a shell.
   const pnpm = cmd === 'pnpm' ? process.env.npm_execpath : undefined;
   const [file, argv] = pnpm ? (/\.[cm]?js$/.test(pnpm) ? [process.execPath, [pnpm, ...args]] : [pnpm, args]) : [cmd, args];
-  const r = spawnSync(file, argv, { cwd: opts.cwd ?? ROOT, encoding: 'utf8', shell: process.platform === 'win32' && file === 'pnpm', env: opts.env ?? process.env, maxBuffer: 256 << 20 });
-  if (r.error) throw r.error;
-  if (r.status !== 0 && !opts.allowFail) throw new Error(`${cmd} ${args.join(' ')} failed (${r.status}):\n${(r.stderr || r.stdout).trim()}`);
-  return { out: (r.stdout ?? '').trim(), err: (r.stderr ?? '').trim(), code: r.status };
+  return new Promise((resolve, reject) => {
+    if (stoppedBy) return reject(new Stopped(stoppedBy));
+    const child = spawn(file, argv, { cwd: opts.cwd ?? ROOT, shell: process.platform === 'win32' && file === 'pnpm', env: opts.env ?? process.env, stdio: ['ignore', 'pipe', 'pipe'] });
+    current = child;
+    let out = '';
+    let err = '';
+    child.stdout.setEncoding('utf8').on('data', (d) => (out += d));
+    child.stderr.setEncoding('utf8').on('data', (d) => (err += d));
+    child.on('error', reject);
+    child.on('close', (code, signal) => {
+      current = undefined;
+      // Killed by a signal (ours, or one sent to the whole process group) is a stop, not a failing step.
+      if (stoppedBy || signal) return reject(new Stopped(stoppedBy ?? signal));
+      const r = { out: out.trim(), err: err.trim(), code };
+      if (code !== 0 && !opts.allowFail) return reject(new Error(`${cmd} ${args.join(' ')} failed (${code}):\n${(r.err || r.out).trim()}`));
+      resolve(r);
+    });
+  });
 }
 const git = (args, opts) => run('git', args, opts);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** One publish at a time per repository (its worktrees share it); a lock older than 30 minutes is a crashed run's. */
-function lock(main) {
+async function lock(main) {
   const dir = join(main, '.wt', 'publish.lock');
   mkdirSync(dirname(dir), { recursive: true });
   const until = Date.now() + 20 * 60_000;
   for (;;) {
+    if (stoppedBy) throw new Stopped(stoppedBy);
     try {
       mkdirSync(dir);
       writeFileSync(join(dir, 'pid'), String(process.pid));
-      const release = () => rmSync(dir, { recursive: true, force: true });
-      // Stopped from outside (a timeout, Ctrl-C): give the lock back rather than leave it for 30 minutes.
-      const stopped = (signal) => {
-        release();
-        process.exit(signal === 'SIGINT' ? 130 : 143);
-      };
-      process.once('SIGTERM', stopped).once('SIGINT', stopped);
-      return () => {
-        process.off('SIGTERM', stopped).off('SIGINT', stopped);
-        release();
-      };
+      return () => rmSync(dir, { recursive: true, force: true });
     } catch (e) {
       if (e.code !== 'EEXIST') throw e;
       if (Date.now() - statSync(dir).mtimeMs > 30 * 60_000) rmSync(dir, { recursive: true, force: true });
       else if (Date.now() > until) throw new Error(`another publish has held ${relative(ROOT, dir)} for 20 minutes`);
-      else Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2000);
+      else await sleep(2000);
     }
   }
 }
 
 /** Lines the commits add, and their messages, checked against public-text.mjs. */
-function publicProblems(cwd, base, sha) {
+async function publicProblems(cwd, base, sha) {
   const check = publicTextRules();
   const problems = [];
-  for (const c of git(['rev-list', `${base}..${sha}`], { cwd }).out.split('\n').filter(Boolean)) {
-    git(['log', '-1', '--format=%B', c], { cwd }).out.split('\n').forEach((l, i) => {
+  for (const c of (await git(['rev-list', `${base}..${sha}`], { cwd })).out.split('\n').filter(Boolean)) {
+    (await git(['log', '-1', '--format=%B', c], { cwd })).out.split('\n').forEach((l, i) => {
       const why = check(l);
       if (why) problems.push(`commit ${c.slice(0, 7)} message line ${i + 1}: ${why}`);
     });
   }
   let file = '';
   let line = 0;
-  for (const l of git(['diff', '-U0', '--no-color', '--no-ext-diff', base, sha], { cwd }).out.split('\n')) {
+  for (const l of (await git(['diff', '-U0', '--no-color', '--no-ext-diff', base, sha], { cwd })).out.split('\n')) {
     if (l.startsWith('+++ ')) file = l.slice(6);
     else if (l.startsWith('@@')) line = Number(l.match(/\+(\d+)/)?.[1] ?? 0);
     else if (l.startsWith('+')) {
@@ -317,47 +334,68 @@ function publicProblems(cwd, base, sha) {
   return problems;
 }
 
-function cmdPublish(args) {
-  const dry = args.includes('--dry-run');
-  const head = git(['rev-parse', 'HEAD']).out;
+async function cmdPublish(args) {
+  const onSignal = (signal) => {
+    stoppedBy ??= signal;
+    current?.kill(signal);
+  };
+  process.on('SIGTERM', onSignal).on('SIGINT', onSignal);
+  let pushing = false;
+  try {
+    return await publish(args.includes('--dry-run'), () => (pushing = true));
+  } catch (e) {
+    if (!(e instanceof Stopped)) throw e;
+    console.error(
+      pushing
+        ? `✗ ${e.message} while pushing: the push may or may not have reached origin; compare HEAD with origin/main`
+        : `✗ ${e.message}; nothing was pushed.`,
+    );
+    return e.signal === 'SIGINT' ? 130 : 143;
+  } finally {
+    process.off('SIGTERM', onSignal).off('SIGINT', onSignal);
+  }
+}
+
+async function publish(dry, startPush) {
+  const head = (await git(['rev-parse', 'HEAD'])).out;
   // The main checkout (the parent of the common .git), whichever worktree this runs in: its .wt/ holds the build worktree.
-  const main = dirname(resolve(ROOT, git(['rev-parse', '--path-format=absolute', '--git-common-dir']).out));
+  const main = dirname(resolve(ROOT, (await git(['rev-parse', '--path-format=absolute', '--git-common-dir'])).out));
   const wt = join(main, '.wt', 'head');
-  const unlock = lock(main);
+  const unlock = await lock(main);
   try {
     for (let attempt = 1; ; attempt++) {
-      git(['fetch', '-q', 'origin', 'main']);
-      const base = git(['rev-parse', 'origin/main']).out;
-      if (git(['merge-base', '--is-ancestor', head, base], { allowFail: true }).code === 0) {
+      await git(['fetch', '-q', 'origin', 'main']);
+      const base = (await git(['rev-parse', 'origin/main'])).out;
+      if ((await git(['merge-base', '--is-ancestor', head, base], { allowFail: true })).code === 0) {
         console.log(`nothing to publish: ${head.slice(0, 7)} is already on main (${base.slice(0, 7)})`);
         return 0;
       }
-      if (!existsSync(wt)) git(['worktree', 'add', '-q', '--detach', wt, head]);
-      git(['checkout', '-q', '--force', '--detach', head], { cwd: wt });
-      git(['clean', '-fdq'], { cwd: wt });
-      if (git(['rebase', '-q', base], { cwd: wt, allowFail: true }).code !== 0) {
-        const files = git(['diff', '--name-only', '--diff-filter=U'], { cwd: wt, allowFail: true }).out;
-        git(['rebase', '--abort'], { cwd: wt, allowFail: true });
+      if (!existsSync(wt)) await git(['worktree', 'add', '-q', '--detach', wt, head]);
+      await git(['checkout', '-q', '--force', '--detach', head], { cwd: wt });
+      await git(['clean', '-fdq'], { cwd: wt });
+      if ((await git(['rebase', '-q', base], { cwd: wt, allowFail: true })).code !== 0) {
+        const files = (await git(['diff', '--name-only', '--diff-filter=U'], { cwd: wt, allowFail: true })).out;
+        await git(['rebase', '--abort'], { cwd: wt, allowFail: true });
         console.error(`✗ HEAD doesn't rebase cleanly onto origin/main; conflicts in:\n${files}\nRebase or merge origin/main yourself, then publish again.`);
         return 1;
       }
-      const sha = git(['rev-parse', 'HEAD'], { cwd: wt }).out;
-      const leaks = publicProblems(wt, base, sha);
+      const sha = (await git(['rev-parse', 'HEAD'], { cwd: wt })).out;
+      const leaks = await publicProblems(wt, base, sha);
       if (leaks.length) {
         for (const l of leaks) console.error(`✗ ${l}`);
         console.error('Nothing was pushed.');
         return 1;
       }
-      run('pnpm', ['install', '--frozen-lockfile', '--prefer-offline', '--silent'], { cwd: wt });
+      await run('pnpm', ['install', '--frozen-lockfile', '--prefer-offline', '--silent'], { cwd: wt });
       // Private names were checked above, on what the commits add: text already on main isn't held to a list that
       // grows with every new name.
       const { WIKI_PRIVATE_NAMES_FILE: _names, ...env } = process.env;
-      const check = run('pnpm', ['-s', 'check'], { cwd: wt, allowFail: true, env });
+      const check = await run('pnpm', ['-s', 'check'], { cwd: wt, allowFail: true, env });
       if (check.code !== 0) {
         console.error(`${check.err}\n${check.out}\n✗ the checks fail on ${sha.slice(0, 7)}; nothing was pushed.`);
         return 1;
       }
-      const build = run('pnpm', ['-s', 'build'], { cwd: wt, allowFail: true });
+      const build = await run('pnpm', ['-s', 'build'], { cwd: wt, allowFail: true });
       writeFileSync(join(main, '.wt', 'head-build.log'), `${build.out}\n${build.err}`);
       if (build.code !== 0) {
         const lines = `${build.out}\n${build.err}`.split('\n').filter((l) => /error/i.test(l)).slice(0, 20);
@@ -369,7 +407,8 @@ function cmdPublish(args) {
         console.log(`${check.out.split('\n').at(-1)}\n${built}\nwould push ${sha.slice(0, 7)} to main (--dry-run)`);
         return 0;
       }
-      const push = git(['push', '-q', 'origin', `${sha}:refs/heads/main`], { allowFail: true });
+      startPush();
+      const push = await git(['push', '-q', 'origin', `${sha}:refs/heads/main`], { allowFail: true });
       if (push.code !== 0) {
         if (attempt < 2 && /rejected|non-fast-forward|fetch first/i.test(push.err)) {
           console.log('main moved while building; rebasing and checking again');
@@ -380,12 +419,13 @@ function cmdPublish(args) {
       }
       console.log(`${check.out.split('\n').at(-1)}\n${built}\npublished ${sha} to main`);
       // Bring this branch level with what was pushed when nothing here is in the way; the replayed commits are already on main.
-      if (sha !== head && git(['rev-parse', 'HEAD']).out === head && !git(['status', '--porcelain', '--untracked-files=no']).out) {
-        if (git(['rebase', '-q', 'origin/main'], { allowFail: true }).code !== 0) {
-          git(['rebase', '--abort'], { allowFail: true });
-          console.log('this branch still has the commits as they were before the rebase: git pull --rebase brings it level');
+      const level = 'this branch still has the commits as they were before the rebase: git pull --rebase brings it level';
+      if (sha !== head && (await git(['rev-parse', 'HEAD'])).out === head && !(await git(['status', '--porcelain', '--untracked-files=no'])).out) {
+        if ((await git(['rebase', '-q', 'origin/main'], { allowFail: true })).code !== 0) {
+          await git(['rebase', '--abort'], { allowFail: true });
+          console.log(level);
         }
-      } else if (sha !== head) console.log('this branch still has the commits as they were before the rebase: git pull --rebase brings it level');
+      } else if (sha !== head) console.log(level);
       return 0;
     }
   } finally {

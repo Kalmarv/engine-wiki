@@ -253,7 +253,11 @@ function cmdCheck(args) {
 // ---------------------------------------------------------------- publish
 
 function run(cmd, args, opts = {}) {
-  const r = spawnSync(cmd, args, { cwd: opts.cwd ?? ROOT, encoding: 'utf8', shell: process.platform === 'win32' && cmd === 'pnpm', env: process.env, maxBuffer: 256 << 20 });
+  // pnpm as the pnpm running this script (it sets npm_execpath): a standalone executable is started as it is, a
+  // JavaScript one through this Node. A bare `pnpm` on Windows is a .cmd, which only starts through a shell.
+  const pnpm = cmd === 'pnpm' ? process.env.npm_execpath : undefined;
+  const [file, argv] = pnpm ? (/\.[cm]?js$/.test(pnpm) ? [process.execPath, [pnpm, ...args]] : [pnpm, args]) : [cmd, args];
+  const r = spawnSync(file, argv, { cwd: opts.cwd ?? ROOT, encoding: 'utf8', shell: process.platform === 'win32' && file === 'pnpm', env: process.env, maxBuffer: 256 << 20 });
   if (r.error) throw r.error;
   if (r.status !== 0 && !opts.allowFail) throw new Error(`${cmd} ${args.join(' ')} failed (${r.status}):\n${(r.stderr || r.stdout).trim()}`);
   return { out: (r.stdout ?? '').trim(), err: (r.stderr ?? '').trim(), code: r.status };

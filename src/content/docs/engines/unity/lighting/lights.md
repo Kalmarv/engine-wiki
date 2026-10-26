@@ -60,15 +60,6 @@ and disabled lights — is not applied):
 | PEAK `level1` | 0 | 0 | 2 | 3.0 (colour 1.0, 0.955, 0.801) soft, and 0.01 disabled | :observed{games="peak"} |
 | PEAK `level3` | 1 | 0 | 3 | 3.0 and 2.0 soft, and 0.01 disabled | :observed{games="peak"} |
 
-SkateBIRD's sun is a soft-shadow directional light of colour (1.0, 0.9569, 0.8392) in most scenes, with Unity Euler angles
-(50°, 113.29°, 0°) in the bedrooms and the playground, (50°, 150°, 0°) on the rooftop, (50°, 180°, 0°) in the office,
-(50°, −30°, 0°) in the server room and flashback, and (30°, 39°, 0°) in skate heaven. :observed{games="skatebird"}
-The extra `Boundary Fill Light` directional lights of the bedrooms (intensity 0.5 and 0.3) are the unshadowed ones.
-:observed{games="skatebird"}
-
-SkateBIRD's lights carry bake types (`m_Lightmapping`: 4 realtime, 2 baked, 1 mixed). `level1` has ten mixed point lights;
-`level7` has twenty mixed and two baked point lights; every other light measured is realtime. 
-
 ## Lightmaps
 
 A scene's baked lighting is described by its `LightmapSettings` object (class 157): the list of lightmaps (`m_Lightmaps`), the
@@ -92,3 +83,14 @@ count (the built-in pipeline's; a URP asset replaces it), and the pixel light co
 
 Sledding Game's three levels each point to their own URP asset; a level's URP asset replaces the built-in cascade count.
 :proven{games="sledding"}
+
+## SkateBIRD
+
+SkateBIRD's sun is a soft-shadow directional light of colour (1.0, 0.9569, 0.8392) in most scenes, with Unity Euler angles
+(50°, 113.29°, 0°) in the bedrooms and the playground, (50°, 150°, 0°) on the rooftop, (50°, 180°, 0°) in the office,
+(50°, −30°, 0°) in the server room and flashback, and (30°, 39°, 0°) in skate heaven. :observed{games="skatebird"}
+The extra `Boundary Fill Light` directional lights of the bedrooms (intensity 0.5 and 0.3) are the unshadowed ones.
+:observed{games="skatebird"}
+
+SkateBIRD's lights carry bake types (`m_Lightmapping`: 4 realtime, 2 baked, 1 mixed). `level1` has ten mixed point lights;
+`level7` has twenty mixed and two baked point lights; every other light measured is realtime. 

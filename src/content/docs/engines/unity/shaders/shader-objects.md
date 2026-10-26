@@ -87,24 +87,6 @@ plane and 1/far. For a directional light, `_WorldSpaceLightPos0` holds the direc
 :sourced[Unity manual] Which lane layouts hold for each built-in constant in the
 build's Unity version is not checked against the engine. :inferred
 
-## 2021.2 parameter blobs
-
-A 2021.2 or later player keeps a variant's own parameters (including its textures) in the blob entry named by
-`m_ParameterBlobIndices`. Each entry:
-
-| Part | Content | Confidence |
-|---|---|---|
-| magic | `u32` `0x0C0A75BA` | :observed{games="sledding"} |
-| buffer count + 1 | `u32` | :observed{games="sledding"} |
-| four words | all zero | :observed{games="sledding"} |
-| each constant buffer | name (length, bytes, padding to 4), size, its fields (name, type, rows, columns, matrix flag, array size, byte offset, each a word), its structs (name, offset, array size, size, fields) | :observed{games="sledding"} |
-| a list of entries | each a name, a kind and a slot: kind 0 a texture (the sampler slot, `0xFFFFFFFF` for none, and a dimension word), kind 1 a constant buffer's binding (a word, 0), kind 4 a sampler (its packed state; the name is empty) | :observed{games="sledding"} |
-
-Over Sledding Game's `level1` shaders, 3,272 of 3,280 entries read to their last byte; the 8 that do not hold a kind 2, a
-structured buffer of DOTS instancing, whose payload is not described. :observed{games="sledding"} Before the blobs were
-read, the pass's common parameters named 1 of 1,375 texture slots; the pass's common parameters hold no texture and no
-`UnityPerMaterial` buffer in these players. :observed{games="sledding"}
-
 ## Variant selection
 
 Unity compiles each stage for the keyword sets that stage uses, so a keyword a stage never reads is not in its variants. A
@@ -125,3 +107,23 @@ Which keyword set a draw has at run time is the renderer's choice, see [draw key
 The engine's own textures (shadow maps, reflection probes, camera depth) are bound by the renderer and have no object in
 the player. For a material property left unset, the shader's declared default (`white`, `black`, `bump`, ...) is the
 engine's own texture, see [textures](/engines/unity/textures/textures/#engine-default-textures). :observed{games="skatebird sledding"}
+
+## Sledding Game
+
+### 2021.2 parameter blobs
+
+A 2021.2 or later player keeps a variant's own parameters (including its textures) in the blob entry named by
+`m_ParameterBlobIndices`. Each entry:
+
+| Part | Content | Confidence |
+|---|---|---|
+| magic | `u32` `0x0C0A75BA` | :observed{games="sledding"} |
+| buffer count + 1 | `u32` | :observed{games="sledding"} |
+| four words | all zero | :observed{games="sledding"} |
+| each constant buffer | name (length, bytes, padding to 4), size, its fields (name, type, rows, columns, matrix flag, array size, byte offset, each a word), its structs (name, offset, array size, size, fields) | :observed{games="sledding"} |
+| a list of entries | each a name, a kind and a slot: kind 0 a texture (the sampler slot, `0xFFFFFFFF` for none, and a dimension word), kind 1 a constant buffer's binding (a word, 0), kind 4 a sampler (its packed state; the name is empty) | :observed{games="sledding"} |
+
+Over Sledding Game's `level1` shaders, 3,272 of 3,280 entries read to their last byte; the 8 that do not hold a kind 2, a
+structured buffer of DOTS instancing, whose payload is not described. :observed{games="sledding"} Before the blobs were
+read, the pass's common parameters named 1 of 1,375 texture slots; the pass's common parameters hold no texture and no
+`UnityPerMaterial` buffer in these players. :observed{games="sledding"}

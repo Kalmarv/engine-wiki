@@ -20,6 +20,19 @@ across peers, which classes carry synchronized state, and whether a client can r
 | Sledding Game | FishNet, with Epic Online Services and Dissonance's FishNet integration | `FishNet.SDK.Id` beside the executable, 490 names with `FishNet`, `StreamingAssets/EOS`, `Dissonance.Integrations.FishNet` | :observed{games="sledding"} |
 | PEAK | Photon (PUN with Photon Voice) and Epic Online Services | `Photon3Unity3D.dll`, `PhotonUnityNetworking.dll`, `PhotonRealtime.dll`, `PhotonVoice*.dll`, `Zorro.PhotonUtility.dll`, `EpicOnlineService.dll` in `Managed/` | :observed{games="peak"} |
 
+## Sledding Game
+
+FishNet's code generator writes serializers for every networked class: `GRead___<Type>FishNet.Serializing.Generateds` and
+`GWrite___<Type>…`, and per behaviour the `NetworkInitialize___Early<Type>Assembly` and `___Late` methods. Sledding's networked
+classes include `PlayerSledController`, `SkiLift`, `SkiLiftChair`, `SnowmanBall` and `SnowmanState`.
+:observed{games="sledding"}
+
+## PEAK
+
+PEAK's `Managed/` holds the whole Photon stack (PUN, Realtime, Voice, Chat) beside `Zorro.PhotonUtility.dll`. :observed{games="peak"}
+The game stores its Steam and Epic platform code in `SteamCommon.dll`, `SteamManagerAssembly.dll` and `PlatformProviders.dll`.
+:observed{games="peak"}
+
 ## Big Walk
 
 The network manager is `HouseNetworkManager`, a Mirror `NetworkManager`, with `NetworkMinder` to start, join and set the transport
@@ -39,16 +52,3 @@ skip-aids are active. Every peer must run the same content, because the version 
 Save games are JSON in the user's `LocalLow` data under `House House/Big Walk/user_data/save_games` (`save_<slot>_<uid>.sav`
 and a `.bak`), with slot name, password, integer entries, string entries and an inventory of item GUIDs; the host owns the
 save. :inferred{games="big-walk"}
-
-## Sledding Game
-
-FishNet's code generator writes serializers for every networked class: `GRead___<Type>FishNet.Serializing.Generateds` and
-`GWrite___<Type>…`, and per behaviour the `NetworkInitialize___Early<Type>Assembly` and `___Late` methods. Sledding's networked
-classes include `PlayerSledController`, `SkiLift`, `SkiLiftChair`, `SnowmanBall` and `SnowmanState`.
-:observed{games="sledding"}
-
-## PEAK
-
-PEAK's `Managed/` holds the whole Photon stack (PUN, Realtime, Voice, Chat) beside `Zorro.PhotonUtility.dll`. :observed{games="peak"}
-The game stores its Steam and Epic platform code in `SteamCommon.dll`, `SteamManagerAssembly.dll` and `PlatformProviders.dll`.
-:observed{games="peak"}

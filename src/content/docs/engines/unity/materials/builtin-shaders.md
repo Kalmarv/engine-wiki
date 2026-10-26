@@ -91,6 +91,13 @@ Whether a shader multiplies the mesh's vertex colour into its surface is a prope
 
 Both columns :sourced[Unity built-in shader source] (the shaders' input structs have or lack a `COLOR` input).
 
+## Shaders that build their own geometry
+
+A shader whose vertex program builds the shape from component data (Shapes' line, disc, triangle and sphere shaders) draws
+a placeholder mesh; the shape is in the GameObject's MonoBehaviours. SkateBIRD's `Minimap/Mission Marker` is an interface
+shader on ordinary MeshRenderers (large spheres) that only the minimap camera draws, see
+[layers and cameras](/engines/unity/world/layers-and-cameras/). :observed{games="skatebird"}
+
 ## SkateBIRD's Bumped Specular Voronoi
 
 SkateBIRD's own shader, read from its forward-base fragment program (one directional light, D3D11 `ps_4_0`) and its
@@ -99,10 +106,3 @@ stochastically. :observed{games="skatebird"} Each map is sampled at the 3×3 cel
 `TRANSFORM_TEX` coordinate); each cell *c* is offset by `h = frac(sin(dot(c, (12.9898, 78.233))) × 43758.5453)`, weighted
 `2^(−7.2135 · |c − frac(uv) + h|²)` and normalised. The albedo is that blend × `_Color`; the normal is the same blend of the
 unpacked normal map. The pattern never repeats. :observed{games="skatebird"}
-
-## Shaders that build their own geometry
-
-A shader whose vertex program builds the shape from component data (Shapes' line, disc, triangle and sphere shaders) draws
-a placeholder mesh; the shape is in the GameObject's MonoBehaviours. SkateBIRD's `Minimap/Mission Marker` is an interface
-shader on ordinary MeshRenderers (large spheres) that only the minimap camera draws, see
-[layers and cameras](/engines/unity/world/layers-and-cameras/). :observed{games="skatebird"}

@@ -54,7 +54,14 @@ go backwards are not valid streamed data. :observed
 A clip's length is `m_StopTime − m_StartTime` seconds. Its animation events (`m_Events`) are a separate list.
 :sourced[Unity scripting reference]
 
-## Checks against another decoder
+## Humanoid curves
+
+A humanoid clip's Animator binding (`typeID` 95) carries the root, the IK goals and the muscles; see
+[humanoid muscles](/engines/unity/animation/humanoid-muscles/). :observed{games="sledding"}
+
+## SkateBIRD
+
+### Checks against another decoder
 
 Three clips of SkateBIRD's bird, decoded by AssetStudio and by a reader of the layout above, then evaluated with Unity's cubic
 Hermite rule between keys: `Flapping` (path id 1250 of `sharedassets0.assets`, 48 bindings, 160 curves), `Grab Left Loop`
@@ -64,8 +71,3 @@ Constant curves agree to 5e-9. With the slopes read per second, the animated cur
 (rotation). :observed{games="skatebird"}
 
 `sharedassets5.assets` holds another `Flapping` with 391 bindings for a different rig. :observed{games="skatebird"}
-
-## Humanoid curves
-
-A humanoid clip's Animator binding (`typeID` 95) carries the root, the IK goals and the muscles; see
-[humanoid muscles](/engines/unity/animation/humanoid-muscles/). :observed{games="sledding"}

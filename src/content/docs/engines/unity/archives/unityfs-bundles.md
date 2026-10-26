@@ -88,20 +88,16 @@ unlike the player's own loose files, which strip them. :observed{games="peak sle
 decoded without an outside [type tree package](/engines/unity/data-model/type-trees/); the player-data bundle of Big
 Walk, like loose player files, has none. :observed{games="big-walk"}
 
-## Big Walk's `data.unity3d`
+## Sledding Game's Addressables
 
-Big Walk's single bundle is 2,451,391,952 bytes with 43,598 blocks (43,139 LZ4HC, 459 stored) that decompress to
-5,714,422,612 bytes in 19 files. :proven{games="big-walk"} The files are the player's data folder:
-`globalgamemanagers`, `Resources/unity_builtin_extra`, `globalgamemanagers.assets`, `sharedassets0` to `sharedassets3`
-(`.assets` with `.resS` streams), `level0` to `level3` (`level2.resS` too), `resources.assets` and
-`resources.assets.resS`. :proven{games="big-walk"} The twelve serialized files are all
-[version 22](/engines/unity/archives/serialized-files/) containers of Unity `6000.3.17f1`, each with a stated size equal
-to its directory entry. :proven{games="big-walk"} The largest member is `sharedassets1.assets.resS`
-(4,162,131,536 bytes). :proven{games="big-walk"}
-
-The scene files are `level0` (platform init), `level1` (menus), `level2` (the whole world, 91,750,964 bytes) and `level3`
-(sky). :inferred Beside the bundle, `Big Walk_Data` holds `il2cpp_data/Metadata/global-metadata.dat`, `boot.config`,
-`app.info` and three `sharedassets*.resource` audio streams. :observed{games="big-walk"}
+Sledding Game's `StreamingAssets/aa/` is an Addressables 2.9.1 content folder: `catalog.bin` (146,902 bytes, a binary
+content catalog), `catalog.hash`, `settings.json` and 50 bundles under `StandaloneWindows64/`. :observed{games="sledding"}
+The 50 bundles are one `defaultlocalgroup_assets_all_*.bundle` (1,457,997 bytes; a 124,588-byte serialized file and a
+22,369,728-byte stream), one `*_monoscripts_*.bundle` (2,051 bytes) and the Localization package's bundles: 16
+`localization-string-tables-*`, 16 `localization-asset-tables-*`, 15 `localization-assets-*` (one of them `shared`) and
+`localization-locales`. :observed{games="sledding"} Their serialized files are version 22,
+Unity `6000.3.12f1`, with type trees. :observed{games="sledding"} The mountain scene is not among them; it is the loose
+`level1`. :observed{games="sledding"}
 
 ## PEAK
 
@@ -136,13 +132,17 @@ The `EndOfStreamException` in AssetStudio's shader parser on PEAK 2.6.b is obser
 fails on is not established.
 :::
 
-## Sledding Game's Addressables
+## Big Walk's `data.unity3d`
 
-Sledding Game's `StreamingAssets/aa/` is an Addressables 2.9.1 content folder: `catalog.bin` (146,902 bytes, a binary
-content catalog), `catalog.hash`, `settings.json` and 50 bundles under `StandaloneWindows64/`. :observed{games="sledding"}
-The 50 bundles are one `defaultlocalgroup_assets_all_*.bundle` (1,457,997 bytes; a 124,588-byte serialized file and a
-22,369,728-byte stream), one `*_monoscripts_*.bundle` (2,051 bytes) and the Localization package's bundles: 16
-`localization-string-tables-*`, 16 `localization-asset-tables-*`, 15 `localization-assets-*` (one of them `shared`) and
-`localization-locales`. :observed{games="sledding"} Their serialized files are version 22,
-Unity `6000.3.12f1`, with type trees. :observed{games="sledding"} The mountain scene is not among them; it is the loose
-`level1`. :observed{games="sledding"}
+Big Walk's single bundle is 2,451,391,952 bytes with 43,598 blocks (43,139 LZ4HC, 459 stored) that decompress to
+5,714,422,612 bytes in 19 files. :proven{games="big-walk"} The files are the player's data folder:
+`globalgamemanagers`, `Resources/unity_builtin_extra`, `globalgamemanagers.assets`, `sharedassets0` to `sharedassets3`
+(`.assets` with `.resS` streams), `level0` to `level3` (`level2.resS` too), `resources.assets` and
+`resources.assets.resS`. :proven{games="big-walk"} The twelve serialized files are all
+[version 22](/engines/unity/archives/serialized-files/) containers of Unity `6000.3.17f1`, each with a stated size equal
+to its directory entry. :proven{games="big-walk"} The largest member is `sharedassets1.assets.resS`
+(4,162,131,536 bytes). :proven{games="big-walk"}
+
+The scene files are `level0` (platform init), `level1` (menus), `level2` (the whole world, 91,750,964 bytes) and `level3`
+(sky). :inferred Beside the bundle, `Big Walk_Data` holds `il2cpp_data/Metadata/global-metadata.dat`, `boot.config`,
+`app.info` and three `sharedassets*.resource` audio streams. :observed{games="big-walk"}

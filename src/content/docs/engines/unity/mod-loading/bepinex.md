@@ -39,20 +39,22 @@ A plugin on a Mono game can call `AssetBundle.LoadFromFile`, `SceneManager.LoadS
 camera. It must be built against assemblies of the same Unity line (SkateBIRD's 2019.4.20f1) for serialized compatibility.
 :sourced[BepInEx]
 
-For SkateBIRD, a plugin placed in a copy of the install can load scenes, teleport the player and lock `Camera.main` at an exact
-pose and field of view with the HUD, the bird and the lens effects off. The game runs without Steam: its `SteamClient.Init`
-failure is caught. :observed{games="skatebird"}
-
 PEAK's community documents flag two fitting traps for character mods: the order of the bones and the game's `W/Character`
 shader. :sourced[peak-more-customizations]
-
-## Community scene
-
-SkateBIRD has no dedicated mod platform: its Thunderstore community page does not exist, the Nexus page showed no mods, and the
-Steam guides cover no modding. Ten GitHub repositories (`SIGFAI/skatebird-*`, updated October 2026) are AI-generated "takeover"
-plugins built on BepInEx 5. :sourced[GitHub search, 2026-10-18]
 
 :::open[Loading a Sledding Game plugin]
 Sledding Game's install ships FishNet and has no Doorstop files; how a plugin would be loaded into this IL2CPP build is not
 established.
 :::
+
+## SkateBIRD
+
+For SkateBIRD, a plugin placed in a copy of the install can load scenes, teleport the player and lock `Camera.main` at an exact
+pose and field of view with the HUD, the bird and the lens effects off. The game runs without Steam: its `SteamClient.Init`
+failure is caught. :observed{games="skatebird"}
+
+### Community scene
+
+SkateBIRD has no dedicated mod platform: its Thunderstore community page does not exist, the Nexus page showed no mods, and the
+Steam guides cover no modding. Ten GitHub repositories (`SIGFAI/skatebird-*`, updated October 2026) are AI-generated "takeover"
+plugins built on BepInEx 5. :sourced[GitHub search, 2026-10-18]

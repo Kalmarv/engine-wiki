@@ -61,19 +61,7 @@ modes and `m_LinearFogStart` and `m_LinearFogEnd` for linear. :sourced[Unity scr
 
 ## What the games store
 
-SkateBIRD's scenes, by build index (the trilight colours are sky (0.5647, 0.5972, 0.6795), equator (0.7835, 0.7835, 0.7835) and
-ground (0.5457, 0.5457, 0.5457) unless noted; intensity 1.0 everywhere, fog off, fog mode 3, density 0.01 unless noted):
-
-| Scenes | Mode | Probe | Notes | Confidence |
-|---|---|---|---|---|
-| 0 title, 1 bedroom 1, 2 rooftop, 3 office, 4 server room, 5 bedroom 2, 12 playground | trilight | stored | the colours are as stated; the probe and skybox differ per scene | :proven{games="skatebird"} |
-| 6 credits | trilight | all zero | | :proven{games="skatebird"} |
-| 7 flashback | trilight | stored, identical to bedroom 1's | sky (0.5621, 0.5986, 0.6765), equator (0.7206, 0.5195, 0.4716), ground (0.5441, 0.5441, 0.5441); fog density 0.06 | :proven{games="skatebird"} |
-| 13 skate heaven | trilight | all zero | | :proven{games="skatebird"} |
-| 8 loading | skybox | stored | | :proven{games="skatebird"} |
-| 9 MasterAudio, 10 Win10 Platform, 11 Steam Store Platform | skybox | all zero | | :proven{games="skatebird"} |
-
-Fog is off in every SkateBIRD scene. :proven{games="skatebird"} Sledding Game and PEAK store:
+Sledding Game and PEAK store:
 
 | Scene | Mode | Intensity | Fog | Probe average (`sh[0]`, `sh[9]`, `sh[18]`) | Confidence |
 |---|---|---|---|---|---|
@@ -88,7 +76,23 @@ its probe is stale. :observed{games="peak"} The table covers PEAK's five loose s
 AssetBundles are not measured. :observed{games="peak"} Sledding Game's lodge is inside the mountain scene and shares its
 RenderSettings; the scene stores one ambient. :proven{games="sledding"}
 
-## Reflections
+## SkateBIRD
+
+SkateBIRD's scenes, by build index (the trilight colours are sky (0.5647, 0.5972, 0.6795), equator (0.7835, 0.7835, 0.7835) and
+ground (0.5457, 0.5457, 0.5457) unless noted; intensity 1.0 everywhere, fog off, fog mode 3, density 0.01 unless noted):
+
+| Scenes | Mode | Probe | Notes | Confidence |
+|---|---|---|---|---|
+| 0 title, 1 bedroom 1, 2 rooftop, 3 office, 4 server room, 5 bedroom 2, 12 playground | trilight | stored | the colours are as stated; the probe and skybox differ per scene | :proven{games="skatebird"} |
+| 6 credits | trilight | all zero | | :proven{games="skatebird"} |
+| 7 flashback | trilight | stored, identical to bedroom 1's | sky (0.5621, 0.5986, 0.6765), equator (0.7206, 0.5195, 0.4716), ground (0.5441, 0.5441, 0.5441); fog density 0.06 | :proven{games="skatebird"} |
+| 13 skate heaven | trilight | all zero | | :proven{games="skatebird"} |
+| 8 loading | skybox | stored | | :proven{games="skatebird"} |
+| 9 MasterAudio, 10 Win10 Platform, 11 Steam Store Platform | skybox | all zero | | :proven{games="skatebird"} |
+
+Fog is off in every SkateBIRD scene. :proven{games="skatebird"}
+
+### Reflections
 
 SkateBIRD's scenes store the reflection source `Skybox` with intensities 0.344 (bedrooms, rooftop, office, playground, skate
 heaven), 0.548 (server room) and 0.0 (flashback), and a subtractive shadow colour (0.42, 0.478, 0.627); each scene has 1 to 23

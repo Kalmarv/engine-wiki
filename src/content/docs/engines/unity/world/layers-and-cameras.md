@@ -16,6 +16,8 @@ set when the camera draws layer *n*, and a target texture: none for a camera tha
 camera whose picture is used elsewhere (a minimap, a mirror). :sourced[Unity manual] Whether a renderer is seen by the
 player depends on whether any screen camera draws its layer. :sourced[Unity manual]
 
+A renderer on a layer that no screen camera's mask draws is not seen by the player. :sourced[Unity manual]
+
 ## Layer names
 
 Layer names are in the `TagManager` of `globalgamemanagers`; layers 0 to 7 are built in (Default, TransparentFX,
@@ -26,6 +28,18 @@ Ignore Raycast, Water at 4, UI at 5). The layers each game names:
 | SkateBIRD | 8 Wheels, 9 Board, 10 Ragdoll, 11 Ghost, 12 Ghost Listener, 13 Clothing Collisions, 14 See-thru Skatables, 15 Skate Zones, 16 Board-Interactive Deco, 17 Room Boundary Mesh, **28 Mini Map Markers**, 29 Collectibles, 30 Collectible Toucher, 31 Post-Processing | :proven{games="skatebird"} |
 | Sledding Game | 6 Default_HardCameraBlock, 7 Sled, 8 Player, 9 Ragdoll, 10 Terrain, 11 UI World, 12 PlayerHitCollider, 13 OnlyCollideWithPlayer, 14 Interactable, 15 DefaultNoCollideWithRagdoll, 16 AudioCutoffBlocker, 17 BarrierForPlayer, 19 BillboardCamera | :proven{games="sledding"} |
 | PEAK 3.0.0 | 8 DontCollideWithCharacter, 9 OnlyCollideWithCharacter, 10 Character, 11 GhostCharacter, 12 MIrror, 14 Hazard, 15 Rope, 20 Terrain, 21 Map, 22 InvisWall, 25 Lighting, 27 MirrorHidden, 29 Vines, 30 SDF, 31 Post | :proven{games="peak"} |
+
+## Other uses of layers
+
+Layers also decide physics: the physics settings store a layer collision matrix, and a collider's layer decides what it
+touches. Sledding Game and PEAK name layers for that purpose (`OnlyCollideWithPlayer`, `DontCollideWithCharacter`). :inferred
+
+SkateBIRD's `Post-Processing` layer (31) holds the post-processing volumes, see
+[post-processing](/engines/unity/effects/post-processing/). :inferred{games="skatebird"}
+
+:::open[The layer collision matrices]
+The matrices of the three games are not decoded here, so which layers collide with which is not described.
+:::
 
 ## Culling masks in SkateBIRD
 
@@ -41,17 +55,3 @@ texture object 1283 of the same file); the credits scene (6) adds a `Credits Cam
 every layer to the screen; the loading scene (8) has one `Main Camera` with every layer; scenes 9 to 11 have no camera.
 :proven{games="skatebird"} The main camera's field of view is 75° (40° in the title scene) and the map camera's varies by scene
 (60° to 92.2°). :proven{games="skatebird"}
-
-A renderer on a layer that no screen camera's mask draws is not seen by the player. :sourced[Unity manual]
-
-## Other uses of layers
-
-Layers also decide physics: the physics settings store a layer collision matrix, and a collider's layer decides what it
-touches. Sledding Game and PEAK name layers for that purpose (`OnlyCollideWithPlayer`, `DontCollideWithCharacter`). :inferred
-
-SkateBIRD's `Post-Processing` layer (31) holds the post-processing volumes, see
-[post-processing](/engines/unity/effects/post-processing/). :inferred{games="skatebird"}
-
-:::open[The layer collision matrices]
-The matrices of the three games are not decoded here, so which layers collide with which is not described.
-:::

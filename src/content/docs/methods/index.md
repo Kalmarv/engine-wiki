@@ -14,6 +14,7 @@ each can and cannot show, and the level it earns.
 | [Reference-reader comparison](/methods/reference-readers/) | An independent reader gets the same result on every entry | Proven |
 | [Running the engine's own code](/methods/engine-code/) | A shader or program of the game, run unmodified, computes what the page says | Proven |
 | [Runtime observation](/methods/runtime-observation/) | What the running game actually holds and draws (captures, memory snapshots) | Proven or Observed |
+| [Crash analysis](/methods/crash-analysis/) | Which code freed or damaged the memory a crash reads, from dumps and in-process recording | Observed |
 | [Name recovery](/methods/name-recovery/) | Which names stored hashes stand for | Proven (a name), never a meaning |
 | Partial measurement | A census over part of the data (one area, a sample) | Observed |
 | Third-party claim | What another tool or document says, unchecked | Sourced |

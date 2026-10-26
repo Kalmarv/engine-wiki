@@ -28,11 +28,27 @@ meshes. See [resource identity](/engines/frostbite/data-model/resource-identity/
 | Load hang followed by access violation | Streamed texture handle capacity exceeded; root-resident textures consume the budget. | Stream textures and matching depots per cell, within the version's capacity; ReSkate 2.0.7 raises the pool. | :observed |
 | `+0x1918602`, read `0xffffffffffffffff` | Pause-map donor swap imports the asset root instead of the coremap view-model instance. | Import the corresponding MegaPark_CoreMapViewModel instance. | :observed |
 
+In the depot-key failure (`+0x3cbba4f` above), the faulting site varies from load to load. Over 27 recorded
+access violations, 8 at six sites (`+0x27bd244`, `+0x3d9ee43`, `+0x40a149e`, `+0x4206613`, `+0x46685e5` three times, `+0x50d9f9`) dereference a
+pointer of the form `0x30000001xxxxxxxx`: high tag bits over a plausible heap address. :observed That pattern fits a
+tagged value written into freed memory that is still read as a pointer, so the site names whichever reader comes
+next rather than the cause. :inferred
+
+Keeping the registry's own boxes alive (pinning a key's box while it has further registrations, and releasing
+finished keys only outside the registry lock) does not prevent it: with zero unbalanced releases recorded, 4 of
+7 counted first loads still crash, at `+0x46685e5`, `+0x27bd244`, `+0x50d9f9` and `+0x3d9ee43`. The canonical-block
+data correction is the change with a measured effect. :observed
+
+At `+0x3cbba4f` the binding-table page index in R8 is 0 and the directory pointer read from the table is not a
+valid address. RAX `0x0000ffffffffffff` at that fault is the pointer mask loaded at `+0x3cbba42`, not a stored
+all-ones pointer. :observed
+
 ## Capacity and GPU failures
 
 | Address or symptom | Trigger and cause | Correction | Confidence |
 |---|---|---|---|
 | `+0x489cfe9` | Empty cull free list, head `0xffffffff`; large object count or a spawn-creation loop can exhaust it. | Reduce simultaneous objects or use the raised cull allocation; ground the spawn when creations repeat. | :observed |
+| `+0x3cbb13b`, `+0x489cfe9`; skater frozen at spawn height | The level's DefaultStartPoint has no collision under it. The game re-creates the skater about eight times a second from load to quit (over 1,200 creations per session against about 17 normally), and teleports cannot move it. Two of four measured sessions crash within three minutes: a render-handle reference count on a null pointer, or the exhausted cull free list. | Place the start point on ground that has collision. | :observed |
 | `+0x4ea4094` | Light id 8,320; the 8,192-entry class table already overflowed. A ToD transition can overlap outgoing and incoming lights. | Bound simultaneous per-class lights; unload-before-load and factory guards address overlap and exhaustion. | :observed |
 | `DXGI_ERROR_DEVICE_HUNG`, GBuffer breadcrumbs | All Studio vista proxies remain active; a measured 661-proxy level carries 1.94 GB of far geometry. | Remove those proxies or use a bounded hierarchical vista representation. | :observed |
 

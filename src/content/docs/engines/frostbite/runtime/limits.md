@@ -80,9 +80,56 @@ fields:
   - {at: 88, size: variable, type: pointers, name: payload pointers, level: observed}
 ```
 
-The binding table grows on demand with a bounds check. The owner frees synchronously at reference count zero.
-GlobalSBA's free path writes the previous free block into the freed allocation's first qword as a per-thread
-LIFO link. Consequently a stale reference can appear as a plausible allocator pointer. :observed
+The owner's 40-byte payload block begins with the word `(8 << 48) | owner`. :observed
+
+The binding table at owner `+0x18` reaches its records through a page-pointer directory. The 64-bit word at
+table `+8` packs the directory pointer in its low 48 bits, the directory length in the next 15 bits and a growth
+lock in the top bit. `+0x3cbb6c0` grows the directory on demand, checking the page index against the packed
+length at `+0x3cbb6ef`. :inferred
+
+Page `j` holds `2^(j+1)` records of `0x30` bytes, so record `n` lives in page `floor(log2(n+2)) - 1` at index
+`n + 2 - 2^(j+1)`; callers derive `n` from per-owner 32-bit counters. These pages grow without a fixed capacity,
+unlike the 64 × 128 light tables. :inferred
+
+The owner and its payload are freed synchronously the moment the reference count reaches zero. About 680
+open-coded call sites decrement and free in place (251 through `+0x3cba570`, 419 through the value-box thunk
+`+0x3cba640`, others through `+0x3cba7a0` and `+0x3cb4d00`), with no lock and no deferred phase. :observed
+
+GlobalSBA's free path (`+0x15a5c20`) writes the previous free block into the freed allocation's first qword as a
+per-thread LIFO link. Consequently a stale reference can appear as a plausible allocator pointer: a block whose
+first qword points at another free block of the same size has itself been freed. :observed
+
+## Depot key registry
+
+Loaded ShaderBlockDepots register each material key in a hash table of ParamDb value boxes. The depot holds the
+bucket array pointer at `+0x1d0` and the bucket count at `+0x1d8`; `buckets[count]` is a sentinel. The insert
+helper `+0xfa55d0`, called at `+0x46a00b4`, returns the node, its bucket, and an inserted flag at result `+16`.
+:observed
+
+```layout
+title: Depot key registry node
+size: 32
+note: Runtime memory.
+fields:
+  - {at: 0, size: 8, type: u64, name: material key, level: observed}
+  - {at: 8, size: 8, type: pointer, name: value box handle, level: observed, note: "Points at the box's 64-bit reference count"}
+  - {at: 16, size: 4, type: u32, name: registration count, level: observed}
+  - {at: 20, size: 4, type: bytes, name: unknown, level: unknown}
+  - {at: 24, size: 8, type: pointer, name: next node, level: observed}
+```
+
+The handle points at the reference count, eight bytes into the box; the release thunk `+0x3cba640` subtracts
+eight and continues at `+0x3cba7a0`. During one measured load of a level whose depots register different blocks
+under one key, a key was registered twice with a box other than the node's. :observed
+
+## General free dispatch
+
+`+0x1581010` frees with an explicit arena, pointer and size; `+0x157dae0` frees by pointer alone. Its type-7 case
+(jump table at `+0x15812a4`) calls `+0x159c970`, which resolves the actual arena and re-enters `+0x1581010` with
+the same pointer and size at `+0x159c9ab`. A hook on that function therefore records two frees for one logical
+free; the nested one is not a second allocation. :observed
+
+The arena object at `+0x7319ad0` is GlobalSBA, initialised by `+0x1599220`. :observed
 
 ## GPU and settings diagnostics
 

@@ -3,7 +3,7 @@ title: Crash analysis in a closed executable
 description: Finding the cause of a memory-damage crash in a game without its source, from dumps and in-process recording.
 ---
 
-Added content can crash a game whose code nobody here has the source of. The crash dump says where the game
+Added content can crash a game whose source code is not available. The crash dump says where the game
 faulted, not why. This page covers how the cause is found and the traps that send an analysis the wrong way. All of
 it is done offline, on the owner's own copy, with anti-cheat not running.
 

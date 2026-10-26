@@ -273,7 +273,17 @@ function lock(main) {
     try {
       mkdirSync(dir);
       writeFileSync(join(dir, 'pid'), String(process.pid));
-      return () => rmSync(dir, { recursive: true, force: true });
+      const release = () => rmSync(dir, { recursive: true, force: true });
+      // Stopped from outside (a timeout, Ctrl-C): give the lock back rather than leave it for 30 minutes.
+      const stopped = (signal) => {
+        release();
+        process.exit(signal === 'SIGINT' ? 130 : 143);
+      };
+      process.once('SIGTERM', stopped).once('SIGINT', stopped);
+      return () => {
+        process.off('SIGTERM', stopped).off('SIGINT', stopped);
+        release();
+      };
     } catch (e) {
       if (e.code !== 'EEXIST') throw e;
       if (Date.now() - statSync(dir).mtimeMs > 30 * 60_000) rmSync(dir, { recursive: true, force: true });

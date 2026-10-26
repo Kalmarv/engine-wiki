@@ -37,6 +37,21 @@ The executable carries these libraries; versions are given where the executable 
 
 The executable also embeds a Havok physics identification string naming Robomodo and the title (`...Physics.Robomodo_PS3-Xbox360_TonyHawk12`) with the date 2011-10-29. The date is recorded as it is written; it is not shown to be the date of the build. :observed
 
+## What is known and what is not
+
+| Area | State | Confidence |
+|---|---|---|
+| [Archives](/engines/rme/archives/pak/): PAK v4, CSTR, disc names | complete for the one disc | :proven[all 336 PAKs] |
+| [Geometry](/engines/rme/geometry/model-quartets/): rigid meshes, vertex formats, placements, winding, skinned streams | every layout accounted for; tangent frames, tree extras and the skeleton pose not understood | :proven[all 657 quartets] |
+| [Materials](/engines/rme/materials/material-banks/) | records decoded; state words and the sampler order not understood | :proven[all 4,102 materials] |
+| [Textures](/engines/rme/textures/gcm-textures/) | all formats and volumes decoded | :proven[all 27,446 headers] |
+| [Collision](/engines/rme/collision/havok-packfiles/) | triangles, shapes, bodies and surface ids; flag bits not understood | :proven[all 490 files] |
+| [World](/engines/rme/world/scp-tables/): nodes, spots, splines, lights, layers | decoded; rails, light meaning and several section types open | :observed |
+| [Data model](/engines/rme/data-model/main-db/): MAIN.DB | all tables read; which the engine reads when is not traced | :proven[all 27 databases] |
+| Shaders, animation, audio, scripts, UI | not covered | :unknown |
+
+The figures come from one PlayStation 3 disc, so a count that is proven is proven for that disc. :observed
+
 :::open[What is RME's own version, and where does it come from?]
 The only version-like labels in the executable are a Demonware workspace name and a Havok identification string with a date. Nothing ties either to a release of the engine.
 :::

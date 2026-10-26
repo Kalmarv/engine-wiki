@@ -66,3 +66,5 @@ The descriptions above are the database's. The display strings the menus show we
 - Materials: [Material banks](/engines/rme/materials/material-banks/).
 - Textures: [Textures (THP and TXP)](/engines/rme/textures/gcm-textures/).
 - Collision: [Havok 7.1 collision packfiles](/engines/rme/collision/havok-packfiles/).
+- World: [SCP scene tables](/engines/rme/world/scp-tables/), [Spot chunks and spawns](/engines/rme/world/spot-chunks/), [Splines](/engines/rme/world/splines/), [Lights](/engines/rme/world/lights/), [Levels and layer PAKs](/engines/rme/world/layers/).
+- Data model: [MAIN.DB and the other databases](/engines/rme/data-model/main-db/).

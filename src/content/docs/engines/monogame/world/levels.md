@@ -62,6 +62,13 @@ nodes, 20,875 meshes, 1,534 materials, 267 images and 12,522,067 triangles. :pro
 
 Every node carries an `extras` object with the exporter's `sbe_properties`; 18,526 also have `sbe_parent_collection` and 6,629
 `sb_props`, and some carry the Blender add-ons' properties (`MeasureGenerator` on 2,545, `ikeaItemNo` on 68). :proven{games="stuntboost"}
+
+Scene `extras` hold leftovers of the Blender scene and its add-ons, which the game does not use: `vr_landmarks` in 129 parts,
+`sb_state` in 112, `NWBusyDrawing`, `NWLazySource`, `NWLazyTarget` and `other_props` in 73, `measureit_units` in 59 and fewer others; five
+parts carry a `ProblemList` of 388 Blender warnings, each with a `name` and a `path` (such as "Implicit reference to active UV map"
+on a material's node). :proven{games="stuntboost"} Some of those entries quote node names, so a text search of the whole document
+finds more calls than there are nodes: `=Booster(` occurs 282 times in the level documents but names 274 nodes, the other eight
+hits being the `name` and `path` of four `ProblemList` entries. :proven{games="stuntboost"} Counts on these pages are of node names.
 Node names follow a grammar that carries the gameplay, see [node names](/engines/monogame/gameplay/node-names/).
 
 A mesh primitive may carry an application-specific vertex attribute, `_COLOR_SHIFT`, two bytes per vertex written by the

@@ -56,4 +56,9 @@ another sun (`CustomSunRegion`). :sourced[StuntboostTools documentation]
 Shown alone, `Bake<N>_Denoised` looks much darker than the game draws the level, although the baked branch above can only
 darken the atlas (with the default `ShadowColor` its factor is at most 1). Where the difference comes from (a post effect such as `Post.fx` or `Post2D.fx`, the
 atlas encoding, or the display path) is not established.
+
+One reading of the code is that the post passes are only SSAO, the edge outlines, depth of field and the speed smear, so any
+colour grading is baked into the atlas. :inferred{games="stuntboost"} That would not by itself make the atlas look darker than
+the game, and the tools' documentation lists overriding post-processing and colour grading among its undocumented features
+([custom maps](/engines/monogame/mod-loading/custom-maps/#the-exporter)), which suggests the game grades at run time somewhere. :inferred{games="stuntboost"}
 :::

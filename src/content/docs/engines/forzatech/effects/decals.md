@@ -18,7 +18,8 @@ dithered and alpha-tested; the diffuse alpha is not opacity). Road markings are 
 `Decal_D1n1p1_Retro_Alphatest`, with the paint shape in the alpha. :observed The shipped geometry already lifts them: measured on 1,042
 road-decal meshes all sit 5 to 25 mm above the road, terrain or pavement, with patch stacks stepping about 1 mm per layer (7.8, 8.8,
 9.9, 10.7 mm) and paint lines about 17.6 mm; 209 facade decal meshes sit a median 2.2 mm in front of the wall. Vertex positions are
-quantised to 0.98 mm, so these offsets are deliberate. :observed
+quantised to 0.98 mm, so these offsets are deliberate. :observed Another description of the same data gives the decals a
+constant 12 mm lift; no measurement behind it is recorded. :inferred
 
 On top of that every non-instanced G-buffer vertex shader adds a per-draw depth offset:
 `SV_Position.z = clip.z + clip.w · ((rc & 127)/127 · cb2[141].w + cb9[24].w)`, where `rc` is a per-draw root constant (possibly the
@@ -72,6 +73,12 @@ instances (game x ≈ 993, z ≈ −5868) the logos land on the dock plates and 
 
 Not in any shipped file: how `alpha` composites into the decal buffer (the blend state is in encrypted settings), the decal's
 roughness and `_NAO` normal outputs, and the in-game look. :unknown
+
+:::open[Is there a constant 12 mm decal lift?]
+The measurement over 1,042 road-decal meshes finds lifts from 5 to 25 mm in steps of about 1 mm, not one constant; a 12 mm
+constant lift is stated elsewhere without a method. Whether 12 mm is the lift of one class of decal (patches, paint) or a
+misreading is not established.
+:::
 
 :::open[How do decals composite into the G-buffer?]
 The decal buffer's blend operation and its resolve into the G-buffer are in no readable file. The shader outputs are traced; the

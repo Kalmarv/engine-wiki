@@ -15,6 +15,12 @@ STUNTBOOST (Byting Games) is a fingerboard racer on .NET 8 and BytingGames' fork
 DesktopGL, with the BytingLib and BytingPipeline libraries (`SE.Pipeline` and `STUNTBOOST.dll` hold the game). The observations are
 of Steam app 2999500, build 25832744. :observed{games="stuntboost"}
 
+The assemblies in `libraries/` and beside the executable carry these versions: `MonoGame.Framework` file version 3.8.1.22,
+product version `3.8.1.50-develop+7eebbc0b8a006b51042f66b6e0c585487b77bfbc`, company "MonoGame Team, Byting Games";
+`BytingPipeline` 1.0.0.2 (the version the XNB reader names give); `BytingLib` 1.0.0.0; `SE.Pipeline` 1.0.2.45; `STUNTBOOST.dll`
+1.0.0.69. :observed{games="stuntboost"} The install ships no anti-cheat module: there are no Easy Anti-Cheat or BattlEye files.
+:observed{games="stuntboost"}
+
 ## Data in the install
 
 `Content` holds 1,873 XNB files (4,953,823,117 bytes) in `Models`, `Textures`, `Effects`, `Fonts` and `Audio`, plus `Loca.loca`

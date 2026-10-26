@@ -8,6 +8,9 @@ sources:
   - title: Forza-Crypto-Tool (DVS-code)
     url: https://github.com/DVS-code
     note: decrypts FH6 data server-side; no key is published
+  - title: Forza-Crypto-Tool data mirror
+    url: https://gist.github.com/DVS-code/b66d155ae0cb76072c7f71868538355d
+    note: decrypted FH6 data from the tool's authors, including the game database as SQLite
 ---
 
 Forza Horizon 6 encrypts its game database, its string-and-settings archives and the player's profile with **Arxan
@@ -56,6 +59,8 @@ executable is not packed and its entry point is the ordinary compiler start-up c
 64 KB windows are near random (above 7.9 bits per byte) yet hold real function boundaries, and some individual
 functions (two that register the instancing data) are stored encrypted and decrypted in memory at run time. :observed
 No public key for the FH6 files exists; a community tool decrypts them server-side only. :sourced[Forza-Crypto-Tool]
+Its authors publish decrypted data; in it `gamedbRC.slt` is an SQLite database of 205 tables listing 638 cars.
+:sourced[Forza-Crypto-Tool data mirror]
 
 :::open[Where does the key live?]
 White-box AES hides the key inside the transform tables; static analysis of the executable did not recover it, and

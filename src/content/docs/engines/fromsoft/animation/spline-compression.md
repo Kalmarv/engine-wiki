@@ -44,6 +44,11 @@ arrays are therefore never populated, and whether their entries would count byte
 these files. :proven[over the animations read]{games="sekiro elden-ring"} Every animation's `numberOfFloatTracks` and
 every binding's float-track list is empty, so no stored clip drives a float slot. :proven[over the animations read]{games="sekiro elden-ring"}
 
+The 11 Sekiro tagfiles left out above read the same way: ten whose compendium another binder holds, and the SDK 2015.1
+clip, together 11 spline-compressed animations of 1,286 transform tracks in 12 blocks. In them `maskAndQuantizationSize`
+is `4 * numberOfTransformTracks`, every spline degree is 1 or 3, no track's rotation selector is 0, 3 or 4, every block
+ends where the next begins and no bytes follow the last. :proven[over the 11 tagfiles]{games="sekiro"}
+
 ## Track masks
 
 All track masks precede track data. Each track then stores position, rotation and scale data, with padding to four

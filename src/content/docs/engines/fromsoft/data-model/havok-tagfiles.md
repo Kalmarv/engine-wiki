@@ -230,6 +230,8 @@ string's characters, including runs of one. No item is reached both ways, and no
 | `0x20` | an array | 750,413 | 3,187,651 |
 | `0x20` | a string | 1,812,521 | 2,002,240 |
 
+:proven{games="sekiro elden-ring"} Every item of kind `0x10` holds exactly one object: the count is 1 on all 268,241
+Sekiro and 2,141,042 Elden Ring items of that kind, the root's included, and item 1 is always of kind `0x10`.
 :proven{games="sekiro elden-ring"}
 
 ## Patch table

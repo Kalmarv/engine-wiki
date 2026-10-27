@@ -79,7 +79,7 @@
   short: Sledding
   engine: unity
   year: 2025
-  build: "Steam build 25351629; Unity 6000.3.12f1 (IL2CPP)"
+  build: "Steam build 26054124; Unity 6000.3.12f1 (IL2CPP)"
 
 - id: peak
   name: PEAK

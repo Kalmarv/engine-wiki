@@ -33,7 +33,7 @@ scene (`level1`) and have not been rechecked. :inferred{games="sledding"}
 | sign text | TextMeshPro strings in the object's raw bytes (open-source field order), fonts are the game's own TTFs | text drawn by TextMesh Pro | :inferred{games="sledding"} |
 | RectTransform positions | `m_LocalPosition` is stale | the position derives from the anchors ([scenes](/engines/unity/data-model/scenes-and-hierarchy/)) | :inferred{games="sledding"} |
 | decals (Shapes package) | no type tree for the Shapes components; the mesh is a placeholder | the shaders build lines, discs, triangles and rings from component data; 108 lines, 26 triangles and 4 rings were identified from values | :inferred{games="sledding"} |
-| pines | 12,321 tree instances of a SpeedTree 7 material (`Tree Mat`, geometry type mesh): trunk and needles in one opaque mesh, no alpha test | opaque pines | :inferred{games="sledding"} |
+| pines | 12,321 tree instances (build 25351629) of a SpeedTree 7 material (`Tree Mat`, geometry type mesh): trunk and needles in one opaque mesh, no alpha test | opaque pines | :inferred{games="sledding"} |
 | fires | 19 particle systems | flames and smoke | :inferred{games="sledding"} |
 | edge-of-world slabs | 5 km-long backdrop slabs in the scene | a backdrop beyond the 3 km mountain | :inferred{games="sledding"} |
 
@@ -52,9 +52,10 @@ scene (`level1`) and have not been rechecked. :inferred{games="sledding"}
 
 ## The lodge
 
-The lodge is inside the mountain scene (there is no lodge scene); the scene stores one ambient light for both, a skybox-mode
-ambient of intensity 1 whose probe averages (0.1792, 0.2244, 0.3062)
-([ambient light](/engines/unity/lighting/ambient-and-probes/)). :proven{games="sledding"}
+The lodge is inside the mountain scene (there is no lodge scene); the scene stores one ambient light for both. In build
+25351629 it is a skybox-mode ambient of intensity 1 whose probe averages (0.1792, 0.2244, 0.3062)
+([ambient light](/engines/unity/lighting/ambient-and-probes/)). :proven{games="sledding"} In build 26054124 it is a trilight ambient
+of intensity 1 with HDR colours. :observed{games="sledding"}
 
 :::open[Lighting inside the lodge]
 Whether the game varies ambient light inside the lodge with a volume of its own is a separate question the scene's single

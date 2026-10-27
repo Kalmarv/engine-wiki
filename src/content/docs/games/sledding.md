@@ -1,6 +1,6 @@
 ---
 title: Sledding Game
-description: "Sledding Game's Unity 6000.3 data: the mountain scene, nine terrains with 12,321 trees, URP shaders, FishNet networking, Addressables for localization, and the traps in its data."
+description: "Sledding Game's Unity 6000.3 data: the mountain scene, terrains with their trees, URP shaders, FishNet networking, Addressables for localization, and the traps in its data."
 games: [sledding]
 sources:
   - title: UnityPy
@@ -12,8 +12,9 @@ sources:
 ---
 
 Sledding Game is a multiplayer sledding game on [Unity](/engines/unity/) 6000.3.12f1 with the Universal Render Pipeline, the IL2CPP
-scripting backend and FishNet networking. :observed{games="sledding"} The observations are of Steam app 3438850, build 25351629.
-:observed{games="sledding"}
+scripting backend and FishNet networking. :observed{games="sledding"} The observations are of Steam app 3438850, build 26054124. :observed{games="sledding"} Statements below that name build
+25351629 were made on the earlier build and are not rechecked on 26054124; statements that name no build were made on 25351629
+unless they say otherwise, and have not been rechecked on 26054124. :observed{games="sledding"}
 
 ## Data in the install
 
@@ -25,15 +26,22 @@ all localization ([bundles](/engines/unity/archives/unityfs-bundles/#sledding-ga
 `GameAssembly.dll` with `il2cpp_data/Metadata/global-metadata.dat` version 39 ([scripting backends](/engines/unity/runtime/scripting-backends/)).
 :observed{games="sledding"}
 
-The mountain scene has 151,088 objects, among them 18,069 mesh renderers, 2,507 LOD groups, 4,151 box colliders, 57 lights
-([scenes](/engines/unity/data-model/scenes-and-hierarchy/), [lights](/engines/unity/lighting/lights/)). :observed{games="sledding"}
+In build 25351629 the mountain scene has 151,088 objects, among them 18,069 mesh renderers, 2,507 LOD groups, 4,151 box colliders,
+57 lights ([scenes](/engines/unity/data-model/scenes-and-hierarchy/), [lights](/engines/unity/lighting/lights/)). :observed{games="sledding"}
+In build 26054124 the scene draws 25 terrains and keeps 5,790 mesh renderers after the LOD and active-state rules (3,944 in
+25351629), 21,147 terrain tree renderers (12,321 in 25351629) and 56 shining non-directional lights (53 in 25351629).
+:observed{games="sledding"} The path ids of objects in `sharedassets1` and `resources.assets` are renumbered between the two builds
+(a hot cocoa mug is `sharedassets1` 835 in 25351629 and 1126 in 26054124) while its geometry is identical. :observed{games="sledding"} Over all shaders of build
+26054124 there are 5,987 fragment-program player variants in 375 shaders (9,182 in 347 shaders in 25351629). :observed{games="sledding"}
 
 ## What is special
 
-- **Terrain.** Nine 1,000 m terrains of 513 × 513 samples, three splat layers each, 12,321 tree instances of three prototypes
+- **Terrain.** Build 26054124 draws 25 terrains with 21,147 tree renderers. :observed{games="sledding"} Build 25351629 has nine
+  1,000 m terrains of 513 × 513 samples, three splat layers each, 12,321 tree instances of three prototypes
   ([terrain](/engines/unity/terrain/terrain-data/)). :proven{games="sledding"}
-- **Skybox ambient** with fog on, and one RenderSettings shared by mountain and lodge
-  ([ambient light](/engines/unity/lighting/ambient-and-probes/)). :proven{games="sledding"}
+- **Ambient light.** Build 26054124 stores trilight ambient with HDR colours and no skybox material, and a named sun
+  ([ambient light](/engines/unity/lighting/ambient-and-probes/)). :observed{games="sledding"} Build 25351629 stores skybox ambient
+  with fog on, and one RenderSettings shared by mountain and lodge. :proven{games="sledding"}
 - **URP shaders** whose variants keep their textures in parameter blobs (2021.2 layout)
   ([shader objects](/engines/unity/shaders/shader-objects/), [draw keywords](/engines/unity/shaders/draw-keywords/)).
   :observed{games="sledding"}

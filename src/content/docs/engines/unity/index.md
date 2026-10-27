@@ -34,7 +34,7 @@ and Big Walk (6000.3.17f1), which use container version 22 and the Universal Ren
 | Colour space | linear | not read | not read | not read | :proven{games="skatebird"} |
 | Networking | none | FishNet | Photon | Mirror | :observed |
 | Physics gravity (m/s²) | −9.81 | −9.81 | −19.62 | not read | :proven{games="skatebird sledding peak"} |
-| Terrain | none | nine terrains, 12,321 trees | not read | four terrains | :proven{games="sledding"} :inferred{games="big-walk"} |
+| Terrain | none | nine terrains, 12,321 trees (build 25351629) | not read | four terrains | :proven{games="sledding"} :inferred{games="big-walk"} |
 
 Each row is described on the page it belongs to: [serialized files](/engines/unity/archives/serialized-files/),
 [bundles](/engines/unity/archives/unityfs-bundles/) and [the data folder](/engines/unity/archives/player-data-folder/) for the

@@ -38,8 +38,9 @@ URP makes one light its main light: among the visible directional lights, the on
 with the greatest intensity above 0 (the first in its visible-light order on a tie). :sourced[Universal Render Pipeline source]
 URP does this only when its asset's main light mode is per-pixel
 ([script fields](/engines/unity/data-model/script-fields/#the-universal-render-pipeline-asset)). :sourced[Universal Render Pipeline source]
-The stored `m_Sun` of every scene of SkateBIRD and Sledding Game is null (file id 0, path id 0), so the sun is chosen by
-intensity. :proven{games="skatebird sledding"} PEAK's five loose scenes also store none. :observed{games="peak"}
+The stored `m_Sun` of every scene of SkateBIRD and of Sledding Game build 25351629 is null (file id 0, path id 0), so the sun is
+chosen by intensity. :proven{games="skatebird sledding"} PEAK's five loose scenes also store none. :observed{games="peak"} In
+Sledding Game build 26054124 `level1` stores `m_Sun` naming `Sledding Weather Sphere/Sky/Sun Offset/Sun Light`. :observed{games="sledding"}
 
 ## Lights in the scenes
 
@@ -56,9 +57,14 @@ and disabled lights — is not applied):
 | SkateBIRD `level7` | 0 | 22 | 1 | 0.8, white, soft | :observed{games="skatebird"} |
 | SkateBIRD `level12` | 0 | 3 | 2 | both 1.0, soft | :observed{games="skatebird"} |
 | SkateBIRD `level13` | 0 | 38 | 1 | 1.0, soft | :observed{games="skatebird"} |
-| Sledding Game `level1` | 26 | 30 | 1 | 2.0, white, soft | :observed{games="sledding"} |
+| Sledding Game `level1`, build 25351629 | 26 | 30 | 1 | 2.0, white, soft | :observed{games="sledding"} |
 | PEAK `level1` | 0 | 0 | 2 | 3.0 (colour 1.0, 0.955, 0.801) soft, and 0.01 disabled | :observed{games="peak"} |
 | PEAK `level3` | 1 | 0 | 3 | 3.0 and 2.0 soft, and 0.01 disabled | :observed{games="peak"} |
+
+In Sledding Game build 26054124 `level1` has two shining directional lights, `Sledding Weather Sphere/Sky/Sun Offset/Sun Light`
+(the light `m_Sun` names) and `Sledding Weather Sphere/Sky/Moon Light`, both of intensity 2 and not baked; 56 non-directional
+lights shine (53 in build 25351629). :observed{games="sledding"} Build 25351629 had one unnamed `Directional Light`, chosen as the
+brightest. :observed{games="sledding"}
 
 ## Lightmaps
 

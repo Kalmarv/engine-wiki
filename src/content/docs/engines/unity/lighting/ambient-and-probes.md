@@ -27,7 +27,7 @@ settings and the sun. The ambient lighting a surface receives comes from one of 
 
 The three colours (`m_AmbientSkyColor`, `m_AmbientEquatorColor`, `m_AmbientGroundColor`) are stored in every mode. In skybox
 mode they are whatever the scene last held for trilight, which is Unity's default when never set: sky (0.212, 0.227, 0.259),
-equator (0.114, 0.125, 0.133), ground (0.047, 0.043, 0.035). They are not authored light. :proven[every skybox-mode scene of SkateBIRD and Sledding Game]{games="skatebird sledding"} :observed{games="peak"}
+equator (0.114, 0.125, 0.133), ground (0.047, 0.043, 0.035). They are not authored light. :proven[every skybox-mode scene of SkateBIRD and of Sledding Game build 25351629]{games="skatebird sledding"} :observed{games="peak"}
 
 ## The probe
 
@@ -66,7 +66,8 @@ Sledding Game and PEAK store:
 | Scene | Mode | Intensity | Fog | Probe average (`sh[0]`, `sh[9]`, `sh[18]`) | Confidence |
 |---|---|---|---|---|---|
 | Sledding `level0` Boot | skybox | 1.0 | off | (0.1803, 0.2257, 0.3069) | :proven{games="sledding"} |
-| Sledding `level1` mountain | skybox | 1.0 | on, mode 3, density 0.002 | (0.1792, 0.2244, 0.3062) | :proven{games="sledding"} |
+| Sledding `level1` mountain, build 25351629 | skybox | 1.0 | on, mode 3, density 0.002 | (0.1792, 0.2244, 0.3062) | :proven{games="sledding"} |
+| Sledding `level1` mountain, build 26054124 | trilight | 1.0 | not recorded | not recorded; `m_IndirectSpecularColor` is 0 | :observed{games="sledding"} |
 | PEAK `level0` | skybox | 1.0 | off | (0.1803, 0.2257, 0.3069); sky colour (0.9661, 0.7698, 0.4804) | :observed{games="peak"} |
 | PEAK `level1`, `level3`, `level4` | flat | 0.5 | off, density 0.0035 | (0.0127, 0.1238, 0.5654); sky colour (0.9804, 0.9804, 0.9804) | :observed{games="peak"} |
 | PEAK `level2` | skybox | 1.0 | off | (0.1803, 0.2257, 0.3069) | :observed{games="peak"} |
@@ -74,7 +75,10 @@ Sledding Game and PEAK store:
 A flat-mode PEAK scene stores a probe whose average is a blue (0.0127, 0.1238, 0.5654) unrelated to its white flat colour, so
 its probe is stale. :observed{games="peak"} The table covers PEAK's five loose scenes; the 208 level scenes in its
 AssetBundles are not measured. :observed{games="peak"} Sledding Game's lodge is inside the mountain scene and shares its
-RenderSettings; the scene stores one ambient. :proven{games="sledding"}
+RenderSettings; the scene stores one ambient. :proven{games="sledding"} In build 26054124 `level1` stores trilight mode with no skybox
+material: sky (0.6392, 0.9581, 1.0189, alpha 1.5), equator (0.7065, 0.9223, 1.0189, alpha 1.5) and ground (0.3532, 0.4612, 0.5094,
+alpha 1.5), HDR colours used as they are, with intensity 1. :observed{games="sledding"} Build 25351629 stored skybox mode with
+Unity's default trilight colours. :observed{games="sledding"}
 
 ## SkateBIRD
 

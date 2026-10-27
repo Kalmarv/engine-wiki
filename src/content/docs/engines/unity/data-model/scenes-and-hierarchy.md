@@ -26,7 +26,7 @@ GameObjects and components, not the meshes, materials and textures its renderers
 |---|---|---|---|---|---|---|---|---|---|
 | SkateBIRD `level1` (bedroom 1) | 44,305 | 16,189 | 14,871 | 4,847 | 1,351 | 1,669 | 515 | 0 | :observed{games="skatebird"} |
 | SkateBIRD `level12` (playground) | 86,103 | 32,277 | 31,256 | 8,186 | 2,655 | 4,133 | 1,338 | 0 | :observed{games="skatebird"} |
-| Sledding Game `level1` (the mountain) | 151,088 | 45,145 | 42,057 | 12,168 | 18,069 | 694 | 4,151 | 2,507 | :observed{games="sledding"} |
+| Sledding Game `level1` (the mountain), build 25351629 | 151,088 | 45,145 | 42,057 | 12,168 | 18,069 | 694 | 4,151 | 2,507 | :observed{games="sledding"} |
 | PEAK 3.0.0 `level4` | 623,157 | 184,286 | 181,348 | 47,571 | 71,447 | 15,658 | 7,098 | 12,596 | :observed{games="peak"} |
 | PEAK 3.0.0 `level1` | 52,515 | 14,457 | 14,025 | 2,820 | 8,178 | 1,670 | fewer than 60 | 1,947 | :observed{games="peak"} |
 

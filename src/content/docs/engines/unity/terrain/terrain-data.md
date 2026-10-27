@@ -1,6 +1,6 @@
 ---
 title: Terrain
-description: "The Terrain component and its TerrainData: heightmap quantisation, holes, splat layers and alphamaps, tree prototypes and instances, and Sledding Game's nine terrains."
+description: "The Terrain component and its TerrainData: heightmap quantisation, holes, splat layers and alphamaps, tree prototypes and instances, and Sledding Game's terrains."
 games: [sledding]
 sources:
   - title: Unity scripting reference, TerrainData
@@ -44,8 +44,9 @@ about y in radians, a colour (32 bits), and its prototype index. Its world matri
 
 ## Sledding Game's terrains
 
-The mountain scene (`level1`) has nine `Terrain` components, each with a TerrainData in `sharedassets1.assets`.
-:proven{games="sledding"}
+In build 26054124 the mountain scene (`level1`) draws 25 terrains and has 21,147 terrain tree renderers. :observed{games="sledding"}
+The rest of this section was measured on build 25351629, where the mountain scene (`level1`) has nine `Terrain` components, each
+with a TerrainData in `sharedassets1.assets`. :proven{games="sledding"}
 
 | Property | Value, for all nine | Confidence |
 |---|---|---|

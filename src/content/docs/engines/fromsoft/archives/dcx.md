@@ -77,8 +77,8 @@ regulation rows count the 28 published Elden Ring regulation files and the insta
 
 In Sekiro's `Data5`, the entry with path hash `a28b84c8` declares a larger compressed size in its `KRAK` header than
 its stored extent holds: the header asks for 1,342,263 bytes and the entry is 1,114,112 bytes long. The entries of the
-pair are contiguous, so the next entry starts where this one ends, and the stored payload is a prefix of the compressed
-stream. No other envelope of either install is short; this is the only one of Sekiro's 27,096 and Elden Ring's 117,141.
+pair are contiguous, so the next entry starts where this one ends and the stored payload simply stops short of the
+declared size. No other envelope of either install is short; this is the only one of Sekiro's 27,096 and Elden Ring's 117,141.
 :proven[every envelope of both archive sets]
 
 ## Kraken payload framing
@@ -102,16 +102,18 @@ fields:
 
 Every block of every payload has the restart bit set: the first blocks begin `8C 06`, `8C 02` or (stored) `CC 06`, and
 the 303,703 later blocks of Elden Ring and 70,897 of Sekiro begin `8C 06` or `CC 06`. No block has the checksum bit,
-no payload uses another decoder type, and no quantum is a whole-match or small-block stored one. Walking the headers this way consumes every payload exactly: no payload has bytes left
-after its last quantum. :proven[both archive sets]
+and no payload uses another decoder type. Of the quantum kinds beyond a compressed run, only the memset one occurs (67
+quanta in Sekiro, 115 in Elden Ring); there is no whole-match quantum and no stored small quantum. Walking the headers this
+way consumes every payload exactly: no payload has bytes left after its last quantum. :proven[both archive sets]
 
 All 934 Sekiro and 960 Elden Ring decoder-type-2 payloads are one quantum long: they decode to 264 to 2,044 bytes in
 Sekiro (one is 2,044) and 270 to 2,040 in Elden Ring. In Elden Ring 278 are whole top-level files and 682 are the
 `.hkx.dcx` members of the map collision binders (`.hkxbhd`); in Sekiro 50 are top-level and 884 are members of
 `.edgebhd` (383), `.tpfbhd` (434), `.hkxbhd` (51) and `.wallbhd` (16) binders. :proven[both archive sets, Elden Ring without the `DLC` pair]
 
-The game's Oodle library and oozextract decode the Kraken payloads to the same bytes, so a reader does not need the
-game's library where oozextract is available. :observed
+The game's Oodle library and oozextract decode the Kraken payloads to the same bytes on all 27,073 readable Sekiro payloads
+and all 117,121 Elden Ring ones, so a reader does not need the game's library where oozextract is available.
+:proven[both archive sets, Elden Ring without the `DLC` pair]
 
 A writer that compresses `KRAK` payloads with the games' `oo2core_6` must size its output buffer with that version's
 `OodleLZ_GetCompressedBufferSizeNeeded`, which takes the raw size alone: 65,536 bytes gives 65,810. Oodle 2.9

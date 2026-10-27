@@ -41,6 +41,20 @@ fields:
   - {at: 76, size: 52, type: bytes, name: reserved, value: 0, level: proven}
 ```
 
+In every node of both installs (129,270 in Sekiro's 14,459 models, 535,503 in Elden Ring's 22,169), following the next-sibling
+indices from a node's first child index visits exactly the nodes whose parent index is that node, and the
+previous-sibling index undoes the next-sibling one. :proven[every node of both installs] The first child is the lowest-index
+child in all but 75 Sekiro and 37 Elden Ring nodes, and siblings are not otherwise in index order. :proven[every node of both installs]
+The two bounds are either a box (minimum not above maximum on every axis: 66,485 Sekiro and 139,011 Elden Ring nodes) or
+the inverted sentinel, minimum `+3.4028235e38` and maximum `-3.4028235e38` on every axis, of a node with no bound vertices
+(62,785 and 396,492); no node has anything else. :proven[every node of both installs] The flags word takes only the values
+0, 1, 2, 4, 6, 8, 10, 12 and 14 in both games, so only its low four bits are used. :proven[every node of both installs]
+Bit 1 is set only on nodes that have no children and that no mesh and no dummy point names: all 50,370 Sekiro and
+363,132 Elden Ring nodes with it set. :proven[every node of both installs] Bit 2 is set only on nodes a dummy point names
+as parent or attach bone in Elden Ring (all 24,493 nodes with it; 771 named nodes lack it), and in Sekiro on 8,377 named
+nodes and 1,964 unnamed ones (27 named nodes lack it). :proven[every node of both installs] What bits 4 and 8 select is
+not explained by a node being a mesh's default bone or by its name. :unknown
+
 The community reader constructs the local transform, in row-vector notation, as
 `Scale * RotationX * RotationZ * RotationY * Translation`. A parent index of `-1` marks a root.
 :sourced[SoulsFormatsNEXT]
@@ -120,7 +134,7 @@ title: FLVER2 dummy
 size: 64
 fields:
   - {at: 0, size: 12, type: float3, name: position, level: sourced}
-  - {at: 12, size: 4, type: bytes, name: colour bytes, level: unknown, note: The reference reader cautions that channel ordering is uncertain.}
+  - {at: 12, size: 4, type: bytes, name: colour bytes, level: proven, note: "Alpha, red, green, blue: byte 12 is 255 on every dummy point"}
   - {at: 16, size: 12, type: float3, name: forward vector, level: sourced}
   - {at: 28, size: 2, type: i16, name: reference ID, level: sourced}
   - {at: 30, size: 2, type: i16, name: parent bone, level: sourced}
@@ -132,6 +146,13 @@ fields:
   - {at: 52, size: 4, type: i32, name: unknown 34, level: unknown}
   - {at: 56, size: 8, type: bytes, name: reserved, value: 0, level: proven}
 ```
+
+The four colour bytes have the alpha channel first (ARGB): the first byte is 255 on all 20,268 Sekiro and 88,340 Elden Ring
+dummy points, and the other three are 255 (white) on all but 34 Sekiro and 3,239 Elden Ring points, which are grey (128)
+or a colour with the red and green bytes zero and the blue 208. :proven[every dummy point of both installs] The unknown
+flag at 46 is 1 when the attach bone is set and 0 when it is -1 on 86,081 of Elden Ring's 88,340 dummy points and 20,232 of
+Sekiro's 20,268 (it is 0 with an attach bone on 2,157 and 8, and 1 without one on 102 and 28). :proven[every dummy point of both installs]
+The use-upward flag at 47 is 1 on all of them. :proven[every dummy point of both installs]
 
 The reference ID identifies the point to scripts and effects; its meaning is external to FLVER. The parent bone
 supplies the initial transform, while the attach bone is the bone the point follows physically, according to the

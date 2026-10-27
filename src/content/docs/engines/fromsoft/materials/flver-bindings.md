@@ -25,9 +25,9 @@ fields:
   - {at: 4, size: 4, type: u32, name: definition path offset, level: proven}
   - {at: 8, size: 4, type: u32, name: texture count, level: proven}
   - {at: 12, size: 4, type: u32, name: first texture index, level: proven}
-  - {at: 16, size: 4, type: u32, name: calculated string byte count, level: sourced, note: SoulsFormatsNEXT identifies this as the combined material and texture string size.}
+  - {at: 16, size: 4, type: u32, name: string byte count, level: proven, note: "2 x (the characters of the material name, definition path and each binding's kind and path, each plus a terminator); SoulsFormatsNEXT names it the combined string size"}
   - {at: 20, size: 4, type: u32, name: GX list offset, level: proven}
-  - {at: 24, size: 4, type: u32, name: material index, level: sourced}
+  - {at: 24, size: 4, type: u32, name: material index, level: sourced, note: "equals the material's position in 92.4% of Sekiro's and 81.3% of Elden Ring's materials, never more than it"}
   - {at: 28, size: 4, type: u32, name: reserved, value: 0, level: proven}
 ```
 
@@ -38,8 +38,8 @@ fields:
   - {at: 0, size: 4, type: u32, name: path offset, level: proven}
   - {at: 4, size: 4, type: u32, name: texture kind name offset, level: proven}
   - {at: 8, size: 8, type: float2, name: scale, level: proven}
-  - {at: 16, size: 1, type: u8, name: U tiling type, level: sourced}
-  - {at: 17, size: 1, type: u8, name: V tiling type, level: sourced}
+  - {at: 16, size: 1, type: u8, name: U tiling type, level: sourced, note: "0 or 1, and equal to the byte at 17 on every binding of both installs"}
+  - {at: 17, size: 1, type: u8, name: V tiling type, level: sourced, note: "0 or 1, equal to the byte at 16"}
   - {at: 18, size: 2, type: bytes, name: reserved, value: 0, level: proven}
   - {at: 20, size: 12, type: float3, name: unknown values, level: unknown}
 ```
@@ -52,6 +52,20 @@ fields:
 | 3 | Clamp | :sourced[SoulsFormatsNEXT] |
 | 4 | Border | :sourced[SoulsFormatsNEXT] |
 | 5 | MirrorOnce | :sourced[SoulsFormatsNEXT] |
+
+Over every material of both installs the string byte count at offset 16 is exactly the value given in the layout: in all
+43,435 Sekiro materials (versions `0x20013` to `0x2001A`) and all 86,644 Elden Ring materials of versions `0x20013` and
+`0x2001A`. In Elden Ring's version `0x20014` SpeedTree files it is two bytes larger per bound texture in 684 of their
+685 materials. :proven[every material of both archive sets] The material index at offset 24 equals the material's position
+in 40,115 of Sekiro's 43,435 materials and 71,032 of Elden Ring's 87,329; where it differs it is smaller (0 in 737 and
+6,129 of them). :proven[every material of both archive sets] The reserved word at 28 is zero in all of them.
+:proven[every material of both archive sets]
+
+Of the 241,231 Sekiro and 570,781 Elden Ring texture bindings, the two tiling bytes are `0` and `0` on 173,927 and 558,506
+bindings with an empty path, `1` and `1` on 67,254 and 10,336 with a path, and `0` and `0` on the 50 and 1,939 with a path
+that are left: no binding has different bytes, and no binding has a code above 1, so the codes 2 to 5 of the table are
+not used by any shipped binding. :proven[every binding of both archive sets] The bytes behave as one flag that is set
+for most bound textures, not as two independent addressing modes. :inferred
 
 A nonempty FLVER texture path overrides the definition's fixed path for the matching kind. Elden Ring's
 metaparam can supply a system texture for an otherwise unbound numbered slot; captured uploaded mip hashes on
@@ -92,6 +106,20 @@ fields:
 The terminator identifier is `0x7FFFFFFF` or `0xFFFFFFFF`, with version word 100 and zero payload padding.
 Ordinarily its length includes the 12-byte header; where the FLVER header's low word at `0x68` is 5, it counts
 padding alone, as on Elden Ring SpeedTree files. :observed
+
+### GX items in the installs
+
+71,699 Sekiro and 114,256 Elden Ring GX items occur, under 22 and 18 `GXnn` identifiers plus `GXMD` (33 and 44 versions)
+and, in Elden Ring, `GXUD` (119 items of 1,480 to 3,088 bytes). :proven[every material of both archive sets] An
+identifier and version pair has one payload length, except `GXMD` 314 in Sekiro and `GX14` 101 (16 and 28 bytes),
+`GXMD` 131, 133, 141 and 426 and `GXUD` 101 in Elden Ring. :proven[every material of both archive sets]
+
+The community editor names the words of its `GXnn` descriptors. Every `GXnn` identifier and version of the installs has one
+except `GX18` version 101 (565 Elden Ring items of 4 bytes). :observed The names fit the values for the three checked by range: the first word of `GX03` 100
+(emissive intensity) is 0.7 to 3.32 over four distinct values in Sekiro and 0.6 or 1.0 in Elden Ring; the first word of
+`GX05` 100 (translucency scale) is 1.0 or 10.0 in Sekiro and always 1.0 in Elden Ring; the first three words of `GX14` 101
+(albedo colour) are within 0 to 1 and the fourth (its multiplier) within 0.8 to 1.0 in Sekiro and 0.79 to 1.36 in Elden
+Ring. The remaining words of `GX03` and `GX05` are zero in every item. :observed
 
 ### GXMD payloads
 

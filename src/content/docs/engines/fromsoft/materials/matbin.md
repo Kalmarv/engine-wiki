@@ -70,6 +70,9 @@ fields:
 | 11 | Float4 | 16 | :proven |
 | 12 | Float5; colours include intensity as the fifth component | 20 | :proven |
 
+Of the 23,352 float3 values in the install's 20,619 MATBIN files, 20,599 are stored with two further floats and 2,753
+end after three. The two further floats are `1.0` and `1.0` in every one of the 20,599. :proven[every MATBIN of the install, without the `DLC` archive pair]
+
 A stored value's actual extent can end before its nominal type size, because the next referenced item begins
 sooner. Some files also contain unreferenced tail bytes, including strings from an earlier material revision.
 The type code alone therefore does not describe every byte after a value offset. :proven

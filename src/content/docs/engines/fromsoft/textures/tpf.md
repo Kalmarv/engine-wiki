@@ -24,8 +24,9 @@ cover the unread archive payload. :proven{games="sekiro"}
 
 ## Header and descriptors
 
-The separate layouts mark the complete Sekiro package census as Proven and Elden Ring's sampled PC packages
-as Observed. No whole-install Elden Ring TPF comparison is established here. :observed{games="elden-ring"}
+Elden Ring's 274,440 PC packages (301,807 textures; the `DLC` archive pair is not installed) were each read by a strict
+reader that accounts for every byte of the file. All of them read, the 221,796 packages whose texture descriptors carry
+the flag `0x80` once that byte is accepted. :proven{games="elden-ring"} The layouts below therefore hold for both games.
 
 ```layout
 title: PC TPF header
@@ -36,8 +37,8 @@ fields:
   - {at: 4, size: 4, type: u32, name: data size, level: proven}
   - {at: 8, size: 4, type: u32, name: texture count, level: proven}
   - {at: 12, size: 1, type: u8, name: platform, value: 0, level: sourced, note: PC.}
-  - {at: 13, size: 1, type: u8, name: package flags, level: unknown, note: Accepted values 0 through 3; complete semantics not established.}
-  - {at: 14, size: 1, type: u8, name: name encoding, level: proven, note: 1 is UTF-16; checked other cases use byte strings.}
+  - {at: 13, size: 1, type: u8, name: package flags, level: unknown, note: 3 in every package; meaning not established.}
+  - {at: 14, size: 1, type: u8, name: name encoding, level: proven, note: "1 is UTF-16 (14,480 packages); 2 is a byte string (one package, 17 ASCII names)"}
   - {at: 15, size: 1, type: u8, name: reserved, value: 0, level: proven}
 ```
 
@@ -46,13 +47,13 @@ title: PC TPF header
 games: [elden-ring]
 size: 16
 fields:
-  - {at: 0, size: 4, type: char, name: magic, value: 'TPF\0', level: observed}
-  - {at: 4, size: 4, type: u32, name: data size, level: observed}
-  - {at: 8, size: 4, type: u32, name: texture count, level: observed}
+  - {at: 0, size: 4, type: char, name: magic, value: 'TPF\0', level: proven}
+  - {at: 4, size: 4, type: u32, name: data size, level: proven}
+  - {at: 8, size: 4, type: u32, name: texture count, level: proven}
   - {at: 12, size: 1, type: u8, name: platform, value: 0, level: sourced, note: PC.}
-  - {at: 13, size: 1, type: u8, name: package flags, level: unknown, note: Accepted values 0 through 3; complete semantics not established.}
-  - {at: 14, size: 1, type: u8, name: name encoding, level: observed, note: 1 is UTF-16; checked other cases use byte strings.}
-  - {at: 15, size: 1, type: u8, name: reserved, value: 0, level: observed}
+  - {at: 13, size: 1, type: u8, name: package flags, level: unknown, note: 3 in every package; meaning not established.}
+  - {at: 14, size: 1, type: u8, name: name encoding, level: proven, note: 1 is UTF-16 in every package.}
+  - {at: 15, size: 1, type: u8, name: reserved, value: 0, level: proven}
 ```
 
 ```layout
@@ -65,7 +66,7 @@ fields:
   - {at: 8, size: 1, type: u8, name: package format code, level: sourced}
   - {at: 9, size: 1, type: u8, name: texture kind, level: proven, note: 0 image; 1 cube; 2 volume.}
   - {at: 10, size: 1, type: u8, name: mip count, level: proven}
-  - {at: 11, size: 1, type: u8, name: texture flags, level: unknown, note: 0 or 1 in supported PC descriptors.}
+  - {at: 11, size: 1, type: u8, name: texture flags, level: unknown, note: 0 in every texture; meaning not established.}
   - {at: 12, size: 4, type: u32, name: name offset, level: proven}
   - {at: 16, size: 4, type: u32, name: optional metadata present, level: proven}
 ```
@@ -75,14 +76,14 @@ title: PC TPF texture descriptor prefix
 games: [elden-ring]
 size: 20
 fields:
-  - {at: 0, size: 4, type: u32, name: payload offset, level: observed}
-  - {at: 4, size: 4, type: u32, name: payload length, level: observed}
+  - {at: 0, size: 4, type: u32, name: payload offset, level: proven}
+  - {at: 4, size: 4, type: u32, name: payload length, level: proven}
   - {at: 8, size: 1, type: u8, name: package format code, level: sourced}
-  - {at: 9, size: 1, type: u8, name: texture kind, level: observed, note: 0 image; 1 cube; 2 volume.}
-  - {at: 10, size: 1, type: u8, name: mip count, level: observed}
-  - {at: 11, size: 1, type: u8, name: texture flags, level: unknown, note: 0 or 1 in supported PC descriptors.}
-  - {at: 12, size: 4, type: u32, name: name offset, level: observed}
-  - {at: 16, size: 4, type: u32, name: optional metadata present, level: observed}
+  - {at: 9, size: 1, type: u8, name: texture kind, level: proven, note: 0 image; 1 cube; 2 volume.}
+  - {at: 10, size: 1, type: u8, name: mip count, level: proven}
+  - {at: 11, size: 1, type: u8, name: texture flags, level: unknown, note: "0, or 0x80 on the 221,796 textures of the map environment-probe packages; meaning not established"}
+  - {at: 12, size: 4, type: u32, name: name offset, level: proven}
+  - {at: 16, size: 4, type: u32, name: optional metadata present, level: proven}
 ```
 
 ```layout
@@ -107,11 +108,22 @@ fields:
 
 Optional metadata immediately follows its descriptor prefix, so descriptors are not necessarily a fixed-stride
 array. Names and payload offsets are file-relative. Payloads start with `DDS `.
-:proven[all 14481 packages]{games="sekiro"} :observed{games="elden-ring"}
+:proven[all 14481 packages]{games="sekiro"} :proven[all 274,440 packages]{games="elden-ring"}
+
+In both installs the descriptor's texture kind byte agrees with the DDS file's own caps: every kind-1 texture is a
+cube map (cubemap caps set), every kind-2 texture a volume (volume caps set) and every kind-0 texture neither, over all
+30,613 Sekiro and 301,807 Elden Ring textures. :proven No texture of either install has the optional metadata (the
+present flag is 0 in every descriptor), so the metadata layout below is not exercised by the shipped files. :proven
+The package platform byte is 0 (PC) and the package flags byte is 3 in every package of both installs. :proven
+
+In Elden Ring the texture flags byte is `0x80` on 221,796 textures and 0 on the other 80,011. Every `0x80` texture is the single texture of
+one of the 221,796 TPF members of the 10,233 `mAA_BB_CC_DD_envmap_NN_middle_NN.tpfbnd.dcx` map binders; it is a volume
+(176,964) or a cube map (44,832) in BC7, BC6H or 16-bit-float format, and its DDS payload is an ordinary uncompressed DDS
+file whose mip count matches the descriptor's. :proven{games="elden-ring"} No Sekiro texture has it.
 
 The data-size field has two observed producer conventions: length from the end of names, or length from the first
 DDS payload. Inter-section padding is zero but has no fixed width; trailing padding is at most 15 zero bytes.
-:proven[all 14481 packages]{games="sekiro"} :observed{games="elden-ring"}
+:proven[all 14481 packages]{games="sekiro"} :proven[all 274,440 packages]{games="elden-ring"}
 
 ## Pixel formats and colour transfer
 
@@ -148,12 +160,45 @@ material sample, 96 GSBlendMap albedo bindings point at DX10 sRGB DDS formats an
 at linear formats. This payload correlation does not prove every runtime resource-view format.
 :observed{games="elden-ring"}
 
-:::open[Which package-format codes occur in each install?]
-The DDS payload provides a concrete pixel-format declaration. An exhaustive per-game mapping from the separate
-TPF format byte to that declaration is not established here, nor are all optional metadata word meanings.
-:unknown
-The conflicting reference descriptions for codes 22 and 108–110 also require comparison with actual DDS payloads
-and resource views. :unknown
+## Package format codes in the installs
+
+Over every texture of both installs, a package format code always means one DDS pixel family; within a code the DDS
+header varies only in the colour transfer (a DX10 header with the linear or the sRGB DXGI format) or in using a legacy
+four-character code instead of a DX10 header. :proven[all 30,613 Sekiro and 301,807 Elden Ring textures]
+
+| Code | DDS format declared | Sekiro | Elden Ring |
+|---:|---|---:|---:|
+| 0 | BC1: DXGI 72 (sRGB) or legacy `DXT1` | 7,202 | 16,096 |
+| 1 | BC1: DXGI 72 or `DXT1` | 2,405 | 4,201 |
+| 5 | BC3 sRGB (DXGI 78) | 1 | none |
+| 6 | 16-bit RGB with alpha | 2 | none |
+| 9 | 32-bit RGB with alpha (masks) | none | 3 |
+| 10 | 32-bit RGB without alpha (DXGI 93, or masks) | 2 | 4 |
+| 22 | legacy format 113, four 16-bit floats | none | 1,193 |
+| 102 | BC7: DXGI 98 (linear) or 99 (sRGB) | 10,125 | 211,107 |
+| 103 | BC4: legacy `ATI1` or DXGI 80 | 998 | 7,106 |
+| 104 | BC5: legacy `ATI2` | 39 | 92 |
+| 105 | 32-bit RGB with alpha: DXGI 29 (sRGB) or masks | 29 | 974 |
+| 106 | BC7: DXGI 98 (6,398) or 99 (2) | 6,400 | 9,653 |
+| 107 | BC7: DXGI 98 | 1,113 | 3,770 |
+| 108 | BC1: legacy `DXT1` | 59 | 3,072 |
+| 110 | BC3: legacy `DXT5` | 4 | none |
+| 112 | BC7 sRGB (DXGI 99) | 2 | none |
+| 115 | BC6H unsigned float (DXGI 95) | 2,232 | 44,536 |
+
+Codes 3, 8, 23, 24, 25, 29, 33, 36, 100 and 113 of the reference table above never occur in a PC package of either
+install. The codes that occur map to the families the reference table gives them, with two differences: code 22 is
+half-float (legacy format 113), not 16-bit UNORM as the reference table has it, and the textures of codes 108 and 110
+carry legacy four-character codes, which cannot state a transfer function, so the reference comments calling them sRGB
+have nothing to stand on in the files. :proven[both installs]
+
+Texture names in the packages are UTF-16 with one exception: Sekiro's `/font/dbgfont14h.tpf.dcx` stores 17 byte-string
+names (encoding 2), all ASCII. No name in either install has a byte above `0x7F` except two Elden Ring names that begin
+with the full-width Latin letter U+FF43, in a character texture package. :proven[both installs]
+
+:::open[What do the package flags 3 and the texture flags 0x80 mean?]
+The package flags byte is 3 in every package, and the texture flags byte is 0 or `0x80` (Elden Ring's environment
+probes only). Nothing in the files or the readers says what either selects.
 :::
 
 ## Sekiro

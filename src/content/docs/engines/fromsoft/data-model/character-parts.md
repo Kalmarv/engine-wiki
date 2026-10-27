@@ -29,6 +29,19 @@ unmarked mesh is always visible under this rule. Smithbox applies groups 0–31.
 The Sekiro community description gives the range as 01–31. :sourced[Sekiro modding wiki]{games="sekiro"}
 Actual `c1010` materials also contain `#00#`. :observed{games="sekiro"}
 
+Over every FLVER of both archive sets, 7,926 Sekiro material names (in 3,075 models) and 15,543 Elden Ring ones (in 3,378)
+contain a `#`. :proven[every FLVER of both archive sets] Most are a mark at the start, `#dd#` followed by a name: 1,695
+Sekiro materials in 238 models and 12,257 Elden Ring materials in 1,715. One-digit marks (`#1#`) are 6 Sekiro and 1,317
+Elden Ring materials. Three-digit marks (`#100#`, `#101#`) are 76 Elden Ring materials in 4 models. A mark that does not
+start the name (`c1200_Mukade#00#`, `AET652_007#1#`) is 4 Sekiro materials in 2 models and 2 Elden Ring materials in 1.
+The other `#` are not marks: `Material #7` and the like, 6,221 and 1,891 materials. No name in either install has two
+marks, a space inside a mark or an empty mark (`##`). :proven[every FLVER of both archive sets]
+
+Rules that read only a mark at the start with one or two digits, and rules that scan for any `#digits#`, therefore give
+the same groups for all but 82 materials in 7 models (the non-leading and the three-digit marks); a rule that takes
+exactly two digits after a leading `#` reads `#100#` as group 10 and ignores the one-digit marks. Which of these the game
+applies is not established. :unknown
+
 The NPC row comes from each enemy or dummy-enemy placement; it is not necessarily a property shared by every
 occurrence of a character model. Every map enemy's model/NPC-row link in the independent comparison matches the MSB
 decode. :proven

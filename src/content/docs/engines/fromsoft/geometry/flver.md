@@ -14,6 +14,9 @@ FLVER2 stores a model's meshes, material references, transform nodes, attachment
 refer to face sets and vertex buffers by index; materials refer to external definitions and texture paths.
 :sourced[SoulsFormatsNEXT]
 
+A strict reader that checks every table bound, every zero field and the coverage of the data block reads all 14,459 Sekiro
+and all 22,169 Elden Ring models, the 119 SpeedTree ones included. :proven[every FLVER of both archive sets]
+
 Whole-install comparisons cover 14,459 Sekiro FLVER records and 22,169 Elden Ring records. The independent
 reader accepts all 14,459 Sekiro models and 22,050 Elden Ring models; it refuses the other 119 Elden Ring models,
 all SpeedTree. One Sekiro archive entry fails before model inspection; Elden Ring has no such archive refusal.
@@ -56,8 +59,8 @@ fields:
   - {at: 36, size: 4, type: u32, name: vertex buffer count, level: proven}
   - {at: 40, size: 12, type: float3, name: minimum bounds, level: sourced}
   - {at: 52, size: 12, type: float3, name: maximum bounds, level: sourced}
-  - {at: 64, size: 4, type: u32, name: nondegenerate non-motion-blur face count, level: sourced}
-  - {at: 68, size: 4, type: u32, name: total face count, level: sourced}
+  - {at: 64, size: 4, type: u32, name: nondegenerate non-motion-blur face count, level: observed, note: "see Face counts in the header"}
+  - {at: 68, size: 4, type: u32, name: total face count, level: observed, note: "see Face counts in the header"}
   - {at: 72, size: 1, type: u8, name: default index width in bits, level: proven}
   - {at: 73, size: 1, type: bool, name: UTF-16 strings, value: 1, level: proven}
   - {at: 74, size: 1, type: u8, name: unknown 4A, level: unknown}
@@ -125,12 +128,12 @@ fields:
   - {at: 0, size: 4, type: u32, name: flags, level: proven}
   - {at: 4, size: 1, type: bool, name: triangle strip, level: proven}
   - {at: 5, size: 1, type: bool, name: cull backfaces, level: sourced}
-  - {at: 6, size: 2, type: i16, name: unknown 06, level: unknown}
+  - {at: 6, size: 2, type: i16, name: unknown 06, level: unknown, note: "1 on 85,996 of Sekiro's 110,365 face sets and 149,048 of Elden Ring's 277,113; up to 371 and 285 elsewhere"}
   - {at: 8, size: 4, type: u32, name: index count, level: proven}
   - {at: 12, size: 4, type: u32, name: indices offset, level: proven, note: Relative to the header data offset.}
   - {at: 16, size: 4, type: u32, name: index byte length, level: proven}
   - {at: 20, size: 4, type: u32, name: reserved, value: 0, level: proven}
-  - {at: 24, size: 4, type: u32, name: index width in bits, level: proven, note: Zero inherits the header width; otherwise 16 or 32.}
+  - {at: 24, size: 4, type: u32, name: index width in bits, level: proven, note: "16 or 32 on every face set of both installs; zero would inherit the header width"}
   - {at: 28, size: 4, type: u32, name: reserved, value: 0, level: proven}
 ```
 
@@ -142,10 +145,27 @@ fields:
 | `0x80000000` | Motion-blur face set | :sourced[SoulsFormatsNEXT] |
 | `(flags & 0x87000000) == 0` | Neither a coarser LOD nor a motion-blur set | :observed |
 
+Face sets are index lists of 16 or 32 bits: 110,157 Sekiro and 276,754 Elden Ring sets are 16-bit and 208 and 359 are
+32-bit. No face set of either install is a triangle strip (the strip byte is 0 on all 110,365 and 277,113), so none
+contains a restart marker (`0xFFFF` in a 16-bit set, `0xFFFFFFFF` in a 32-bit one), every index count is a multiple of
+three, and the value `0xFFFF` in a 32-bit set (519 times in 177 Sekiro sets, 1,047 times in 356 Elden Ring sets) is an
+ordinary vertex index. :proven[every face set of both archive sets] The two reserved words at 20 and 28 are zero in every
+face set. :proven[every face set of both archive sets]
+
+### Face counts in the header
+
+The total face count (offset 68) equals the number of triangles in all of a model's face sets, degenerate and motion-blur
+ones included, in all 14,459 Sekiro models and in 22,048 of Elden Ring's 22,169. :proven{games="sekiro"} The other 121
+Elden Ring models, all version `0x20014` (SpeedTree), count only face sets with no LOD bit (`0x7F000000`) set in 120
+of them. :observed{games="elden-ring"} The count at offset 64 equals the number of non-degenerate triangles in the face
+sets without the motion-blur bit in 14,358 Sekiro models and 21,771 of the 22,048 Elden Ring models that count all
+sets; in the rest, which include `_S.flver` models, it differs and can exceed the triangles present.
+:observed
+
 Sekiro's `c1010` meshes have LOD0, LOD1 and LOD2 face sets, each with a motion-blur twin (flags `0`, `0x01000000`
 and `0x02000000`, each also with `0x80000000`), and no strips. :observed{games="sekiro"}
 
-For strips, `0xFFFF` restarts the strip and resets parity. Degenerate triples emit no triangle but still advance
+No shipped model uses strips, so this rule is unexercised by the installs. For strips, `0xFFFF` restarts the strip and resets parity. Degenerate triples emit no triangle but still advance
 parity; odd triples reverse the index order. Whole-install comparisons include the resulting index ordering.
 :proven[whole-install reference population]
 

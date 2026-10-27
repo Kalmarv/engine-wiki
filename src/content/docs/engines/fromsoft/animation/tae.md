@@ -51,6 +51,30 @@ SoulsFormatsNEXT represents an open-ended event with an end of 100 seconds when 
 That reader convention is not evidence that every authored 100-second event has identical runtime meaning.
 :sourced[SoulsFormatsNEXT]
 
+## Event files in a character's animation binder
+
+A character's `anibnd` holds its event files as binder members numbered from a first slot: 5,000,000 when the binder also holds
+a member with ID 9,999,999, else 3,000,000. In the 98 Sekiro and Elden Ring binders with that member the first slot is
+5,000,000 and in the 169 without it 3,000,000; none disagrees. :proven[every `chr/*.anibnd.dcx` of the Sekiro 1.06 and Elden Ring
+installs, 142 and 563 files]
+
+Only the player binder (`c0000`) holds more than one event file: one per animation group, `a00.tae` in slot 5,000,000, then
+`a50.tae` in slot 5,000,050 and so on (Sekiro up to `a250`; Elden Ring `a00` to `a1xx`). :observed[the `c0000` binders of both
+games]
+
+An event file stores animation numbers within its group, all below 1,000,000. The animation's full number is
+`group × 1,000,000 + stored`, so animation `a050_122301` is 50122301. :observed{games="sekiro elden-ring"} DSAnimStudio applies the
+same rule. :sourced[DSAnimStudio] With it Sekiro's `c0000` matches 1,248 of 1,248 clips to an event record, and Elden Ring's
+matches 7,844 of 7,953. :observed
+
+An ImportOther header's source is a full number and can name an animation of another event file of the same binder: 218 imports of
+Sekiro `c0000` in files of group above 0 name `a00` animations by numbers below 1,000,000. :observed{games="sekiro"} Read with the
+rule above, all 2,790 ImportOther headers of Elden Ring resolve inside their own binder, and 2,849 of Sekiro's 2,866 do.
+:observed[all ImportOther headers of the 142 and 563 character binders] Of the 17 in Sekiro that do not, 6 name -1, which
+DSAnimStudio reads as no import (the animation keeps its own record), and 11 name animations no event file of the binder holds:
+`c1020` 100009500, `c9520` 20103, `c9800` 100205010 with the 1000085xx and 1000086xx numbers, and `c9820` 100005211.
+:observed{games="sekiro"} What the engine does with those 11 is not known. :unknown{games="sekiro"}
+
 ## Mesh-visibility events
 
 Templates for both games give events 233, 711 and 713 arrays of 32 mask-group bytes. The visibility behavior below

@@ -6,6 +6,12 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: TextureDictionary, Gen9 texture conversion and GameFileCache resident dictionaries.
+  - title: ragekit
+    url: https://github.com/RatPrez/ragekit
+    note: texture view kinds by dimension
+  - title: rage-formats
+    url: https://github.com/VIRUXE/rage-formats
+    note: dimension codes
 implementations:
   - name: primase worlds/gta (texture.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/texture.rs
@@ -109,6 +115,14 @@ loads `mapdetail`, then `vehshare`, with later duplicate names replacing earlier
 
 Sampled vehicle-mod fragments obtain shared `vehicle_generic_detail2`, `detail2_normal`, `detail_spec` and
 `genericmud_car` textures from `vehshare`; parent relationships alone do not supply them. :observed
+
+:::open[Is dimension 2 a volume or a cube?]
+The layout above reads dimension `2` as 3D and `3` as cube. CodeWalker, ragekit and rage-formats all read `2` as cube
+and `3` as 3D, and ragekit writes its volume view kind (`0xA3`) only for dimension 3. :sourced[CodeWalker, ragekit,
+rage-formats] Those readers share CodeWalker's tables, so they are one source, not three. The single volume
+texture of the install, `cloudnoisevolume` in `graphics.ytd`, would decide it from its depth and dimension bytes;
+whether a volume's mips halve its depth and how its slices are ordered are open with it. :unknown
+:::
 
 :::open[Which unresolved textures have additional ownership rules?]
 Sampled `blank` and Tulip `mesh_3a`/`mesh3_normal` references remain unresolved after the resident lookup described

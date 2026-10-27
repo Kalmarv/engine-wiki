@@ -6,6 +6,11 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: LOD and priority enum names, YmapFile.CalcFlags.
+  - title: fivefury
+    note: content flag names
+  - title: rage-formats
+    url: https://github.com/VIRUXE/rage-formats
+    note: content flag names
 implementations:
   - name: primase worlds/gta (map.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/map.rs
@@ -54,6 +59,9 @@ entities in a file. :observed
 | 8 | Distant LOD lights | :sourced[CodeWalker] |
 | 10 | Grass instance batches | :sourced[CodeWalker] |
 | 9, 11–31 | Meaning not established | :unknown |
+
+Other readers name the bits differently: fivefury calls bit 4 `BLOCKINFO` and bit 2 container LOD, and fivefury and
+rage-formats call bit 9 critical. Neither states where its names come from. :sourced[fivefury, rage-formats]
 
 Real map listings include maps with SLOD entities and bit 4 unset, and maps with bit 4 set and no such entities.
 `prologue05b_lod.ymap` is an example that defeats treating bit 4 as a calculated function of entity LOD levels.

@@ -6,6 +6,9 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: ClipDictionary, Animation, Sequence and AnimChannel reference descriptions.
+  - title: ragekit
+    url: https://github.com/RatPrez/ragekit
+    note: its format notes, with counts over the game's files
 implementations:
   - name: primase worlds/gta (ycd.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/ycd.rs
@@ -76,7 +79,7 @@ title: Animation bone-track ID
 size: 4
 fields:
   - {at: 0, size: 2, type: u16, name: bone tag, level: proven}
-  - {at: 2, size: 1, type: u8, name: unknown, level: unknown}
+  - {at: 2, size: 1, type: u8, name: value type, level: sourced, note: "0 three-component vector, 1 quaternion, 2 float, per ragekit's count over 2.3 million tracks; not checked here"}
   - {at: 3, size: 1, type: u8, name: track number, level: proven}
 ```
 
@@ -104,6 +107,8 @@ sign bit. A running increment accumulates the deltas and advances the reconstruc
 
 Cached quaternion reconstruction supplies the missing unit component from the first three channels, puts it in
 the component position named by the channel word, then normalizes the resulting track quaternion. :proven
+CodeWalker's reconstruction (`Clip.cs`) does not normalize; the two differ only when the three stored components'
+squares sum to more than 1. :sourced[CodeWalker]
 
 ## Tracks and time
 

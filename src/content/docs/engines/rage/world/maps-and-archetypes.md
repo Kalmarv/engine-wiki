@@ -6,6 +6,9 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: YmapFile, YtypFile and META structure names.
+  - title: ragekit
+    url: https://github.com/RatPrez/ragekit
+    note: interior rotation checked against the game's interior proxies
 implementations:
   - name: primase worlds/gta (map.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/map.rs
@@ -38,6 +41,9 @@ distances, LOD level, child count, priority, ambient-occlusion values and tint v
 
 The world coordinate frame is east, north, up, in metres. Ordinary entity orientation uses the conjugate of the
 stored `(x,y,z,w)` quaternion; an interior instance uses its stored quaternion directly. :observed
+The interior rule has a check against the game's own data: in the interior proxies of `gta5_cache_y.dat` the stored
+quaternion fits 163 rotated interiors and its conjugate fits none. :sourced[ragekit] The ordinary-entity convention
+comes from CodeWalker, and the other readers copy it rather than confirm it. :sourced[CodeWalker]
 
 ## Archetypes
 

@@ -16,6 +16,8 @@ implementations:
 Drawables can carry a skeleton with per-bone local transforms, parent indices, tags and stored inverse transforms.
 A geometry's blend indices refer through its bone palette; palette entries are bone tags rather than necessarily
 the skeleton's array indices. :proven
+CodeWalker, Sollumz, ragekit and fivefury all treat palette entries as bone indices; they derive from CodeWalker, so
+their agreement is one source. :sourced[CodeWalker]
 
 Skeleton header fields below are read wherever present across every accepted version-159 YDR/YDD and version-171
 YFT in the resource census, including fragment drawables. Fifteen other-version YDR copies are excluded. This
@@ -83,6 +85,12 @@ occur; restricting lookup to the first two loses some upper- and lower-body entr
 
 [Animation tracks](/engines/rage/animation/ycd/) also identify bones by tag. The available variation set does not
 by itself establish the component combination selected by gameplay. :observed
+
+:::open[Are bone-palette entries bone tags or bone indices?]
+This page reads them as tags; the community readers read them as indices. The two readings agree wherever a
+skeleton's tags equal its indices. Palette entries at or above a skeleton's bone count, and whether those equal a
+bone's tag, would decide it over the skinned geometries of the install. :unknown
+:::
 
 :::open[How do gameplay selections resolve all ped variation constraints?]
 Selection sets, component metadata and prop information exist, but the complete selection policy is not established

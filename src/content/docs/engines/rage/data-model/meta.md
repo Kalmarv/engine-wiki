@@ -48,14 +48,14 @@ fields:
   - {at: 0, size: 16, type: bytes, name: resource base, level: sourced}
   - {at: 16, size: 4, type: u32, name: identifier, value: "0x50524430", level: proven}
   - {at: 20, size: 2, type: u16, name: header version, value: "0x79", level: proven}
-  - {at: 22, size: 1, type: u8, name: unknown flag, level: unknown, note: "0 or 1"}
+  - {at: 22, size: 1, type: u8, name: encrypted strings flag, level: sourced, note: "0 or 1; CodeWalker's HasEncryptedStrings"}
   - {at: 23, size: 5, type: bytes, name: unknown bytes, level: unknown, note: "zero in accepted resources"}
   - {at: 28, size: 4, type: u32, name: root block ID, level: proven}
   - {at: 32, size: 8, type: pointer, name: structure descriptions, level: proven}
   - {at: 40, size: 8, type: pointer, name: enum descriptions, level: proven}
   - {at: 48, size: 8, type: pointer, name: data block table, level: proven}
   - {at: 56, size: 8, type: pointer, name: name string, level: proven}
-  - {at: 64, size: 8, type: bytes, name: unknown words, level: unknown}
+  - {at: 64, size: 8, type: pointer, name: encrypted strings, level: sourced, note: "CodeWalker's pointer to the encrypted strings"}
   - {at: 72, size: 2, type: u16, name: structure count, level: proven}
   - {at: 74, size: 2, type: u16, name: enum count, level: proven}
   - {at: 76, size: 2, type: u16, name: block count, level: proven}

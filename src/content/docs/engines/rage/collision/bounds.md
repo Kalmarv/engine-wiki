@@ -6,6 +6,11 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: Bounds classes, polygon layouts and entity collision flag names.
+  - title: fivefury
+    note: a reader ported from CodeWalker; composite child count
+  - title: FiveM (GetNumChildBounds)
+    url: https://github.com/citizenfx/fivem
+    note: composite child count
 implementations:
   - name: primase worlds/gta (bounds.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/bounds.rs
@@ -94,7 +99,8 @@ fields:
   - {at: 144, size: 8, type: pointer, name: child flags, level: proven}
   - {at: 152, size: 8, type: pointer, name: second child flags, level: proven}
   - {at: 160, size: 2, type: u16, name: child count, level: proven}
-  - {at: 162, size: 14, type: bytes, name: undescribed tail, level: unknown}
+  - {at: 162, size: 2, type: u16, name: second child count, level: sourced, note: "the count fivefury and FiveM's GetNumChildBounds read"}
+  - {at: 164, size: 12, type: bytes, name: undescribed tail, level: unknown}
 ```
 
 Geometry vertices are signed 16-bit coordinate triples decoded component-wise as `integer * quantum + centre`.
@@ -119,6 +125,8 @@ array. Names come from the ordered entries of `materials.dat`. :sourced[CodeWalk
 
 Composites own child pointers, child bounding boxes, two sets of per-child flags and 64-byte transforms. A transform
 stores four columns of vec3-plus-word data, with translation in the fourth column. :proven
+fivefury and FiveM's `GetNumChildBounds` take a composite's child count from `0xA2` rather than `0xA0`; whether the
+two words ever differ in the game's files is not checked. :sourced[fivefury]
 
 The existence of a BVH pointer does not establish its node layout here; geometry can be decoded independently of
 the acceleration structure. :unknown

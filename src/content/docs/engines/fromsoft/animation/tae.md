@@ -54,9 +54,10 @@ That reader convention is not evidence that every authored 100-second event has 
 ## Event files in a character's animation binder
 
 A character's `anibnd` holds its event files as binder members numbered from a first slot: 5,000,000 when the binder also holds
-a member with ID 9,999,999, else 3,000,000. In the 98 Sekiro and Elden Ring binders with that member the first slot is
-5,000,000 and in the 169 without it 3,000,000; none disagrees. :proven[every `chr/*.anibnd.dcx` of the Sekiro 1.06 and Elden Ring
-installs, 142 and 563 files]
+a member with ID 9,999,999, else 3,000,000. Of the 705 character animation binders (142 Sekiro, 563 Elden Ring), 267 hold event
+files: the 98 with member 9,999,999 start at slot 5,000,000 and the 169 without it at 3,000,000; none disagrees.
+:proven[every `chr/*.anibnd.dcx` of the Sekiro 1.06 and Elden Ring installs] The other 438 binders hold no event file; 290 of them
+hold member 9,999,999 and 148 do not, so that member alone does not mean a binder has event files. :proven[the same 705 binders]
 
 Only the player binder (`c0000`) holds more than one event file: one per animation group, `a00.tae` in slot 5,000,000, then
 `a50.tae` in slot 5,000,050 and so on (Sekiro up to `a250`; Elden Ring `a00` to `a1xx`). :observed[the `c0000` binders of both

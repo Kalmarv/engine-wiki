@@ -51,8 +51,30 @@ fields:
 In measured Studio MeshSet and depot entries, the SHA-1 covers the CAS-encoded bytes and `original size` describes
 the decoded payload. :observed
 
-Chunk metadata is a native-DB `chunkMeta` list. A measured root bundle has 8,506 chunks and 8,506 metadata rows
-in the same order; rows contain `h64` and a `meta.firstMip` value. :observed
+The stock manifests are all stored little-endian: the word at offset 4 reads `0x9d798ed6` in all 6,056, so the salt
+`0x7065636e` is the only one that occurs. A manifest has no inline copy in its region; it is the region's first file
+and is stored raw, without block headers. :proven[all 6,056 stock manifests]
+
+A chunk entry's logical offset and logical size describe the byte range of the whole chunk that this bundle stores.
+The logical offset is a multiple of 65,536 in all 239,810 chunk entries (its low 16 bits are zero in every entry; it is
+nonzero in 40,504). The logical size equals the decoded size of the entry's CAS range in all 239,810 entries, so
+`logical size` is the size of the stored range, not of the whole chunk. For an entry with a nonzero logical offset,
+`logical offset + logical size` equals the decoded size of the whole chunk's CAS range in the superbundle's TOC chunk
+table in all 40,504 entries, and the stored range is the last part of that chunk: in 12,679 entries it is the same
+bytes in the same CAS file as the tail of the TOC's range, in 27,825 it is a separate copy in another CAS file.
+:proven[all 239,810 stock chunk entries]
+
+For a texture chunk the logical offset is the start of the 64 KiB block that contains the first stored mip level: in
+all 40,504 texture entries with a nonzero offset it equals the largest multiple of 65,536 not above the byte offset of
+mip level `first mip` in the chunk, and the sum with the logical size equals the chunk size in the texture header.
+:observed[every texture whose chunk lies in its own bundle]
+
+Chunk metadata is a native-DB `chunkMeta` list, one row per chunk in chunk order (6,039 bundles with chunks have a
+list of exactly their chunk count; 17 bundles have no chunks and no list). Every row is an object with an `h64`
+(eight bytes) and a `meta` object. `meta` is empty in 175,203 rows, holds only `firstMip` (a signed 32-bit value) in
+58,570 rows, and holds a string `container` and a six-element `metrics` list in 6,037 rows (one per bundle).
+:proven[all 239,810 stock rows] A measured root bundle has 8,506 chunks and 8,506 metadata rows
+in the same order. :observed
 
 Every TOC, bundle region, bundle manifest, depot, shader lookup table and `layout.toc` in a measured Studio patch
 survives a byte-identical read/write round trip. This establishes that patch's representation; it does not establish

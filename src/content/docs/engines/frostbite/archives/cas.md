@@ -17,10 +17,10 @@ blocks reconstructs the asset. Physical range length includes the headers; decod
 title: CAS block header
 size: 8
 fields:
-  - {at: 0, size: 1, type: u8, name: dictionary metadata, level: unknown, note: Zero in the supported samples.}
+  - {at: 0, size: 1, type: u8, name: dictionary metadata, level: unknown, note: "Zero in all 1,001,300 headers of the indexed ranges."}
   - {at: 1, size: 3, type: u24be, name: decoded length, level: observed}
   - {at: 4, size: 1, type: u8, name: codec and reserved bit, level: observed, note: Low seven bits select the codec; high bit is reserved.}
-  - {at: 5, size: 1, type: u8, name: flags and payload length high bits, level: observed, note: Low nibble is length bits 16–19; upper nibble is flags.}
+  - {at: 5, size: 1, type: u8, name: flags and payload length high bits, level: observed, note: Low nibble is length bits 16–19; the upper nibble is 7 in every stock block.}
   - {at: 6, size: 2, type: u16be, name: payload length low bits, level: observed}
 ```
 
@@ -45,7 +45,14 @@ The bundle manifests that live in CAS files (6,056 of them) are stored raw, with
 as CAS frames misreads them. :observed Gaps and padding between indexed ranges are not blocks. 30,293,670 bytes of
 the CAS files lie outside every indexed asset and manifest range, so the codec census does not cover them. :observed
 
-:::open[Which dictionary and flag variants occur in stock data?]
-The dictionary byte's nonzero forms and the upper flags nibble have no established interpretation here.
-The measured framing does not establish support for every Frostbite CAS codec. :unknown
+Every header of every indexed range reads with byte 0 equal to zero, the top bit of byte 4 clear and the upper nibble
+of byte 5 equal to 7 (1,001,300 headers over 723,698 ranges, 999,764 distinct blocks). The payload-length bits 16 to 19
+are nonzero in 82,951 blocks, all of them stored (codec `0`) 64 KiB blocks whose payload is 65,536 bytes; every other
+block has a payload below 65,536. Every block that does not end its range decodes to exactly 65,536 bytes, and every
+range chains from its first header to its last byte with no remainder. :proven[all indexed ranges of the stock install]
+No stock region names a Patch folder, so no delta file occurs among the ranges. :proven[the stock install]
+
+:::open[Which dictionary and flag variants does the engine accept?]
+No stock block uses a nonzero dictionary byte or a flags nibble other than 7, so the stock data does not show what
+either would mean. The measured framing does not establish support for every Frostbite CAS codec. :unknown
 :::

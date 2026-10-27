@@ -60,9 +60,23 @@ size: 16
 fields:
   - {at: 0, size: 8, type: u64, name: name hash, level: observed, note: Texture parameters carry a slot tag in the upper 16 bits.}
   - {at: 8, size: 4, type: u32, name: type hash, level: observed}
-  - {at: 12, size: 2, type: u16, name: count, level: observed}
-  - {at: 14, size: 2, type: u16, name: unknown, level: unknown, note: Varies between parameters.}
+  - {at: 12, size: 2, type: u16, name: count, level: proven, note: "Equal to the u32 at +16 in every record that has one"}
+  - {at: 14, size: 2, type: u16, name: name hash extension, level: unknown, note: "A function of the 64-bit name hash: one value per distinct name hash"}
 ```
+
+Across the 2,473 distinct stock depots (192,642 distinct parameter blocks, 5,451,023 parameter records) the `u16` at +12
+equals the `u32` at +16 in all 4,527,851 non-texture records, 633,249 of which hold more than one element, and each
+record's length is 20 plus that count times the element size; texture records have count 1 (923,172). The count
+of a value is therefore an element count, not a byte size. :proven[every stock block] 732 blocks hold a
+parameter of a type that is not in the table below (`0x566e2dd0`, one byte an element; 732 records, one per block);
+with that size every one of the 192,642 distinct blocks parses to its last byte. :proven[every stock block]
+
+The 1,635 distinct 64-bit name hashes of the stock depots have 1,635 distinct low 48 bits, and the `u16` at +14 is the
+same for every record with the same name hash; 1,336 different values occur. :proven[every stock block]
+The 32-bit value formed by the `u16` at +14 and the top 16 bits of the name hash, in either order, is neither the
+djb2-XOR hash (case-exact or lowercased) of any of the 303,105 distinct strings found in the stock EBX documents, nor
+a reflection name key (21,561 distinct keys), and neither is the low or high half of the 64-bit hash.
+:observed[303,105 strings; 1,635 name hashes]
 
 Texture type `0x14c5fc30` carries one flag byte, then the TextureAsset instance GUID and EBX file GUID, in that
 order. All 2,038 measured texture flags equal one. Texture binding uses these GUIDs rather than the Texture
@@ -79,6 +93,13 @@ by fixed-width elements. :observed
 | `0x2a36e9d5` | float2 | 8 | :observed |
 | `0x885eff59` | float3 | 12 | :observed |
 | `0x7f999829` | float4 | 16 | :observed |
+| `0x566e2dd0` | One-byte value (boolean) | 1 | :observed |
+| `0x14c5fc30` | Texture reference (49-byte record) | | :observed |
+
+Two of these type ids are the reflection name keys of types in the stock EBX documents: `0x2a36e9d5` is the key of the
+type name `Vec2` and `0x7826e998` the key of `WpsDistance`; the other eight ids are the key of no name in those documents.
+The parameter type id therefore comes from the same case-insensitive name hash as the
+[reflection name keys](/engines/frostbite/data-model/ebx/#stock-documents). :observed[21,561 keys against 10 type ids]
 
 ## Material families
 

@@ -50,6 +50,12 @@ each LOD's bone masks (16-aligned) or bone map (4-aligned); the bone ids and bon
 The relocation table lists every pointer field as a `u32` of its offset minus 16, in record order. The bundle's
 resource metadata is `{table offset, table bytes, trailing bytes, 0}`. :proven[all 47,758 MeshSets]
 
+Exactly one stock MeshSet has trailing data (2,001,568 bytes, a development character mesh), and its LOD 0 is the
+only one of the 126,014 LODs whose geometry chunk GUID is all zero. That LOD's vertex buffer (1,733,616 bytes) and
+index buffer (267,948 bytes) add up to 2,001,564 bytes, four less than the trailing data, so the trailing data is
+that LOD's geometry stored inside the resource instead of in a chunk. :proven[all 47,758 MeshSets] for the counts,
+:inferred for the reading
+
 ```layout
 title: MeshSet LOD fields
 size: variable
@@ -76,9 +82,28 @@ In the geometry chunk the index data starts at the vertex buffer byte count; ind
 section. :proven[MeshSet census]
 
 The five lists name the sections each pass draws: list 0 the main pass, list 2 decals, lists 3 and 4 the
-depth and shadow passes. The game's opaque shadow-casting sections are in lists 0, 3 and 4 with section flags
-`0x0e`; its decal sections are in list 2 alone with flags `0x0a`; its shadow proxies are in lists 3 and 4 with
-flags `0x04`. :observed Where a LOD carries shadow-proxy twins of its opaque sections, its primitive counts
+depth and shadow passes. :inferred This is the order of the subset categories Frostbite meshes use in other games
+(opaque, transparent, transparent decal, depth-only, shadow). :inferred
+
+The lists are used unevenly. Of the 126,014 LODs of the 47,758 stock MeshSets, list 0 is non-empty in 123,529, list 1 in
+228, list 2 in 9,054, list 3 in 123,137 and list 4 in 123,285. The 300,875 sections fall into 23 combinations of list
+membership and section flags; the largest are below. :proven[all 47,758 MeshSets]
+
+| Lists holding the section | Section flags | Sections |
+|---|---|---|
+| 0 | `0x0a` | 156,048 |
+| 3 and 4 | `0x04` | 113,763 |
+| 0, 3 and 4 | `0x0e` | 10,929 |
+| 2 | `0x0a` | 9,943 |
+| 0 and 3 | `0x0a` | 4,242 |
+| 4 | `0x04` | 3,134 |
+| 3 | `0x00` | 1,268 |
+| 3 and 4 | `0x0c` | 532 |
+
+The flags byte takes 15 values (`0x00`, `0x01`, `0x04`, `0x05`, `0x08`, `0x09`, `0x0a`, `0x0b`, `0x0c`, `0x0e`, `0x0f`,
+`0x1a`, `0x1b`, `0x1e`, `0x1f`). `0x0a` marks both the sections that only list 0 holds (156,048) and the decal sections
+that only list 2 holds (9,943), so the byte does not separate an opaque section from a decal. :proven[all 47,758 MeshSets]
+Where a LOD carries shadow-proxy twins of its opaque sections, its primitive counts
 summed over all sections are twice the triangles it draws in the main pass. :observed
 
 ```layout
@@ -157,7 +182,10 @@ The largest normal component is the remainder of unit length. The tangent is a r
 (+z, −z, +x, −x, −x, +x) made perpendicular to the normal and turned about it by the angle,
 `t0 cos a + (n × t0) sin a`; the bitangent is `sign * (n × t)`. On the LOD-0 sections of 120 stock Quick Drop
 meshes, the decoded normal lies along the face normal (median dot 0.998), the tangent along increasing U (median
-1.000) and the bitangent along increasing V (median 0.998). Re-encoding gives back 22,085 of 23,704 stored frames
+1.000) and the bitangent along increasing V (median 0.998). The zero of the 9-bit components is the value 256: over 8,818,960 tangent frames in the 8,629 main-pass sections of the first
+6,000 MeshSets read, the 9-bit minor component has the value 256 in 4,188,116 of 17,637,920 components, against 255 in
+947,800 and 257 in 179,223, and the most common frame has both minor components 256 (1,055,763 frames, normals along
+an axis). :observed Re-encoding gives back 22,085 of 23,704 stored frames
 of 60 one-LOD meshes byte for byte; the rest are the same frame under its second encoding, at a quadrant edge or
 between two axes. :observed
 

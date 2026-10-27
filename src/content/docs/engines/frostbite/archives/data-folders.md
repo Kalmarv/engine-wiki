@@ -14,6 +14,19 @@ The game's `Data` directory contains `layout.toc` and a `Win32` tree of superbun
 `installManifest.installChunks` maps each `persistentIndex` to the install-chunk directory named by `name`.
 Together, install-chunk id and archive number locate a CAS archive. :observed
 
+The stock `layout.toc` has 16 install chunks, each with both a `name` (a path under `Win32`) and an `installBundle`
+(the same path behind `Win32/`); the two name the same directory for all 16, so either key finds the CAS directory.
+The 72 CAS files of the install lie in exactly the 16 directories the chunks name. :proven[all 16 install chunks; all 72 CAS files]
+The root object holds `superBundles`, `fs`, `head`, `layeredInstallChunkFiles`, `unlayeredInstallChunkFiles`,
+`installManifest` and `meta`. :proven[the stock layout.toc]
+
+## Initfs
+
+The root's `fs` list names one file, `initfs_Win32`, which lies beside `layout.toc`. It carries the TOC envelope and
+a [native DB](/engines/frostbite/archives/native-db/) object whose only child is a blob named `encrypted`
+(742,864 bytes of near-random content); the file therefore has no readable configuration without a key.
+:proven[the stock initfs_Win32]
+
 A bundle's file reference also records whether its bytes belong to base data or patch data, its archive offset
 and its stored size. The manifest describes the decoded assets separately.
 :observed See [bundle manifests](/engines/frostbite/archives/bundles/).
@@ -23,6 +36,12 @@ and its stored size. The manifest describes the decoded assets separately.
 Superbundle TOCs have a `0x22c`-byte envelope beginning `00 d1 ce 01`, followed by a big-endian header. Bundle names
 and chunk GUIDs have separate perfect-hash indexes. Base-data names use Huffman coding when flag bit `4` is set;
 Studio patch TOCs store plain strings. :observed
+
+All 23 stock TOCs carry the flags word `4` and nothing else: no flag bit besides the Huffman-name bit is set, and
+there is no Patch folder in the stock `Data`. Every bundle record's size-and-flags word has the upper two bits equal
+to `01` (6,056 of 6,056 bundles), and every chunk reference is `0x80` followed by the index of a four-word record
+(177,457 of 177,457; none is `-1`). The four-word record's patch byte (bits 48..55) and top byte (bits 56..63) are
+zero in all of them. :proven[all 23 TOCs, 6,056 bundle records and 177,457 chunk references]
 
 ```layout
 title: Superbundle TOC header
@@ -35,8 +54,8 @@ fields:
   - {at: 12, size: 4, type: u32, name: chunk hash table offset, level: observed}
   - {at: 16, size: 4, type: u32, name: chunk GUID table offset, level: observed}
   - {at: 20, size: 4, type: u32, name: chunk count, level: observed}
-  - {at: 24, size: 4, type: u32, name: unknown, level: unknown, note: Not interpreted by the documented reader.}
-  - {at: 28, size: 4, type: u32, name: unknown, level: unknown, note: Not interpreted by the documented reader.}
+  - {at: 24, size: 4, type: u32, name: unknown, level: unknown, note: Equal to the chunk data offset (the word at 36) in all 23 stock TOCs.}
+  - {at: 28, size: 4, type: u32, name: unknown, level: unknown, note: Equal to the chunk data offset (the word at 36) in all 23 stock TOCs.}
   - {at: 32, size: 4, type: u32, name: names offset, level: observed}
   - {at: 36, size: 4, type: u32, name: chunk data offset, level: observed}
   - {at: 40, size: 4, type: u32, name: chunk data word count, level: observed}
@@ -60,6 +79,12 @@ Each bundle's TOC region contains a file table and can also contain an inline ma
 the previous archive identifier, flag `1` supplies a compact four-byte identifier, and other nonzero flags supply
 an eight-byte identifier. Offsets and stored lengths are big-endian 32-bit integers. :observed
 
+In the stock regions the first file's flag byte is `0x84` in all 6,056 regions, a later file's flag is `0x00`
+(1,396,957 files) or `0x80` (17,920 files, where the archive changes), and flag `1` never occurs: all 1,420,933 file
+references use eight-byte identifiers whose patch byte (bits 48..55) and top byte (bits 56..63) are zero. No stock
+region holds an inline manifest (inline size 0 in all 6,056); the first file of every region is the bundle's manifest
+and the region has exactly one file more than its manifest has assets. :proven[all 6,056 stock regions]
+
 ```layout
 title: TOC bundle record
 size: 16
@@ -79,11 +104,11 @@ fields:
   - {at: 4, size: 4, type: u32, name: inline manifest size, level: observed}
   - {at: 8, size: 4, type: u32, name: file flags offset, level: observed}
   - {at: 12, size: 4, type: u32, name: file count, level: observed}
-  - {at: 16, size: 4, type: u32, name: file table offset, level: observed}
-  - {at: 20, size: 4, type: u32, name: repeated table offset, level: observed}
-  - {at: 24, size: 4, type: u32, name: repeated table offset, level: observed}
-  - {at: 28, size: 4, type: u32, name: unknown, level: unknown, note: Zero in measured Studio output.}
-  - {at: 32, size: 4, type: u32, name: repeated file count, level: observed}
+  - {at: 16, size: 4, type: u32, name: file table offset, level: proven, note: "0x24 in all 6,056 stock regions"}
+  - {at: 20, size: 4, type: u32, name: repeated table offset, level: proven, note: "Equal to the file table offset in all 6,056 stock regions."}
+  - {at: 24, size: 4, type: u32, name: repeated table offset, level: proven, note: "Equal to the file table offset in all 6,056 stock regions."}
+  - {at: 28, size: 4, type: u32, name: unknown, level: unknown, note: "Zero in all 6,056 stock regions and in measured Studio output."}
+  - {at: 32, size: 4, type: u32, name: repeated file count, level: proven, note: "Equal to the file count in all 6,056 stock regions."}
 ```
 
 ```layout
@@ -94,11 +119,21 @@ fields:
   - {at: 0, size: 8, type: u64, name: archive location, level: observed, note: "archive number in bits 0–15; install chunk in 16–47; patch indicator in 48–55"}
 ```
 
-:::open[What does the TOC envelope contain beyond its signature?]
-The fixed envelope is retained by readers, but its remaining fields are not described here. :unknown
-:::
+## Envelope
 
-:::open[What is the catalogue format in this build?]
-The documented read path resolves bundle file locations through TOCs and the install manifest. A separate
-`cas.cat` byte layout and its runtime role are not established for this skate. build. :unknown
+All 24 envelope-carrying files of the install (the 23 TOCs and `layout.toc`) begin `00 d1 ce 01` and have the same
+556-byte envelope shape. Bytes 4..8 are zero. Bytes 8..264 are a 256-byte block that differs in every file and has
+near-uniform byte statistics; bytes 264..296 are the same in all 24 files; bytes 296..556 (260 bytes) are identical
+in all 24 files and in `initfs_Win32`, which carries the same envelope shape with its own 256-byte block.
+:proven[all 24 envelopes and the initfs]
+
+## Catalogue files
+
+The install holds no file named `cas.cat`: a search of the whole install folder outside the mod folders finds none.
+Archive, offset and stored size of every file come from the bundle regions and the TOC chunk table.
+:proven[the stock install]
+
+:::open[What does the envelope's 256-byte block cover?]
+The block differs per file and is not a function of the constant bytes around it. Its covered range and role are
+not established. :unknown
 :::

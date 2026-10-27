@@ -78,7 +78,9 @@ is present, and the largest differences are 5e-6 in position, 1.5e-7 in rotation
 :observed{games="elden-ring"}
 
 The all-character Sekiro scan explicitly identifies `c1090/hkx/a000_205000.hkx` as SDK 2015.1, outside the 2016.2
-layout, rather than treating it as a malformed 2016.2 clip. :observed{games="sekiro"}
+layout, rather than treating it as a malformed 2016.2 clip. :observed{games="sekiro"} Its own type table describes the
+2015.1 layouts, whose `hkReferencedObject`-derived classes are 8 bytes smaller than 2016.2's; read with that table it
+decodes as an ordinary clip ([Havok tagfiles](/engines/fromsoft/data-model/havok-tagfiles/)). :observed{games="sekiro"}
 
 :::open[What happens outside a clip's stated time range?]
 Independent decoders differ on clamping versus extrapolation beyond the final frame. Agreement inside the clip

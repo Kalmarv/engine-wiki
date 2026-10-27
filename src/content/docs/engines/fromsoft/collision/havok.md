@@ -22,11 +22,16 @@ definitions. :observed
 | Sekiro | `20160200` (2016.2) | :observed{games="sekiro"} |
 | Elden Ring | `20180100` (2018.1) | :observed{games="elden-ring"} |
 
+Over every tagfile of both installs, Elden Ring also has 42 tagfiles that store `20160200`, among them `f`-set map
+collision of `m60` tiles. The type table, item and patch tables, and the counts per version are on
+[Havok tagfiles and type tables](/engines/fromsoft/data-model/havok-tagfiles/). :proven{games="elden-ring"}
+
 ## Tagfile structure
 
 One `TAG0` root contains `SDKV`, `DATA`, either `TYPE` or `TCRF`, and `INDX` sections. `TYPE` carries class layouts;
 `TCRF` names an external compendium by its eight-byte ID. Item and patch tables resolve typed objects and references
-into `DATA`; type index zero denotes null. :observed
+into `DATA`; type index zero denotes null. :observed The type table, its hash, and the item and patch tables are
+described on [Havok tagfiles and type tables](/engines/fromsoft/data-model/havok-tagfiles/).
 
 ```layout
 title: Havok section header

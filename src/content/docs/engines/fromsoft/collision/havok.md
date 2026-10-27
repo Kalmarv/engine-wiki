@@ -62,6 +62,15 @@ sections lies inside its [bounding-volume leaf](#bounding-volume-trees); read wi
 (Sekiro) and 348,888 of 348,890 (Elden Ring) primitives that use a shared vertex fall outside it.
 :proven[every named collision binder]
 
+`sharedVerticesIndex` is an array of `hkUint16` in the type tables of both games. :proven[every named collision binder]
+The page only matters where it is above 0: every section of every `h` set and of every object and asset collision file
+has page 0, where the offset adds nothing, so a decoder that adds `page × 65536` to every section and one that ignores
+the page agree there. In each install one tagfile holds all the sections above page 0: Sekiro's `l` binder of area
+m10_00_00_00 (89 sections, 6,980 triangles) and Elden Ring's `l` binder of area m14_00_00_00 (6,233 sections, 507,001
+triangles). With the page applied, every triangle of every compressed mesh in both installs (25,397,391 Sekiro and
+66,239,498 Elden Ring, a quad counting as two) lies inside its section's `domain` to within 16 µm, and all of those
+6,980 and 507,001 strictly inside it. :proven[every named collision binder]
+
 A primitive stores four indices `[a,b,c,d]`. Equal `c,d` gives triangle `(a,b,c)`; otherwise the quad also gives
 `(a,c,d)`. `[0xde,0xad,0xde,0xad]` is a dead primitive. :observed The right-aligned shape key is
 `(section << 8) | (primitive << 1) | half`, where `half` selects the quad triangle. Stored keys in the material table

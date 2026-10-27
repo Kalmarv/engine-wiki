@@ -33,7 +33,22 @@ key-table index `i` can lie in `i..=i+b`; differing candidate materials leave th
 :observed
 
 Over 15,942 Elden Ring collision files, the tables leave 64,280 triangle rows unkeyed, and 29,210 keys have
-candidate rows with differing materials. :observed{games="elden-ring"}
+candidate rows with differing materials. :observed{games="elden-ring"} Over every named collision binder of the
+current installs, the triangle-data tables are longer than their key tables by 175 rows in Sekiro (24 in `h`, 98 in
+`l`, 53 in objects) and by 64,204 in Elden Ring (64,198 of them in its 15,942 asset files, 3 in `h`, 3 in `l`).
+:proven[every named collision binder]
+
+The mesh's own per-primitive data does not position those rows. Every section of every compressed mesh of both games
+has a single data run, covering all its primitives, with value `0xFFFF` (see
+[Havok compressed meshes](/engines/fromsoft/collision/havok/#section-fields)), so no primitive carries a value that
+could name its row. :proven[every named collision binder]
+
+`fsnpCustomMeshParameter` also stores `vertexDataStride` (0 or 1), `triangleDataStride` (0 or 8) and `version`
+(`0x100000` in every mesh). The strides are not the size of a triangle-data row, which is 20 bytes in every type table.
+Each primitive-data entry's `triangleData` byte array holds `triangleDataStride` bytes for every triangle-data row that
+names it, its `vertexData` array is non-empty exactly when `vertexDataStride` is 1, and its `primitiveData` array is
+empty. `triangleDataStride` is 8 in Sekiro's `l` and object meshes and in 2 of its 1,458 `h` meshes, and 0 in the
+other `h` meshes and in every Elden Ring mesh. :proven[every named collision binder]
 
 :::open[How are unkeyed fsnp rows positioned?]
 A vertex-ID heuristic can select one assignment, but a row of new vertex IDs fits multiple triangles. Such an
@@ -71,11 +86,18 @@ Where each game keeps object and asset collision is in its section below.
 Stored convex cores contain vertices, planes, faces and a convex radius where that shape class supplies them.
 `hknpConvexShape` stores vertices without explicit faces or planes; a sphere stores one centre vertex and its radius.
 :observed The radius describes a rounded convex shape. Intersecting outward-shifted planes constructs an
-approximation and does not reproduce its rounded edges. :inferred
+approximation and does not reproduce its rounded edges. :inferred Every box, convex polytope, capsule, cylinder and
+triangle shape, bodies and extern instances alike, stores exactly as many planes as faces: 8,373 shapes in Sekiro and
+20,948 in Elden Ring. :proven[every named collision binder]
+
+Every map body has motion type 0. Among object and asset bodies, only motion type 2 has a positive mass (4,620 bodies
+in Sekiro, 17,867 in Elden Ring); otherwise it stores −1 (2,407 and 2,404) or, in 9 Elden Ring bodies, another
+negative mass, never 0. Motion type 1 has mass 0 or −1 (706 and 414 bodies), and motion type 0 likewise.
+:proven[every named collision binder] So 2 is the dynamic motion and 1 the keyframed one, whose mass is infinite.
+:inferred
 
 :::open[What do motion-type values mean at runtime?]
-Values 0, 1 and 2 fit static, dynamic and keyframed bodies in the sampled objects, but that labeling remains inferred
-until a runtime comparison establishes it.
+The mass pattern makes 0 static, 1 keyframed and 2 dynamic; a runtime comparison would establish it.
 :::
 
 ## Sekiro

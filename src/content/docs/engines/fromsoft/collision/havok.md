@@ -2,6 +2,9 @@
 title: Havok containers and compressed meshes
 description: Tagfile sections, type compendia, packed vertices, shape keys and custom primitives.
 sources:
+  - title: Smithbox
+    url: https://github.com/vawser/Smithbox
+    note: name of the f collision set
   - title: HKLib
     url: https://github.com/The12thAvenger/HKLib
   - title: Havoc (SoulsAssetPipeline)
@@ -51,10 +54,90 @@ with section scale and offset; shared vertices use 21/21/22-bit coordinates over
 maximum. An index below the section's packed-vertex count addresses local vertices; higher indices address its
 shared-vertex index array. :observed
 
+The shared-vertex index entry is the low 16 bits of the position in `sharedVertices`; the section's `page` byte
+supplies the rest: vertex `i` at or above the packed count is `sharedVertices[page × 65536 +
+sharedVerticesIndex[first shared + i − packed count]]`. Most sections have page 0; Sekiro has 89 `l`-set sections with
+page 1 and Elden Ring 6,233 `l`-set sections with pages 1 to 4. With the page applied, every primitive of those
+sections lies inside its [bounding-volume leaf](#bounding-volume-trees); read with the page ignored, 6,746 of 6,746
+(Sekiro) and 348,888 of 348,890 (Elden Ring) primitives that use a shared vertex fall outside it.
+:proven[every named collision binder]
+
 A primitive stores four indices `[a,b,c,d]`. Equal `c,d` gives triangle `(a,b,c)`; otherwise the quad also gives
 `(a,c,d)`. `[0xde,0xad,0xde,0xad]` is a dead primitive. :observed The right-aligned shape key is
 `(section << 8) | (primitive << 1) | half`, where `half` selects the quad triangle. Stored keys in the material table
 are left-aligned and become this value after shifting right by `32 - numShapeKeyBits`. :observed
+
+The tree stores the key width again. In every non-empty mesh of both games, the shape's `numShapeKeyBits` equals the
+tree's `bitsPerKey`, `maxKeyValue` is the largest key of any primitive (custom primitives included, a quad's second
+triangle counting `| 1`), and `bitsPerKey` is the bit length of `maxKeyValue + 1`; the three meshes with no sections
+(all Elden Ring assets) store 0 for both. :proven[every named collision binder] The bit length of `maxKeyValue`
+alone, and that of `((sections − 1) << 8) | ((last section's primitives − 1) << 1)`, are one less than `bitsPerKey` in 12
+Sekiro and 973 Elden Ring meshes. :proven[every named collision binder] `numPrimitiveKeys` equals the number of keys (one per triangle,
+two per quad) plus the custom primitives in 3,008 of 3,344 Sekiro and 22,228 of 22,897 Elden Ring meshes; the others
+store one to a few more, often as many as their dead primitives but not always. :proven[every named collision binder]
+
+The tree class is the 32-bit-packed, 64-bit-shared configuration in both games: Sekiro names it
+`hkcdStaticMeshTree<hkcdStaticMeshTreeCommonConfig<hkUint32,hkUint64,11,21>, hknpCompressedMeshShapeTreeDataRun>`,
+and Elden Ring's `hkcdDefaultStaticMeshTree` stores `packedVertices` as `unsigned int` and `sharedVertices` as
+`unsigned long long`, in every type table that has the class. :proven[every named collision binder] Neither game's
+`hknpCompressedMeshShape` (version 6 in Sekiro, 7 with `externShapes` in Elden Ring) has a quad-flatness or
+duplicated-edge member; it has a `triangleIsInterior` bit field, and the tree a `primitiveStoresIsFlatConvex` byte
+(0, or 255 in 11 Sekiro and 121 Elden Ring meshes). :proven[every named collision binder]
+
+### Bounding-volume trees
+
+The mesh tree and each of its sections carry a static bounding-volume tree: `nodes` and a `domain` box. The mesh-level
+tree has 5-byte nodes whose leaves are sections; each section's tree has 4-byte nodes whose leaves are its primitives.
+Nodes are stored in pre-order: an internal node's first child follows it, and its second child is `2 × value` nodes
+after it. :proven[every named collision binder]
+
+```layout
+title: Section tree node (Codec3Axis4, Aabb4BytesCodec)
+size: 4
+fields:
+  - {at: 0, size: 3, type: "u8[3]", name: "x, y, z shrink", level: proven, note: "per axis: high nibble shrinks the minimum side, low nibble the maximum side, by n² ⁄ 226 of the parent's extent"}
+  - {at: 3, size: 1, type: u8, name: data, level: proven, note: "bit 0 set: internal, second child at +(data & 0xFE) nodes; clear: leaf, primitive = data >> 1"}
+```
+
+```layout
+title: Mesh tree node (Codec3Axis5, Aabb5BytesCodec)
+size: 5
+fields:
+  - {at: 0, size: 3, type: "u8[3]", name: "x, y, z shrink", level: proven, note: "as in the section tree"}
+  - {at: 3, size: 1, type: u8, name: hiData, level: proven, note: "value = hiData << 8 | loData; bit 15 set: internal, second child at +2 × (value & 0x7FFF) nodes; clear: leaf, section = value"}
+  - {at: 4, size: 1, type: u8, name: loData, level: proven}
+```
+
+A node's box is its parent's box (the tree's `domain` for the root) shrunk on each axis: with `e` the parent's
+extent, `min += e × h² ⁄ 226` and `max −= e × l² ⁄ 226`, where `h` and `l` are the high and low nibbles of that
+axis's byte. The root's nibbles are usually zero, not always (36 Sekiro and 911 Elden Ring section roots, 4 Sekiro
+and 801 Elden Ring mesh roots are not). :proven[every named collision binder]
+
+Over every tree of both games the nodes form one pre-order tree with every node reached once. Section-tree leaves name
+each of the section's primitives exactly once, dead primitives included; mesh-tree leaves name each section once.
+Every vertex of every triangle and quad lies inside its leaf's box, and every section's `domain` inside its mesh-tree
+leaf's box, to within 16 f32 units in the last place of the coordinate (4 Elden Ring triangles of one asset exceed
+that at a coordinate of 4 × 10⁻⁷ m, by 6 × 10⁻⁹ m). That is 21,846,092 Sekiro and 58,628,215 Elden Ring triangles
+and quads. :proven[every named collision binder] A divisor of 225 instead of 226 leaves 3% to 51% of them outside
+their leaves, depending on the binder set, and swapping the two nibbles' roles nearly all. :proven[every named collision binder]
+
+### Section fields
+
+| Field | Content | Confidence |
+|---|---|---|
+| `domain` | The box of every vertex the section's triangles and quads use, grown by the shape's `convexRadius` on every side (273,210 of 273,218 Sekiro and 722,324 of 722,374 Elden Ring sections; the others are larger on one side). Its `w` lanes are `1 − convexRadius` and `1 + convexRadius` (to rounding) in map meshes. | :proven[every named collision binder] |
+| `codecParms` | Offset (xyz) and scale (xyz) of the packed vertices. Not the domain: the offset equals the domain's minimum in only 1,085 Sekiro and 1,071 Elden Ring sections. In 99.2% of Sekiro and 95.2% of Elden Ring sections with packed vertices, some packed vertex has code 0 and some the top code on every axis, so the codec spans the box of the packed vertices. | :proven[every named collision binder] |
+| `leafIndex` | The node index of the section's leaf in the mesh-level tree, in all 273,228 Sekiro and 722,403 Elden Ring sections. | :proven[every named collision binder] |
+| `page` | Shared-vertex page, above. | :proven[every named collision binder] |
+| `flags` | 1 in exactly the sections that hold a custom primitive or an extern reference (10 Sekiro, 65 Elden Ring), 0 in all others. | :proven[every named collision binder] |
+| `layerData` | 0 in every section; Sekiro's `unusedData` likewise. | :proven[every named collision binder] |
+| Data runs | Every section of both games has one data run, covering primitives `0` to its count, with value `0xFFFF`. The run value is 16 bits in both games (Sekiro wraps it in `hknpCompressedMeshShapeTreeDataRunData`). | :proven[every named collision binder] |
+
+A section holds at most 127 primitives and 255 vertex slots (packed plus shared) in both games, so a primitive's
+index fits the leaf byte's 7 bits. :proven[every named collision binder] Packed vertices belong to one section: rounded
+to 1 mm, fewer than 160 of 31.4 million packed positions occur in two sections. Shared vertices are not limited to
+those several sections use: Sekiro's `h` set stores none used by a single section, but its `l` set has 4,024 and
+Elden Ring 7.69 million of its 19.1 million. :proven[every named collision binder]
 
 ### Section ranges
 
@@ -90,23 +173,52 @@ a triangle, a custom primitive indexes past the end of the vertex arrays. :obser
 
 | Pattern | Interpretation | Confidence |
 |---|---|---|
-| Indices `[k,k,4,k]`, words `[146,w,lo,hi]` | Extern shape index `lo | (hi << 16)`; `w` is uninterpreted | :observed{games="elden-ring"} |
-| First word with low byte `0x52`, including `0x2252` | Payload meaning is unresolved | :unknown |
+| Indices `[k,k,4,k]`, words `[0x92, w, lo, hi]` | Extern shape index `lo | (hi << 16)`; `w` is 0 in 244 of the 262 references and 3, 4 or 5 in the rest | :proven[every named collision binder]{games="elden-ring"} |
+| Indices `[k,n,c,n]`, words `[h, slot, tag]` with `h & 0xFF == 0x52` | A point set: `h >> 8` vertices stored from `sharedVertices[slot]` on | :proven[every named collision binder] |
 
-Custom primitives whose first word has low byte `0x52` occur in Sekiro's `o205010` and `o205300` and in Elden Ring's
-`aeg004_545_l`. :observed
+No `h` or `l` map binder of either game holds a custom primitive. The point-set records are in object and asset
+collision: 27 in Sekiro's objects (among them `o205010` and `o205300`) and 28 in Elden Ring's `_l` assets (among them
+`aeg004_545_l`); Elden Ring's 262 extern references are in its assets too. :proven[every named collision binder]
 
-:::open[What does the 0x52 custom payload represent?]
-The record is distinct from triangles and extern references. Interpreting its words as a vertex index and half float
-is only a lead; no established geometry interpretation is available.
+In a point-set record, `n` is the node index of the primitive's own leaf in its section's
+[tree](#bounding-volume-trees), in all 55 records. The third index is `n` again in Sekiro's 27 and 3 in Elden Ring's
+28. :proven[every named collision binder] The vertices are 32-bit packed positions, two to a 64-bit `sharedVertices`
+entry (the even vertex in the high half), with 11, 11 and 10 bits for x, y and z like a section's packed vertices, but
+quantised over the box of the primitive's leaf node: scale = leaf extent ⁄ (2047, 2047, 1023), offset = leaf minimum.
+:observed Decoded this way, `o205010`'s two records are two cylinders along x (17 and 8 points on each of two circles
+of constant radius, 0.20 m and 0.04 m), `o205300`'s are two eight-corner boxes and a 26-point prism, and
+`aeg004_545_l`'s are 12-point slabs on three planes of x; the records of a section take consecutive slots and
+consecutive shared-index entries. :observed The collision surface is presumably the points' convex hull. :inferred
+
+The first word's high byte is the vertex count (up to 36). Its low byte is `0x52` for a point set and `0x92` for an
+extern reference; what its bits mean beyond that is not established. :unknown The third word is
+`0x3D4D` on 21 Sekiro records, `0x3C9D`, `0x3CC7` or `0x3C8B` on the other 6, and `0x3C24` on all 28 Elden Ring
+records; the section's data run gives these primitives `0xFFFF` like every other. :unknown
+
+:::open[What does the third word of a point-set record mean?]
+It repeats across records and objects of both games. Read as a half float it lies between 1.03 and 1.33; nothing
+confirms that reading.
 :::
+
+## Map collision sets
+
+Both games split a map's collision by set into split binders named `h` (player and world collision), `l` (a coarser
+copy) and `f`. Their bodies are compressed meshes, apart from a few convex bodies in `h` and `l`.
+:proven[every named collision binder]
+
+Every body of every `f` file is an `hknpExternMeshShape` whose `hknpDefaultExternMeshShapeGeometry` holds an
+`hkGeometry`: vertices as `hkVector4` with `w` = 1 and triangles `{a, b, c, material}`. The body's pose is the
+identity, its motion type 0, its mass −1 and its motion-properties index `0xFFFF`; every triangle's material is −1 and
+every vertex index is in range. That is 12,688 bodies (539,652 vertices, 537,436 triangles) in Sekiro's 1,145 `f`
+files and 264,858 bodies (2,233,804 vertices, 1,707,650 triangles, at most 796 to a body) in Elden Ring's 1,850.
+:proven[every named collision binder] Smithbox calls the `f` set fall protection, used for enemies.
+:sourced[Smithbox]
 
 ## Sekiro
 
 ### Map collision binders
 
-:only[sekiro] A map's collision is split by set into binders named `h` (player and world collision), `l` (a coarser
-copy) and `f` (role not established). In Ashina Castle (`m11_01_00_00`) the `h` binder holds 228 files with 1,671,788
+:only[sekiro] In Ashina Castle (`m11_01_00_00`) the `h` binder holds 228 files with 1,671,788
 triangles, the `l` binder 228 files with 234,196, and the `f` binder 192 files whose shapes are `hknpExternMeshShape`
 around small `hkGeometry` meshes. The `h` files take their type information from `h11_01_00_00.compendium` (`TCM0`).
 :observed{games="sekiro"}

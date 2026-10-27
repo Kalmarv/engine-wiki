@@ -90,6 +90,9 @@ The pixel source `ekgeneric.fx` computes a surface's diffuse colour from the ver
 
 A pixel program run on a Microsoft reference rasteriser with controlled constants and textures, for 246 colour values of the layered equation, matched this computation in 234 exactly and 12 within 1e-5. :observed
 
+The products in this equation are taken on the texture's stored values, even for a texture whose [TextureMap](/engines/anvil/textures/texture-map/) is flagged sRGB. None of the 6,399 effect and state records of the high-quality bundle sets sampler state 11 (`D3DSAMP_SRGBTEXTURE`), the pixel programs contain no gamma conversion, and in a runtime trace of one level all 304 calls that set sampler state 11 in a window of 40,001 `SetSamplerState` calls set it to 0. :observed{games="shaun-white-skateboarding"}[the bundle's records; one level, one call window at run time]
+A tint therefore multiplies sRGB-encoded texels as numbers, so in linear terms it acts as if it were itself sRGB-encoded. :inferred Materials of this kind (an sRGB diffuse with a non-white tint) are 327 of 773 in level 01 and 124 of 273 in level 05. :observed{games="shaun-white-skateboarding"}
+
 :::open[How do lighting, fog and tone mapping combine with the base colour?]
 The equations above give the base colour of the restored state only. Per-frame light constants, the fog and the tone controls are bound by frame jobs that are not described. :unknown
 :::

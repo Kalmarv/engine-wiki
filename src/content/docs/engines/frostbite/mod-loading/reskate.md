@@ -60,6 +60,8 @@ requested but not yet loaded is ignored by the engine. :observed
 
 The inspected dedicated-server `tod` command matches keys containing `_tod_`, including quality-tier ToD layers
 as well as the seven main ToD layers. :sourced[ReSkate]
+In the levels where this was tried, the `<map>_high`, `_medium` and `_low` ToD layer references are never created, so
+forcing them has no visible effect in game. :observed
 
 ## Profiles and console
 

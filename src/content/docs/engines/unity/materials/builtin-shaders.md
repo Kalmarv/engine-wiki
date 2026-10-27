@@ -91,6 +91,11 @@ Whether a shader multiplies the mesh's vertex colour into its surface is a prope
 
 Both columns :sourced[Unity built-in shader source] (the shaders' input structs have or lack a `COLOR` input).
 
+SkateBIRD's compiled `Houdini/SpecularVertexColor` forward-base program (DXBC) multiplies `_MainTex` × `_Color` ×
+`COLOR0`. :observed{games="skatebird"} Meshes of the office level also carry non-white vertex colours under Standard
+and Legacy Bumped Diffuse materials, which those shaders do not read, so a mesh's colours say nothing on their own about
+how it looks. :observed{games="skatebird"}
+
 ## Shaders that build their own geometry
 
 A shader whose vertex program builds the shape from component data (Shapes' line, disc, triangle and sphere shaders) draws

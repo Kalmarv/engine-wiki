@@ -102,3 +102,13 @@ three rotation columns and a translation in compressed-mesh space. :observed{gam
 Twenty-two Elden Ring asset collision files use extern shapes, among them `aeg257_001_l`, the lift of the Academy
 of Raya Lucaria. The referenced shapes are boxes, convex polytopes and cylinders. Each instance's `hkTransform` is
 stored as 16 floats, in the order HKLib reads as `Matrix4x4` M11 to M44. :observed{games="elden-ring"}
+
+### Zero-thickness convex shapes
+
+Elden Ring's map and asset collision includes convex shapes with no volume: boxes with convex radius 0 and one
+extent of 0, up to 256 m across, and polytopes whose only planes are `+y` and `−y`, which are flat polygons.
+:observed{games="elden-ring"} An intersection of their half-spaces is empty or unbounded, so their colliding surface
+is their faces, offset by the convex radius. :inferred
+
+Thin boxes about 300 m from their body's origin have planes that their own vertices miss by up to about four f32
+units in the last place; a fixed tolerance of 0.01 mm rejects them. :observed{games="elden-ring"}

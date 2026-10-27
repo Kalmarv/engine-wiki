@@ -149,6 +149,18 @@ For strips, `0xFFFF` restarts the strip and resets parity. Degenerate triples em
 parity; odd triples reverse the index order. Whole-install comparisons include the resulting index ordering.
 :proven[whole-install reference population]
 
+### Winding and culling
+
+In the left-handed source frame, a triangle `(a,b,c)` faces away from `cross(b−a, c−a)`: its front is on the
+side opposite that vector. All 26,286 Sekiro LOD0 face sets that cull back faces wind this way; face sets of
+`M[Shadow]` shadow-proxy materials wind the other way. :observed{games="sekiro"} Reflecting Z into the right-handed
+frame (see [coordinate frames](/engines/fromsoft/world/frames/)) therefore makes the front the counter-clockwise
+side without reordering indices. :inferred
+
+About 8,200 non-shadow Sekiro meshes, 19.4 million triangles, have face sets with the cull-backfaces flag clear;
+they include roofs, walls and the `AMSN_light_e` light geometry. Read with the flag's meaning, the game draws them
+two-sided. :observed{games="sekiro"}
+
 Material and texture records are described under [FLVER material bindings](/engines/fromsoft/materials/flver-bindings/);
 nodes and attachment points under [nodes and skinning](/engines/fromsoft/geometry/nodes-and-skinning/).
 

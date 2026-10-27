@@ -77,7 +77,9 @@ surface pass. :observed
 The pass's render state gives the blend factors (Unity's `BlendMode`: 0 Zero, 1 One, 5 SrcAlpha, 10 OneMinusSrcAlpha, ...),
 whether it writes depth and what it culls (0 off, 1 front, 2 back). A factor can be bound to a material property
 (`Blend [_SrcBlend] [_DstBlend]`), in which case the property's value gives it. :observed{games="sledding"} A pass that
-blends `One Zero` is opaque; any other blend is a blended draw. :observed
+blends `One Zero` is opaque; any other blend is a blended draw. :observed The blend that decides is the surface
+pass's: SkateBIRD's `CardboardBox_mat` and `Black rubber` blend `One Zero` in `ForwardBase` and `One One` in
+`ForwardAdd`, and are opaque surfaces whose extra lights add over them. :observed{games="skatebird"}
 
 Cut-out is decided by the `_ALPHATEST_ON` keyword, URP's `_AlphaClip`, or the render type `TransparentCutout` (the
 material's tag, else its subshader's; the legacy cut-out shaders clip in their programs), at the threshold `_Cutoff`.

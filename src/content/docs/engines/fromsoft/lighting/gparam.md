@@ -105,6 +105,40 @@ These are value IDs within the active GPARAM, not names of GPARAM files. Collisi
 signed bytes that Elden Ring's reference reader names as the base and override GPARAM sub-IDs, selecting hundreds
 digits of file IDs. :sourced[SoulsFormatsNEXT]
 
+### Collision selectors
+
+A collision's scene block (80 bytes at the part's `+120` slot) holds the selector bytes. In Elden Ring it holds a float
+at `+16` (-1.0 on 3,236 of the 3,266 collisions, otherwise 0 to 7), four signed bytes at `+24`, the bytes `0xff` at `+28` and `0xff`, 0 or 1
+at `+29`, and a byte pair at `+32` (255, 255 on 3,138 collisions; otherwise a value from 0, 10, 20, 21, 30, 31, 40, 41
+and 42 and a 0). In Sekiro the four bytes sit at `+60` and a float follows them. :proven
+
+Elden Ring's first selector byte (0 to 9 on 590 collisions; -1 on the rest) is the hundreds digit of a draw-parameter
+file ID under the map's stem, with one rule needed for the stem:
+
+| Collisions | First byte names a file of the map's own stem | of its family stem `mAA_00` | of no stem |
+|---|---:|---:|---:|
+| Dungeon maps (551 with a first byte) | 297 | 114 (108 in the `m30` catacombs, 5 in `m19`, 1 in `m11`) | 140 (101 in `m31`, 38 in `m32`, 1 in `m34_15`) |
+| `m60` tiles (39), stem `m60_00` | 38 | n/a | 1 (value 5; no `m60_00_0500`) |
+
+Trying all 10,000 IDs of every two-block stem of the install's layouts (and `m00_00`, `m61_00`) against the archive
+finds no draw-parameter file for `m31_*`, `m32_*` or their `_00` family stems: 20 of 21 `m30` maps have none under their
+own stem and use `m30_00`, and the caves and tunnels name selectors whose files do not exist. :proven{games="elden-ring"}
+Sekiro's first two bytes do not follow a `byte × 100 + byte × 10` rule: it names an existing file for 267 of 588
+collisions with a selector. :observed{games="sekiro"}
+
+In the overworld a second value appears. The collision type data holds a byte `GparamOverride` at `+0x35`: 255 on
+3,225 collisions, otherwise 0, 1, 2, 3, 21, 31 or 41 on 41 collisions of `m60` tiles. The pair byte at `+32` of the
+scene block takes exactly the values 10, 20, 21, 30, 31, 40, 41 and 42 (and 0), which are the two-digit file IDs of
+`m60_00` (`m60_00_0010` and so on, 31 files in all), and on 40 of the 41 collisions with an override it restates it:
+(override, scene byte) is (1, 10), (2, 20), (3, 30), (21, 21), (31, 31), (41, 41) or (0, 0); the other stores 255 in
+the scene byte. :proven{games="elden-ring"} So the override and the scene byte are two encodings of one overworld file ID
+(`m60_00_00BB`); how the game combines them with the hundreds-digit bytes is not established.
+
+The draw-parameter files in the install are 446 in Elden Ring (47 `m` stems, 30 `s` stems) and 253 in Sekiro (37 `m`, 10
+`s` stems). `m00_00` holds 93 in Elden Ring: `m00_00_0000`, 84 `weatheroutdoor`, 7 `commonevent` and 1 `weatherbase`
+variants; no layout field names them. The open-world stems are `m60_00` (31 plain files and one `capturemap`) and
+`m61_00` (41 files, present although the install holds no `m61` layout). :observed{games="elden-ring"}
+
 :only[elden-ring] Additional files use `_weatherbase`, `_weatheroutdoor`, `_commonevent` and `_capturemap` layer
 names. Their presence does not establish how the layers combine. :observed{games="elden-ring"}
 

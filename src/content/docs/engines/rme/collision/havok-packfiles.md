@@ -75,6 +75,7 @@ No engine code that extracts the field was found, so the bit positions come from
 Id 0 (the default) covers 456,551 triangles, 70.7%. :observed
 
 The other bits of the word are flags whose meaning is not established. Their triangle counts: `0x1000` 22,317, `0x1` 19,408, `0x80000000` 15,856, `0x800` 10,201, `0x4` 8,827, `0x4000` 2,927, `0x2000` 1,529, `0x80006000` 709, others fewer than 50 each; 564,228 triangles have none. :observed
+Taken as whole words, the flags form 13 distinct values, and surface and flags together 92 distinct pairs, 58 of them with a nonzero flag word, over the 646,081 triangles of all 482 `.hkw` entries of every layer. :proven[all 482 .hkw entries]
 On the fixed meshes, `0x800` is mostly up-facing (91%), `0x2000` mostly vertical (89%) and `0x4` never down-facing, which suggests walkable ground, walls and slopes; this is a pattern, not a finding. :inferred
 
 ### Winding

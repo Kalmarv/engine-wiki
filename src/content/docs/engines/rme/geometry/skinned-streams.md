@@ -1,6 +1,6 @@
 ---
 title: Skinned streams and skeletons
-description: "The processed skinning stream embedded in the metadata of character and crowd meshes: 64-byte batch headers with a four-bone palette, 64-byte source vertices, and the skeleton in the SCP."
+description: "The processed skinning stream embedded in the metadata of character and crowd meshes: 64-byte batch headers with a four-bone palette, 64-byte source vertices, the skeleton in the SCP, and the Morpheme rigs that supply the binding matrices."
 ---
 
 Characters and the crowd outfits of the layer PAKs are skinned. Their vertices are not in the MMP: the mesh's [metadata](/engines/rme/geometry/model-quartets/) carries an **embedded stream** (the offset at `0x9C` is not `0xFFFFFFFF`), the MMP slice holds
@@ -86,6 +86,15 @@ fields:
 The 145 quartets hold 18,455 bone records, from 40 to 192 per skeleton (the crowd skeletons have 40). Every name and matrix pointer can be read, every matrix is finite and affine and no parent is out of range. :proven[all 145 skinned quartets]
 For the sample character mesh `f1cf719c` the first palette resolves to LeftLegRoll, LeftFoot and LeftLeg, and its first vertex has weights 139, 113, 3 and 0. :observed
 
+## Binding matrices and the animation rigs
+
+When a skeleton is set up, a bone whose name matches a joint of the animation rig takes its binding matrix from that rig's reference pose; a bone with no match falls back to the matrix its SCP record points to (`matrix_offset`, converted to the engine's basis). :observed[static reading of the executable]
+The SCP matrices are therefore not the whole bind for a character whose bones are in a rig.
+
+The animation rigs are in Morpheme bundles, big-endian with 32-bit pointers, a layout unlike that of the public 64-bit Morpheme readers. There are five such containers on the disc, each an entry without an extension in its PAK: `actor_male`, `ai_skate`, `skate`, `snowboard` and `ui`. :observed
+Read by the game's own relocation rules, all five parse to their exact ends: 1,680 records, of which ten are rigs (seven distinct by id and GUID, some repeated across containers) with 812 joints between them; the other 1,670 records are kept unread. :proven[all five containers]
+A rig's reference pose is an array of XYZW quaternions and an array of XYZ positions; the fourth lane of each position holds bits that are not part of the value. :observed
+
 :::open[How does the skeleton pose a bind-space vertex?]
-Positions are already coherent in the stored bind arrangement; whether the matrices are inverse-bind matrices, and how the animation poses them, is not established. The exact SPU arithmetic that normalises and packs the tangent frame is also not recovered.
+Positions are already coherent in the stored bind arrangement. The binding matrix comes from the rig or the SCP as above, but how the two are composed with the rig header's own transform and the animation pose is not established. The exact SPU arithmetic that normalises and packs the tangent frame is also not recovered.
 :::

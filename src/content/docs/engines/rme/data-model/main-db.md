@@ -67,6 +67,26 @@ Three rows (Bravo, Golf, Hotel) are placeholders: they have tables and scripts b
 | `<Level>_scores` | 9 | score thresholds of a session |
 
 The links to the scene files are by name hash: a drop spot's `SPOT_NAME`, a task's `OBJ_SPOT` and a session's `BOUNDARIES` are names of [spot chunks](/engines/rme/world/spot-chunks/) (as written, or in lower case), a session's `FLYTHROUGH_RAIL` is the name of a camera [spline](/engines/rme/world/splines/), and `NAV_SET_START` is the set letter of the `NavGuide_` splines. :observed
+An `id` is not unique within its table: `Papa_tasks` has two rows with id 203. A reader keeps both rows in their stored order rather than indexing by id. :proven[all 142 tables]
+The columns that list a session's goals or a goal's tasks hold small expressions, not plain lists: bracketed ranges, `|` alternatives and parentheses occur. :observed
+One reference in DELTA's tables names task 393, which `Delta_tasks` does not have. :observed
+In the executable a task is looked up by its logical id, and a missing id gives no task. :observed[static reading of the executable]
+
+The ten playable levels, with their base and layer PAKs, the placements in those PAKs and the rows of their tables: :observed
+
+| Level | PAKs (base and layers) | Placements | Sessions | Goals | Tasks |
+|---|---:|---:|---:|---:|---:|
+| CHARLIE | 41 | 49,820 | 106 | 155 | 575 |
+| DELTA | 19 | 13,323 | 57 | 130 | 393 |
+| ECHO | 17 | 8,472 | 56 | 113 | 208 |
+| FOXTROT | 17 | 9,394 | 56 | 148 | 326 |
+| INDIA | 17 | 9,749 | 58 | 168 | 471 |
+| JULIET | 17 | 39,467 | 56 | 143 | 414 |
+| MIKE | 40 | 8,944 | 46 | 1 | 1 |
+| NOVEMBER | 17 | 9,764 | 57 | 228 | 541 |
+| OSCAR | 17 | 7,608 | 32 | 78 | 171 |
+| PAPA | 17 | 10,962 | 32 | 166 | 251 |
+
 The drop spots join to `Teleport` chunks for 183 of 194 rows ([Spot chunks and spawns](/engines/rme/world/spot-chunks/)). :proven[all 194 rows]
 
 ## Surfaces

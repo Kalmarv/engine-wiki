@@ -58,6 +58,33 @@ The navigation script (`level_load_navigation.lua`, `LoadNavigationData`) loads 
 Each such `LoadData` constant is one quartet in a layer PAK, listed by the PAK's entries. :observed
 The base PAK is the `PATH` of the level row, which no Lua constant names; that is the reason for the base being taken from the row. :inferred
 
+## What a session opens
+
+A trace of the files the running game opens (in an emulator, from the menu to the level) shows which layer PAKs a session loads besides its base. :observed[five sessions on three levels]
+
+| Session | PAKs opened | Confidence |
+|---|---|---|
+| CHARLIE training lesson | `00000004`, `88000004` | :observed |
+| INDIA (New Orleans) Quick Play, Trick | `india.pak`, `0000000a`, `8100000a` | :observed |
+| INDIA, the Point Rush that followed | `8200000a` | :observed |
+| INDIA Free Ride | `india.pak`, `0000000a`, `8300000a` | :observed |
+| MIKE Free Ride | `mike.pak`, `0000000e`, `8300000e` | :observed |
+
+Each session opens the map's always-loaded `000000ZZ` PAK and one PAK whose session digit is its own session type (1 trick, 2 speed, 3 free skate, 8 tutorial), all at the casual difficulty digit `8` in these runs. :observed
+For INDIA and MIKE Free Ride these are exactly the PAKs found by taking the level row's first session of type `FREE` in [MAIN.DB](/engines/rme/data-model/main-db/) and naming the layer by the rule above. :observed
+
+## Opened is not drawn
+
+A layer PAK holds several quartets, and the game does not draw all of a PAK it opens. In the CHARLIE training lesson the `trainingsession1` and `trainingsession2` quartets are drawn, while the meshes of the `challengesession` quartet in `00000004` (mats, magenta arrows, a green board and a white cone) and of the `casualdifficulty` quartet in `88000004` (yellow boards) are not, although both PAKs are open. :observed[a frame of the running game against a render of every placement of the opened quartets]
+The level script asks for `challengesession` with `LoadData` whatever the session, and during training can also ask for `casualdifficulty` and `TrainingSession2`, so the script's requests do not decide what is drawn either. :observed[static reading of the scripts]
+The loader passes the session and navigation bits of what it loads into separate collections; which code turns a collection's meshes on is not established. :observed[static reading of the executable]
+
+:::open[What decides which quartets of an opened PAK are drawn?]
+Neither the PAKs opened nor the `LoadData` requests give the set that is drawn. The consumers of the loader's session and navigation collections, or a trace of them while a session runs, would.
+:::
+
+## Missing levels
+
 Rows of the `levels` table with no PAK on the disc: Bravo, Golf and Hotel (placeholders), `EchoProC` and `IndiaProC` (pro-challenge sessions), `HorseSession1` to `3` and `halfpipesession2`. Their scripts exist and their content does not. :observed
 
 :::open[Which scripts join a map id to its layers?]

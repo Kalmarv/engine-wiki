@@ -31,7 +31,7 @@ The executable carries these libraries; versions are given where the executable 
 | Lua | 5.1 | version string, and the chunk header of all 1,278 script files | :proven[all 1,278 script chunks] |
 | Wwise | not recovered | `WWISE_ID` in the executable; `BKHD` banks and `AKPK` packages on the disc | :observed |
 | Bink | not recovered | Bink strings in the executable; 451 `.bik` videos on the disc | :observed |
-| Morpheme | not recovered | a reference to `morphemeSPU.elf`, and Robomodo animation task names | :observed |
+| Morpheme | not recovered | a reference to `morphemeSPU.elf`, Robomodo animation task names, and five big-endian rig bundles on the disc ([skinned streams](/engines/rme/geometry/skinned-streams/#binding-matrices-and-the-animation-rigs)) | :observed |
 | Demonware | 2.3.2 | source paths retained in the executable | :observed |
 | SQLite | 3 | 27 database files on the disc | :observed |
 
@@ -48,7 +48,8 @@ The executable also embeds a Havok physics identification string naming Robomodo
 | [Collision](/engines/rme/collision/havok-packfiles/) | triangles, shapes, bodies and surface ids; flag bits not understood | :proven[all 490 files] |
 | [World](/engines/rme/world/scp-tables/): nodes, spots, splines, lights, layers | decoded; rails, light meaning and several section types open | :observed |
 | [Data model](/engines/rme/data-model/main-db/): MAIN.DB | all tables read; which the engine reads when is not traced | :proven[all 27 databases] |
-| Shaders, animation, audio, scripts, UI | not covered | :unknown |
+| [Shaders](/engines/rme/shaders/programs/): Cg containers, fragment microcode, texture-only programs, the fog pass | microcode decoded and checked against an independent disassembler; the material-to-texture-unit binding not traced | :proven[all 765 pixel program files] |
+| Animation, audio, scripts, UI | animation reference rigs read; the rest not covered | :unknown |
 
 The figures come from one PlayStation 3 disc, so a count that is proven is proven for that disc. :observed
 

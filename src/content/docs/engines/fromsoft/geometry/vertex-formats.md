@@ -94,9 +94,9 @@ four-lane input directly. :sourced[SoulsFormatsNEXT]
 Repeated UV attributes follow stream order; tangent semantic indices can be sparse, so their index is not necessarily
 their position in an array. :observed
 
-In Elden Ring the number of UV attributes a mesh stores (counting a Float4 or Short4 member as two and leaving Half4
-pivots out) mostly follows its shader. Of the 76,822 meshes whose material has a MATBIN, the meshes of 444 of the 481 shader
-stems all store the same count; the other 37 stems, mostly `M[AMSN_V]` variants, have meshes with one, two and three.
+In Elden Ring the number of UV attributes a mesh stores (a Float4 or Short4 member counts as two, a Half4 pivot as one)
+mostly follows its shader. Of the 76,822 meshes whose material has a MATBIN, the meshes of 443 of the 481 shader stems all
+store the same count; the other 38 stems, mostly `M[AMSN_V]` variants, have meshes with one, two and three.
 :proven[every mesh of the install with a MATBIN material, without the `DLC` archive pair]
 
 ### Half4 pivots

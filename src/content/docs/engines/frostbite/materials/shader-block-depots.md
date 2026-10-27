@@ -3,8 +3,8 @@ title: ShaderBlockDepots and material parameters
 description: Material-key lookup, relocatable depot containers, typed parameters and texture bindings.
 games: [skate]
 implementations:
-  - name: primase worlds/frostbite (depot.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/depot.rs
+  - name: frostbite-formats (depot.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/depot.rs
 ---
 
 A MeshSet section's 64-bit material key resolves in ShaderBlockDepots (`0x73312045`) of loaded bundles.

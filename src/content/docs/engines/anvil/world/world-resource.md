@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (grid.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/grid.rs
+  - name: "anvil-formats (grid.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/grid.rs
 ---
 
 Beyond [grid descriptions](/engines/anvil/world/grids/), World stores managers and configuration objects, then a separate component list. Registry-guided decoding reaches the count at body offset 4,104 in USNAT patch World and 2,527 in WhiteRoom patch World. Base WorldGraphicData has a different profile not established by that decoding. :observed

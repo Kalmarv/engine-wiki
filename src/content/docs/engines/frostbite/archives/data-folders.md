@@ -3,10 +3,10 @@ title: Data folders and superbundle TOCs
 description: Install chunks, CAS locations, TOC indexes and bundle file tables in skate.
 games: [skate]
 implementations:
-  - name: primase worlds/frostbite (toc.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/toc.rs
-  - name: primase worlds/frostbite (read/folder.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/read/folder.rs
+  - name: frostbite-formats (toc.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/toc.rs
+  - name: frostbite-formats (folder.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/folder.rs
 ---
 
 The game's `Data` directory contains `layout.toc` and a `Win32` tree of superbundle TOCs and CAS archives.

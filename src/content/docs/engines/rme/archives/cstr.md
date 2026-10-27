@@ -2,8 +2,8 @@
 title: CSTR compressed streams
 description: "How a compressed PAK entry is stored: a CSTR header and blocks of raw deflate, each at most 65,531 bytes, stored uncompressed when deflate did not help."
 implementations:
-  - name: primase worlds/shred (cstr.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/cstr.rs
+  - name: rme-formats (cstr.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/cstr.rs
 ---
 
 A [PAK entry](/engines/rme/archives/pak/) whose attribute value is `2` is a **CSTR** stream: a 16-byte header followed by blocks, each a raw deflate stream of at most 65,531 decoded bytes, or the same bytes stored as they are. The stream is

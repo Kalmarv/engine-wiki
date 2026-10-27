@@ -6,8 +6,8 @@ sources:
     url: https://github.com/soulsmods/SoulsFormatsNEXT/blob/master/SoulsFormats/Formats/METAPARAM.cs
     note: Reference names for metadata fields
 implementations:
-  - name: primase worlds/fromsoft (metaparam.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/metaparam.rs
+  - name: fromsoft-formats (metaparam.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/metaparam.rs
 ---
 
 A shader bundle's `.metaparam` describes texture slots, default textures, UV groups, per-pass sampler masks and

@@ -10,8 +10,8 @@ sources:
     url: https://github.com/K0lb3/UnityPy
     note: reader of the vertex data and the compressed mesh
 implementations:
-  - name: primase worlds/unity (read/mesh.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/mesh.rs
+  - name: unity-formats (mesh.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/mesh.rs
 ---
 
 A **Mesh** (class 43) holds the vertices of one or more submeshes. Each submesh is a run of indices into the shared

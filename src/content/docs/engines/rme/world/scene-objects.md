@@ -2,8 +2,8 @@
 title: Spot cameras, locators and occluders
 description: "Three small section types of the SCP blob: type 3 spot cameras (a spot name and two frames), type 5 locators (one waypoint) and type b occluders (a matrix and a line outline)."
 implementations:
-  - name: primase worlds/shred (scp_cameras.rs, scp_locators.rs, scp_occluders.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scp_cameras.rs
+  - name: rme-formats (scp_cameras.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/scp_cameras.rs
 ---
 
 Besides spot chunks, splines and lights, the [SCP blob](/engines/rme/world/scp-tables/) holds three small kinds of placed object. All numbers are big-endian, and every matrix is a 64-byte row-major affine matrix with the translation in floats 12 to 14, finite and with the fourth column `(0, 0, 0, 1)`. :proven[all 281 camera, 1 locator and 341 occluder matrices]

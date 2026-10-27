@@ -2,8 +2,8 @@
 title: Levels and layer PAKs
 description: "How a playable map is assembled: a base level PAK plus layer PAKs named by difficulty, session type and map id, what each layer holds, and the load order the level scripts give."
 implementations:
-  - name: primase worlds/shred (manifest.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/manifest.rs
+  - name: rme-formats (manifest.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/manifest.rs
 ---
 
 A level is not one file. The ten **base** PAKs in `levels` (`CHARLIE.PAK` to `PAPA.PAK`, named for the NATO letters of the [hub](/games/shred/)) hold the geometry that every map of the level shares; **layer** PAKs in `levels/layers` hold the rest: lighting, navigation, the gameplay sessions, the difficulty

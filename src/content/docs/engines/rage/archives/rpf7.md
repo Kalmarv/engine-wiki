@@ -7,10 +7,10 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: RpfFile and GTACrypto describe the archive and cipher layouts.
 implementations:
-  - name: primase worlds/gta (rpf.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/archive/rpf.rs
-  - name: primase worlds/gta (ng.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/archive/ng.rs
+  - name: rage-engine-formats (archive/rpf.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/archive/rpf.rs
+  - name: rage-engine-formats (archive/ng.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/archive/ng.rs
 ---
 
 An RPF7 archive holds directories, binary files and resources. Its table contains names; file data is addressed in

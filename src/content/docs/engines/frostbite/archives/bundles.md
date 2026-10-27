@@ -3,8 +3,8 @@ title: Bundle manifests
 description: EBX, resource and chunk records, their parallel tables and their CAS file references.
 games: [skate]
 implementations:
-  - name: primase worlds/frostbite (bundle.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/bundle.rs
+  - name: frostbite-formats (bundle.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/bundle.rs
 ---
 
 A bundle groups EBX documents, resources and chunks for loading. Its binary manifest names EBX and resource

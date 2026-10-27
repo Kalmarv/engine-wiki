@@ -7,8 +7,8 @@ sources:
   - title: Smithbox
     url: https://github.com/vawser/Smithbox
 implementations:
-  - name: primase GPARAM reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/gparam.rs
+  - name: fromsoft-formats GPARAM reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/gparam.rs
 ---
 
 GPARAM files describe graphics environments as named groups of typed fields. Fields hold arrays of values indexed

@@ -2,8 +2,8 @@
 title: SCP scene tables
 description: "The SCP file of a level quartet: its header, the node tree with world matrices, the joint table, and the chain of typed sections (spot chunks, splines, lights, cameras, occluders and others) after it."
 implementations:
-  - name: primase worlds/shred (scp_tables.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scp_tables.rs
+  - name: rme-formats (scp_tables.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/scp_tables.rs
 ---
 
 The **SCP** of a [model quartet](/engines/rme/geometry/model-quartets/) is the scene file. Its first table lists the mesh [placements](/engines/rme/geometry/placements/); the rest describes what a level is made of apart from geometry:

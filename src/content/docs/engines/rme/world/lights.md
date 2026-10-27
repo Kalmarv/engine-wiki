@@ -2,8 +2,8 @@
 title: Lights
 description: "The light records of the SCP blob: 80-byte records with a 64-byte matrix each, their colour, name, parameters and kind code, and what is not known about their meaning."
 implementations:
-  - name: primase worlds/shred (scp_lights.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scp_lights.rs
+  - name: rme-formats (scp_lights.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/scp_lights.rs
 ---
 
 Light records are the type-4 sections of the [SCP blob](/engines/rme/world/scp-tables/). They are in the `lighting_*` layers ([layers](/engines/rme/world/layers/)), which hold a node and light or probe sections but no placements. The disc has 55 light sections and **9,778** records. :proven[all 547 SCPs]

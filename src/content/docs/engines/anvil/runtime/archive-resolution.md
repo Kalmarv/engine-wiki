@@ -10,8 +10,8 @@ sources:
     url: https://github.com/dataterminals/grb-modding-knowledgebase
     note: Community documentation and readers.
 implementations:
-  - name: "primase worlds/anvil (archive.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/archive.rs
+  - name: "anvil-formats (archive.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/archive.rs
 ---
 
 Resource references cross forge boundaries by 64-bit identity. Breakpoint's community analysis describes global, set-scoped and index-scoped lookup paths; therefore a single global priority model does not automatically describe every engine read. :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}

@@ -6,8 +6,8 @@ sources:
     url: https://github.com/soulsmods/Paramdex/blob/master/ER/Defs/GrassTypeParam.xml
     note: GRASS_TYPE_PARAM_ST field definitions
 implementations:
-  - name: primase worlds/fromsoft (param.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/param.rs
+  - name: fromsoft-formats (param.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/param.rs
 ---
 
 Vegetation includes ordinary FLVER meshes with pivot attributes as well as Elden Ring's separate

@@ -3,8 +3,8 @@ title: SpeedTree geometry and instances
 description: Elden Ring's stored vegetation streams, runtime instance inputs, LOD blending and wind-off state.
 games: [elden-ring]
 implementations:
-  - name: primase worlds/fromsoft (flver)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/flver/mod.rs
+  - name: fromsoft-formats (flver/mod.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/flver/mod.rs
 ---
 
 Elden Ring's SpeedTree models are FLVER files with header word `0x8000` at `0x6A`. Their layouts declare both

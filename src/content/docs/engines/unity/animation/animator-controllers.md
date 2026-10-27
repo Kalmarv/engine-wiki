@@ -9,8 +9,8 @@ sources:
   - title: Johansen, Automated Semi-Procedural Animation for Character Locomotion (thesis, Aarhus University, 2009)
     note: chapter 6 gives the gradient band interpolation of the 2D blend trees
 implementations:
-  - name: primase worlds/unity (animator.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/animator.rs
+  - name: unity-formats (animator/mod.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/animator/mod.rs
   - name: primase worlds/unity (blend_tree.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/blend_tree.rs
 ---

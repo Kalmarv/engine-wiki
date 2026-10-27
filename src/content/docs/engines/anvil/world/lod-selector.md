@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (lod.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/lod.rs
+  - name: "anvil-formats (lod.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/lod.rs
 ---
 
 LODSelector describes five graphic-object levels, directly referenced or supplied by leading dependency meshes. All 48,862 selectors in the six-archive enumeration consume exactly with the counted BoneIDs array and footer: body size is `266 + 4 × sum(BoneIDs counts) + 13 × dependency count`. :proven

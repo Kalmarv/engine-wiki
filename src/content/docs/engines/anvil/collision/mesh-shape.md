@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (mesh_shape.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/mesh_shape.rs
+  - name: "anvil-formats (mesh_shape.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/mesh_shape.rs
 ---
 
 MeshShape (`0xB22B3E61`) stores triangle collision separately from render Mesh resources. A byte-counted section run contains geometry and adjacency, followed by materials and bounds. Evidence includes two different-size fixtures, a 15,222-body section census and a 724-shape tree analysis. :observed

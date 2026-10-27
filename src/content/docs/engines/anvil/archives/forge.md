@@ -10,8 +10,8 @@ sources:
     url: https://github.com/dataterminals/grb-modding-knowledgebase
     note: Community documentation and readers.
 implementations:
-  - name: "primase worlds/anvil (forge.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/forge.rs
+  - name: "anvil-formats (forge.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/forge.rs
 ---
 
 A `.forge` stores resource entries and tables locating their bytes. In Riders Republic build 25394987 the six archives contain 1,301,684 entries. Index and name records correspond by position, with equal stored sizes row by row; their two id fields are not a join key. Every header and table of all six installed forges reads without refusals. :proven{games="riders-republic"}

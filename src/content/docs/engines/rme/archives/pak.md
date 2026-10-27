@@ -2,8 +2,8 @@
 title: PAK archives
 description: "The big-endian PAK v4 container of the RME engine: header, 32-byte entries, section markers, sdbm name hashes, attributes and the alignment word."
 implementations:
-  - name: primase worlds/shred (pak.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/pak.rs
+  - name: rme-formats (pak.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/pak.rs
 ---
 
 Every resource of Tony Hawk: SHRED sits in a **PAK** file. A PAK is a flat table of entries, then a string table of their names, then the entries' bytes; the engine

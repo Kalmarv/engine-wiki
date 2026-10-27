@@ -10,8 +10,8 @@ sources:
     url: https://github.com/icculus/mojoshader
     note: compiles Direct3D 9 shader bytecode to GLSL
 implementations:
-  - name: primase worlds/monogame (mgfx.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/monogame/src/mgfx.rs
+  - name: monogame-formats (mgfx.rs)
+    url: https://github.com/Kalmarv/monogame-formats/blob/main/src/mgfx.rs
   - name: primase worlds/monogame (programs.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/monogame/src/programs.rs
 ---

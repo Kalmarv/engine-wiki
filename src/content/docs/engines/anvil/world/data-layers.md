@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (entity.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/entity.rs
+  - name: "anvil-formats (entity.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/entity.rs
 ---
 
 DataLayers distinguish event, season and user-content layouts on the same ground. Entities and groups contain DataLayerFilters. In the measured campus cell, distinct event layouts explain overlapping ramps and bowls; grids do not separate those states. :observed

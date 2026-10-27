@@ -2,8 +2,8 @@
 title: Material banks (MBP and MDP)
 description: "How a submesh's material id becomes shader paths, parameters and texture paths: the three bank files, the MBP index, the MDP record, and which bank an id belongs to."
 implementations:
-  - name: primase worlds/shred (material.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/material.rs
+  - name: rme-formats (material.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/material.rs
 ---
 
 A [submesh](/engines/rme/geometry/model-quartets/) carries a **material id**, a number that is looked up in a material bank. A bank is a pair of files: an `.mbp` index and an `.mdp` of material records. A material names its vertex and pixel shader and its textures **by path

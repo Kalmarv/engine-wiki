@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (entity.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/entity.rs
+  - name: "anvil-formats (entity.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/entity.rs
 ---
 
 SplashFX stores states and actions, with Display2D, DisplayMesh and DisplayTrail rendering forms. Its checked registry fields include States, AllActions, UpdateEvenWhenNotVisible, MinimumFPS, MaximumDT, SoundEmitterCount, GlobalEmitters, BirthRateFactor, AlphaFactor, DataDrivenSeed, ResetWhenUnshare, AbsoluteMaxViewableSquareDistance and Preroll. :observed

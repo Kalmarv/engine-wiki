@@ -10,8 +10,8 @@ sources:
     url: https://github.com/dataterminals/grb-modding-knowledgebase
     note: Community documentation and readers.
 implementations:
-  - name: "primase worlds/anvil (build_table.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/build_table.rs
+  - name: "anvil-formats (build_table.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/build_table.rs
 ---
 
 BuildTable (`0x22ECBE63`) is a typed object graph of columns, rows, property paths and resource links. Riders Republic uses these tables for customization and settings, while Breakpoint's community tools expose them as editable assembly definitions. :observed{games="riders-republic"} :sourced[Breakpoint format reference]{games="ghost-recon-breakpoint"}

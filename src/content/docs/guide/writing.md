@@ -39,8 +39,8 @@ sources:                         # outside work the page relies on (tools, their
     url: https://github.com/JKAnderson/SoulsFormats
     note: BHD5 reader; the field names used here
 implementations:                 # optional: tools that implement what the page describes (shown small at the end)
-  - name: primase worlds/fromsoft (bhd.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/bhd.rs
+  - name: fromsoft-formats (bhd.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/bhd.rs
 ---
 ```
 

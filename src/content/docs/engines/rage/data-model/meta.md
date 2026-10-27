@@ -7,10 +7,10 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: Meta, MetaTypes, Rbf and JenkHash are reference descriptions.
 implementations:
-  - name: primase worlds/gta (meta.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/meta.rs
-  - name: primase worlds/gta (rbf.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/rbf.rs
+  - name: rage-engine-formats (meta.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/meta.rs
+  - name: rage-engine-formats (rbf.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/rbf.rs
 ---
 
 META resources describe their own structures, enums and data blocks. A structure description gives its hashed name,

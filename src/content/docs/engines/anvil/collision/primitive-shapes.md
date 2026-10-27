@@ -13,8 +13,8 @@ sources:
   - title: Blacksmith
     url: https://github.com/theawesomecoder61/Blacksmith
 implementations:
-  - name: "primase worlds/anvil (shape.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/shape.rs
+  - name: "anvil-formats (shape.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/shape.rs
 ---
 
 Primitive shapes provide collision without a triangle mesh. SphereShape, CapsuleShape, BoxShape and ReferenceListShape grammars consume every enumerated entry of their types exactly. Local-frame interpretation is checked against compound and owner bounds. :proven[grammar coverage] :observed[local frame]

@@ -2,8 +2,8 @@
 title: Map areas and parent tiles
 description: Sekiro area names and Elden Ring's nested open-world tile coordinates.
 implementations:
-  - name: primase Elden Ring rules
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/elden/mod.rs
+  - name: fromsoft-formats Elden Ring rules
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/elden.rs
 ---
 
 Maps have names such as `m11_01_00_00`; layout files live at `map/mapstudio/<map>.msb.dcx`, with resources under

@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (grid.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/grid.rs
+  - name: "anvil-formats (grid.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/grid.rs
 ---
 
 A World lists GridDescriptions pairing GridLayouts with GridPartition references. Each partition stores every cell level; an occupied cell names a GridCellDataBlock listing associated resources. All eight partitions and all 66,359 blocks in the six-archive census consume exactly to their ends. :proven

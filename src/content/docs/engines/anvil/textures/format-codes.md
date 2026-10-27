@@ -3,8 +3,8 @@ title: Texture format codes
 description: Anvil image codecs, storage sizes, channel-order disagreements and sRGB interpretation.
 games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
-  - name: primase Anvil texture format mapping
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/texture.rs
+  - name: anvil-formats Anvil texture format mapping
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/texture.rs
 ---
 
 The numeric format in TextureMap selects a pixel codec; its separate transfer flag controls colour-space treatment. Storage size alone cannot distinguish codecs with the same block or pixel size. :observed

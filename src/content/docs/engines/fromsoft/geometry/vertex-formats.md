@@ -6,8 +6,8 @@ sources:
     url: https://github.com/soulsmods/SoulsFormatsNEXT/blob/master/SoulsFormats/Formats/FLVER/LayoutMember.cs
     note: Type and semantic enum names
 implementations:
-  - name: primase worlds/fromsoft (flver/vertex.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/flver/vertex.rs
+  - name: fromsoft-formats (flver/vertex.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/flver/vertex.rs
 ---
 
 FLVER layouts describe the bytes of a vertex stream. A member's semantic identifies its role, while its type

@@ -7,10 +7,10 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: Skeleton and CPedVariationInfo descriptions.
 implementations:
-  - name: primase worlds/gta (drawable.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/drawable.rs
-  - name: primase worlds/gta (ped.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/ped.rs
+  - name: rage-engine-formats (drawable.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/drawable.rs
+  - name: rage-engine-formats (ped.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/ped.rs
 ---
 
 Drawables can carry a skeleton with per-bone local transforms, parent indices, tags and stored inverse transforms.

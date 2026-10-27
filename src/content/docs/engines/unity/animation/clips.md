@@ -9,8 +9,8 @@ sources:
   - title: Unity scripting reference, AnimationClip
     url: https://docs.unity3d.com/ScriptReference/AnimationClip.html
 implementations:
-  - name: primase worlds/unity (read/clip.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/clip.rs
+  - name: unity-formats (clip.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/clip.rs
   - name: primase worlds/unity (clipdata.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/clipdata.rs
 ---

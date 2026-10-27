@@ -3,8 +3,8 @@ title: Packed vertex formats
 description: Positions, signed UVs, colour, normal frames and skin streams in Riders Republic meshes.
 games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
-  - name: primase Anvil vertex decoder
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/vertex.rs
+  - name: anvil-formats Anvil vertex decoder
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/vertex.rs
 ---
 
 Mesh vertex-format bytes select the engine's input declarations. Runtime declaration tables identify the semantics and DXGI formats; shader disassembly supplies the arithmetic. All vertex permutations in the 432 template entries agree on the corresponding input semantics. :observed

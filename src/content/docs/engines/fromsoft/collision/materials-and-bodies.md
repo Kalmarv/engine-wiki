@@ -9,8 +9,8 @@ sources:
   - title: Havoc (SoulsAssetPipeline)
     url: https://github.com/Meowmaritus/SoulsAssetPipeline/tree/master/Havoc
 implementations:
-  - name: primase collision reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/collision.rs
+  - name: fromsoft-formats collision reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/collision.rs
 ---
 
 Collision appearance and behavior are separate from render materials. Compressed meshes attach HitMtrlParam IDs to

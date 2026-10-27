@@ -7,10 +7,10 @@ sources:
   - title: Havoc (SoulsAssetPipeline)
     url: https://github.com/Meowmaritus/SoulsAssetPipeline/tree/master/Havoc
 implementations:
-  - name: primase Havok tagfile reader
-    url: https://github.com/Kalmarv/primase/blob/main/toolkit/havok/src/tagfile.rs
-  - name: primase compressed mesh reader
-    url: https://github.com/Kalmarv/primase/blob/main/toolkit/havok/src/mesh.rs
+  - name: havok-formats Havok tagfile reader
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/tagfile.rs
+  - name: havok-formats compressed mesh reader
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/mesh.rs
 ---
 
 Map collision uses Havok tagfiles with `hknpCompressedMeshShape` geometry and FromSoftware-specific `fsnp` metadata.

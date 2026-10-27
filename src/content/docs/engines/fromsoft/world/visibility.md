@@ -5,8 +5,8 @@ sources:
   - title: SoulsFormatsNEXT MSB parts
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats/MSB
 implementations:
-  - name: primase MSB reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/msb.rs
+  - name: fromsoft-formats MSB reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/msb.rs
 ---
 
 MSB stores several controls that affect what can draw: part shadow bytes, visibility-related arrays and

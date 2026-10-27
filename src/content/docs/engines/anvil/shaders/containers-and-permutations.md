@@ -3,10 +3,10 @@ title: Shader containers and permutations
 description: DXBC packs, template-local code frames, sparse permutation tables and draw-key composition.
 games: [riders-republic]
 implementations:
-  - name: primase Anvil shader pack reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/shader_pack.rs
-  - name: primase Anvil shader source reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/shader_source.rs
+  - name: anvil-formats Anvil shader pack reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/shader_pack.rs
+  - name: anvil-formats Anvil shader source reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/shader_source.rs
 ---
 
 Riders Republic stores Shader Model 5 DXBC programs both in material templates and in `ShaderDataDX11.bin` beside the game executable. A template chooses its own code through stage-specific permutation tables; global passes also come from the standalone pack. :observed

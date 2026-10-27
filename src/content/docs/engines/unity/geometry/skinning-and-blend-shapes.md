@@ -10,8 +10,8 @@ sources:
     url: https://github.com/K0lb3/UnityPy
     note: the reader used to recover the variable bone count layout
 implementations:
-  - name: primase worlds/unity (read/mesh.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/mesh.rs
+  - name: unity-formats (mesh.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/mesh.rs
 ---
 
 A skinned mesh is drawn by a **SkinnedMeshRenderer** (class 137) that lists the bone Transforms (`m_Bones`); the mesh stores,

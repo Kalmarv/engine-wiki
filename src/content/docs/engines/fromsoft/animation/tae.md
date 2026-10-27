@@ -7,8 +7,8 @@ sources:
   - title: DSAnimStudio
     url: https://github.com/Meowmaritus/DSAnimStudio
 implementations:
-  - name: primase TAE reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/tae.rs
+  - name: fromsoft-formats TAE reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/tae.rs
 ---
 
 TAE stores timed actions alongside motion clips. An animation record has an ID and events with a type number,

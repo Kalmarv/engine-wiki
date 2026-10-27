@@ -3,8 +3,8 @@ title: Terrain deferred decals
 description: Projection boxes, atlas windows and the virtual-terrain decal output layout.
 games: [riders-republic]
 implementations:
-  - name: primase Anvil deferred decal reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/ddecal.rs
+  - name: anvil-formats Anvil deferred decal reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/ddecal.rs
 ---
 
 Terrain deferred decals project material information into terrain virtual-texture targets. Their output layout differs from the final scene G-buffer, even though both carry colour and normals. :observed[decal and terrain producer shaders]

@@ -2,8 +2,8 @@
 title: Model libraries (MLP, MMP, MGP)
 description: "How a level's meshes are stored: an MLP resource table and metadata, an MMP buffer of positions and indices, an MGP buffer of the other vertex attributes, and the scene file beside them."
 implementations:
-  - name: primase worlds/shred (scene.rs, convert.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scene.rs
+  - name: rme-formats (scene.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/scene.rs
 ---
 
 A level's meshes are not stored one by one. A PAK holds a **quartet**: four entries with one base name and four extensions, `.scp` (the scene: placements and more, see [Placements](/engines/rme/geometry/placements/)), `.mlp` (the *model library*: a table of

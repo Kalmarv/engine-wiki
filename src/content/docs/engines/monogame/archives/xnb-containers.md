@@ -10,8 +10,8 @@ sources:
     url: https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Content/ContentManager.cs
     note: the header and the compression flags
 implementations:
-  - name: primase worlds/monogame (xnb.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/monogame/src/xnb.rs
+  - name: monogame-formats (xnb.rs)
+    url: https://github.com/Kalmarv/monogame-formats/blob/main/src/xnb.rs
 ---
 
 An **XNB** is the compiled form of one content asset in games built on XNA 4.0, MonoGame or FNA. The file names the readers

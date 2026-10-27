@@ -6,10 +6,10 @@ sources:
   - title: GRB modding reference
     url: https://github.com/dataterminals/grb-modding-knowledgebase/blob/main/docs/09-textures.md
 implementations:
-  - name: primase Anvil texture reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/texture.rs
-  - name: primase Anvil mip reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/mip.rs
+  - name: anvil-formats Anvil texture reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/texture.rs
+  - name: anvil-formats Anvil mip reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/mip.rs
 ---
 
 A **TextureMap** describes an image and its mip chain. Larger levels can live in separate **CompiledMip** resources, while smaller levels remain in the parent body. :observed{games="riders-republic"}

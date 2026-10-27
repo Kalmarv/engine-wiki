@@ -6,8 +6,8 @@ sources:
   - title: FrostyToolsuite
     url: https://github.com/CadeEvs/FrostyToolsuite
 implementations:
-  - name: primase worlds/frostbite (fbmod.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/fbmod.rs
+  - name: frostbite-formats (fbmod.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/fbmod.rs
 ---
 
 Studio labels its intermediate FBMOD as Frosty version six, using a legacy variant with a length-prefixed profile

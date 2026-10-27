@@ -7,8 +7,8 @@ sources:
   - title: SoulsFormatsNEXT PARAM and regulation decryption
     url: https://github.com/soulsmods/SoulsFormatsNEXT
 implementations:
-  - name: primase PARAM reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/param.rs
+  - name: fromsoft-formats PARAM reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/param.rs
 ---
 
 A PARAM is a numbered table of fixed-width rows. The file names its param type and data version, but does not carry

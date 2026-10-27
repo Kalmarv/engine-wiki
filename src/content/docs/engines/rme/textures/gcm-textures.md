@@ -9,8 +9,8 @@ sources:
     url: https://registry.khronos.org/OpenGL/extensions/NV/NV_texture_compression_vtc.txt
     note: the layout of block-compressed volume textures
 implementations:
-  - name: primase worlds/shred (texture.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/texture.rs
+  - name: rme-formats (texture.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/texture.rs
   - name: primase toolkit/texcodec (gcm.rs)
     url: https://github.com/Kalmarv/primase/blob/main/toolkit/texcodec/src/gcm.rs
 ---

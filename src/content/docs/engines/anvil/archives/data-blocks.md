@@ -10,8 +10,8 @@ sources:
     url: https://github.com/dataterminals/grb-modding-knowledgebase
     note: Community documentation and readers.
 implementations:
-  - name: "primase worlds/anvil (data.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/data.rs
+  - name: "anvil-formats (data.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/data.rs
 ---
 
 An ordinary Riders Republic entry contains two consecutive blocks: metadata decoding to 16 bytes, then a resource block. `GlobalMetaFile` is an exception without block magic. This framing is checked on real Mesh resources and a three-chunk CompiledMip. :observed{games="riders-republic"}

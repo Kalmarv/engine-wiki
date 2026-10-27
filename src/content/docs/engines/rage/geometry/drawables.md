@@ -7,8 +7,8 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: Drawable, DrawableModel, DrawableGeometry and Gen9 vertex-buffer descriptions.
 implementations:
-  - name: primase worlds/gta (drawable.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/drawable.rs
+  - name: rage-engine-formats (drawable.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/drawable.rs
 ---
 
 A drawable combines geometry, shader references, bounding volumes and an optional skeleton. A YDR holds one drawable;

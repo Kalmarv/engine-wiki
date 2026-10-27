@@ -7,8 +7,8 @@ sources:
     url: https://github.com/JKAnderson/SoulsFormats
     note: Independent MTD reader
 implementations:
-  - name: primase worlds/fromsoft (mtd.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/mtd.rs
+  - name: fromsoft-formats (mtd.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/mtd.rs
 ---
 
 MTD defines a material's shader, description, typed parameters and texture declarations. Sekiro groups these

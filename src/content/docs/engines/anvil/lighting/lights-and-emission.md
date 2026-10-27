@@ -3,8 +3,8 @@ title: Lights and emissive fixtures
 description: WhiteRoom spotlights, managed light references, open-world emissive geometry and intensity limits.
 games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
-  - name: primase Anvil light reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/light.rs
+  - name: anvil-formats Anvil light reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/light.rs
 ---
 
 Riders Republic separates punctual light objects from emissive surfaces. The six installed forges contain 32 SpotLight resources and 32 corresponding LightInstance entities, all in WhiteRoom, counting base and patch copies. Open-world lamp fixtures instead use emissive materials; the examined open-world resource and entity scans find no punctual-light objects of the known light classes. :proven[all six forge indexes and all Entity/EntityGroup class scans]

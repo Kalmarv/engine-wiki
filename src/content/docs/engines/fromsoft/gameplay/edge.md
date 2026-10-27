@@ -3,8 +3,8 @@ title: EDGE traversal data
 description: Sekiro grapple points, hang segments and wall-hug records.
 games: [sekiro]
 implementations:
-  - name: primase EDGE reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/edge.rs
+  - name: fromsoft-formats EDGE reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/edge.rs
 ---
 
 Sekiro EDGE data describes grapple points, hang segments and wall-hug segments separately from render meshes and

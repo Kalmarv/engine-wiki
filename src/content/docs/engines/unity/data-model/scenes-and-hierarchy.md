@@ -7,8 +7,8 @@ sources:
     url: https://docs.unity3d.com/Manual/GameObjects.html
     note: the hierarchy and component model
 implementations:
-  - name: primase worlds/unity (read/scene.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/scene.rs
+  - name: unity-formats (scene.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/scene.rs
   - name: primase worlds/unity (read/level.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/level.rs
 ---

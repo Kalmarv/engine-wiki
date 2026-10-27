@@ -5,8 +5,8 @@ sources:
   - title: SoulsFormatsNEXT BTL
     url: https://github.com/soulsmods/SoulsFormatsNEXT/blob/master/SoulsFormats/Formats/BTL.cs
 implementations:
-  - name: primase BTL reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/btl.rs
+  - name: fromsoft-formats BTL reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/btl.rs
 ---
 
 BTL banks store named point, spot and directional lights, with separate diffuse and specular colours and powers.

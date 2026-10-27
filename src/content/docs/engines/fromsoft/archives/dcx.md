@@ -12,8 +12,8 @@ sources:
     url: https://github.com/lvlvllvlvllvlvl/oozextract
     note: an open-source Kraken decoder
 implementations:
-  - name: primase worlds/fromsoft (read/dcx.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/read/dcx.rs
+  - name: fromsoft-formats (dcx.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/dcx.rs
 ---
 
 Most files inside the [archives](/engines/fromsoft/archives/bhd5-bdt/) are wrapped in a **DCX envelope**: a fixed

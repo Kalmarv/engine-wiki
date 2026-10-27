@@ -2,8 +2,8 @@
 title: Placements and matrices
 description: "How a level puts meshes in the world: the 48-byte placement records of an SCP, the 64-byte matrices they point at, instancing, and the mirror matrices."
 implementations:
-  - name: primase worlds/shred (scene.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scene.rs
+  - name: rme-formats (scene.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/scene.rs
 ---
 
 A level's meshes live in its [model library](/engines/rme/geometry/model-quartets/) with their own local coordinates; the **SCP** of the same quartet says where each is placed. The first table of the SCP is a list of

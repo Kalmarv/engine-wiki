@@ -3,8 +3,8 @@ title: Water surfaces, rivers and lakes
 description: FakeWater stand-ins, river meshes, lake patches, atlas channels and depth-dependent water shading.
 games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
-  - name: primase Anvil lake reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/water.rs
+  - name: anvil-formats Anvil lake reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/water.rs
 ---
 
 Riders Republic uses three distinct water geometries: distant FakeWater boxes or half-float meshes, ordinary river/waterfall meshes, and lake surfaces generated from stored quadtree patches. Their data is not interchangeable with one generic water Material. :observed[component, mesh and shader joins]

@@ -7,8 +7,8 @@ sources:
   - title: SoulsFormatsNEXT MSB
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats/MSB
 implementations:
-  - name: primase collision metadata
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/collision.rs
+  - name: fromsoft-formats collision metadata
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/collision.rs
 ---
 
 Water-related collision surfaces have HitMtrlParam classes separate from the materials drawing water. Sekiro's

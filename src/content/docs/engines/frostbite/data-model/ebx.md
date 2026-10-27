@@ -6,8 +6,8 @@ sources:
   - title: ReSkate EBX reader and writer
     url: https://github.com/Dingo-Shenanigans/ReSkate/tree/main/Engine/Resource
 implementations:
-  - name: primase worlds/frostbite (ebx)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/ebx/mod.rs
+  - name: frostbite-formats (ebx/mod.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/ebx/mod.rs
 ---
 
 EBX documents store typed objects: level entities, blueprints, texture assets, mesh assets and configuration.

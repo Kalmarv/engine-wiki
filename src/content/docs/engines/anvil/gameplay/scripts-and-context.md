@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (entity.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/entity.rs
+  - name: "anvil-formats (entity.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/entity.rs
 ---
 
 Gameplay components share Entity ownership and resource references with visuals, but contain separate scripting, crowd and condition structures. DominoComponent stores a script instance and typed parameters; BulkComponent describes crowds; GameplayContextDisablerComponent stores a recursive condition tree. :observed

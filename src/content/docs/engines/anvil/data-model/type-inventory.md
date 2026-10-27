@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (listing.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/listing.rs
+  - name: "anvil-formats (listing.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/listing.rs
 ---
 
 The six archive name tables contain **1,301,684 stored entries and 905 distinct type ids**. Summing each type across archives and each archive across types reproduces those totals. Every header and table of all six installed forges reads without refusals. Base/patch copies and null/meta entries are included; these are not unique live resources. :proven

@@ -7,8 +7,8 @@ sources:
   - title: Smithbox
     url: https://github.com/vawser/Smithbox
 implementations:
-  - name: primase Havok animation container
-    url: https://github.com/Kalmarv/primase/blob/main/toolkit/havok/src/animation.rs
+  - name: havok-formats Havok animation container
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/animation.rs
 ---
 
 Animation binders contain Havok `hkaAnimationContainer` tagfiles: skeletons, animations and bindings specifying the

@@ -7,8 +7,8 @@ sources:
   - title: SoulsFormatsNEXT EMEVD
     url: https://github.com/soulsmods/SoulsFormatsNEXT
 implementations:
-  - name: primase EMEVD reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/emevd.rs
+  - name: fromsoft-formats EMEVD reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/emevd.rs
 ---
 
 EMEVD files store numbered events as instructions: an instruction bank and ID, raw argument bytes and an optional

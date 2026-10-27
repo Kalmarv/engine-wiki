@@ -10,8 +10,8 @@ sources:
     url: https://github.com/AssetRipper/AssetRipper
     note: documents the container versions and publishes the type tree package (TPK)
 implementations:
-  - name: primase worlds/unity (read/serialized.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/serialized.rs
+  - name: unity-formats (serialized.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/serialized.rs
 ---
 
 A Unity player keeps its scenes and assets in **SerializedFiles**: one container format for `globalgamemanagers`,

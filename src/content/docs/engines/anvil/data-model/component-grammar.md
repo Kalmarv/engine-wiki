@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (entity.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/entity.rs
+  - name: "anvil-formats (entity.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/entity.rs
 ---
 
 Component headers do not store a universal body size. Each class requires its own grammar; where that grammar is unknown, header recognition can retain bytes without establishing their fields. All lengths here exclude the 13-byte component header. :observed

@@ -6,8 +6,8 @@ sources:
   - title: ReSkate texture reader
     url: https://github.com/Dingo-Shenanigans/ReSkate/blob/main/Engine/Resource/texture.cpp
 implementations:
-  - name: primase worlds/frostbite (texture.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/texture.rs
+  - name: frostbite-formats (texture.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/texture.rs
 ---
 
 A Texture resource (`0x6bde20ba`) supplies dimensions, format and mip sizes; its pixels live in the chunk named

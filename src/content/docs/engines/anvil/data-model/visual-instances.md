@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (entity.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/entity.rs
+  - name: "anvil-formats (entity.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/entity.rs
 ---
 
 A Visual names a graphic object and its instance data. The common path is Visual → LODSelectorInstance → MeshInstanceData; direct MeshInstanceData also occurs. Five instance slots align to five selector descriptors in all 2,839 sampled selector instances. :observed

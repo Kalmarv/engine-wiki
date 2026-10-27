@@ -3,8 +3,8 @@ title: Resource identity and name hashes
 description: The distinct identities used by manifests, mesh caches, texture streaming and material depots.
 games: [skate]
 implementations:
-  - name: primase worlds/frostbite (bundle.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/bundle.rs
+  - name: frostbite-formats (bundle.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/bundle.rs
 ---
 
 Frostbite uses different keys for different registries. Equality in one registry does not imply equality in the

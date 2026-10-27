@@ -7,8 +7,8 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: Gen9 shader reader and ShadersGen9Conversion.xml.
 implementations:
-  - name: primase worlds/gta (drawable.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/drawable.rs
+  - name: rage-engine-formats (drawable.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/drawable.rs
 ---
 
 A drawable's shader group owns shader records and can embed a texture dictionary. Each shader names an effect by

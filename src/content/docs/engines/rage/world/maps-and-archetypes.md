@@ -10,8 +10,8 @@ sources:
     url: https://github.com/RatPrez/ragekit
     note: interior rotation checked against the game's interior proxies
 implementations:
-  - name: primase worlds/gta (map.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/map.rs
+  - name: rage-engine-formats (map.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/map.rs
 ---
 
 A YMAP places entities; a YTYP defines the archetypes those entities name. Both are

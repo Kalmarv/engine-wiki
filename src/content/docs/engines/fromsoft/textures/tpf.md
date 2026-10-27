@@ -9,8 +9,8 @@ sources:
     url: https://github.com/iOrange/bcdec
     note: Independent BC pixel decoder
 implementations:
-  - name: primase worlds/fromsoft (tpf.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/tpf.rs
+  - name: fromsoft-formats (tpf.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/tpf.rs
 ---
 
 PC TPF packages contain named DDS payloads, including their mip chains and any cubemap faces or volume slices.

@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (shape.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/shape.rs
+  - name: "anvil-formats (shape.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/shape.rs
 ---
 
 CollisionMaterial (`0x74F7311D`) identifies a physical surface, separately from render Material. Its 778-byte profile contains a debug color, ContactType, reaction and fluid references and collision filters. Every one of the 263 resources in all six installed archives is exactly 778 bytes and is byte-accounted by this profile; no body is excluded. :proven

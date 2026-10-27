@@ -3,8 +3,8 @@ title: Grass library and terrain selection
 description: Grass models, rule groups, material fallbacks, terrain overrides and runtime instance generation.
 games: [riders-republic]
 implementations:
-  - name: primase Anvil grass reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/grass.rs
+  - name: anvil-formats Anvil grass reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/grass.rs
 ---
 
 Grass and low clutter use a world-level library and terrain rules. The stored chain supplies models, group choices, densities and scale ranges; it does not supply the resulting per-plant position list. Exact runtime scattering remains unresolved. :observed[stored library and model bodies] :unknown[scatter producer]

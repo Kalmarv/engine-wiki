@@ -12,8 +12,8 @@ sources:
     url: https://github.com/citizenfx/fivem
     note: composite child count
 implementations:
-  - name: primase worlds/gta (bounds.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/bounds.rs
+  - name: rage-engine-formats (bounds.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/bounds.rs
   - name: primase worlds/gta (collision.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/collision.rs
 ---

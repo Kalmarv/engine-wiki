@@ -7,8 +7,8 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: LightAttributes record names and bone-placement reference.
 implementations:
-  - name: primase worlds/gta (drawable.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/drawable.rs
+  - name: rage-engine-formats (drawable.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/drawable.rs
 ---
 
 Drawables and fragments carry authored light lists. Records distinguish point (1), spot (2) and capsule (4) lights

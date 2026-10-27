@@ -3,8 +3,8 @@ title: Mesh LOD levels
 description: Five-level selectors, dependency-backed mesh references and multiple LOD ranges inside a mesh.
 games: [riders-republic]
 implementations:
-  - name: primase Anvil LOD reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/lod.rs
+  - name: anvil-formats Anvil LOD reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/lod.rs
 ---
 
 A **LODSelector** holds five descriptors selecting meshes as viewing distance changes. Grass can instead store three LOD ranges inside one mesh, so a primitive range is not always a different surface material. :observed

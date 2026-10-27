@@ -7,10 +7,10 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: GameFileCache provides a reference mount implementation, including its patchday27ng exception.
 implementations:
-  - name: primase worlds/gta (archive_set.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/archive/archive_set.rs
-  - name: primase worlds/gta (mount.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/mount.rs
+  - name: rage-engine-formats (archive/archive_set.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/archive/archive_set.rs
+  - name: rage-engine-formats (mount.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/mount.rs
 ---
 
 Mount data selects which copies of files participate in the world. Enumerating every physical archive includes

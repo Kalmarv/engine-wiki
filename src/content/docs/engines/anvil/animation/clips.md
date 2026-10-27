@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (animation.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/animation.rs
+  - name: "anvil-formats (animation.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/animation.rs
 ---
 
 Animation (`0x0FA3067F`) stores clip metadata, bone-name mappings and keyframe tracks. The complete track enumeration across DataPC, DataPC patch, USNAT, USNAT patch and base WhiteRoom contains 9,087 clips, 1,396,592 tracks and 25,241,022 keys; every clip's track framing consumes exactly to its body end. Event payloads remain opaque and use a following-object anchor, so this is complete track framing rather than complete event decoding. :observed[five archives]

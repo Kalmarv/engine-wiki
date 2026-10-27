@@ -10,10 +10,10 @@ sources:
     url: https://github.com/K0lb3/UnityPy
     note: typetree decoding and the TPK reader it ships (resources/lzma.tpk)
 implementations:
-  - name: primase worlds/unity (read/typetree.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/typetree.rs
-  - name: primase worlds/unity (read/tpk.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/tpk.rs
+  - name: unity-formats (typetree.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/typetree.rs
+  - name: unity-formats (tpk.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/tpk.rs
 ---
 
 An object in a [serialized file](/engines/unity/archives/serialized-files/) is a run of bytes whose layout is given by its

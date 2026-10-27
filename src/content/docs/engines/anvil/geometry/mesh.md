@@ -6,8 +6,8 @@ sources:
   - title: GRB modding reference
     url: https://github.com/dataterminals/grb-modding-knowledgebase/blob/main/docs/10-meshes-and-skeletons.md
 implementations:
-  - name: primase Anvil mesh reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/mesh.rs
+  - name: anvil-formats Anvil mesh reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/mesh.rs
 ---
 
 A **Mesh** holds compiled vertex streams, triangle indices, primitive partitions and material references. Riders Republic has ranged and inline compiled layouts; the latter can contain several objects sharing buffers. :observed{games="riders-republic"}

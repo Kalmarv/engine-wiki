@@ -3,8 +3,8 @@ title: Terrain materials and splatting
 description: Material banks, procedural sets, raster-driven blending, detail normals, altitude ramps and steep surfaces.
 games: [riders-republic]
 implementations:
-  - name: primase Anvil terrain material reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/terrain_material.rs
+  - name: anvil-formats Anvil terrain material reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/terrain_material.rs
 ---
 
 Terrain colour combines a material-ID raster with repeating detail images, altitude ramps, baked far colour and occlusion. TerrainMaterialBank supplies the ordered material list indexed by block 2 of each node. :observed[bank, node loader and shaders]

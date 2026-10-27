@@ -7,8 +7,8 @@ sources:
     url: https://github.com/soulsmods/SoulsFormatsNEXT/blob/master/SoulsFormats/Formats/MATBIN.cs
     note: Independent material binary reader
 implementations:
-  - name: primase worlds/fromsoft (matbin.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/matbin.rs
+  - name: fromsoft-formats (matbin.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/matbin.rs
 ---
 
 MATBIN stores the shader source path, material source path, parameters and samplers behind a FLVER material's

@@ -2,10 +2,10 @@
 title: MAIN.DB and the other databases
 description: "The SQLite 3 databases of the game's database folder: the 142 tables of MAIN.DB (levels, sessions, goals, tasks, drop spots, surfaces, tricks, actors) and the tables other pages join on."
 implementations:
-  - name: primase toolkit/sqlite
-    url: https://github.com/Kalmarv/primase/tree/main/toolkit/sqlite
-  - name: primase worlds/shred (manifest.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/manifest.rs
+  - name: rme-formats (database.rs)
+    url: https://github.com/Kalmarv/rme-formats/tree/main/src/database.rs
+  - name: rme-formats (manifest.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/manifest.rs
 ---
 
 Gameplay data is not in the PAKs but in **SQLite 3** databases, in the `database` folder of the disc: `main.db` (1,307,648 bytes, 142 tables), `ui.db` (3 tables) and 25 localised text databases of one table each: `ui_frontend`, `ui_ingame`, `ui_sessions`,

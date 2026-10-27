@@ -12,8 +12,8 @@ sources:
     url: https://github.com/VIRUXE/rage-formats
     note: content flag names
 implementations:
-  - name: primase worlds/gta (map.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/map.rs
+  - name: rage-engine-formats (map.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/map.rs
 ---
 
 World LOD links placed entities across map files. An entity's `parentIndex` indexes the parent map's entity array;

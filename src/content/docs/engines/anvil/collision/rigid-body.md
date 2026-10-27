@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (entity.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/entity.rs
+  - name: "anvil-formats (entity.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/entity.rs
 ---
 
 RigidBodyComponent (`0xC177D702`) attaches a shape through an owned RigidBody. The shape reference starts at component-body offset 748 in the checked profile and resolves to triangle, primitive or compound shapes. Registry names identify drive and character-interaction flags separately from filtering. :observed

@@ -3,10 +3,10 @@ title: Sky, atmosphere and time of day
 description: The season-to-sky chain, authored controllers, hourly scattering tables, clouds and stars.
 games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
-  - name: primase Anvil sky reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/sky.rs
-  - name: primase Anvil controller reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/controller.rs
+  - name: anvil-formats Anvil sky reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/sky.rs
+  - name: anvil-formats Anvil controller reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/controller.rs
 ---
 
 The visible sky is evaluated from precomputed scattering data and controller values, rather than being one stored sky image. Event presets choose a season/look, weather preset and hour; the season connects time-of-day and weather controllers to WorldAmbiance and LayeredSky. :observed[resource references and sky program]

@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (gidyn.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/gidyn.rs
+  - name: "anvil-formats (gidyn.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/gidyn.rs
 ---
 
 GIDynResource (`0xBAE98B30`) belongs to a World and a cell. GridCellDataBlocks list one per USNAT ShortRange finest cell in the checked 16,384-cell population. The one-volume, one-box body profile is validated on 418 offline bodies; its four encoded streams are distinct from render geometry. :observed

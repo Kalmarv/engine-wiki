@@ -3,8 +3,8 @@ title: Native DB object trees
 description: Tagged binary trees used by layout.toc and bundle chunk metadata.
 games: [skate]
 implementations:
-  - name: primase worlds/frostbite (db.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/db.rs
+  - name: frostbite-formats (db.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/db.rs
 ---
 
 Frostbite's native DB stores named or unnamed values in lists and objects. It carries the install manifest in

@@ -3,8 +3,8 @@ title: Global illumination and environment data
 description: Dynamic surfel GI, probe positions, world transfer maps and ambiance environment cubemaps.
 games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
-  - name: primase Anvil GI reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/gidyn.rs
+  - name: anvil-formats Anvil GI reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/gidyn.rs
 ---
 
 GIDynResource describes the geometry and visibility inputs for dynamic global illumination, rather than a ready-to-display set of baked probe colours. Its update shaders relight surface samples and accumulate probe radiance. :observed[GI update shader disassembly] :inferred[complete relighting interpretation]

@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (entity.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/entity.rs
+  - name: "anvil-formats (entity.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/entity.rs
 ---
 
 An Entity combines placement, components, bounds, layer actions and optional reset data. EntityGroup adds a member list to that same prefix. The structural census reads all 615,110 Entity and 56,837 EntityGroup records when bodies without length rules are retained between recognized headers. This measures framing coverage, not complete component interpretation. :observed

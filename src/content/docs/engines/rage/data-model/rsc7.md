@@ -7,8 +7,8 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: ResourceData and RpfResourcePageFlags describe the resource envelope.
 implementations:
-  - name: primase worlds/gta (resource.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/resource.rs
+  - name: rage-engine-formats (resource.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/resource.rs
 ---
 
 RSC7 wraps a typed resource in raw DEFLATE and two page descriptions. The decoded body contains system pages first,

@@ -14,7 +14,7 @@ sources:
     url: https://github.com/theawesomecoder61/Blacksmith
 implementations:
   - name: "primase worlds/anvil (component_types.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/component_types.rs
+    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/components/component_types.rs
 ---
 
 The inspected runtime image contains class-registration strings and field metadata absent from the packed executable's disk image. A registration string whose CRC-32 matches the id corroborates a class name; an arbitrary matching word does not. :observed

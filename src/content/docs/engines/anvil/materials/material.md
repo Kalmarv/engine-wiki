@@ -3,10 +3,10 @@ title: Material and TextureSet
 description: Material property envelopes, texture selectors, template descriptors and binding records.
 games: [riders-republic, "shaun-white-skateboarding"]
 implementations:
-  - name: primase Anvil material reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/material.rs
-  - name: primase Anvil template reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/template.rs
+  - name: anvil-formats Anvil material reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/material.rs
+  - name: anvil-formats Anvil template reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/template.rs
 ---
 
 A **Material** links a shader template to a TextureSet and overrides typed properties. A **TextureSet** supplies an ordered table of 19 texture references. The binding index in a shader is different from the TextureSet slot used to resolve its image. :proven[13,579 Materials and 10,027 TextureSets, including patch copies]

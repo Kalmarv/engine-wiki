@@ -2,8 +2,8 @@
 title: Splines
 description: "The polylines of the SCP blob: the five spline classes (probable grind rails, guide and camera ribbons, AI paths, the navigation layer's paths, short paths), the 56-byte record, the surface id, and how spline ids are named."
 implementations:
-  - name: primase worlds/shred (scp_splines.rs, names.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scp_splines.rs
+  - name: rme-formats (scp_splines.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/scp_splines.rs
 ---
 
 A level carries thousands of **splines**, each a list of points in the level's own space. There are five classes, told apart by the **type** of the [blob section](/engines/rme/world/scp-tables/) that holds them: the engine registers the section types 0, 1, 9, `a` and `c` with one spline manager that keeps five classes of up to 1,000 records of 56 bytes each, and the type is the class (0 to 4 in the order below). The disc has **33,575** splines in 231 sections. :proven[all 547 SCPs]

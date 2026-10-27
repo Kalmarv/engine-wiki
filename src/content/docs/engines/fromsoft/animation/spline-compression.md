@@ -7,8 +7,8 @@ sources:
   - title: HavokLib
     url: https://github.com/PredatorCZ/HavokLib
 implementations:
-  - name: primase spline reader and sampler
-    url: https://github.com/Kalmarv/primase/blob/main/toolkit/havok/src/spline.rs
+  - name: havok-formats spline reader and sampler
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/spline.rs
 ---
 
 `hkaSplineCompressedAnimation` stores transform tracks in aligned blocks, with static, absent and spline-valued

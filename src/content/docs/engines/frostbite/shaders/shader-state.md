@@ -6,12 +6,12 @@ sources:
   - title: ReSkate shader lookup
     url: https://github.com/Dingo-Shenanigans/ReSkate/blob/main/Engine/Resource/shader_lookup.cpp
 implementations:
-  - name: primase worlds/frostbite (lookup.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/lookup.rs
-  - name: primase worlds/frostbite (selector.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/selector.rs
-  - name: primase worlds/frostbite (permutation.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/permutation.rs
+  - name: frostbite-formats (lookup.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/lookup.rs
+  - name: frostbite-formats (selector.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/selector.rs
+  - name: frostbite-formats (permutation.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/permutation.rs
 ---
 
 A section's material key joins three kinds of data: a parameter block in a loaded depot, a program-index row in

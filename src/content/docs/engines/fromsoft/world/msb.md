@@ -5,8 +5,8 @@ sources:
   - title: SoulsFormatsNEXT MSB
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats/MSB
 implementations:
-  - name: primase MSB reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/msb.rs
+  - name: fromsoft-formats MSB reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/msb.rs
 ---
 
 An **MSB** describes a map's models and their occurrences, regions and events. A model entry names a resource; a

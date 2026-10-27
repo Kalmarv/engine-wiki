@@ -6,8 +6,8 @@ sources:
     url: https://github.com/RPCS3/rpcs3
     note: the CgBinaryProgram container and a fragment-microcode disassembler (commit 979a524) used as the independent reading
 implementations:
-  - name: primase toolkit/rsx
-    url: https://github.com/Kalmarv/primase/tree/main/toolkit/rsx
+  - name: dx (rsx-reader)
+    url: https://github.com/Kalmarv/dx/tree/main/rsx-reader
 ---
 
 The game's shaders ship compiled for the PlayStation 3's RSX in the `SHADERS` sections of the [PAKs](/engines/rme/archives/pak/). A [material](/engines/rme/materials/material-banks/) names its vertex and pixel program by path (`shaders\pixel\environment\env_base`, without an extension), and the extension picks the entry: `.vsp` holds vertex programs, `.psp` pixel (fragment) programs and `.shp` the index of a shader's permutations. :observed

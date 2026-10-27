@@ -3,10 +3,10 @@ title: Binding sets and input layouts
 description: Constant-buffer and texture register mappings, vertex inputs and unresolved render-state fields.
 games: [skate]
 implementations:
-  - name: primase worlds/frostbite (binding.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/binding.rs
-  - name: primase worlds/frostbite (inputlayout.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/inputlayout.rs
+  - name: frostbite-formats (binding.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/binding.rs
+  - name: frostbite-formats (inputlayout.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/inputlayout.rs
 ---
 
 Binding sets connect hashed material parameters to constant-buffer offsets and resource indexes. Pass bindings

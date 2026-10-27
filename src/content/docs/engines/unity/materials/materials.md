@@ -10,8 +10,8 @@ sources:
     url: https://unity.com/releases/editor/archive
     note: the downloadable built-in shader source for 2019.4.20f1
 implementations:
-  - name: primase worlds/unity (read/material.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/material.rs
+  - name: unity-formats (material.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/material.rs
 ---
 
 A **Material** (class 21) names a [shader](/engines/unity/shaders/shader-objects/) and stores the values of its properties.

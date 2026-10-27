@@ -6,8 +6,8 @@ sources:
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats/FLVER
     note: FLVER2 record names and reference reader
 implementations:
-  - name: primase worlds/fromsoft (flver)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/flver/mod.rs
+  - name: fromsoft-formats (flver/mod.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/flver/mod.rs
 ---
 
 FLVER2 stores a model's meshes, material references, transform nodes, attachment points and vertex layouts. Meshes

@@ -10,8 +10,8 @@ sources:
     url: https://github.com/dataterminals/grb-modding-knowledgebase
     note: Community documentation and readers.
 implementations:
-  - name: "primase worlds/anvil (data.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/data.rs
+  - name: "anvil-formats (data.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/data.rs
 ---
 
 A resource has a type hash and a 64-bit ClassID. The outer type id and extension word after ClassID agree on the checked resources; type ids are CRC-32 hashes of class-name bytes, for example `Mesh` → `0x415D9568`. A type hash identifies a class, not an individual resource. :observed{games="riders-republic"}

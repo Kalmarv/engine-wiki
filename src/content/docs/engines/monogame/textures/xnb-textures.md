@@ -10,8 +10,8 @@ sources:
     url: https://github.com/MonoGame/MonoGame
     note: the layout of a Texture2D object in an XNB
 implementations:
-  - name: primase worlds/monogame (xnb.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/monogame/src/xnb.rs
+  - name: monogame-formats (xnb.rs)
+    url: https://github.com/Kalmarv/monogame-formats/blob/main/src/xnb.rs
 ---
 
 STUNTBOOST stores its images two ways, both inside [XNB containers](/engines/monogame/archives/xnb-containers/). Neither is

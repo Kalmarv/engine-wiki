@@ -6,8 +6,8 @@ sources:
   - title: ReSkate resource readers
     url: https://github.com/Dingo-Shenanigans/ReSkate/tree/main/Engine/Resource
 implementations:
-  - name: primase worlds/frostbite (meshset.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/meshset.rs
+  - name: frostbite-formats (meshset.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/meshset.rs
 ---
 
 A MeshSet resource (`0x49b156d4`) describes LODs and their material sections. Each LOD names a geometry chunk

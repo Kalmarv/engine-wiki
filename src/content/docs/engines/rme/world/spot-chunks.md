@@ -2,8 +2,8 @@
 title: Spot chunks and spawns
 description: "The typed volumes and points of a level (teleports, attractors, triggers, junctions and more): the 0x200-byte spot chunk, its class hash and shape, and how the database's drop spots name them."
 implementations:
-  - name: primase worlds/shred (scp_tables.rs, manifest.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/scp_tables.rs
+  - name: rme-formats (scp_tables.rs)
+    url: https://github.com/Kalmarv/rme-formats/blob/main/src/scp_tables.rs
 ---
 
 Everything a level places that is not a mesh is a **spot chunk**: a named, typed, transformed point or box: where the skater spawns, where a trigger fires, where the AI changes direction, where a sound plays. They sit in the type-2 sections of the [SCP blob](/engines/rme/world/scp-tables/).

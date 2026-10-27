@@ -10,10 +10,10 @@ sources:
     url: https://github.com/AssetRipper/AssetRipper
     note: documents the serialized shader structures and the GPU program types
 implementations:
-  - name: primase worlds/unity (read/program.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/program.rs
-  - name: primase worlds/unity (shader.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/shader.rs
+  - name: unity-formats (program.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/program.rs
+  - name: unity-formats (shader.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/shader.rs
 ---
 
 A **Shader** (class 48) in a player holds the shader's render state and its compiled programs, in Direct3D 11 bytecode for

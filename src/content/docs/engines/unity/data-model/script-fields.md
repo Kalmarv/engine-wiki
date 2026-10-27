@@ -9,8 +9,8 @@ sources:
 implementations:
   - name: primase worlds/skatebird (read/scripts.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/skatebird/src/read/scripts.rs
-  - name: primase worlds/unity (read/pipeline.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/pipeline.rs
+  - name: unity-formats (pipeline.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/pipeline.rs
 ---
 
 A game's own components are **MonoBehaviours** (class id 114). Their [type tree](/engines/unity/data-model/type-trees/)

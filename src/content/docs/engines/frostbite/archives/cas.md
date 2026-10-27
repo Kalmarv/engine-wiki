@@ -6,8 +6,8 @@ sources:
   - title: ReSkate CAS implementation
     url: https://github.com/Dingo-Shenanigans/ReSkate/tree/main/Engine/Resource
 implementations:
-  - name: primase worlds/frostbite (cas.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/frostbite/src/cas.rs
+  - name: frostbite-formats (cas.rs)
+    url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/cas.rs
 ---
 
 An asset's CAS range is a sequence of eight-byte headers and exactly sized payloads. Concatenating the decoded

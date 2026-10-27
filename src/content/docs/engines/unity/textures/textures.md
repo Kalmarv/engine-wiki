@@ -13,8 +13,8 @@ sources:
     url: https://github.com/K0lb3/UnityPy
     note: reader used as the independent decoder
 implementations:
-  - name: primase worlds/unity (read/texture.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/texture.rs
+  - name: unity-formats (texture.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/texture.rs
 ---
 
 A **Texture2D** (class 28) stores a width, height, a pixel format, a chain of mip levels and the sampler settings the

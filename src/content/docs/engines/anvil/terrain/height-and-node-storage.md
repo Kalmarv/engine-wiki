@@ -3,12 +3,12 @@ title: Terrain height and node storage
 description: FloorHeightData, the terrain quadtree, TNL block coding and detailed height samples.
 games: [riders-republic]
 implementations:
-  - name: primase Anvil floor reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/floor.rs
-  - name: primase Anvil node reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/tnl.rs
-  - name: primase Anvil terrain block decoder
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/tnl_code.rs
+  - name: anvil-formats Anvil floor reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/floor.rs
+  - name: anvil-formats Anvil node reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/tnl.rs
+  - name: anvil-formats Anvil terrain block decoder
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/tnl_code.rs
 ---
 
 The open world's ground has two representations: a whole-world FloorHeightData grid and detailed TNLChunk tiles addressed by TerrainNodeLayer. The detailed tiles include heights, colour, material IDs and other terrain rasters. :observed

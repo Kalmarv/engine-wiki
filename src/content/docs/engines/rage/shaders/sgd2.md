@@ -7,12 +7,12 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: ShadersGen9Conversion.xml supplies a reference mapping of material parameter names.
 implementations:
-  - name: primase worlds/gta (sgd2.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/sgd2.rs
-  - name: primase worlds/gta (sgd2_effect.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/sgd2_effect.rs
-  - name: primase worlds/gta (sgd2_table.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/sgd2_table.rs
+  - name: rage-engine-formats (sgd2.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/sgd2.rs
+  - name: rage-engine-formats (sgd2_effect.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/sgd2_effect.rs
+  - name: rage-engine-formats (sgd2_table.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/sgd2_table.rs
 ---
 
 Enhanced stores compiled programs in `common/shaders/fxdb/sga_win32_60_final.awc` inside `update/update2.rpf`, with an

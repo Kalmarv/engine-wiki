@@ -10,10 +10,10 @@ sources:
     url: https://github.com/RatPrez/ragekit
     note: its format notes, with counts over the game's files
 implementations:
-  - name: primase worlds/gta (ycd.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/ycd.rs
-  - name: primase worlds/gta (ycd_channels.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/ycd_channels.rs
+  - name: rage-engine-formats (ycd.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/ycd.rs
+  - name: rage-engine-formats (ycd_channels.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/ycd_channels.rs
 ---
 
 YCD files are RSC7 version 46 clip dictionaries. They contain animations keyed by hash and named clips that play

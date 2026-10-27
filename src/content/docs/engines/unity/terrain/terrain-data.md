@@ -7,8 +7,8 @@ sources:
     url: https://docs.unity3d.com/ScriptReference/TerrainData.html
     note: GetHeight and the splat and tree structures
 implementations:
-  - name: primase worlds/unity (read/terrain.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/unity/src/read/terrain.rs
+  - name: unity-formats (terrain.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/terrain.rs
 ---
 
 A **Terrain** (class 218) component in a scene points at a **TerrainData** (class 156) in a shared asset file and adds the

@@ -12,8 +12,8 @@ sources:
     url: https://github.com/Nordgaren/UXM-Selective-Unpack
     note: archive lists (EldenRingGameInfo.xml), public keys (ArchiveKeys.cs) and path dictionaries
 implementations:
-  - name: primase worlds/fromsoft (bhd.rs, read/archive.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/bhd.rs
+  - name: fromsoft-formats (bhd.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/bhd.rs
 ---
 
 Almost every file the games load lives in an **archive pair**: a `.bhd` index and a `.bdt` data file of the same name

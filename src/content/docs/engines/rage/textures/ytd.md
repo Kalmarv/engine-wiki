@@ -13,12 +13,12 @@ sources:
     url: https://github.com/VIRUXE/rage-formats
     note: dimension codes
 implementations:
-  - name: primase worlds/gta (texture.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/texture.rs
-  - name: primase worlds/gta (sga.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/rage/sga.rs
-  - name: primase worlds/gta (gtxd.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/gtxd.rs
+  - name: rage-engine-formats (texture.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/texture.rs
+  - name: rage-engine-formats (sga.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/sga.rs
+  - name: rage-engine-formats (gtxd.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/gtxd.rs
 ---
 
 Enhanced YTD resources use version 5. Drawables can embed dictionaries with the same texture representation.

@@ -7,8 +7,8 @@ sources:
     url: https://www.nexusmods.com/ridersrepublic/mods/5
     note: Independent Riders Republic resource reader.
 implementations:
-  - name: "primase worlds/anvil (skeleton.rs)"
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/read/skeleton.rs
+  - name: "anvil-formats (skeleton.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/skeleton.rs
 ---
 
 Skeleton (`0x24AECB7C`) stores a bone hierarchy and local/global transforms. All 1,138 Skeleton resources present in the six-archive inventory consume exactly with the checked grammar, with no refusals; their 54,925 bones are keyed by CRC-32 name hashes, matching [Animation mappings](/engines/anvil/animation/clips/). :proven[grammar coverage] :observed[name mapping]

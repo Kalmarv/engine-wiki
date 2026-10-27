@@ -5,8 +5,8 @@ sources:
   - title: SoulsFormatsNEXT Binder formats
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats
 implementations:
-  - name: primase binder reader
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/read/binder.rs
+  - name: fromsoft-formats binder reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/binder.rs
 ---
 
 A **binder** groups related files: a character's models, an animation set, or a map's collision. BND4 holds the index

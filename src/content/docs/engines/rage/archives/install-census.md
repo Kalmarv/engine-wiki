@@ -7,8 +7,8 @@ sources:
     url: https://github.com/dexyfex/CodeWalker
     note: Independent archive table-of-contents listing used for the recount.
 implementations:
-  - name: primase worlds/gta (archive_set.rs)
-    url: https://github.com/Kalmarv/primase/blob/main/worlds/gta/src/read/archive/archive_set.rs
+  - name: rage-engine-formats (archive/archive_set.rs)
+    url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/archive/archive_set.rs
 ---
 
 The retained PC Enhanced archive listing contains 5,407 unique archive paths, including nested archives. A recount

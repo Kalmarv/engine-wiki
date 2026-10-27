@@ -69,6 +69,13 @@ Over the meshes of Sledding Game's `level1` read by an independent decoder, the 
 552 meshes agree bit for bit, and 74 compressed meshes agree to the quantisation of their packed vectors: the dequantised
 values differ only by the f32 against f64 rounding. :observed{games="sledding"}
 
+That rounding is set by the size of the packed vector's ends, `max(|start|, |start + range|)`, not by the size of the
+decoded value: a value near zero carries the absolute error of the vector's largest end. A tolerance of four f32
+epsilons relative to `max(1, |value|)` refuses 9,552 vertex components near zero; the same tolerance relative to
+`max(1, ends)` accepts all of them. :observed{games="sledding"} A rebuilt normal or tangent `z = sqrt(1 − x² − y²)`
+amplifies that error near `z = 0` (the square root of an error `e` can be as large as `sqrt(e)`); the largest
+difference measured is 3.9 × 10⁻⁴. :observed{games="sledding"}
+
 :::open[Skin weights of compressed meshes]
 A compressed mesh can also hold bone weights (`m_Weights` in the compressed mesh). The readers used here do not decode them,
 and no mesh of the installs measured is known to use them.
@@ -107,3 +114,7 @@ SkateBIRD's playable-level meshes are ProBuilder output and statically batched c
 terrain and no lightmaps, and the playable extent is 200 to 400 m with about 150,000 triangles per level.
 :observed{games="skatebird"} Sledding Game and PEAK use `LODGroup`s ([scenes](/engines/unity/data-model/scenes-and-hierarchy/)).
 :observed{games="sledding peak"}
+
+Sledding Game's `level1` has 626 meshes, 74 of them compressed. All use triangle topology and 16-bit indices, every
+texture coordinate channel is two-dimensional, and normals are stored as four half floats whose fourth is padding.
+One mesh, `fireplace curve`, has no vertices and a single submesh of zero indices. :observed{games="sledding"}

@@ -82,7 +82,19 @@ in model bind space. :observed
 
 In Ashina Castle, map pieces' bones are identity, so their vertices need no bone transform. Objects' rigid bones
 are not: the cannon cart `o114670`, for example, has a bone scale of 0.00937, and its vertices are stored in that
-bone's space. :observed{games="sekiro"}
+bone's space. :observed{games="sekiro"} The vertex's position is usable only after the bone's world transform
+(the node's local transform, composed up through its parents) is applied; read raw, the cannon mesh is about 400 m
+long and stacked straw bags sit at the model origin. :observed{games="sekiro"}
+
+Across Ashina Outskirts (`m11_00`), Ashina Castle (`m11_01`) and Ashina Reservoir (`m11_02`), no map-piece vertex is
+bound to a non-identity bone, while many object placements are of models that have such vertices:
+:observed{games="sekiro"}
+
+| Map | Object placements whose model has vertices on a non-identity bone | Confidence |
+|---|---|---|
+| `m11_00` Ashina Outskirts | 683 of 1,453 | :observed{games="sekiro"} |
+| `m11_01` Ashina Castle | 776 of 1,613 | :observed{games="sekiro"} |
+| `m11_02` Ashina Reservoir | 374 of 773 | :observed{games="sekiro"} |
 
 An empty mesh bone palette means that vertex indices name skeleton joints directly; a nonempty palette supplies
 the local-to-skeleton mapping. :observed Elden Ring's c3000 model has 368 nodes and 49 meshes with empty palettes;

@@ -130,3 +130,26 @@ A prop's collision is an `InertComponent` (`0x0E5A450A`, 150 bytes in 1,561 case
 A `MultiInertComponent` (`0x8BBEEE57`) holds an inline `MultiMeshShape` of parallel arrays: five-byte entity handles (tag 0 and a `u32`) and bare shape ids. The container itself carries an identity matrix in the cell examined; each pair is placed at its contained entity's matrix. The pairing matched on a cell of ten children: the six shapes that resolve locally have exactly the names of their entity's Visual meshes. :observed[one cell of ten children]
 
 Level 01's collision placements number 2,074, of 1,194 unique shape objects with 49 distinct surface ids, and every shape and entity reference resolves. :observed[level 01]
+
+### What has no collision
+
+Collision belongs to an entity through a component (an `InertComponent`, a `MultiInertComponent`, or the class of the kickers below); an entity with only a `Visual` component is drawn and has nothing to stand on. :observed{games="shaun-white-skateboarding"} Large drawn areas are of that kind: level 03's background hills (`03_Island_BG_Ground_01` to `_05b`) are Visual-only, except `_04b`, whose collision is 16 flat triangles; level 06's `06_Ground_Construction_01` covers about 79,000 m² of upward-facing render with no collision; `SW_RoadB` and `SW_RoadC` have none either. :observed{games="shaun-white-skateboarding"} Level 03 has no heightfield or terrain class among the 73 object classes of its forge, and of its 276 distinct MeshShape ids 273 are placed; the other three belong to props. :observed{games="shaun-white-skateboarding"}[level 03]
+
+Sampling every upward-facing render surface on a 2 m grid against the placed collision (a render sample counts as covered when collision lies within 1.2 m) finds uncovered ground in every level. The counts include roofs, ceilings and background cliffs, so they bound the walkable gaps from above. :observed{games="shaun-white-skateboarding"}
+
+| Level | Collision triangles | Upward render samples within 12 m of collision | Uncovered | Confidence |
+|---|---|---|---|---|
+| 01 | 123,102 | 35,219 | 10,244 | :observed{games="shaun-white-skateboarding"} |
+| 02 | 106,174 | 57,257 | 21,756 | :observed{games="shaun-white-skateboarding"} |
+| 03 | 96,361 | 16,055 | 5,726 | :observed{games="shaun-white-skateboarding"} |
+| 04_Stronghold | 15,332 | 5,120 | 1,904 | :observed{games="shaun-white-skateboarding"} |
+| 05 | 134,172 | 32,565 | 15,299 | :observed{games="shaun-white-skateboarding"} |
+| SW | 44,347 | 4,519 | 848 | :observed{games="shaun-white-skateboarding"} |
+
+Kickers, ramp boxes and shaping grinds (`*_InfGP_Kicker_*`, `*_RampBox*`, `ShapingGrind_*`) carry a component of class `0x0873AE87` instead of an `InertComponent`. :observed{games="shaun-white-skateboarding"} That their collision is a free-form hull of class `0xC3120087` is a guess. :inferred{games="shaun-white-skateboarding"}
+
+Level 03 places 19 `00_OutOfBound_Air_Trig_*` slabs (8 × 1 × 10 m) along its district edges. :observed{games="shaun-white-skateboarding"}[level 03] Whether they respawn a player who leaves the collision is not established. :unknown
+
+:::open[Can the player reach the Visual-only ground?]
+Whether the game keeps the player off the uncollided hills and roads, through the out-of-bound triggers or otherwise, is not established.
+:::

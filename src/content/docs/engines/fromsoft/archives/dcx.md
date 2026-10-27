@@ -69,6 +69,13 @@ larger compressed size in its `KRAK` header than its stored payload. :inferred{g
 The game's Oodle library and oozextract decode the Kraken payloads to the same bytes, so a reader does not need the
 game's library where oozextract is available. :observed
 
+A writer that compresses `KRAK` payloads with the games' `oo2core_6` must size its output buffer with that version's
+`OodleLZ_GetCompressedBufferSizeNeeded`, which takes the raw size alone: 65,536 bytes gives 65,810. Oodle 2.9
+(`oo2core_9`) takes the compressor and the raw size (Kraken, 65,536 gives 65,560). :observed Called with the two-argument
+form, the older library reads the compressor id (8 for Kraken) as the raw size and returns the bound for 8 bytes, so the
+output buffer is too small and the compressor writes past it. :observed The one-argument signature for versions 5
+and 6 is also SoulsFormats'. :sourced[SoulsFormats]
+
 The decoded size in the header is the allocation a reader must make before decoding, and it can be large: Elden Ring's
 shader binder `/shader/shaderbdle.shaderbdlebnd.dcx` decodes to about 676 MB.
 :observed{games="elden-ring"}

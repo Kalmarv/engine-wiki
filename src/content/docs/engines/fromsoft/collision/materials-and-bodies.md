@@ -96,7 +96,9 @@ than 75°. :observed{games="sekiro"}
 
 :only[sekiro] An object binder can hold `<object>.hkx` and a broken-state `<object>_1.hkx`. Examined bodies include
 compressed meshes, `hknpBoxShape`, `hknpConvexPolytopeShape` and `hknpCapsuleShape`; body poses are in object space.
-In Ashina Castle, 207 of 222 object models have their own collision. :observed{games="sekiro"}
+In Ashina Castle, 207 of 222 object models have their own collision. :observed{games="sekiro"} The object-space
+collision lines up with the object's render mesh only once the render vertices are placed by their
+[rigid bones](/engines/fromsoft/geometry/nodes-and-skinning/#rigid-and-dynamic-data). :observed{games="sekiro"}
 
 Independent Havoc comparisons cover the sampled Sekiro bodies' names, motion values, poses, convex-core fields and
 capsule segments bit for bit. They do not independently validate decoded compressed-mesh triangles or their material

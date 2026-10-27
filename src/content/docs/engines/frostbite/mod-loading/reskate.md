@@ -57,6 +57,8 @@ Later sizing uses free memory, with further changes after 2.1.0 accounting for t
 The layer catalogue is scanned from game Data rather than mod content. BAM-family loads request Noon, then
 the loader applies the saved world-layer choice on its 250-ms poll. An unload request while the layer is still
 requested but not yet loaded is ignored by the engine. :observed
+At the boot load of San Vansterdam, a loader that unloads Noon without waiting for it to finish loading leaves Noon
+loaded beside the saved Afternoon in 7 of 10 launches. :observed
 
 The inspected dedicated-server `tod` command matches keys containing `_tod_`, including quality-tier ToD layers
 as well as the seven main ToD layers. :sourced[ReSkate]

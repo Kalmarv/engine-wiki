@@ -32,6 +32,19 @@ fields:
 
 Studio output uses Oodle CAS blocks. A block's codec is independent of its asset's resource type. :observed
 
+## Stock data
+
+The stock game Data has 23 TOCs over 72 CAS files. Following exactly the chunk and bundle-asset ranges the TOCs
+index, its CAS files hold 999,764 distinct physical blocks: 153,945 with codec `0` and 845,819 with codec `0x11`. No
+indexed block uses `2`, `0x15`, `0x19` or any other codec. :proven[every block the TOCs index; headers read, a sample decoded]
+No `0x11` block's payload is the same length as its decoded block, so the stock data shows no compressed block
+that falls back to stored bytes at equal size. :observed That some blocks are stored with codec `0` does not
+show when the producer chooses to store. :inferred
+
+The bundle manifests that live in CAS files (6,056 of them) are stored raw, without block headers; reading them
+as CAS frames misreads them. :observed Gaps and padding between indexed ranges are not blocks. 30,293,670 bytes of
+the CAS files lie outside every indexed asset and manifest range, so the codec census does not cover them. :observed
+
 :::open[Which dictionary and flag variants occur in stock data?]
 The dictionary byte's nonzero forms and the upper flags nibble have no established interpretation here.
 The measured framing does not establish support for every Frostbite CAS codec. :unknown

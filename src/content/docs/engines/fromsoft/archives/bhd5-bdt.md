@@ -41,6 +41,9 @@ Elden Ring's list, and which of its pairs may be absent, is the one UXM's `Elden
 the whole install. :observed
 
 Sekiro's five indexes list 8,765 files, of which UXM's path dictionary names 8,752. :proven{games="sekiro"}
+Elden Ring's six installed indexes list 97,118 files (5,878 in `Data0`, 39,419 in `Data1`, 39,684 in `Data2`, 1,672 in
+`Data3`, 8,650 in `sd/sd` and 1,815 in `sd/sd_dlc02`); UXM's dictionary names 97,045 of them and a community file
+dictionary for the game names all 97,118. :proven{games="elden-ring"}
 `Data5` holds the map files: its salt is `NTC_map` and its index lists 5,449 of them. :observed{games="sekiro"}
 
 ## The index is wrapped in RSA
@@ -84,8 +87,10 @@ fields:
   - {at: 4, size: 4, type: u32, name: file records offset, level: proven, note: "`file count` records of 40 bytes each"}
 ```
 
-That a path's bucket is its hash modulo the bucket count is how SoulsFormats looks files up; reading every record of
-every bucket finds the same files either way. :sourced[SoulsFormats]
+A path's bucket is its hash modulo the bucket count: it holds for every record of every bucket, 8,765 in Sekiro's five
+indexes and 97,118 in Elden Ring's six, so a lookup can read one bucket. :proven[every entry of both installs, Elden Ring
+without the `DLC` pair] The bucket counts are 173, 23, 83, 199 and 787 in Sekiro's `Data1` to `Data5`, and 839, 5,639,
+5,669, 239, 1,237 and 263 in Elden Ring's `Data0` to `Data3`, `sd/sd` and `sd/sd_dlc02`. :proven[every index]
 
 ### The file record
 
@@ -120,6 +125,17 @@ fields:
 ```
 
 Within one index no hash appears twice. :proven
+
+The unpadded size is zero for most entries: for 7,851 of Sekiro's 8,765 and 71,332 of Elden Ring's 97,118 (every entry of
+Sekiro's `Data2` and `Data4` and of Elden Ring's `Data1` and `Data3`, none of Elden Ring's `sd` pairs). Where it is stored, the padded size is it rounded up to 16 bytes,
+except for 82 Sekiro entries and 6 Elden Ring ones. :proven[every entry of both installs, Elden Ring without
+the `DLC` pair] The padded size is therefore the size to read, and "never more than the padded size" is all the stored
+value guarantees. :proven
+
+Within a pair the entries tile the `.bdt` file: ordered by data offset, each starts where the previous one ends, with no
+gap and no overlap, and the first starts at offset 0. :proven[all 11 pairs] A `.bdt` has no header of its own: its first
+bytes are its first entry's bytes (a DCX envelope in Sekiro's `Data1` and Elden Ring's `Data2`, ciphertext in the pairs
+whose first entry is encrypted). :proven[all 11 pairs]
 
 ### Hash and key tables
 

@@ -66,6 +66,66 @@ Compressed members contain either zlib data or a DCX envelope. A decoded member 
 compression and an inner envelope are distinct. :observed Names are NUL-terminated UTF-16 when the Unicode flag is
 set; the non-Unicode form is a narrow string. :sourced[SoulsFormatsNEXT]
 
+### Format bytes and member flags in the installs
+
+Walking every binder at any depth in the archives (Sekiro's 7,935 BND4 and BHF4 files, Elden Ring's 55,718) finds
+three format bytes, and one member flag value. :proven[both archive sets, Elden Ring without the `DLC` pair]
+
+| Format byte as stored | After bit-order normalization | Record size | Sekiro | Elden Ring |
+|---|---|---:|---:|---:|
+| `0x74` | `0x2E`: IDs, names, decoded size, 32-bit offsets | 36 | 7,928 (7,852 BND4, 76 BHF4) | 53,584 (51,588 BND4, 1,996 BHF4) |
+| `0x54` | `0x2A`: IDs, one name flag, decoded size, 32-bit offsets | 36 | 7 | 2,132 |
+| `0x70` | `0x0E`: IDs, names, 32-bit offsets, no decoded size | 28 | none | 2 |
+
+Every member of both installs (84,074 in Sekiro, 527,404 in Elden Ring) stores the flag byte `0x40`, which is `0x02`
+after normalization: no member has the compression bit set, and none has a bit above bit 1. The members that are
+compressed are DCX envelopes in their own right, 19,244 in Sekiro and 45,809 in Elden Ring.
+:proven[both archive sets, Elden Ring without the `DLC` pair] No binder has the format byte `0x04` that carries an
+alternate ID.
+
+### The name hash table
+
+When the extended mode byte is 4, the header's hash table offset points at a table that finds a member by name.
+It holds a group table and one hash per member. :proven[7,676 Sekiro and 53,547 Elden Ring binders]
+
+```layout
+title: BND4 name hash table
+size: variable
+note: "Little-endian. Present when the extended mode byte is 4."
+fields:
+  - {at: 0, size: 8, type: u64, name: hash entries offset, level: proven, note: "file offset of the hash entries, directly after the groups"}
+  - {at: 8, size: 4, type: u32, name: group count, level: proven, note: "the smallest prime not below the member count divided by 7 (integer division)"}
+  - {at: 12, size: 4, type: u32, name: constant, level: unknown, note: "bytes `10 08 08 00` in every table"}
+  - {at: 16, size: "8 × group count", type: "Group[]", name: groups, level: proven, note: "member count u32, first hash entry index u32; groups are contiguous in order"}
+  - {at: after groups, size: "8 × member count", type: "Hash[]", name: hash entries, level: proven, note: "path hash u32, member index u32; ascending by hash inside a group; the group is the hash modulo the group count"}
+```
+
+The hash is the base-37 hash of the [BHD5 archives](/engines/fromsoft/archives/bhd5-bdt/#path-hashes): `h = h × 37 + unit` over
+the member's stored name with backslashes turned into forward slashes, a leading `/` added and ASCII letters
+lower-cased, in 32 bits. The stored name is hashed whole, drive prefix included. It equals the stored hash for all
+61,580 named members of Sekiro's 7,676 hashed binders and all 474,981 of Elden Ring's 53,547 (BND4 and BHF4 alike).
+:proven[both archive sets, Elden Ring without the `DLC` pair] Every member of a hashed binder has a name, every member
+index appears once, and the hashes are ascending inside each group. :proven[both archive sets] Folding ASCII letters
+and lower-casing every letter give the same hash over these names, because none has a non-ASCII upper-case letter.
+:observed
+
+### Member IDs by binder kind
+
+Reading a member by name needs no ID, but the IDs follow conventions that hold on every binder of a kind.
+:proven[both archive sets]
+
+| Binder | Member | ID | Games |
+|---|---|---|---|
+| `.chrbnd`, `.mapbnd`, `.geombnd`, `.objbnd`, `.partsbnd` | FLVER model | 200, then 201, 202 and so on for further models | both |
+| `.mapbnd`, `.objbnd` | `_S.flver` (simplified model) | 1100, then 1101, 1102 | :only[sekiro] |
+| `.mapbnd`, `.geombnd` | `.grass` | 1200 | :only[elden-ring] |
+| `.mapbnd` | `.grass` | 1200 | :only[sekiro] |
+| `.texbnd`, `.partsbnd`, `.objbnd` | `.tpf` | 100 | both |
+| `.tpfbhd`, `.hkxbhd`, `.edgebhd`, `.wallbhd` | the split binders' files | the member's position in the file table | both |
+| `.tpfbnd`, `.matbinbnd` | `.tpf`, `.matbin` | the member's position in the file table | :only[elden-ring] |
+
+In `.objbnd` and `.partsbnd` binders the IDs of a second and later model count up from 200 and 1100.
+
 ## Split payload
 
 BHF4 uses the same 64-byte header arrangement as BND4, with a zero field at offset 40. Its records point into BDF4,

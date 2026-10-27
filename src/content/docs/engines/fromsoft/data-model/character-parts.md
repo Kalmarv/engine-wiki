@@ -84,6 +84,13 @@ NpcParam's display masks are a separate mechanism. :sourced[Paramdex]{games="sek
 
 A negative placement initializer ID names no authored initializer. :observed{games="sekiro"}
 
+In Sekiro's gameparam the 203 CharaInitParam rows have 812 equipment slots at those offsets; 811 name an existing
+EquipParamProtector row and one holds -1. Slot 0 names protectors of category 3 (169 rows) or 0 (33 rows), slot 1 of
+category 2, slot 2 of category 1 and slot 3 of category 6, with no other category. :observed{games="sekiro"} The 39
+protector rows have categories 0 (1 row), 1 (9), 2 (15), 3 (6), 5 (1) and 6 (7). Of the six category-3 rows with a model
+id, all six have only an `fc_` part binder in the archives, while rows of the other categories have `am_`, `bd_`, `hd_`
+and `lg_` binders under their model ids. :observed{games="sekiro"}
+
 #### The Wolf's outfits
 
 CharaInitParam rows 9000 to 9002 (Original Memory: Wolf) equip protector rows 100000 (head), 101000 (body),
@@ -96,7 +103,7 @@ The parts `am_m_9120_l`, `bd_m_9120_l`, `lg_m_9120_l` and `hd_m_9120_l` with `fc
 Memory: Ashina costume, EquipParamProtector rows 400000 to 403000; head row 400000 uses model 220. None of the
 39 EquipParamProtector rows uses model 9120 for the head. :observed{games="sekiro"} The Paramdex layouts used here match
 the stored row sizes, 472 bytes for CharaInitParam and 508 for EquipParamProtector, and each row's slot flag
-matches its category. :observed{games="sekiro"} That category 3 is the face is inferred. :inferred{games="sekiro"}
+matches its category. :observed{games="sekiro"} That category 3 is the face matches the `fc_` binders just described. :observed{games="sekiro"}
 
 `bd_m_9040_l` has no display-mask meshes. Its coat (`P_BD_M_9040_Court`, shader
 `Character_AN_Blend_AMSN_[Fresnel]`) and scarf (`tops1_Maffler`, `Character_AMSN_[DetailBlend]`) blend the detail
@@ -119,4 +126,43 @@ vertex displacement. :observed{games="sekiro"}
 The checked fields do not fully establish selection among `m`, `f`, `a`, `hd`, `fc` or level-suffix alternatives.
 Choosing whichever binder exists is not evidence of the game's rule. Face generation, body shape and runtime
 equipment replacement are also outside these field interpretations.
+:::
+
+## Elden Ring
+
+### Outfits of part-built humans
+
+:only[elden-ring] The equipment link has the same shape as Sekiro's: an initializer row names four protector rows, and a
+protector row names the part. The fields are at these offsets in every one of the 29 regulations examined (1.00.0 to
+1.17.3), except `CHR_EQUIP_MODEL_PARAM_ST`, which exists from 1.12.1. :observed{games="elden-ring"}
+
+| Row | Fields | Confidence |
+|---|---|---|
+| CharaInitParam (`CHARACTER_INIT_PARAM`, data version 2, 320-byte rows) | Protector row IDs at `+32` (head), `+36` (body), `+40` (arms), `+44` (legs); `npcPlayerSex` at `+228` | :observed{games="elden-ring"} |
+| EquipParamProtector (`EQUIP_PARAM_PROTECTOR_ST`, data version 6, 416-byte rows) | `equipModelId` (u16) at `+164`; `equipModelCategory` at `+212`; `equipModelGender` at `+213` | :observed{games="elden-ring"} |
+| ChrEquipModelParam (`CHR_EQUIP_MODEL_PARAM_ST`, data version 1, 12-byte rows) | Twelve rows; Paramdex names the first byte the category, the second the gender and the u16 at `+8` `equipModelId`; all twelve rows hold 0 in the first two bytes and 4 at `+4` | :sourced[Paramdex]{games="elden-ring"} |
+
+Sekiro's offsets at `+160`, `+208` and `+209` are not valid in Elden Ring: read at those offsets the 838 protector rows hold
+255 in both byte fields. The initializer's four slots are the same four offsets as in Sekiro. :observed{games="elden-ring"}
+
+In the installed 1.17.3 regulation the 3,273 initializer rows have 13,092 slots: 11,880 name an existing protector row, 1,147
+hold -1 and 65 name a row that does not exist. Every protector named by slot 0 has category 5, by slot 1 category 2, by
+slot 2 category 1 and by slot 3 category 6 (2,898, 3,041, 2,919 and 3,022 slots). Reading the slots one byte further on
+resolves none of them. The categories are 1 arms, 2 body, 4 hair, 5 head and 6 legs, and the genders 1 male, 2 female, 3
+unspecified and 4 none, by the names of Smithbox's enums. :sourced[Smithbox] The 838 protector rows hold categories
+1, 2, 4, 5, 6 in 137, 274, 41, 235 and 151 rows, and genders 1, 2, 3, 4 in 20, 25, 96 and 697. The hundreds digit of the
+row ID is 2 for 136 of the 136 arms rows with a model id, 1 for 268 of 273 body rows, 0 for 233 of 234 head rows and 3
+for 149 of 150 leg rows. :observed{games="elden-ring"}
+
+A protector's model id names the part binder `parts/<hd|bd|am|lg>_<m|f>_<id, four digits>.partsbnd.dcx` for its category
+(head, body, arms, legs). Of the 793 rows with a model id and one of those four categories, 789 have that binder in the
+archives, and in none of the 793 does a binder lack its `_l` sibling or the reverse. By gender: the 693 gender-4 rows with
+a binder have `m` only (688) or both letters (5), and 4 gender-4 rows have none; of 91 gender-3 rows, 88 have both
+letters, 2 only `f` and 1 only `m`; the 5 gender-2 rows have `f` only. No `a` binder exists for any protector row.
+:observed{games="elden-ring"}
+
+:::open[Which part letter does `npcPlayerSex` select in Elden Ring?]
+The value is 0 in 512 initializer rows and 1 in 2,761; no enum names the two values. Among the 22 slots that name a
+female-only protector (gender 2), 19 belong to rows with value 0 and 3 to rows with value 1, and no row equips a male-only
+protector in a body, arms, head or legs slot, so the examined rows do not say which value is the male one.
 :::

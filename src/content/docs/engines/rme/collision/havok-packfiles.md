@@ -4,7 +4,13 @@ description: "The Havok 7.1.0-r1 packfiles that hold a level's collision: the fi
 sources:
   - title: HavokLib (PredatorCZ)
     url: https://github.com/PredatorCZ/HavokLib
-    note: a third-party Havok reader; it has no physics classes, so it cannot read these files
+    note: a third-party Havok reader; it has no physics classes, so it cannot read these files; its packfile header names the header words
+  - title: soulstruct-havok (Grimrukh)
+    url: https://github.com/Grimrukh/soulstruct-havok
+    note: Havok 5.5 and 2010 class tables; the member names of the rigid body and the mesh material record
+  - title: hkx-rs (kronerm)
+    url: https://gitlab.com/kronerm/hkx-rs
+    note: a packfile reader and writer for Havok 2014; computes the class signatures it writes
 implementations:
   - name: "havok-formats (packfile reader)"
     url: https://github.com/Kalmarv/havok-formats/tree/main/src/packfile
@@ -21,7 +27,31 @@ A level is the sum of its files: the base `<NAME>.hkw` holds the static world, a
 
 ## Structure
 
-The file has a header with the version string (at offset `0x28`), then section headers at `0x40 + 48 × i`.
+The file has a 64-byte header, then section headers at `0x40 + 48 × i`.
+
+```layout
+title: Packfile header
+size: 64
+games: [shred]
+note: Big-endian. Every value here is the same in all 490 files but the two offsets at 0x1C and 0x24.
+fields:
+  - {at: 0, size: 8, type: "u8[8]", name: magic, value: "57 E0 E0 57 10 C0 C0 10", level: proven}
+  - {at: 8, size: 4, type: u32, name: user tag, value: "0", level: unknown, note: "0 in all 490 files; HavokLib names it userTag"}
+  - {at: 12, size: 4, type: u32, name: file version, value: "7", level: proven}
+  - {at: 16, size: 4, type: "u8[4]", name: layout rules, value: "4, 0, 1, 1", level: proven, note: "pointer size 4, big-endian (0), reuse padding and empty-base optimisation on"}
+  - {at: 20, size: 4, type: u32, name: section count, value: "3", level: proven}
+  - {at: 24, size: 4, type: u32, name: contents section, value: "2", level: proven, note: "the index of __data__"}
+  - {at: 28, size: 4, type: u32, name: contents offset, level: proven, note: "the root object (an hkRootLevelContainer) in __data__"}
+  - {at: 32, size: 4, type: u32, name: class-name section, value: "0", level: proven, note: "the index of __classnames__"}
+  - {at: 36, size: 4, type: u32, name: root class name, level: proven, note: "the offset of the root object's class name in __classnames__"}
+  - {at: 40, size: 16, type: "char[16]", name: contents version, value: "Havok-7.1.0-r1", level: proven, note: "the 14 characters, a NUL, then one 0xFF byte"}
+  - {at: 56, size: 8, type: "u32[2]", name: unused, value: "FF FF FF FF FF FF FF FF", level: unknown, note: "0xFF in all 490 files. HavokLib reads a flags word here, then two int16 predicate fields (maxpredicate, predicateArraySizePlusPadding) that are -1, -1 when a file has no predicate block"}
+```
+
+The values above hold in all 490 files, and every file's contents offset and root class name lead to its
+`hkRootLevelContainer`. :proven[all 490 files]
+The header words at `0x38` belong to later packfile versions: HavokLib reads a flags word and the two predicate fields
+there for every version, and with `-1, -1` no predicate block follows, as in these files. :sourced[HavokLib]
 
 ```layout
 title: Packfile section header
@@ -42,6 +72,31 @@ fields:
 
 Pointers inside the data are not stored; a pointer is non-null exactly when a fixup names it. Local fixups are `{source, destination}` pairs inside the section, global fixups `{source, section, destination}` and virtual fixups `{object, section, class name offset}`, where the class-name section holds `u32 signature, 0x09, name\0`.
 An object is every target of a virtual fixup and runs to the next one; arrays and strings after it belong to it. :proven[all 490 files]
+
+### Class names and signatures
+
+The class-name section always begins with `hkClass`, `hkClassMember`, `hkClassEnum` and `hkClassEnumItem`, then names
+the classes of the file's objects. Over the 490 files it names 24 classes, and each name carries one signature in
+every file that lists it: :proven[all 490 files]
+
+| Class | Signature | Class | Signature |
+|---|---|---|---|
+| `hkClass` | `14425E51` | `hkpStorageExtendedMeshShapeMeshSubpartStorage` | `5AAD4DE6` |
+| `hkClassMember` | `4A986551` | `hkpConvexVerticesShape` | `4E8AB2B7` |
+| `hkClassEnum` | `8A3609CF` | `hkpConvexVerticesConnectivity` | `63D38E9C` |
+| `hkClassEnumItem` | `CE6F8A6C` | `hkpConvexTranslateShape` | `5BA0A5F7` |
+| `hkRootLevelContainer` | `2772C11E` | `hkpBoxShape` | `3444D2D5` |
+| `hkpPhysicsData` | `C2A461E4` | `hkpCylinderShape` | `3E463C3A` |
+| `hkpPhysicsSystem` | `FF724C17` | `hkpSphereShape` | `0795D9FA` |
+| `hkpRigidBody` | `AA8C3B19` | `hkpCapsuleShape` | `DD0B1FD3` |
+| `hkpMoppBvTreeShape` | `90B29D39` | `hkpListShape` | `A1937CBD` |
+| `hkpMoppCode` | `924C2661` | `hkpConstraintInstance` | `4FB4E6BB` |
+| `hkpStorageExtendedMeshShape` | `3D52E7D2` | `hkpRagdollConstraintData` | `17A4D42F` |
+| `hkpLimitedHingeConstraintData` | `1C566B11` | `hkpBreakableConstraintData` | `7034BDB6` |
+
+A signature is a CRC-32 over a description of the class (its members' names, types and flags and its enums, with
+those of its parents), not over its name, so it identifies the class definition a file was written with: a file whose
+`hkpRigidBody` carries another signature has another rigid-body layout. :sourced[hkx-rs]
 The `__types__` section is empty, so the files do not describe their own classes. The member layouts below follow Havok 7.1's member order and each was checked against the data. :observed
 
 ### Fixups, arrays and padding
@@ -68,6 +123,41 @@ A mesh is a `hkpStorageExtendedMeshShape` (usually under a MOPP tree) with one o
 - A triangle is **four** `u32` of the index array, `(v0, v1, v2, 0)`; the fourth is 0 in all 646,081 triangles and the index stride of the subpart is 16 bytes. The index count (2,584,324) is therefore four times the triangle count. :proven[all 646,081 triangles]
 - The triangle's material is `materials[materialIndices16[i]]`. `materialIndices16` holds one `u16` per triangle. :proven[all 6,445 subparts]
 - The shape's `aabbHalfExtents` and `aabbCenter` (at `+0x90`, `+0xA0`) contain every vertex (tolerance 0.06), `weldingInfo` has one `u16` per triangle, and a subpart's `triangleOffset` is the number of triangles before it. :proven[all 1,758 shapes]
+- The 16 bytes at `+0x80`, before the box, are four `f32` 1.0 in every shape: the shape's `scaling`, which is never anything but one. :proven[all 1,758 shapes]
+- The 96 bytes at `+0x20` are a subpart record held in the shape itself, a byte-for-byte copy of subpart 0 except its `triangleOffset` (`+0x4C`): that word is 0 in the 1,722 shapes with one subpart and holds unrelated non-zero values in the 36 with more. Nothing in the shape reads it. :proven[all 1,758 shapes]
+
+The `trianglesSubparts` array (`+0xB4`) holds 96-byte subpart records. Every byte that the fields below do not name is
+zero in all 6,445 of them. :proven[all 6,445 subparts]
+The field names come from the class's member list. :sourced[soulstruct-havok]
+
+```layout
+title: Triangles subpart
+size: 96
+games: [shred]
+fields:
+  - {at: 0, size: 1, type: u8, name: type, value: "0", level: sourced, note: "0 (triangles) in all 6,445"}
+  - {at: 1, size: 1, type: u8, name: materialIndexStridingType, value: "2", level: sourced, note: "2 in all 6,445: 16-bit material indices, the only ones the storage holds"}
+  - {at: 2, size: 2, type: i16, name: materialStriding, value: "12", level: proven, note: "the size of a material record"}
+  - {at: 4, size: 4, type: u32, name: materialIndexBase, value: "0", level: sourced, note: "a pointer, zero with no fixup: the storage holds the indices"}
+  - {at: 8, size: 2, type: u16, name: materialIndexStriding, value: "2", level: proven}
+  - {at: 10, size: 2, type: u16, name: numMaterials, level: proven, note: "the storage's material count"}
+  - {at: 12, size: 4, type: u32, name: materialBase, value: "0", level: sourced, note: "a pointer, zero"}
+  - {at: 16, size: 4, type: u32, name: materialClass, value: "0", level: sourced, note: "a pointer, zero"}
+  - {at: 20, size: 4, type: u32, name: numTriangleShapes, level: proven, note: "the storage's triangle count"}
+  - {at: 24, size: 4, type: u32, name: vertexBase, value: "0", level: sourced, note: "a pointer, zero"}
+  - {at: 28, size: 4, type: u32, name: vertexStriding, value: "16", level: proven}
+  - {at: 32, size: 4, type: u32, name: numVertices, level: proven, note: "the storage's vertex count"}
+  - {at: 36, size: 12, type: "u8[12]", name: padding, value: "0", level: proven}
+  - {at: 48, size: 16, type: "f32[4]", name: extrusion, value: "0, 0, 0, 0", level: sourced, note: "zero in all 6,445"}
+  - {at: 64, size: 4, type: u32, name: indexBase, value: "0", level: sourced, note: "a pointer, zero"}
+  - {at: 68, size: 4, type: u32, name: indexStriding, value: "16", level: proven, note: "four u32 a triangle"}
+  - {at: 72, size: 1, type: u8, name: stridingType, value: "3", level: sourced, note: "3 in all 6,445: 32-bit indices, the only ones the storage holds"}
+  - {at: 73, size: 1, type: i8, name: flipAlternateTriangles, value: "0", level: sourced}
+  - {at: 74, size: 2, type: "u8[2]", name: padding, value: "0", level: proven}
+  - {at: 76, size: 4, type: u32, name: triangleOffset, level: proven, note: "the triangles of the earlier subparts"}
+  - {at: 80, size: 4, type: u32, name: userData, value: "0", level: sourced, note: "zero in all 6,445"}
+  - {at: 84, size: 12, type: "u8[12]", name: padding, value: "0", level: proven}
+```
 
 After `weldingInfo` (`+0xCC`) the shape holds, in all 1,758 shapes: a welding-type byte `0` at `+0xD8` (then three zero bytes), a collision filter word `0` at `+0xDC`, a count at `+0xE0`, the triangle radius `0.001` (an `f32`) at `+0xE4`, eight zero bytes at `+0xE8`, the `meshStorage` array at `+0xF0` and an empty second storage array at `+0xFC` (`0, 0, 0x80000000`); the shape is 0x110 bytes. The bytes at `+0x14` and `+0x15` are `1, 1`. :proven[all 1,758 shapes]
 The count at `+0xE0` is the triangle total in 1,277 shapes and smaller in 481 (637,321 against 646,081 triangles over all shapes), never larger. :proven[all 1,758 shapes]
@@ -78,12 +168,16 @@ Which triangles it leaves out is not known: no test of degenerate area, repeated
 title: Material record
 size: 12
 games: [shred]
-note: 7,909 records in the subpart storages; `materials` is an array of them at +0x44 of the storage.
+note: 7,909 records in the subpart storages; `materials` is an array of them at +0x44 of the storage. The halves are the top 16 bits of an f32.
 fields:
-  - {at: 0, size: 4, type: u32, name: word, level: observed, note: "the per-triangle word; its bits 3 to 8 are the surface id"}
-  - {at: 4, size: 4, type: u32, name: unknown, value: "0x00003F80", level: unknown, note: "constant in all 7,909 records"}
-  - {at: 8, size: 4, type: u32, name: padding, level: unknown, note: "0 in 1,630 records, 2 in 535, otherwise heap bytes"}
+  - {at: 0, size: 4, type: u32, name: filterInfo, level: observed, note: "the per-triangle word; its bits 3 to 8 are the surface id"}
+  - {at: 4, size: 2, type: half, name: restitution, value: "0x0000 (0.0)", level: sourced, note: "0.0 in all 7,909 records"}
+  - {at: 6, size: 2, type: half, name: friction, value: "0x3F80 (1.0)", level: sourced, note: "1.0 in all 7,909 records"}
+  - {at: 8, size: 4, type: u32, name: userData, level: sourced, note: "not cleared when written: 0 in 1,630 records, 2 in 535, otherwise heap bytes"}
 ```
+
+Every record holds restitution 0 and friction 1, so the meshes carry no per-triangle physics material beyond the
+filter word. :proven[all 7,909 records]
 
 ### Surface id
 
@@ -138,11 +232,16 @@ Each of the 12,789 `hkpRigidBody` objects (560 to 608 bytes with its name) place
 | Offset | Meaning | Confidence |
 |---|---|---|
 | `+0x10` | the shape (never null) | :proven |
+| `+0x2C` | the collision filter word (`collisionFilterInfo` of the body's collidable): 0 in 148 bodies, 2 in 1,933, 7 in 8,741, 11 in 1,953, 15 in 1, 18 in 13; the high 16 bits are 0 in every body | :proven[all 12,789 bodies] |
 | `+0x74` | the body's name, a level-editor path such as `Greybox`, `Training1`, `Grind1`, `ConstructionSigns04.mesh01` | :proven |
-| `+0xA8` | collision filter information; the low 16 bits are `0xFFFF`, the high 16 a group from 0 to 539 | :observed |
+| `+0xA8` | `storageIndex`, a `u16` with 540 values from 0 up; not a filter | :proven[all 12,789 bodies] |
+| `+0xAA` | `contactPointCallbackDelay`, a `u16`: `0xFFFF` in every body | :proven[all 12,789 bodies] |
 | `+0xE8` | motion type: 5 (fixed) 2,021, 3 10,372, 2 396 | :observed |
 | `+0xF0` | rotation as three columns at stride 16 (w holds junk) | :proven |
 | `+0x120` | translation | :proven |
+
+The names of `+0x2C`, `+0xA8` and `+0xAA` are the members' names in Havok's rigid-body class, whose order places
+them there. :sourced[soulstruct-havok]
 
 The rest of the body holds, in all 12,789 bodies: :proven[all 12,789 bodies]
 
@@ -197,7 +296,7 @@ Collision is in the same space as the render placements: no offset, flip or scal
 CHARLIE's base file holds one static body named `Greybox`, a coarse proxy of the hangar (floor, boundary walls and dome); the detailed collision is in its layer files. :observed
 
 :::open[What do the flag bits of a triangle mean?]
-`0x1`, `0x4`, `0x800`, `0x1000`, `0x2000`, `0x4000` and `0x80000000` are carried through unchanged in the data but are not tied to anything in the engine. The words `+0x04` (always `0x3F80`) and `+0x08` of a material record are also unexplained.
+`0x1`, `0x4`, `0x800`, `0x1000`, `0x2000`, `0x4000` and `0x80000000` are carried through unchanged in the data but are not tied to anything in the engine.
 :::
 
 :::open[What does a mesh's count at +0xE0 leave out?]

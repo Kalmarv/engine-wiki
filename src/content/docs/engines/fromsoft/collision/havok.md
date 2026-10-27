@@ -56,6 +56,27 @@ A primitive stores four indices `[a,b,c,d]`. Equal `c,d` gives triangle `(a,b,c)
 `(section << 8) | (primitive << 1) | half`, where `half` selects the quad triangle. Stored keys in the material table
 are left-aligned and become this value after shifting right by `32 - numShapeKeyBits`. :observed
 
+### Section ranges
+
+Each section names a run of the tree's packed vertices, of its shared-vertex index entries and of its primitives. The
+runs tile the three arrays in section order: a section's runs start where the previous section's end, the first
+section's at 0, and the last section's end at the end of each array. Every vertex index of a triangle or quad, and the
+first index of every custom primitive, is below the section's packed-vertex count plus its shared-index count. These
+hold in every compressed mesh of every named map, object and asset collision binder of both installs: Sekiro's 5,642
+tagfiles (3,344 mesh trees, 273,228 sections) and Elden Ring's 25,128 (22,897 mesh trees, 722,403 sections).
+:proven[every named collision binder]
+
+The two SDK versions name the runs differently:
+
+| Run | Sekiro (2016.2) | Elden Ring (2018.1) | Confidence |
+|---|---|---|---|
+| Packed vertices | `firstPackedVertex`, `numPackedVertices` | `firstPackedVertexIndex`, `numPackedVertices` | :proven[every named collision binder] |
+| Shared-vertex index entries | first: `sharedVertices.data >> 8`; count: `numSharedIndices` | first: `firstSharedVertexIndex`; no count field, the run ends where the next section's starts | :proven[every named collision binder] |
+| Primitives | `primitives.data`: first `>> 8`, count `& 255` | `firstPrimitiveIndex`, `numPrimitives` | :proven[every named collision binder] |
+
+In Sekiro the low byte of `sharedVertices.data` is not a separate count: it equals `numPackedVertices` in all
+273,228 sections. :proven[every named collision binder]{games="sekiro"}
+
 ## Custom primitives and extern shapes
 
 Equal second and fourth indices identify a custom primitive, rather than an ordinary triangle or quad. Its first

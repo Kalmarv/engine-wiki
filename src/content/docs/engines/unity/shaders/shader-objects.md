@@ -60,8 +60,10 @@ Against an independent reader, every shader's programs of Sledding Game's mounta
 program types, requirement masks, the constant buffers and the texture and sampler tables, and the sha256 of every
 variant's code. :observed{games="sledding"}
 
-The code is a DXBC container. Sledding Game's DXBC containers have **no resource definition chunk** (RDEF), so the code
-names no resources; the names come from the parameter records. :observed{games="sledding"}
+The code is a DXBC container. Of the 4,854 programs read from Sledding Game's shader assets, 4,838 have **no resource
+definition chunk** (RDEF), so their code names no resources; the names come from the parameter records. The other 16 are
+Shader Model 4.0 programs that keep an RDEF without the `RD11` block of the Shader Model 5 layout. :observed{games="sledding"}
+The container parts are described on [Direct3D shader containers](/concepts/d3d-shader-containers/).
 
 ## Constant buffers and bind slots
 

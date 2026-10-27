@@ -106,6 +106,8 @@ have DXIL chunks; eight entries in globals contain two `DXBC` signatures and the
 ordinary wrapper begins `u16 6, u16 2` and contains an `RC2S` block at `0x20`; observed DXBC starts range from 88 to 294
 bytes. Trailing wrapper data is common. Every CompiledBytecode entry in this twelve-TOC census contains the
 described DXIL container structure; no container is refused. :proven[all CompiledBytecode entries]
+The parts of these containers, their digest, the `PSV0` record and the feature mask are described on
+[Direct3D shader containers](/concepts/d3d-shader-containers/).
 
 The compiled programs are not in the six high-entropy chunks stored beside the shader-state database, and the
 bytecode is not encrypted: it is these plain CompiledBytecode resources. :observed

@@ -20,6 +20,9 @@ programs and a `.metaparam`. :observed Elden Ring also has DLC bundle binders na
 | Material parameters | Named reflected fields | Commonly `SAT_MtdParam`, with metaparam word offsets | :observed |
 | Geometry inputs | Ordinary and skinned variants | Ordinary, skinned and SpeedTree variants | :observed |
 
+The parts of these containers, their digest and (for Elden Ring) the `PSV0` record and the feature mask are described on
+[Direct3D shader containers](/concepts/d3d-shader-containers/).
+
 Stage file extensions agree with the shader kind in their program containers in Sekiro's bundle census and in
 the Elden Ring Academy material-bundle comparison. The Sekiro census checks all 16,428 programs in its 248
 bundles without a stage mismatch; Elden Ring's cited check is limited to one area.

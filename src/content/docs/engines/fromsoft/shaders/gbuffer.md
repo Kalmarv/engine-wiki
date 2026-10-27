@@ -2,7 +2,7 @@
 title: G-buffer surface encoding
 description: Deferred render targets, normal bias, gloss, reflectance, metallic and emission.
 implementations:
-  - name: primase worlds/fromsoft (game.rs)
+  - name: "primase worlds/fromsoft (game.rs, Shading::gbuffer)"
     url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/game.rs
 ---
 

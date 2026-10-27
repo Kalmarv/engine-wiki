@@ -6,9 +6,9 @@ sources:
     url: https://github.com/PredatorCZ/HavokLib
     note: a third-party Havok reader; it has no physics classes, so it cannot read these files
 implementations:
-  - name: havok-formats (packfile)
+  - name: "havok-formats (packfile reader)"
     url: https://github.com/Kalmarv/havok-formats/tree/main/src/packfile
-  - name: primase worlds/shred (collision.rs)
+  - name: "primase worlds/shred (collision.rs, conversion of the Havok data)"
     url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/collision.rs
 ---
 

@@ -64,12 +64,13 @@ fields:
   - {at: 14, size: 2, type: u16, name: name hash extension, level: unknown, note: "A function of the 64-bit name hash: one value per distinct name hash"}
 ```
 
-Across the 2,473 distinct stock depots (192,642 distinct parameter blocks, 5,451,023 parameter records) the `u16` at +12
-equals the `u32` at +16 in all 4,527,851 non-texture records, 633,249 of which hold more than one element, and each
-record's length is 20 plus that count times the element size; texture records have count 1 (923,172). The count
-of a value is therefore an element count, not a byte size. :proven[every stock block] 732 blocks hold a
-parameter of a type that is not in the table below (`0x566e2dd0`, one byte an element; 732 records, one per block);
-with that size every one of the 192,642 distinct blocks parses to its last byte. :proven[every stock block]
+The 2,473 distinct stock depots hold 192,642 material entries; entries of one depot that share a descriptor share a
+block, so they point at 64,105 parameter blocks (1,762,286 parameter records; 5,451,023 counted once per entry).
+Counted once per entry, the `u16` at +12 equals the `u32` at +16 in all 4,527,851 non-texture records, 633,249 of which
+hold more than one element, and each record's length is 20 plus that count times the element size; texture records have
+count 1 (923,172). The count of a value is therefore an element count, not a byte size. :proven[every stock block]
+732 entries, which use 95 blocks, hold a parameter of a type that is not in the table below (`0x566e2dd0`, one byte an
+element; 95 records); with that size every one of the 64,105 blocks parses to its last byte. :proven[every stock block]
 
 The 1,635 distinct 64-bit name hashes of the stock depots have 1,635 distinct low 48 bits, and the `u16` at +14 is the
 same for every record with the same name hash; 1,336 different values occur. :proven[every stock block]

@@ -136,9 +136,19 @@ type list in 327,533 documents (equal in length in 482); it is an ordered subseq
 **Type references.** A type-reference field (code `0x19`) holds a 32-bit value which, shifted right by two, indexes
 the `EFIX` type list, not the reflection list: of 512,711 type references that name a type, all are below the
 `EFIX` list length, 119,136 are not below the reflection list length, and in only 1,104 of the 393,575 that are, the
-`EFIX` entry and the reflection entry at that index have the same GUID. :proven[all 328,015 documents] The referenced
-types that have no reflection entry belong to fields such as `GetScoreFunction`, `TraitDataTypeRef` and
-`ExpressionConstantTypeRefPatch.Value`, which suggests function and type-information classes. :inferred
+`EFIX` entry and the reflection entry at that index have the same GUID. :proven[all 328,015 documents]
+
+Counting the 408 values of delegate fields, which read the same way, 513,119 values name a type. 503,606 of them name a
+slot past the end of the `EFIX` signature list (a document's list of type GUIDs can be longer than its list of
+signatures), and 499,474 name a GUID that the document's own reflection list does not hold; the other 13,645 find their
+type there by GUID, 9,513 of them by GUID and signature. :proven[all 328,015 documents] A table of every reflected
+type's GUID and name over all the documents names the GUID of 70,044 of the references, each with one name (56,399 of
+them only through the reflection lists of other documents); the other 443,075 name a GUID that no document reflects.
+:proven[all 328,015 documents] The resolved names fit their fields: the 1,609 values of
+`AudioPatchRequiredTraitEntry.TraitDataTypeRef` name 11 types, all with names ending in `TraitData`, where the
+reflection entry at the same index would name none of them; `ExpressionPortData.PortType` names `Mat4`, `Quat` and
+`Vec3`, and `DataModelFieldData.FieldType` names `DataModelReference`, `LinearTransform`, `Vec2`, `Vec3` and
+enumeration types. :observed[the 70,044 references that resolve]
 
 **Other tables.** The `EFIX` tail after the section offsets is a count and a list of offsets; the count is nonzero in
 4,170 documents, each offset lies in the payload outside every `EBXX` boxed value, and in 3,966 of those documents the
@@ -162,12 +172,17 @@ lowercase; the `Name` equals it in 57,501 documents, differs from it only in cas
 964 (962 of them have a suffix after the manifest name, such as `_InstanceClass`; two have an empty `Name`).
 :proven[all 328,015 documents] The `Name` therefore carries the document's original casing.
 
-**Floats.** Stock documents hold 212 documents with a NaN and one with an infinite float value. :proven[all 328,015 documents]
+**Floats.** 213 stock documents hold a float that is not finite: 1,784 NaN values and one infinity, all in 32-bit float
+fields. The NaNs are components of `Vec4` (`x` 513, `y` 474, `z` 424, `w` 373) and the infinity (`0x7f800000`) is an
+`AINetNode.Height`. Every NaN has its quiet bit set, none is a signalling NaN; 1,664 are `0xffffffff` and the others are
+patterns such as `0xffff0000`, `0xffffcbcb` and `0xffffff00` with arbitrary low bits. :proven[all 328,015 documents]
 
 ## Writing documents back
 
-Rewriting three stock documents preserves their typed values. The stock bundle-reference table and level-class
-document also retain identical bytes; the description document differs in layout under the reference writer.
+Laying each of the 328,015 stock payloads out again from its typed values gives a document that reads back to the same
+values in every one, floats compared by their bit patterns (the 213 documents with a NaN or an infinity included), and
+219,809 of them come back byte for byte. :proven[all 328,015 distinct stock payloads] The stock bundle-reference table
+and level-class document retain identical bytes; the description document differs in layout under the reference writer.
 Byte equality and semantic equality are therefore separate properties. :observed
 
 :::open[How complete is reflection for every installed document?]

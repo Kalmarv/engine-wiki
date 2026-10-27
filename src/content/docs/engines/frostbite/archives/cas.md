@@ -50,6 +50,8 @@ of byte 5 equal to 7 (1,001,300 headers over 723,698 ranges, 999,764 distinct bl
 are nonzero in 82,951 blocks, all of them stored (codec `0`) 64 KiB blocks whose payload is 65,536 bytes; every other
 block has a payload below 65,536. Every block that does not end its range decodes to exactly 65,536 bytes, and every
 range chains from its first header to its last byte with no remainder. :proven[all indexed ranges of the stock install]
+The upper nibble of byte 5 is 7 in the 1,535,187 blocks of the files that the 82 mod folders installed beside the game
+list in their bundles as well, among them maps compiled by ReSkate Studio. :observed[every listed file of those 82 folders]
 No stock region names a Patch folder, so no delta file occurs among the ranges. :proven[the stock install]
 
 :::open[Which dictionary and flag variants does the engine accept?]

@@ -10,13 +10,16 @@ implementations:
 ---
 
 BTL banks store named point, spot and directional lights, with separate diffuse and specular colours and powers.
-Sekiro's 18 banks (735 lights) all use version 16 and the decoded Elden Ring banks version 18; both use 232-byte records.
-:proven[all 18 Sekiro banks]{games="sekiro"} :proven[107 decoded banks]{games="elden-ring"}
+Sekiro's 18 banks (735 lights) all use version 16 and 107 of Elden Ring's 109 banks version 18; both use 232-byte
+records. The other two Elden Ring banks store version 15 with a 240-byte record (see the open question below).
+:proven[all 18 Sekiro banks]{games="sekiro"} :proven[107 version 18 banks, 2 version 15]{games="elden-ring"}
 
-The whole-install Elden Ring census covers 109 BTL banks: 107 decode, containing 11,228 lights; two are refused by
-both readers. Every decoded bank's version and every light's name, type, colours, powers, shadow flag, cone, position,
-rotation and radius agree with SoulsFormatsNEXT, with floats compared as bits. The strict reader accounts for the
-complete bank length. :proven[107 decoded; 2 refused]{games="elden-ring"}
+The whole-install Elden Ring census covers 109 BTL banks, 11,229 lights: 107 version 18 banks hold 11,228 lights and
+the two version 15 banks one light. A strict reader that accounts for the complete bank length, the 240-byte record
+included, reads all 109. For the 107 version 18 banks every bank's version and every light's name, type, colours,
+powers, shadow flag, cone, position, rotation and radius agree with SoulsFormatsNEXT, with floats compared as bits;
+that reader lists versions 1, 2, 5, 6, 16 and 18 only and refuses the two version 15 banks by their version.
+:proven[109 of 109 read; 107 compared]{games="elden-ring"}
 
 ```layout
 title: BTL header (Sekiro)
@@ -125,7 +128,7 @@ stored values alone do not establish watts, lumens or lux.
 :::
 
 :::open[What is the version-15 BTL layout?]
-Banks for `m60_42_33_00` and `m60_42_36_00` store version 15 and are the two agreed refusals in the 109-bank census.
+Banks for `m60_42_33_00` and `m60_42_36_00` store version 15; SoulsFormatsNEXT refuses them by their version.
 Both declare a 240-byte light record: the first holds no lights (60 bytes), the second one light (332 bytes: the 60-byte
 header, a 32-byte name block and 240). Its fields up to offset 232 read as in version 18 (point light, diffuse colour
 `F0 B4 78`, diffuse power 0.15, a plausible position) and the 8 bytes after them are zero. :observed{games="elden-ring"}

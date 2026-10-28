@@ -148,3 +148,26 @@ and 6 is also SoulsFormats'. :sourced[SoulsFormats]
 The decoded size in the header is the allocation a reader must make before decoding, and it can be large: Elden Ring's
 shader binder `/shader/shaderbdle.shaderbdlebnd.dcx` decodes to about 676 MB.
 :observed{games="elden-ring"}
+
+## Writing an envelope
+
+The 76-byte header is a function of the codec tag, the version, the field at 16, the level, the byte at 56 and the two
+sizes: writing it from those fields reproduces the header of every envelope of both archive sets and of the 29
+regulation files. :proven[both archive sets, Elden Ring without the `DLC` pair] The field at 20 is `0x2C` when the field
+at 16 is `0x24` and `0x4C` otherwise, and the payload starts at 76 in every variant.
+
+What a writer cannot reproduce is the payload, because the shipped compressors are not the ones a writer has.
+
+| Codec | Compressing the decoded bytes again | Confidence |
+|---|---|---|
+| `DFLT` | The payloads are zlib streams (`78 DA`). zlib 1.3.1 at level 9 reproduces 48 of the 58 shipped payloads byte for byte: 13 of Sekiro's 22, 19 of Elden Ring's 20 and all 16 regulation files up to 1.10. The other 10 were made by another deflate encoder: for the 9 of Sekiro's tried, no zlib level or memory level from 1 to 9 gives their bytes, and their sizes are both below and above level 9's. Rust's `miniz_oxide` reproduces none of the 58 and `zlib-rs` 9. | :observed |
+| `KRAK` | `oo2core_6` Kraken at levels 0 to 9 reproduces the shipped payload of none of 40 sampled Sekiro envelopes except the 3 or 4 whose payload is the data stored raw; the sizes at level 6 (the header's level byte) and at level 4 come within about 4 % of the shipped ones, above and below. | :observed{games="sekiro"} |
+| `ZSTD` | Every shipped frame (13 files) has the descriptor byte `0x00` (no content size, no checksum, no dictionary, not single-segment) and the window descriptor `0x80` (a 64 MiB window, the window log of level 21). libzstd 1.5.7 at level 21, streaming without a stated size, makes the same first six bytes for the installed 1.17.3 regulation's 54,111,776 bytes and 1,739,983 bytes after them where the shipped frame has 2,045,636. | :observed{games="elden-ring"} |
+
+A decoder that checks sizes exactly refuses what an envelope with a wrong size word makes of these streams. For 190
+sampled Sekiro and 708 sampled Elden Ring Kraken payloads, `oo2core_6` refuses every one decoded to one byte more than
+the header says, and every one decoded to one byte less except those whose last block is stored (14 and 45), which it
+decodes to the shorter prefix; it refuses every payload one byte short and accepts every payload with one byte added. :observed
+Walking the framing ([Kraken payload framing](#kraken-payload-framing)) refuses the two it accepts: a payload one byte
+over, and an envelope whose decoded size is one less where the last block is stored, both leave bytes after the last block.
+:observed

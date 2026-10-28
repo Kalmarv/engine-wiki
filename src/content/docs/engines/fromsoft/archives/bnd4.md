@@ -126,6 +126,27 @@ Reading a member by name needs no ID, but the IDs follow conventions that hold o
 
 In `.objbnd` and `.partsbnd` binders the IDs of a second and later model count up from 200 and 1100.
 
+### Where the parts and members sit
+
+The parts of a binder follow each other in one order, whatever the format byte.
+:proven[7,859 Sekiro and 53,722 Elden Ring BND4 binders, and the 29 binders of Elden Ring's `regulation.bin` files]
+
+1. The 64-byte header, then one record per member from offset 64.
+2. The names, directly after the records: NUL-terminated, in member order, with no gap between them and none shared.
+3. Where there is a hash table, zero bytes up to the next multiple of 8, then the table. The byte after the last of these
+   parts is the header's end, the field at offset 40.
+4. The members in table order. A member that is not empty starts at the next multiple of 16 from the end of the one
+   before (the first, from the header's end). An empty member starts where the one before ended, with no alignment, and
+   the next member that is not empty aligns from there. Nothing follows the last member.
+
+Rebuilding every one of these binders from its parsed fields (the header words, each record's flags, ID, name and
+member size) by this rule gives the stored header region, every member offset and the file's length. Empty members occur: 87 of Sekiro's
+binders hold one (136 empty `.txt` markers) and 559 of Elden Ring's (645 `.txt` and 3,164 `.ffxreslist` members), which is
+what the empty-member rule is for. A member whose record states a decoded size states its stored size there when the
+member is not marked compressed, a nested DCX envelope included, in all 611,113 members of both installs whose binders
+have the field.
+:proven[both archive sets, Elden Ring without the `DLC` pair]
+
 ## Divided binders
 
 A character's animation binder can point at other binders that hold the rest of its files, by marker members named
@@ -149,6 +170,12 @@ BHF4 uses the same 64-byte header arrangement as BND4, with a zero field at offs
 while names and the lookup table remain in BHF4. Map `.hkxbhd`/`.hkxbdt` collision
 pairs and `.tpfbhd`/`.tpfbdt` texture pairs use this arrangement. :observed
 
+The index is laid out as above up to the end of its hash table, and the payload places the members by the same rule from
+offset 48, where the header below ends. Both files end where their content does; the zero bytes after them in an
+archive entry (up to 15) are the entry's own padding, which some entries have and others do not. Rebuilding all 76 Sekiro
+and 1,996 Elden Ring pairs from their fields gives the index up to those zero bytes, every member offset and the payload's
+length up to them. :proven[both archive sets, Elden Ring without the `DLC` pair]
+
 ```layout
 title: BDF4 payload header
 size: 48
@@ -159,8 +186,8 @@ fields:
   - {at: 9, size: 1, type: u8, name: big endian, level: sourced}
   - {at: 10, size: 1, type: u8, name: bit ordering flag, level: sourced}
   - {at: 11, size: 5, type: "u8[5]", name: padding, value: 0, level: observed}
-  - {at: 16, size: 8, type: u64, name: declared header size, level: unknown, note: Observed 48 or 64}
-  - {at: 24, size: 8, type: "u8[8]", name: version bytes, level: sourced}
+  - {at: 16, size: 8, type: u64, name: declared header size, level: proven, note: 48 in all 2,072 pairs}
+  - {at: 24, size: 8, type: "u8[8]", name: version bytes, level: proven, note: "a copy of the index's version bytes (`07D7R6` in all 2,072 pairs)"}
   - {at: 32, size: 16, type: "u8[16]", name: padding, value: 0, level: observed}
 ```
 

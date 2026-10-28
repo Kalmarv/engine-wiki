@@ -121,9 +121,15 @@ one of the 221,796 TPF members of the 10,233 `mAA_BB_CC_DD_envmap_NN_middle_NN.t
 (176,964) or a cube map (44,832) in BC7, BC6H or 16-bit-float format, and its DDS payload is an ordinary uncompressed DDS
 file whose mip count matches the descriptor's. :proven{games="elden-ring"} No Sekiro texture has it.
 
-The data-size field has two observed producer conventions: length from the end of names, or length from the first
-DDS payload. Inter-section padding is zero but has no fixed width; trailing padding is at most 15 zero bytes.
-:proven[all 14481 packages]{games="sekiro"} :proven[all 274,440 packages]{games="elden-ring"}
+### The file's parts
+
+A package is its header, the descriptors with their optional metadata, the names, the payloads, in that order. The names
+follow the last descriptor directly: NUL-terminated, in texture order, UTF-16 for name encoding 1 and a byte string for
+2. The payloads follow the names directly and one another with no gap and no alignment, in texture order, and nothing
+follows the last. The data-size field is the sum of the payload lengths. Sekiro's `/font/dbgfont14h.tpf.dcx` is the one
+exception to the first of these: 272 zero bytes lie between its 17 names and its first payload. Rebuilding every package
+from its parsed fields by this rule gives the stored bytes of all of them.
+:proven[all 14,481 packages]{games="sekiro"} :proven[all 274,440 packages]{games="elden-ring"}
 
 ## Pixel formats and colour transfer
 

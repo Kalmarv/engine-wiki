@@ -35,11 +35,21 @@ is accounted for by the header, the row index, the rows, the strings and zero pa
 gap between parts. :proven{games="sekiro elden-ring"} The same holds for all 5,489 params of the 29 Elden Ring
 regulations examined (the installed release and 28 earlier ones). :observed{games="elden-ring"}
 
-The file ends after the last string with 0, 2 or 8 zero bytes. Two follow the shared empty row name. Where no row has a
+The file ends after the last string with 0, 2 or 8 zero bytes in the game params; the graphics-quality params of the
+archives (`Gconfig_*.param`, 24 files across both games) have real row names (five or more per file, such as the quality
+level names) and end in 4, 8, 12 or 15, and Elden Ring's `DefaultKeyAssign.param` has 373 distinct Japanese row names.
+:observed{games="sekiro elden-ring"} Two follow the shared empty row name. Where no row has a
 name, 8 follow the param type in 161 Elden Ring params (the five single-row `*CommonParam` types of each of the 29
 regulations, and `RuntimeBoneControlParam`'s 1,465 rows in the 16 earliest regulations) and in five single-row Sekiro
 params, and none follow it in 58 Elden Ring params (`NetworkParam` and `SpeedtreeParam` in each regulation) and 7
 Sekiro. :observed{games="sekiro elden-ring"}
+
+The strings follow the row data in one order: the param type (ASCII and a NUL) at the offset the header gives, then the
+row names, each UTF-16 and a NUL, in row order and directly after the type. The empty name is stored once and every row
+that has it shares that string; any other name is stored once for its own row, even when another row has the same text.
+Rebuilding a param from its parsed header fields, rows and names by this rule gives the stored bytes of the 235 archive
+params examined (Sekiro's 190 in the 64-bit form, Elden Ring's 45) and all 5,489 params of the 29 regulations, with the
+file's trailing zero bytes and the header's first word taken as stored. :proven{games="sekiro elden-ring"}
 
 Row names are not stored as text in these params. In every param of this form either no row has a name offset (219
 Elden Ring params, 12 Sekiro) or every row has the same non-zero offset, which points at one empty UTF-16 string after
@@ -50,7 +60,7 @@ non-empty string. The names people use come from community lists. :observed{game
 title: PARAM header (the 0x85 form of both games)
 size: 64
 fields:
-  - {at: 0, size: 4, type: u32, name: strings offset, level: sourced, note: Individual string pointers remain authoritative}
+  - {at: 0, size: 4, type: u32, name: strings offset, level: observed, note: "The param type string's offset rounded up to a multiple of 16 in 4,939 of 5,724 params, the offset itself in the others (which one follows the tool version that wrote the file: the same param type has both forms in different regulation files); individual string pointers remain authoritative"}
   - {at: 4, size: 2, type: u16, name: padding, level: proven, value: 0}
   - {at: 6, size: 2, type: u16, name: unknown, level: unknown, note: "0, 1 or 2; fixed per param type (the same in all 29 Elden Ring regulations); 2 only in BehaviorParam and BehaviorParam_PC of both games, 1 in NpcParam"}
   - {at: 8, size: 2, type: u16, name: data version, level: proven}
@@ -192,6 +202,10 @@ a DCX envelope around a binder. Public decryption material is supplied by SoulsF
 :sourced[SoulsFormatsNEXT]{games="elden-ring"} One key decrypts the installed regulation and 28 earlier ones (1.00.0 to
 1.17.3), which hold 185 params (1.00.0 to 1.06), 186 (1.07 to 1.10) and 194 (1.12.1 on). The envelope is DFLT through 1.10
 and ZSTD from 1.12.1. :observed{games="elden-ring"}
+
+The file is the 16-byte IV, then the DCX envelope and the zero bytes that pad it to whole 16-byte blocks (0 to 15 of
+them, the number that makes the envelope's length a multiple of 16), encrypted as one CBC chain. Encrypting what was
+decrypted with the file's own IV gives the file back for all 29. :proven{games="elden-ring"}
 
 The binder's eight version bytes are the regulation number in ASCII digits, such as `11730034` for 1.17.3; this equals the
 number in the release's name for all 29 files. :observed{games="elden-ring"} Paramdex's `FirstVersion` and `RemovedVersion`

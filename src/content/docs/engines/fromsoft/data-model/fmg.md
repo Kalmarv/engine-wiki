@@ -63,3 +63,20 @@ Over all 504 Sekiro FMGs (46,738 groups, 381,243 slots) and all 3,968 Elden Ring
 The slot table gives an ID a place in a group range even when no text exists for it in that language or build.
 Whether the game treats an empty slot differently from a missing ID is not established.
 :::
+
+## Layout of the file
+
+The parts follow one another in this order: the header and the group table, the string-offset table, the strings, and
+zero padding. :proven
+
+- **Groups.** The IDs of a file, those with a string and those with a slot of 0, in ascending order, are cut into groups
+  of consecutive IDs: a group ends only where the next ID is not one more, so two adjacent groups never have consecutive
+  ranges. A slot of 0 inside a range is what keeps a group whole. Rebuilding the group table from the IDs by this rule
+  reproduces the stored table of all 4,472 files. :proven
+- **Strings.** The strings follow the offset table in slot order, each UTF-16 and a NUL, with no gap and none shared (no
+  two slots name one string), in 4,469 of the 4,472 files. In three Elden Ring files (`GR_NGWord.fmg` in the `zhoCN`
+  language and two copies of `NetworkMessage_dlc01.fmg` in `thaTH`) 2 or 8 zero bytes lie between two strings, which no
+  slot names. :proven
+- **The end.** Every file's length is a multiple of 4: the strings are followed by the zero bytes that make it so, and in
+  43 of Sekiro's 504 files and 119 of Elden Ring's 3,968 by more zero bytes, in whole 4-byte units (4 to 112 bytes in
+  Sekiro, 4 to 116 in Elden Ring). :proven

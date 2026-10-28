@@ -135,7 +135,7 @@ fields:
 title: FXR action
 size: 64
 fields:
-  - {at: 0, size: 2, type: i16, name: action type, level: observed, note: "64 types in Sekiro's files, 71 in Elden Ring's"}
+  - {at: 0, size: 2, type: i16, name: action type, level: observed, note: "64 types in Sekiro's files, 71 in Elden Ring's, type 0 (an empty slot) among them; see FXR typed actions"}
   - {at: 2, size: 1, type: u8, name: flag, level: unknown, note: "0 or 1; 1 only with the next byte 0 and the word after it 0"}
   - {at: 3, size: 1, type: u8, name: flag, level: unknown, note: 1 or 0}
   - {at: 4, size: 4, type: i32, name: unknown word, level: unknown, note: "0 to 11"}
@@ -156,6 +156,8 @@ property or field list in any file (111,431 of Sekiro's 354,778 actions, 480,016
 What an action does is its type: the parameters are the field words (integers, floats, booleans, indistinguishable without
 the type's definition) and the properties. The [fxr project](https://github.com/EvenTorset/fxr) defines 80 types.
 :sourced[fxr]
+The 72 types the installs hold, where each parameter sits, the layouts they store, the grammar of nodes, configs and slots, and the
+enumerated parameters are on [FXR typed actions](/engines/fromsoft/effects/fxr-actions/).
 
 A node's own actions include the state-config map (type 199): its first field list holds, for each state, the index of the
 config that state runs. :observed[read on the light-carrying nodes; see the lights]
@@ -224,12 +226,15 @@ in all but 87 of Sekiro's 58,605 and 432 of Elden Ring's 236,122 keyframed prope
 
 A property's modifiers (random variation, dependence on an external value, ...) are 32-byte records with two type words,
 their own field words and conditional properties. :observed
+Type word A holds the component count and the modifier's kind, and every modifier of both installs is one of five kinds. :proven
+The kinds, their fields and their counts are in [FXR typed actions](/engines/fromsoft/effects/fxr-actions/#property-modifiers), and the
+curve functions in [property curves](/engines/fromsoft/effects/fxr-actions/#property-curves).
 
 ```layout
 title: FXR modifier
 size: 32
 fields:
-  - {at: 0, size: 2, type: u16, name: type word A, level: unknown}
+  - {at: 0, size: 2, type: u16, name: type word A, level: sourced, note: "Bits 0-1 the component count minus one; the kind is (bits 12-13) << 4 | bits 4-7: 21, 24, 38, 39 or 53"}
   - {at: 2, size: 2, type: "u8[2]", name: constant, level: proven, value: "0, 1"}
   - {at: 4, size: 4, type: u32, name: type word B, level: unknown}
   - {at: 8, size: 4, type: u32, name: field word count, level: proven}

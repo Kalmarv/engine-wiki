@@ -40,6 +40,12 @@ An import is a pair of 16-byte GUIDs: file then class instance. Internal pointer
 document; external pointers name an import. A resource reference instead carries a 64-bit resource id.
 :sourced[ReSkate]
 
+The file GUID of an import names its target document, whose name is in the manifest of the bundle that holds it.
+The 328,015 stock EBX payloads carry 185,301 distinct file GUIDs, each with the same manifest name wherever it occurs
+(no GUID has two names). :proven[all 328,015 payloads] The stock documents hold 865,673 import references to 147,320
+distinct file GUIDs; 865,671 references (147,318 GUIDs) name a document some bundle of the install holds, and two
+GUIDs, one reference each, name none. :proven[all 328,015 payloads]
+
 ```layout
 title: EBXX array record
 size: 16

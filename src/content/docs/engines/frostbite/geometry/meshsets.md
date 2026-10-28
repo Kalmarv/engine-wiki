@@ -37,6 +37,9 @@ fields:
   - {at: 104, size: 8, type: u64, name: name pointer, level: proven}
   - {at: 112, size: 8, type: u64, name: pointer to the name's last part, level: proven}
   - {at: 120, size: 4, type: u32, name: name hash, level: observed, note: djb2-XOR of the MeshSet name; equals the mesh asset's NameHash.}
+  - {at: 124, size: 1, type: u8, name: mesh type, level: observed, note: "0 rigid (46,977 MeshSets), 1 skinned (296), 2 composite (485); the names are Frostbite's mesh types"}
+  - {at: 125, size: 1, type: u8, name: unknown, level: unknown, note: "3 on 47,666 MeshSets, 5 on 92"}
+  - {at: 168, size: 4, type: u32, name: layout flags, level: observed, note: "bit 0: geometry in chunks (clear only on the MeshSet with inline geometry); bit 2: some LOD sets its bit 4; bits 1, 4, 7, 8 to 23 and 29 to 31 take other values that are not named here"}
   - {at: 180, size: 2, type: u16, name: LOD count, level: proven}
   - {at: 196, size: 2, type: u16, name: bone count, level: proven, note: 0xe0 header only.}
   - {at: 198, size: 2, type: u16, name: bounded bone count, level: proven, note: 0xe0 header only.}
@@ -66,7 +69,7 @@ fields:
   - {at: 8, size: 4, type: u32, name: section count, level: proven}
   - {at: 12, size: 8, type: u64, name: section array pointer, level: proven}
   - {at: 20, size: 60, type: "{u32, u64}[5]", name: section-index lists, level: proven, note: "Count and pointer of five byte lists, at 12-byte steps"}
-  - {at: 80, size: 1, type: u8, name: unknown flags, level: unknown, note: "0x40 or 0x41"}
+  - {at: 80, size: 4, type: u32, name: layout flags, level: observed, note: "bit 6: the geometry is a chunk (clear only on the LOD with inline geometry); bit 4 only on LODs of MeshSets that set header bit 2; bits 0, 9, 17 and 18 take other values that are not named here"}
   - {at: 84, size: 4, type: u32, name: index format, level: proven, note: "0x21 is 16-bit; 0x2e is 32-bit"}
   - {at: 88, size: 4, type: u32, name: index buffer byte count, level: proven}
   - {at: 92, size: 4, type: u32, name: vertex buffer byte count, level: proven, note: "Multiple of 16 in every stock MeshSet; the game also loads community MeshSets that are not (65,400)"}
@@ -82,6 +85,17 @@ LOD records are 16-aligned, so a 0xb8- or 0xbc-byte record occupies 192 bytes. :
 
 In the geometry chunk the index data starts at the vertex buffer byte count; indices are relative to their
 section. :proven[MeshSet census]
+
+The mesh type decides the form of the LOD records and the header: a rigid MeshSet has 0xb0-byte LOD records and the
+0xd0-byte header, a skinned one 0xbc-byte records (a bone map) and the 0xe0-byte header with bone bounds, a composite one
+0xb8-byte records (a bone mask per section) and the 0xe0-byte header; every section of the 781 non-rigid MeshSets declares
+blend indices and no section of a rigid one does. :proven[all 47,758 MeshSets]
+Header bit 0 and LOD bit 6 are clear exactly on the one MeshSet, and its one LOD, whose geometry is stored inside the
+resource. Header bit 2 is set on exactly the 321 MeshSets with a LOD that sets LOD bit 4. :proven[all 47,758 MeshSets and
+126,014 LODs] The other bits of both words take several values (a block of four bits at each of header bits 8 to 11,
+12 to 15, 16 to 19 and 20 to 23, whose counts rise within the first block: 31,976, 32,149, 33,300, 37,009 MeshSets) and
+their meaning is not known; LOD bit 0 is set on 50,130 LODs and is not the first LOD of its MeshSet. :observed[all 47,758
+MeshSets]
 
 The five lists name the sections each pass draws: list 0 the main pass, list 2 decals, lists 3 and 4 the
 depth and shadow passes. :inferred This is the order of the subset categories Frostbite meshes use in other games
@@ -119,6 +133,7 @@ fields:
   - {at: 27, size: 1, type: u8, name: flags, level: observed, note: "15 values below 0x20; 0x0a (170,233 sections), 0x04 (116,897) and 0x0e (10,935) are the commonest; the byte does not say which section list holds the section (0x0a is on sections of list 0 alone and of list 2 alone)"}
   - {at: 28, size: 1, type: u8, name: material slot index, level: observed, note: Index in the mesh asset's Materials.}
   - {at: 30, size: 1, type: u8, name: total vertex stride, level: proven}
+  - {at: 31, size: 1, type: u8, name: primitive type, level: observed, note: "3 (triangle list) in all 300,875 sections"}
   - {at: 32, size: 4, type: u32, name: primitive count, level: proven}
   - {at: 36, size: 4, type: u32, name: start index, level: proven}
   - {at: 40, size: 4, type: u32, name: vertex byte offset, level: proven}

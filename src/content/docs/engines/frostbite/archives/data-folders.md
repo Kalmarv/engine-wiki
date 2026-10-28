@@ -43,6 +43,32 @@ to `01` (6,056 of 6,056 bundles), and every chunk reference is `0x80` followed b
 (177,457 of 177,457; none is `-1`). The four-word record's patch byte (bits 48..55) and top byte (bits 56..63) are
 zero in all of them. :proven[all 23 TOCs, 6,056 bundle records and 177,457 chunk references]
 
+## Patch TOCs and the base game's TOC
+
+The flags word has two more bits besides the Huffman-name bit (value `4`): the bit with value `1` says the base game's
+TOC of the same superbundle holds bundles this TOC does not list, the bit with value `2` says it holds chunks this TOC
+does not list. :sourced[FrostyToolsuite]
+Of the 213 TOCs of the 82 mod folders installed beside the game, 167 carry the flags word `3` (both bits, no Huffman
+names) and 46 carry `0`. :observed[every TOC of 82 mod folders] Of the 167, 153 have a TOC of the same path in the stock
+`Data`; the other 14 are superbundles the mod adds (level superbundles), which have no base to merge with.
+:observed[the 167 flagged TOCs] In the 153, all 5,990 bundles the mod TOC lists are bundles of the base TOC (matched by
+lowercase name) and none is new; of their 164,345 chunk GUIDs, 161,186 are listed by the base TOC too and 3,159 are
+not, and none is stored as removed. :observed[the 153 TOCs] Merging by the flags (the base's bundles and chunks the
+patch does not name, then the patch's, a patch entry replacing the base entry of the same name or GUID) gives a TOC whose
+bundle and chunk perfect hashes resolve and that writes and reads back. :observed[the 153 merged TOCs]
+
+No TOC of the stock data or of the mods has a bundle record whose size word does not have the upper two bits `01`, a
+chunk reference other than `0x80` or `-1`, or a removed (`-1`) chunk: the 213 mod TOCs hold 19,639 bundle records and
+3,025,837 chunk references. :observed[every TOC of 82 mod folders] The compact three-word chunk record, removed
+bundles and bundles stored outside the TOC that other Frostbite titles use therefore do not occur in this data.
+
+The `superBundles` list of `layout.toc` names the superbundles (`Win32/globals`), one `name` each; the TOC of each is
+that name plus `.toc` under the data folder. The stock list has 24 names, 23 of which have a TOC in `Data` and every
+TOC of `Data` is named. :proven[the stock layout.toc and Data] In the 82 mod layouts every one of the 213 TOCs on disk is
+named by its layout. :observed[82 mod folders] `fs` (`initfs_Win32`), `head` (625,200) and
+`installManifest.settings.bundleFormat` (2,651,454,669) hold the same values in the stock layout and in all 82 mod
+layouts. :observed[the stock layout and 82 mod layouts]
+
 ```layout
 title: Superbundle TOC header
 size: 48

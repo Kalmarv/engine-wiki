@@ -57,6 +57,13 @@ The upper nibble of byte 5 is 7 in the 1,535,187 blocks of the files that the 82
 list in their bundles as well, among them maps compiled by ReSkate Studio. :observed[every listed file of those 82 folders]
 No stock region names a Patch folder, so no delta file occurs among the ranges. :proven[the stock install]
 
+The files that the TOCs of 82 installed mod folders reach (213 TOCs, 9,562,590 distinct file ranges, the stock files
+they reference included) hold 10,508,160 block headers. Every one has byte 0 equal to zero, the top bit of byte 4 clear
+and the upper nibble of byte 5 equal to 7; the codec is `0` in 2,206,387 blocks and `0x11` in 8,301,773, and no other.
+No block header is eight zero bytes, and every range chains from its first header to its last byte. :observed[every file range the 213 TOCs of those 82 folders list]
+So no codec `0x09`, `0x0F` (or dictionary byte) and no empty eight-byte block occurs in the stock data or in the mods
+read beside it.
+
 :::open[Which dictionary and flag variants does the engine accept?]
 No stock block uses a nonzero dictionary byte or a flags nibble other than 7, so the stock data does not show what
 either would mean. The measured framing does not establish support for every Frostbite CAS codec. :unknown

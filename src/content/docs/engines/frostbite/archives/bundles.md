@@ -73,7 +73,12 @@ Chunk metadata is a native-DB `chunkMeta` list, one row per chunk in chunk order
 list of exactly their chunk count; 17 bundles have no chunks and no list). Every row is an object with an `h64`
 (eight bytes) and a `meta` object. `meta` is empty in 175,203 rows, holds only `firstMip` (a signed 32-bit value) in
 58,570 rows, and holds a string `container` and a six-element `metrics` list in 6,037 rows (one per bundle).
-:proven[all 239,810 stock rows] A measured root bundle has 8,506 chunks and 8,506 metadata rows
+:proven[all 239,810 stock rows] A `metrics` element is an object of a `resourceType` (a 32-bit resource type hash) and a
+`value` object with one named 32-bit number (`persistentTextureSize`, `FreeStreamedTextureSize`, `bundledTextureSize`,
+`freeStreamedMeshSizes`, `bundledMeshSizes`, `physicsSizes`). :proven[all 6,037 stock `container` rows: six metrics each, six distinct names] The manifests ReSkate Studio writes for the installed mods have the same row shapes (1,193,758 rows over 19,639 bundles:
+951,041 empty, 234,172 `firstMip`, 8,545 `container`). They differ for a bundle with no chunks: 5,573 of them store an
+empty list named `chunkMeta` (13 bytes) where the stock bundles store no metadata at all, and 5 store none.
+:observed[every manifest of 82 mod folders] A measured root bundle has 8,506 chunks and 8,506 metadata rows
 in the same order. :observed
 
 Every TOC, bundle region, bundle manifest, depot, shader lookup table and `layout.toc` in a measured Studio patch

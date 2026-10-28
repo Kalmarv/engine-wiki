@@ -45,6 +45,18 @@ with bit 0 set; a remainder of 56 bytes or more is padded in a block of its own 
 77,457 containers, DXIL as well as DXBC, and none stores a zero digest, so every shipped DXIL container is signed.
 :observed[Sekiro 432, Riders Republic 2,443, Sledding Game 4,854, skate. 19,445, Elden Ring 50,283 containers]
 
+A container is fixed by its parts and their bytes. Writing the parts back in the directory's order, each exactly as stored (a part keeps the padding its
+producer wrote, or none), behind a header whose size, part count, directory and digest follow from them, reproduces every one of the 77,457 containers byte for byte.
+:proven[Sekiro 432, Riders Republic 2,443, Sledding Game 4,854, skate. 19,445, Elden Ring 50,283 containers] The digest and the sizes are the only fields derived from the rest,
+so a part can be replaced or added and the container written again with a correct digest.
+
+Three outside readers agree with this. vkd3d's container reader lists the same kinds, sizes and part offsets as a plain reading of the directory in all 77,457 containers (599,974 parts), and
+accepts the stored digest of every one (it checks the digest unless told not to). :proven[all 77,457 containers] Microsoft's `d3dcompiler_47` refuses a Shader Model 4 or 5
+container whose digest is stale or zero (`D3DDisassemble` and `D3DStripShader` return `E_FAIL`) and takes the stock one. :observed[the committed fixtures and 180 sampled containers of three games]
+Microsoft's DXIL validator, given a container with a zero or arbitrary digest and asked to edit it in place, returns the stock container of Elden Ring byte for byte, so the digest it signs with
+is the one above. :observed[120 sampled containers]{games="elden-ring"} It rejects skate.'s stock containers (status `0x80AA0009`), so it cannot arbitrate those. :observed[20 sampled containers]{games="skate"}
+A container with a part replaced (the debug-name part) and its digest recomputed is accepted by all three, and the validator's signature of it equals the digest recomputed. :observed[60 sampled Elden Ring containers]
+
 | Part set (in file order) | Containers | Games |
 |---|---|---|
 | `RDEF ISGN OSGN SHEX STAT` | 432 | :in[sekiro] |
@@ -148,6 +160,17 @@ immediate constant buffer, up to 258 words) is longer than 32 words. There is no
 `dcl_function_body` or `dcl_function_table`, no 64-bit immediate, no register-space word (Shader Model 5.1) and no extended
 operand other than the modifier kind. The `Input` operand has two index dimensions in the 47 uses in Riders Republic's hull
 programs and the 43 in its geometry programs; the nine domain programs use no plain `Input` operand. :observed
+
+Every instruction has the operand count its opcode's format gives it. The formats are the table of destination and source operands that vkd3d's reader and DXVK's decoder both publish, whose
+counts agree for each of the 166 opcodes both list; the 3,415,319 instructions of the 7,729 programs have the stated count, with none left over.
+:proven[7,729 containers; Sekiro 54,945, Riders Republic 563,505, Sledding Game 2,796,869 instructions] The operand that the format marks as a register with no data of its own (a resource, sampler,
+unordered-access view, thread-group memory or output stream) is exactly the operand that holds such a register, in every instruction. :proven[7,729 containers]
+A destination is chosen by a write mask, except the depth output, a one-lane register (8 times in Riders Republic and 16 in Sledding Game). :proven[7,729 containers]
+A negate or absolute-value modifier is a property of the operand and is written on integer operands as well (`iadd` with a negated source occurs in Sledding Game). :observed
+Of the 180 opcodes with a format, 109 occur in these programs (53 in Sekiro, 105 in Riders Republic, 82 in Sledding Game); the other 71 rest on the public tables alone, `uaddc` and `usubb` on
+Microsoft's reference, which gives them two destinations and two sources. :observed
+vkd3d's disassembler, run as a program over 600 sampled containers of the three games, prints the same instruction sequence as a decode of the token stream (182,560 instructions), the same
+signature elements (4,730) and the same part directory. :observed
 
 ## Shader Model 6: pipeline-state record (`PSV0`)
 
@@ -275,6 +298,6 @@ second operand is the address space, so 264 skate. modules (392 pointee types) h
 that appears under both spaces; no Elden Ring module does. :observed{games="skate elden-ring"}
 
 :::open[Where do the 984 other skate. containers come from?]
-The wiki's census of skate. counts 20,429 `CompiledBytecode` entries; the 19,445 containers read here are distinct resources.
+The wiki's census of skate. counts 20,429 `CompiledBytecode` entries; the 19,445 containers counted above are distinct resources.
 Whether the difference is entries repeated across table-of-contents files is not established.
 :::

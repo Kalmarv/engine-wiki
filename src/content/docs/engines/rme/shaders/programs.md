@@ -1,6 +1,6 @@
 ---
 title: Shader programs
-description: "The compiled Cg programs of the SHADERS sections (.vsp, .psp, .shp), the RSX fragment microcode and how it decodes, the programs that only scale a texture (sky domes, icons), and the full-screen fog pass with its level parameters."
+description: "The compiled Cg programs of the SHADERS sections (.vsp, .psp, .shp), the RSX fragment and vertex microcode and how they decode, the programs that only scale a texture (sky domes, icons), and the full-screen fog pass with its level parameters."
 sources:
   - title: RPCS3 (Emu/RSX/Program/CgBinaryProgram.h, CgBinaryFragmentProgram.cpp)
     url: https://github.com/RPCS3/rpcs3
@@ -8,6 +8,9 @@ sources:
   - title: Mesa nouveau (src/gallium/drivers/nouveau/nv30, nvfx_shader.h and nvfx_fragprog.c)
     url: https://gitlab.freedesktop.org/mesa/mesa
     note: reverse-engineered NV30 and NV40 fragment program encoding; the opcodes it marks NV30-only
+  - title: Mesa nouveau (nv40_vertprog.h, nvfx_vertprog.c)
+    url: https://gitlab.freedesktop.org/mesa/mesa
+    note: the NV40 vertex instruction layout and the output-enable bits
 implementations:
   - name: dx (rsx-reader)
     url: https://github.com/Kalmarv/dx/tree/main/rsx-reader
@@ -111,6 +114,37 @@ Bit 31 is a per-interpolant flag that is clear on the sampling coordinates and s
 sense is inferred, not shown by a table or a header field. The fields of word 2 above bit 18 are non-zero in only five
 patterns, one of them on `NRM` alone.
 :::
+
+## Vertex microcode
+
+A `.vsp` program's microcode is 16-byte slots of four big-endian 32-bit words, as many as the vertex descriptor's instruction count says, with bit 0 of the last word set in the final slot and in no other. :proven[all 170 distinct vertex programs]
+The 199,017 vertex programs of the disc are 170 distinct ones, 5,529 slots in all; the descriptor's instruction slot is 0 and its user-clip mask 0 in every one. :proven[all 170 distinct vertex programs]
+A slot is the NV40 vertex instruction: up to two operations (a vector operation and a scalar one, either may be `NOP`) that share three source operands, one attribute index and one constant index, and each has its own destination and write mask. :sourced[Mesa nouveau]
+
+| Word | Bits | Field | What the 5,529 slots hold | Confidence |
+|---|---|---|---|---|
+| 1 | 22 to 26 | vector opcode | 13 of the 26 opcodes occur (below); no value without a name | :proven[all 170 distinct vertex programs] |
+| 1 | 27 to 31 | scalar opcode | 7 occur (below); `BRA`, `CAL` and the other control-flow values never occur | :proven[all 170 distinct vertex programs] |
+| 1 | 8 to 11 | attribute index of every source of type input | read in the program header's `attribute_input_mask` | :proven[all 170 distinct vertex programs] |
+| 1 | 12 to 21 | constant index of every source of type constant | 828 slots index above 255 and the largest index is 467, the last of 468 constants; bit 21 is never set | :proven[all 170 distinct vertex programs] |
+| 1, 2, 3 | 0 to 7, 23 to 31; 6 to 22; 0 to 5, 21 to 31 | the three sources, 17 bits each, split across the words | type in bits 0 to 1 (1 temporary, 2 attribute, 3 constant), the temporary in bits 2 to 6, the swizzle in bits 8 to 15 (x highest), negate in bit 16 | :proven[all 170 distinct vertex programs] |
+| 0 | 21 to 23 | absolute value of source 0, 1, 2 | set on 25 slots (source 0) and 7 (source 1) | :proven[all 170 distinct vertex programs] |
+| 0 | 26 | saturate | set on 20 slots | :proven[all 170 distinct vertex programs] |
+| 0 | 15 to 20, 30 | vector destination temporary (63 for none) and the flag that sends the vector result to the output register | | :proven[all 170 distinct vertex programs] |
+| 3 | 7 to 12, 2 to 6 | scalar destination temporary and flag, and the output destination register shared by both operations | | :proven[all 170 distinct vertex programs] |
+| 3 | 13 to 16, 17 to 20 | vector and scalar write masks, x in the highest bit of each | | :proven[all 170 distinct vertex programs] |
+| 0 | 10 to 13, 2 to 9, 14 and 29 | condition test: code, test enable, the lanes it reads, and the update flag (bits 14 and 29 are set together) | test enabled on 9 slots (7 `LT`, 2 `NE`), the update flag on 8 | :proven[all 170 distinct vertex programs] |
+| 0 | 27; 3 bit 1; 0 bit 24, bits 0 to 1 | relative addressing of attributes and of constants, and the address register and lane | clear on every slot, so no program is relatively addressed | :proven[all 170 distinct vertex programs] |
+| 0 | 28, 31 | not assigned | zero on every slot | :proven[all 170 distinct vertex programs] |
+
+The vector opcodes in use, with their slot counts: `MAD` 2,244, `MUL` 1,487, `MOV` 1,071, `ADD` 615, `MAX` 37, `DP3` 27, `SGE` 14, `FLR` 8, `FRC` 7, `DP4` 5, `DPH` 2, `SLT` 2, and `NOP` in 10 slots. The scalar opcodes: `NOP` in 5,186 slots, `SIN` 115, `COS` 83, `RSQ` 52, `LG2` 36, `EX2` 36 and `RCP` 21. :proven[all 170 distinct vertex programs]
+The nouveau driver and RPCS3 number the scalar branch and call opcodes differently (`BRA` is 9 and `CAL` 11 in the first, 8 and 10 in the second), and neither occurs on the disc, so their values are not settled here. :sourced[Mesa nouveau, RPCS3]
+
+The program header states what the code does. The attribute-input mask has bit `n` set exactly when an instruction reads attribute `n`, the register count is the highest temporary read or written plus one (at least one), and the attribute-output mask is the outputs the code writes: destination 1 sets bit 0, destinations 7 to 14 set bits 14 to 21 (destination `n` sets bit `n + 7`), and destination 6 sets bit 13 when written with all four lanes and bit 5 when written with x alone. All of it holds in 170 of 170 programs. :proven[all 170 distinct vertex programs]
+Destination 0 is the position, written by every program. Destinations 2 to 5 and 15 upward never occur, so the mapping of their bits follows the nouveau driver's output numbering and is not measured. :sourced[Mesa nouveau]
+
+RPCS3's vertex disassembler, an independent implementation of the same format, run over the 170 microcodes, prints the operations the decode finds (5,862 operations in all): the same opcodes in the same order, the same write masks, the same sources (register, swizzle, negate, absolute value), the same saturate and condition fields, and for every temporary result the same register. A vector `MOV` with the update flag and no destination temporary (`MOVC RC.x, R4.x`) writes the condition register alone, and RPCS3 prints `RC` as its destination. :proven[all 170 distinct vertex programs]
+Its names for the output destinations are indexed by the destination number as if destination 0 were a colour, so they cannot be used to name an output. :observed
 
 ## Programs that only scale a texture
 

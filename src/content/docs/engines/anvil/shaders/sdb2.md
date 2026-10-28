@@ -1,6 +1,6 @@
 ---
 title: "SDB2 shader bundles"
-description: "The effect and program bundles of Shaun White Skateboarding: source files, records, state pairs and the programs they hold."
+description: "The effect and program bundles of Shaun White Skateboarding: source files, records, state pairs and the programs they hold, with their opcodes and registers."
 games: ["shaun-white-skateboarding"]
 ---
 
@@ -79,6 +79,23 @@ After the programs come the literal state pairs, the save-and-restore pairs (eac
 The second state array holds placeholders that the loader fills: on entry the pass reads the current device states into them, applies the first array and, on exit, restores the saved values. :observed
 
 The pixel programs of the high file are `ps_3_0` and use 22 token kinds, 20 of them executable (`MOV`, `ADD`, `MAD`, `MUL`, `RCP`, `RSQ`, `DP3`, `DP4`, `MIN`, `MAX`, `EXP`, `LOG`, `LRP`, `FRC`, `POW`, `NRM`, `TEXKILL`, `TEX`, `CMP`, `DP2ADD`), all in straight lines with no `IF`, `LOOP` or `CALL`. Unique programs number 589 vertex and 3,752 pixel by byte hash. :observed
+
+## The compiled programs
+
+The three uncompressed bundles hold 7,306 distinct programs by their bytes, 1,099 vertex and 6,207 pixel (588 and 3,751 in the high bundle, 538 and 3,273 in the medium, 543 and 2,062 in the low; most repeat across bundles). Every one is Shader Model 3.0: the version token is `0xFFFE0300` for a vertex program and `0xFFFF0300` for a pixel program, and none is Shader Model 1 or 2. :observed[the three uncompressed bundles]
+Together they hold 63,679 vertex and 601,220 pixel instructions. A program has no control flow: no `if`, `loop`, `rep`, `call`, `break` or predicate. :observed[the three uncompressed bundles]
+
+| Stage | Opcodes used (besides `dcl` and `def`) | Confidence |
+|---|---|---|
+| Pixel | `add` `cmp` `dp2add` `dp3` `dp4` `exp` `frc` `log` `lrp` `mad` `max` `min` `mov` `mul` `nrm` `pow` `rcp` `rsq` `tex` `texkill` | :observed[the three uncompressed bundles] |
+| Vertex | `add` `dp3` `dp4` `exp` `frc` `log` `lrp` `mad` `max` `min` `mov` `mova` `mul` `nrm` `pow` `rcp` `rsq` `sge` `sincos` `slt` | :observed[the three uncompressed bundles] |
+
+The vertex programs address the float constants relative to the address register in 4,170 source operands, always as `c[a0.x]`, `c[a0.y]`, `c[a0.z]` or `c[a0.w]` plus the register number, in `mul` (1,038), `mad` (3,114), `mov`, `max` and `min` (6 each), after a `mova a0, r` (344 writes of all four lanes and 12 of x alone). :observed[the three uncompressed bundles]
+This is the form of a matrix-palette skinning loop, a `mova` of a scaled index vector followed by reads of the bone matrices from the constant file; that these programs skin is concluded from the form. :inferred
+Pixel source operands carry no modifier besides negate (68,301), absolute value (4,171) and negated absolute value (6); vertex operands only negate (4,603). Saturation is on 27,515 pixel results and 656 vertex results; no result is partial precision. :observed[the three uncompressed bundles]
+Microsoft's `D3DDisassemble` lists the same instructions, in the same order, with the same registers, swizzles and modifiers, as a reader of the tokens: all 1,099 vertex programs and all 6,207 pixel programs, line for line. :observed[the three uncompressed bundles]
+
+On the reference rasterizer (`D3DDEVTYPE_REF`, software vertex processing) `mova` rounds to the nearest integer with a half going away from zero (`-2.5` gives `-3`, `0.5` gives `1`), a relative constant read at an index from 256 up to 4096 returns zero, and `slt` and `sge` are the IEEE comparisons (a NaN operand gives 0). :observed[a vertex program run on the reference rasterizer]
 
 ## Selecting a record
 

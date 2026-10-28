@@ -89,27 +89,13 @@ The running game keeps its own reflection registry. In build 20260929 the symbol
 `Skate+0x765d318` and the settings manager global at `+0x7482ce0`. Getter `+0x18d95e0` and setter `+0x18d9c50`
 have the signature `bool(manager, const char* name, type_or_0, const void* value)`. :observed
 
-```layout
-title: Runtime type descriptor fields
-size: variable
-note: Runtime memory.
-fields:
-  - {at: 32, size: 8, type: pointer, name: super TypeInfo, level: observed}
-  - {at: 42, size: 2, type: u16, name: field count, level: observed}
-  - {at: 56, size: 8, type: pointer, name: field array, level: observed, note: "Also seen at +0x60"}
-```
+The type registry is a list of runtime objects built from static records in the executable. A class object stores its
+super class at +0x20; the record that the object points to holds the field count at +0x2a and the field array at +0x38
+(+0x60 for a structure); each field entry is 24 bytes with a 32-bit name key, flags, a 16-bit offset and the field's type
+object. :observed See [Runtime type registry](/engines/frostbite/runtime/type-registry/) for the layouts and the
+census against the stock EBX tables.
 
-```layout
-title: Runtime field descriptor
-size: 24
-fields:
-  - {at: 0, size: 8, type: u64, name: name hash, level: observed}
-  - {at: 8, size: 2, type: u16, name: field offset, level: observed}
-  - {at: 10, size: 6, type: bytes, name: unknown, level: unknown}
-  - {at: 16, size: 8, type: pointer, name: field TypeInfo, level: observed}
-```
-
-The typed property copy at `Skate+0x4657040` dispatches on these field types while a level loads; C strings
+The typed property copy at `Skate+0x4657040` dispatches on the field types while a level loads; C strings
 (type code 7) are copied through `strlen`, so a C-string offset pointing outside its document's payload becomes
 a pointer past the end of the loaded object. :observed See the
 [crash catalogue](/engines/frostbite/runtime/crashes/#level-root-ebx).
@@ -124,8 +110,8 @@ of those reads, all with the `RFL2` reflection chunk (none with `REFL`); 16,456 
 case-exact or lowercased: none of the 21,561 distinct keys equals either hash of its name. The key ignores case: 49 keys
 are shared by two names that differ only in case (`Min` and `min`, `Y` and `y`, `Metadata` and `MetaData`), and no key is
 shared by names that differ in anything else; the empty name has the key `0x7f52aefb`.
-:proven[all 21,610 name and key pairs of the 328,015 documents] The function that produces the key is not established.
-:unknown
+:proven[all 21,610 name and key pairs of the 328,015 documents] The function that produces the key is not established; the
+[type registry page](/engines/frostbite/runtime/type-registry/) lists what it is not. :unknown
 
 **Type lists.** An instance names its type by a slot of the `EFIX` type list. For all 1,724,470 instances the slot is
 also the index of the reflection type with the same GUID and signature. The `EFIX` list is shorter than the reflection

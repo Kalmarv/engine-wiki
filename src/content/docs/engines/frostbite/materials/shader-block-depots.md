@@ -61,7 +61,7 @@ fields:
   - {at: 0, size: 8, type: u64, name: name hash, level: observed, note: Texture parameters carry a slot tag in the upper 16 bits.}
   - {at: 8, size: 4, type: u32, name: type hash, level: observed}
   - {at: 12, size: 2, type: u16, name: count, level: proven, note: "Equal to the u32 at +16 in every record that has one"}
-  - {at: 14, size: 2, type: u16, name: name hash extension, level: unknown, note: "A function of the 64-bit name hash: one value per distinct name hash"}
+  - {at: 14, size: 2, type: u16, name: per-hash value, level: unknown, note: "One value per distinct 64-bit name hash, but not a hash of independent bits: 1,337 values over 1,636 hashes, up to 16 hashes sharing one"}
 ```
 
 The 2,473 distinct stock depots hold 192,642 material entries; entries of one depot that share a descriptor share a
@@ -72,12 +72,21 @@ count 1 (923,172). The count of a value is therefore an element count, not a byt
 732 entries, which use 95 blocks, hold a parameter of a type that is not in the table below (`0x566e2dd0`, one byte an
 element; 95 records); with that size every one of the 64,105 blocks parses to its last byte. :proven[every stock block]
 
-The 1,635 distinct 64-bit name hashes of the stock depots have 1,635 distinct low 48 bits, and the `u16` at +14 is the
-same for every record with the same name hash; 1,336 different values occur. :proven[every stock block]
+The 1,636 distinct 64-bit name hashes of the stock depots, none of them used under two parameter types, have 1,636
+distinct low 48 bits and 1,609 distinct top 16 bits, and the `u16` at +14 is the same for every record with the same name
+hash. :proven[every stock block]
+That `u16` is not the missing half of a 32-bit name hash. It takes 1,337 distinct values over the 1,636 name hashes, where
+1,636 independent 16-bit values would give about 1,616; 1,010 pairs of name hashes share a value against about 20
+expected, one value is shared by 16 name hashes, and the 334 texture parameters have only 239 distinct values.
+:proven[every stock block] The value is not a function of the type, of the top 16 bits of the name hash (the 27 pairs of
+hashes with equal top 16 bits have different values), of any 16-bit slice of the 64-bit hash or of the xor or sum of the
+four slices, and of the 140 values that several name hashes share only 22 are shared by records whose remaining bytes are
+identical. :observed[every stock block; 140 shared values]
 The 32-bit value formed by the `u16` at +14 and the top 16 bits of the name hash, in either order, is neither the
 djb2-XOR hash (case-exact or lowercased) of any of the 303,105 distinct strings found in the stock EBX documents, nor
 a reflection name key (21,561 distinct keys), and neither is the low or high half of the 64-bit hash.
-:observed[303,105 strings; 1,635 name hashes]
+:observed[303,105 strings; 1,636 name hashes]
+None of the 1,636 name hashes occurs as a constant in `Skate.exe`. :proven[every 8-byte window of the executable image]
 
 Texture type `0x14c5fc30` carries one flag byte, then the TextureAsset instance GUID and EBX file GUID, in that
 order. All 2,038 measured texture flags equal one. Texture binding uses these GUIDs rather than the Texture

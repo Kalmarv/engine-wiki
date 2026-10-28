@@ -65,6 +65,9 @@ Studio's one-proxy-per-200-m-cell construction can make every proxy resident und
 A 661-proxy city example occupies 1.94 GB and hangs in G-buffer/decal GPU work. This is distinct from the stock
 hierarchical vista arrangement. :observed
 
+A Studio level names its vista bundles from its depth-2 `QuadrantInfo` entries (`VistaBundleName`); the `wpvista`
+bundles themselves are separate entries of the TOC, so emptying the names leaves the bundles in the level. :observed
+
 ## Pause map and loading screen
 
 A community level's 2D pause-map assets use `ui/reskate/<level>/map/*` and `ui/reskate/coremap/*` in

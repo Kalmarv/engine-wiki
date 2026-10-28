@@ -33,3 +33,20 @@ machine running it gives the code and the engine's runtime structures offline, w
   and check formulas.
 
 A snapshot is one moment: take several (menu, in the world, different hours or states) and say which one a fact comes from.
+
+How a snapshot is taken decides what it holds:
+
+- **From the hypervisor, not inside the guest.** The virtual machine is paused and its physical memory written out
+  whole, with the address gaps of the machine (the PCI hole) filled with zeros so that a file offset is a physical
+  address. Nothing runs inside the game's machine to take it.
+- **Without a passed-through GPU.** The guest then renders with WARP, Direct3D's software rasterizer, so textures,
+  buffers and compiled shaders the game creates sit in guest memory as plain rows rather than in video memory.
+- **At the right moment.** Structures the engine builds while starting are absent from an early snapshot: in Riders
+  Republic a snapshot at the splash screen holds no class names, one at the main menu holds them
+  ([class registry](/engines/anvil/data-model/class-registry/)). The executable image is most complete while the game
+  idles at a menu (in the measured case nearly all its pages were resident there, against about half once a world had
+  streamed in), so take code from a menu snapshot and decoded assets from one in the world.
+- **Read with a tool that understands Windows' memory.** Process memory is found through the guest's page tables;
+  pages Windows has moved into its compressed store are only readable by a reader that decompresses them (MemProcFS
+  does, Volatility 3 does not), which recovers a good part of an image that otherwise looks missing. The main module
+  can then be rebuilt as an executable in its loaded layout for a disassembler.

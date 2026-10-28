@@ -168,6 +168,8 @@ other meshes hold only coarser-LOD face sets (1,662 in Sekiro, 5,279 in Elden Ri
 face set): separate meshes that exist for a distant level, so reading a mesh's first face set as its LOD0 takes their
 coarse geometry for a finished mesh. :proven[every mesh of both installs] The cull-backfaces byte is equal across all
 face sets of a mesh in every mesh of both installs, motion-blur and coarser-LOD sets included. :proven[every mesh of both installs]
+It is not decided by the material: in Sekiro the byte takes both values among meshes of one material class, and among
+meshes that share one material, so a mesh's sidedness comes from its own face sets. :observed{games="sekiro"}
 
 ### Face counts in the header
 

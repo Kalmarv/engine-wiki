@@ -28,4 +28,6 @@ by [reference readers](/methods/reference-readers/) or the [engine's code](/meth
 ## Collisions
 
 Lossy hashes collide. Two paths can share a 32-bit hash; two candidate words can match one type id by chance. Keep every
-matching candidate and say so, rather than picking one.
+matching candidate and say so, rather than picking one. How often this happens is measurable once the engine's own names are
+known: in Riders Republic, 25 of the 298 type ids that had been named from word lists turned out to be registered under
+another name ([class registry](/engines/anvil/data-model/class-registry/)).

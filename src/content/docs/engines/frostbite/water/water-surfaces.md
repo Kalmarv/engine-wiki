@@ -12,6 +12,9 @@ Studio exposes an `ocean` material domain and `collision_mode: water`; its compi
 remain resident in the level root. Visible water geometry and the water collision response are distinct data.
 :observed
 
+Studio places the ocean surface object (`t_0_0`) at the level root: in a map compiled in tiles with ocean water, the
+level root bundle of every tile holds a ShaderBlockDepot with a single key, the water object's. :observed
+
 :::open[What does the stock water shader compute?]
 The surface and binding census does not establish wave evaluation, depth reconstruction, reflection or foam
 equations. :unknown

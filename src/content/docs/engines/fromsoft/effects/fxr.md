@@ -298,6 +298,15 @@ adaptation exponent 23. :proven[against the fxr project, all 30 spot lights]
 The fxr project presents a spot light's multipliers divided by ten; the stored values are ten times what it prints (8.0 where it
 prints 0.8). :sourced[fxr]
 
+A light's place in its effect is the chain of its nodes. The static node transform (action 35) is six float field words, a translation
+and a rotation in degrees, and sits in a config, never in a node's own actions: 20,878 Sekiro configs and 81,215 Elden Ring
+configs have one, none has two. :proven[every config of both installs]
+Every node with several configs has a state-config map. :proven[every node of both installs]
+Counted per light, 167 of Sekiro's 847 and 725 of Elden Ring's 5,016 have a rotation above them in the chain of the configs
+that state 0 chooses; the rest sit under translations only. :proven
+The rotation order and the translation's place relative to it are the fxr project's (rotations Z, X, Y, then the translation).
+:sourced[fxr]
+
 ## How the games name an effect
 
 An effect runs because something names its id. The routes, with the share of ids in each that exist and reach a light (the

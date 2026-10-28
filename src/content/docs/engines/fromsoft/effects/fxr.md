@@ -315,15 +315,50 @@ effect itself or an effect it spawns holds a light):
 | Route | Elden Ring | Sekiro |
 |---|---|---|
 | param fields: 323 `ExtRefs` fields of 16 params (`AssetModelSfxParam` `sfxId_0` to `7`, `Bullet`, `Magic`, `SpEffectVfx`, `FootSfxParam`, `ThrowDirectionSfxParam`, ...) | 5,521 distinct ids, 5,139 exist, 2,858 reach a light | none (no definitions); the same kind of fields found by name and hit rate: 1,212 ids, 1,000 exist, 221 reach |
-| map regions of type SFX (5): effect id in the first word of the type data, a start-disabled word after it | 1,523 regions in 104 maps; 109 name an effect that reaches a light | 1,872 regions in 9 maps; 96 |
+| map regions of type SFX (5): effect id in the first word of the type data, a start-disabled flag after it ([layout](/engines/fromsoft/world/msb/#effect-regions-type-5)) | 1,523 regions in 104 maps; 109 name an effect that reaches a light | 1,872 regions in 9 maps; 96 |
 | WindSFX regions (6): effect id first | 72, none reach a light | 106, none |
-| placed asset or object: ER asset part type data +0x1c (i16 relative id) selects `AssetModelSfxParam` row `(model number x 1000 + relative id)`; Sekiro `ModelSfxParam` row `object model number x 1000` | 409,246 of 421,253 asset parts have -1; 9,396 parts on 352 models reach a light | 1,418 of 10,538 object parts on 80 models |
+| placed asset or object: ER asset part type data +0x1c (i16 relative id) selects [`AssetModelSfxParam`](/engines/fromsoft/data-model/params/#modelsfxparam-and-assetmodelsfxparam) row `(nnn x 1000 + mmm) x 1000 + relative id` for the model `AEGnnn_mmm`; Sekiro `ModelSfxParam` row `object model number x 1000` | 409,246 of 421,253 asset parts have -1; 9,396 parts on 352 models reach a light | 1,418 of 10,538 object parts on 80 models |
 | TAE events 96 and 118 (and 110, 112, 114 to 116, 119, 120 by the community templates): the effect id is the first word | 2,788 ids; all that reach a light are in character animation binders | 762 ids; likewise |
 
 :observed[hit-rate and reference census over both installs]
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed
 An asset's effect attaches to the dummy polygon the row names (`dmypolyId_n`, 200 in the light rows). :observed
+
+## Placing the lights of an effect
+
+A light has no place of its own: it stands where the effect stands, under the static node transforms of its chain
+(above). Where an effect stands is decided by what spawns it.
+
+- *Map regions.* An SFX region names an effect; the effect stands at the region's position and rotation. :inferred
+- *Placed models.* A row of the model effect param names, for each of up to eight slots, an effect and the reference id of a
+  dummy polygon of the model; the effect attaches to the dummy with that id (a model may carry several dummies with one id,
+  and then the slot's lights stand at each). :inferred
+- *Spawned effects.* Every `SFXReference` action of both installs is among a node's own actions, none in a config: 543 in
+  Sekiro's 2,913 files and 5,228 in Elden Ring's 12,155. :proven[independent walker: the same counts]
+  The effect it names stands in the frame of the node that holds the action. :inferred
+- *Search order.* The effects regions and rows name are in the binder of the map's area (`sfxbnd_m11` for Ashina Castle), in
+  `sfxbnd_commoneffects` or, in Elden Ring, `sfxbnd_commoneffects_dlc02`, except for a few: of the 1,872 Sekiro and 1,523
+  Elden Ring regions, 1 and 9 name an effect held only by another map's or a character's binder. :observed
+
+The stored colour of every light, at its first keyframe and where it settles, has components that are whole numbers of 255ths
+(5,082 components of Sekiro's 847 lights and 30,075 of Elden Ring's 5,016, the 7 colours that loop having no settled value).
+:proven[every light of both installs] That is the representation of a byte, as the colours of the
+[BTL lights](/engines/fromsoft/lighting/btl/) are.
+
+The light's brightness is its colour's alpha times its multiplier, both properties of time. Whether alpha is a factor is
+:inferred from the files' use (the alpha settles at 1 in 731 of Sekiro's 757 and 4,933 of Elden Ring's 4,974 lights, and the
+fxr project's Dark Souls III conversion makes the point light's alpha its brightness). A spot light's stored multiplier is ten
+times the unit a point light's is in. :sourced[fxr]
+
+Brightness has no common scale with the powers of the BTL lights. Taking, per area, the median of the settled alpha times
+multiplier of the live point lights the area's effects place and the median power of the point lights of the area's BTL
+bank, the ratio of the two medians is 1.6 to 320 over the 68 Elden Ring areas that have both (median 16, quartiles 8 and 33)
+and 0.25 to 64 over Sekiro's 9 (median 4): BTL powers are authored per area and the effects' multipliers are not. :observed[the areas read with both kinds of light]
+An effect light and a BTL light within 1.5 m of each other, which may be one fixture, have a median ratio of 5 (quartiles 3.2
+and 10; 1,227 pairs in the Elden Ring areas and Sekiro's 35 pairs in its 9 areas, median 5, quartiles 2.5 and 6.4), where pairs 3 to 12 m apart have medians of 16: the effect
+light's brightness is about five times the BTL light's power, to a factor of 2 to 3 either way. :inferred[from the pairs, assuming
+near lights are one fixture]
 
 ## Elden Ring
 
@@ -342,6 +377,12 @@ are the values listed, is not established.
 :::open[Which ModelSfxParam row does a Sekiro object use?]
 The part's type data has no relative-id field as the Elden Ring asset part's; rows at offsets 1 to 4 above the model number
 x 1000 exist for 335, 209, 66 and 51 placed objects, and what chooses them is not read.
+:::
+
+:::open[Which way does an effect's spot light shine, and in what unit is a light's brightness?]
+The spot light stores a near plane, a far plane and the half-extents of an elliptic base there, and no axis: the axis is
+the effect's own local direction, which the file does not name. The brightness (alpha times multiplier) has no stated unit,
+and no factor relates it to the BTL powers (above). Both need the game's lighting code or a capture of an effect light.
 :::
 
 :::open[What do the action's flag bytes and unknown word mean?]

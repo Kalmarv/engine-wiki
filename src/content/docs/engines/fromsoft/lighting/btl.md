@@ -125,7 +125,8 @@ Ashina Castle's examined banks `0000`, `0002` and `0004` contain point and spot 
 
 :::open[How do bank powers map to physical light units?]
 RGB transfer functions, power calibration, exact cone interpretation and spot orientation need runtime evidence;
-stored values alone do not establish watts, lumens or lux.
+stored values alone do not establish watts, lumens or lux. The lights of [effect files](/engines/fromsoft/effects/fxr/#placing-the-lights-of-an-effect)
+are not on a common scale with these powers: no single factor relates them.
 :::
 
 :::open[What is the version-15 BTL layout?]

@@ -171,6 +171,18 @@ It is 0, 1 or 2, constant for a param type across all 29 regulations (1 in `NPC_
 both games). Nothing in the examined readers depends on it.
 :::
 
+## ModelSfxParam and AssetModelSfxParam
+
+Sekiro's `MODEL_SFX_PARAM_ST` (`ModelSfxParam`, 202 rows) and Elden Ring's `ASSET_MODEL_SFX_PARAM_ST`
+(`AssetModelSfxParam`, 1,293 rows) have 128-byte rows of eight slots of 16 bytes: an effect id (`sfxId_n`, i32), the reference
+id of a dummy polygon of the placed model (`dmypolyId_n`, i32) and eight reserved bytes; Elden Ring's last slot keeps its
+`isDisableIV` byte in the first of its reserved bytes. An unused slot holds -1 in Elden Ring and 0 in Sekiro (so a slot is in use
+when its effect id is positive). Read from these offsets, every field of every row equals a paramdef reading of the param.
+:proven[all rows of both installs against the Smithbox definitions] The Elden Ring rows that reach a light name dummy 200 in every slot seen. :observed{games="elden-ring"}
+The row key is the model's number times 1000 in Sekiro (`oNNNNNN`) and, in Elden Ring, `(nnn x 1000 + mmm) x 1000 + relative id`
+for `AEGnnn_mmm` with the relative id of the [asset part](/engines/fromsoft/world/msb/#asset-effects-elden-ring). :observed
+Sekiro's param stores the key 1230000 twice, with different slots. :proven{games="sekiro"}
+
 ## Elden Ring
 
 ### Regulation

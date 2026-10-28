@@ -181,6 +181,16 @@ alignment padding. :proven
 Type-data sizes (Sekiro / Elden Ring): map piece 8 / 8; object 40 / n/a; enemy and dummy enemy 192 / 192; player 16 / 16;
 collision 96 / 80; dummy object or asset 40 / 32; connecting collision 16 / 16; asset n/a / 392. :proven
 
+### Asset effects (Elden Ring)
+
+An asset part's type data stores at `+0x1c` a signed 16-bit word, the relative id of the row of `AssetModelSfxParam` its
+effects come from: row `(nnn x 1000 + mmm) x 1000 + id` for the asset model `AEGnnn_mmm` (see
+[model effect params](/engines/fromsoft/data-model/params/#modelsfxparam-and-assetmodelsfxparam)); -1 names none. Of the 421,253 asset parts of
+`AEGnnn_mmm` models, 409,246 store -1, 11,533 name an existing row and 474 name an absent one. Of every 16-bit word of the type
+data, this is the only one whose non-negative values name an existing row for more than a thousand parts (4,100 positive values
+name a row and 16 do not; the next best word names one for 966 parts and misses 69,758). :observed{games="elden-ring"}
+Sekiro's object part has no such field. :observed{games="sekiro"}
+
 ### Collision parts
 
 A collision part's type data starts with a hit-filter byte. The values present, with the community names (Smithbox's
@@ -293,6 +303,25 @@ tiles, 26 `_02` tiles and the alternate tiles `m60_*_11` (2) and `m60_*_12` (1).
 Sekiro has no extra block or pointer: its region header ends at `+96`, its event header at `+40`, and the name string
 follows. :proven{games="sekiro"} A reader that takes a region's or event's type data as "from the type-data offset to the
 record's end" in Elden Ring therefore includes the 32-byte block (and up to 4 padding bytes) in it.
+
+### Effect regions (type 5)
+
+An SFX region's type data names the effect it spawns (an [FXR file](/engines/fromsoft/effects/fxr/) by id) and whether the
+effect starts disabled until an event script enables it. The word that holds the flag is SoulsFormats' `StartDisabled` (an
+integer); the files store only 0 and 1 in Elden Ring's, and in Sekiro's 0, 1, 256 and 257, so its low byte is read as the flag.
+
+```layout
+title: SFX region type data
+size: "8 (Elden Ring, before the extra block), 24 or 28 (Sekiro)"
+fields:
+  - {at: 0, size: 4, type: i32, name: effect id, level: proven, note: "The number of an FXR file; 1,872 Sekiro and 1,523 Elden Ring regions"}
+  - {at: 4, size: 4, type: u32, name: start disabled, level: sourced, games: [elden-ring], note: "0 or 1 in all 1,523 regions (17 are 1)"}
+  - {at: 4, size: 4, type: i32, name: unnamed, level: unknown, games: [sekiro], note: "SoulsFormats' UnkT04: -1 in 1,868 regions, 0x00110440 in 4"}
+  - {at: 8, size: 12, type: "i32[3]", name: padding, level: proven, games: [sekiro], value: -1}
+  - {at: 20, size: 4, type: u32, name: start disabled, level: sourced, games: [sekiro], note: "Low byte 0 or 1 (54 of 1,872 regions are 1); the second byte is 1 in 13 regions, not understood; the two high bytes are 0"}
+```
+
+Every SFX region of both installs has a flag byte of 0 or 1 and, in Elden Ring, zero bytes after it in its word. :proven[every region of type 5 of both installs]
 
 Shape variants include points, circles, spheres, cylinders, rectangles,
 boxes and composites; a shape and a region's purpose are different fields. :sourced[SoulsFormatsNEXT]

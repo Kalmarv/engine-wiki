@@ -106,6 +106,21 @@ and no payload uses another decoder type. Of the quantum kinds beyond a compress
 quanta in Sekiro, 115 in Elden Ring); there is no whole-match quantum and no stored small quantum. Walking the headers this
 way consumes every payload exactly: no payload has bytes left after its last quantum. :proven[both archive sets]
 
+A stored block (header `CC 06`: 1,180 first and 1,292 later blocks in Sekiro, 4,420 and 3,339 in Elden Ring) is the
+block's decoded bytes raw, with no quantum header: a walk steps over as many bytes as the block decodes to (what is left,
+for the last block). The walk needs only the payload and the envelope's decoded size, never decoding, and ends at the
+payload's last byte on all 27,073 readable Sekiro and 117,121 Elden Ring payloads. :proven[both archive sets, Elden Ring without the `DLC` pair]
+
+Oodle's own decode does not report how many input bytes it used, so a payload with bytes left after its last quantum is
+not noticed by decoding it. `oo2core_6` returns the original bytes from a stream of its own making with one byte
+appended: 9 sizes from 1 to 600,000 bytes, for each of the compressors that make decoder types 2, 6, 10, 11 and 12 (it
+returns nothing for the LZNA, type 5, streams of the same sizes, with or without the extra byte). :observed
+Only the walk of the framing finds trailing bytes. The framing of the decoder types the games do not use (5, 10, 11, 12) and the escapes of a
+16 KiB quantum header (low 14 bits `0x3FFF`: bits 14-15 `0` whole match, `1` memset, `2` stored) are oozextract's :sourced[oozextract].
+No shipped payload has one. Streams `oo2core_6` makes for each of the decoder types 2, 5, 6, 10, 11 and 12 (9 sizes each, 1 to
+600,000 bytes) walk to exactly their last byte under the framing above, and a stream with a byte added or removed does
+not. :observed
+
 All 934 Sekiro and 960 Elden Ring decoder-type-2 payloads are one quantum long: they decode to 264 to 2,044 bytes in
 Sekiro (one is 2,044) and 270 to 2,040 in Elden Ring. In Elden Ring 278 are whole top-level files and 682 are the
 `.hkx.dcx` members of the map collision binders (`.hkxbhd`); in Sekiro 50 are top-level and 884 are members of

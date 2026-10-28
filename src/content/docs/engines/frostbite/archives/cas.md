@@ -32,6 +32,9 @@ fields:
 
 Studio output uses Oodle CAS blocks. A block's codec is independent of its asset's resource type. :observed
 
+Each of the 208 sampled `0x11` blocks holds one Oodle block that begins `8C 06` (Kraken, restart bit set), and walking
+its block and quantum headers ends exactly at the block's last payload byte. :observed[208 sampled blocks]
+
 ## Stock data
 
 The stock game Data has 23 TOCs over 72 CAS files. Following exactly the chunk and bundle-asset ranges the TOCs

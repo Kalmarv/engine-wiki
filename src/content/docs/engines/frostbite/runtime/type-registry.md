@@ -126,6 +126,31 @@ qword is zero, and whose third qword is the member value as a signed 64-bit numb
 4,096 of 4,096 members, and the 12 members whose value is `0xFFFFFFFF` or `0x80000000` in EBX are sign-extended.
 :observed[all 698 matched enumerations]
 
+## Names
+
+The executable stores keys and no names for its types and fields. The stock EBX tables name 4,115 of the 16,198 records by
+key (3,916 are the documents' own types; 199 more share a key with a named type or field), and 11,919 of the 29,173
+distinct field keys of classes and structures. :observed[all 328,015 stock documents against the executable]
+
+The key depends only on the lower-cased name. The tables hold 21,560 distinct keys and 21,560 distinct lower-cased names,
+one key per lower-cased name; 47 keys carry two spellings that differ only in case (`ID` and `Id`, `Min` and `min`,
+`X` and `x`). :observed[all names of the stock EBX tables]
+
+A type that exists in both skate. and Battlefield 2042 has the same GUID in both: 1,232 of the 4,057 stock type GUIDs occur in
+a published type listing of Battlefield 2042 (20,151 types and 40,680 field lines, each field line giving the GUID of the
+field's type and its name), and 1,228 of the 1,232 carry the same name; the other four are `ObstructionAudioPatchTraitData`,
+`AudioSubPatchAsset`, `SpatialAudioPatchTraitData` and `VelocityAudioPatchTraitData`, which the listing calls
+`...Sound...`. :observed[stock GUIDs against the listing] The name keys differ: the listing's table for that game gives
+`DataContainer` the key `0x8ad044b9`, this executable `0x5ad26088`. :sourced[a published Battlefield 2042 string table]
+The listing's GUIDs also occur in 5,119 of the executable's 16,198 records. :observed[all records]
+
+Fields keep their declaration order between the two games. Aligning the listing's field type GUIDs with the executable's
+(the type a field entry points at, or for a primitive the type GUID that the EBX field of the same key gives) as a longest
+common subsequence reproduces the EBX field name for 1,688 of the 1,695 aligned fields whose type GUID occurs once in both
+lists, 203 of 204 whose repeated type lies between such fields and the lists are equal there, and 630 of 724 whose type
+repeats otherwise. :observed[aligned fields whose key the EBX tables name, 1,248 shared records]
+The listing carries no enumerators.
+
 :::open[Is anything stored in the runtime object between +0x28 and +0x6f after start-up?]
 The constructors zero that range and no static source fills it; whether a later pass stores an array type or a derived
 list there is not established by reading the executable.

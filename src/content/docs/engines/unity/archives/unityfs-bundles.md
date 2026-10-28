@@ -47,7 +47,10 @@ The flags, as UnityPy documents them for the Unity versions that matter here: th
 the block table (0 none, 1 LZMA, 2 LZ4, 3 LZ4HC, 4 LZHAM); `0x40` says the directory is stored with the block table;
 `0x80` puts the block table at the end of the file instead of after the header; `0x200` pads to 16 bytes before the
 data. :sourced[UnityPy] `0x243` is LZ4HC with the directory combined and the data padded.
-:observed{games="big-walk peak sledding"}
+All 59 bundles of the three games carry exactly `0x243`: PEAK's seven level bundles and its `maps` manifest bundle, Sledding
+Game's 50 Addressables bundles and Big Walk's `data.unity3d`. None sets `0x80`, none compresses its block table another way
+than LZ4HC (the other compression ids, LZMA and LZHAM, do not occur), each states a size equal to its file's length, and each
+has format version 8 and player version `5.x.x`. :proven{games="big-walk peak sledding"}
 
 ## Block table and directory
 
@@ -67,14 +70,17 @@ fields:
 ```
 
 The block table of every bundle measured is consumed exactly (no bytes left over), and its blocks decompress to as many
-bytes as the files' sizes add up to. :proven[Big Walk's bundle, PEAK's eight bundles, Sledding's two largest]{games="big-walk peak sledding"}
+bytes as the files' sizes add up to. :proven[Big Walk's bundle, PEAK's eight bundles, Sledding's 50]{games="big-walk peak sledding"} The block sizes add up to the
+end of the last file, and the file's length is the start of the data plus the blocks' compressed sizes, in all 59.
+:proven{games="big-walk peak sledding"}
 
 | Property | Value | Confidence |
 |---|---|---|
 | Block uncompressed size | at most 131,072 bytes (128 KiB) | :proven{games="big-walk peak sledding"} |
 | Block compression | LZ4HC (flag `0x3`), or stored (flag `0x0`) | :proven{games="big-walk peak sledding"} |
-| Node flags 4 | a serialized file | :observed |
-| Node flags 0 | a stream file (`.resS`, `.resource`) | :observed |
+| Blocks by compression | LZ4HC 328,093 and stored 13,934: PEAK 283,256 and 13,475, Sledding Game 1,698 and none, Big Walk 43,139 and 459 | :proven{games="big-walk peak sledding"} |
+| Node flags 4 | a serialized file (PEAK 417, Sledding Game 50, Big Walk 12) | :proven{games="big-walk peak sledding"} |
+| Node flags 0 | a stream file (`.resS`, `.resource`) (PEAK 24, Sledding Game 16, Big Walk 7) | :proven{games="big-walk peak sledding"} |
 
 A block is an LZ4 block of plain literal runs and matches. A reader decompresses blocks in order and concatenates them,
 so the file at an offset is found by walking the cumulative uncompressed sizes. :sourced[UnityPy] An LZ4 block decoder

@@ -48,34 +48,75 @@ and block rows, for others a decode. :observed
 
 ## Formats
 
-The `TextureFormat` ids met in the games, and whether they decode exactly:
+The `TextureFormat` ids met in the games, and whether they decode exactly. A census read the `m_TextureFormat` of every
+Texture2D object of every serialized file and bundle of the four installs (SkateBIRD's 31 loose files, Sledding Game's 7
+loose files and 50 Addressables bundles, PEAK's 13 loose files and 7 level bundles, Big Walk's `data.unity3d`): 259,045
+objects, none refused. Which ids occur is :proven for those builds; the counts below are objects, not distinct images.
 
-| Id | Format | Bytes | Seen in | Confidence |
-|---|---|---|---|---|
-| 1 | Alpha8 | 1 per pixel | SkateBIRD (82 in `sharedassets0`) | :observed{games="skatebird"} |
-| 2 | ARGB4444 | 2 per pixel | | :sourced[Unity scripting reference] |
-| 3 | RGB24 | 3 per pixel | SkateBIRD (2 in `sharedassets0`) | :observed{games="skatebird"} |
-| 4 | RGBA32 | 4 per pixel | SkateBIRD (10 in `sharedassets0`) | :observed{games="skatebird"} |
-| 10 | DXT1 (BC1) | 8 per 4×4 block | SkateBIRD (207 in `sharedassets0`) | :observed{games="skatebird"} |
-| 12 | DXT5 (BC3) | 16 per 4×4 block | SkateBIRD (146 in `sharedassets0`) | :observed{games="skatebird"} |
-| 24 | BC6H | 16 per 4×4 block | | :sourced[Unity scripting reference] |
-| 25 | BC7 | 16 per 4×4 block | Sledding Game | :observed{games="sledding"} |
-| 26 | BC4 | 8 per 4×4 block | | :sourced[Unity scripting reference] |
-| 27 | BC5 | 16 per 4×4 block | | :sourced[Unity scripting reference] |
-| 63 | R8 | 1 per pixel | | :sourced[Unity scripting reference] |
-| 28, 29, 64, 65 | crunched DXT1, DXT5, ETC, ETC2 | variable | none in SkateBIRD's `sharedassets0` | :observed{games="skatebird"} |
+| Id | Format | Bytes | SkateBIRD | Sledding Game | PEAK | Big Walk | Confidence |
+|---|---|---|---|---|---|---|---|
+| 1 | Alpha8 | 1 per pixel | 82 | 67 | 467 | 93 | :proven |
+| 2 | ARGB4444 | 2 per pixel | 0 | 0 | 0 | 0 | :proven that none occurs |
+| 3 | RGB24 | 3 per pixel | 9 | 11 | 280 | 14 | :proven |
+| 4 | RGBA32 | 4 per pixel | 31 | 81 | 864 | 93 | :proven |
+| 5 | ARGB32 | 4 per pixel | 0 | 0 | 8 | 17 | :proven |
+| 9 | R16 | 2 per pixel | 0 | 0 | 0 | 1 | :proven |
+| 10 | DXT1 (BC1) | 8 per 4×4 block | 501 | 548 | 1,881 | 86 | :proven |
+| 12 | DXT5 (BC3) | 16 per 4×4 block | 486 | 881 | 3,957 | 841 | :proven |
+| 13 | RGBA4444 | 2 per pixel | 0 | 0 | 0 | 0 | :proven that none occurs |
+| 15 | RHalf | 2 per pixel | 0 | 0 | 0 | 2 | :proven |
+| 17 | RGBAHalf | 8 per pixel | 0 | 0 | 0 | 1 | :proven |
+| 19 | RGFloat | 8 per pixel | 0 | 0 | 0 | 2 | :proven |
+| 20 | RGBAFloat | 16 per pixel | 0 | 0 | 0 | 4 | :proven |
+| 24 | BC6H | 16 per 4×4 block | 0 | 0 | 123,848 | 2 | :proven |
+| 25 | BC7 | 16 per 4×4 block | 0 | 4 | 27 | 4 | :proven |
+| 26 | BC4 | 8 per 4×4 block | 0 | 0 | 123,848 | 1 | :proven |
+| 27 | BC5 | 16 per 4×4 block | 0 | 0 | 0 | 0 | :proven that none occurs |
+| 63 | R8 | 1 per pixel | 0 | 1 | 0 | 0 | :proven |
+| 28 | crunched DXT1 | variable | 0 | 1 | 0 | 1 | :proven |
+| 29, 64, 65 | crunched DXT5, ETC, ETC2 | variable | 0 | 0 | 0 | 0 | :proven that none occurs |
 
-Crunched formats (Unity's own compression layer) need Unity's crunch decoder. SkateBIRD uses none. :observed{games="skatebird"}
+No other id occurs in the four installs, and every texture is a plain 2D one (`m_TextureDimension` 2).
+:proven{games="skatebird sledding peak big-walk"} For every texture of a format in the table other than the crunched ones,
+`m_CompleteImageSize` equals the sum of the levels' sizes at the format's bytes per pixel or block (258,915 textures); the
+only 128 that differ are empty 0×0 font atlases of size 0. :proven{games="skatebird sledding peak big-walk"} The ids and names
+are those of Unity's `TextureFormat` enum. :sourced[Unity scripting reference]
+
+Crunched formats (Unity's own compression layer) need Unity's crunch decoder: Sledding Game's `Fish` (2048², 12 levels) and
+Big Walk's `Metal032_2K_Roughness` are the only two crunched textures in the four installs; SkateBIRD and PEAK have none.
+:proven{games="skatebird sledding peak big-walk"}
 
 Against an independent decoder over the textures of Sledding Game's mountain scene,
 every texture's size, level count and colour space agree; level 0 decodes to the same RGBA8 for uncompressed formats and BC7
 exactly, and for DXT1 and DXT5 within 1: the difference is the rounding of the interpolated palette entries, which the two
 decoders do differently. :observed{games="sledding"}
 
-:::open[Crunched textures in the other games]
-Whether Sledding Game, PEAK or Big Walk store any crunched texture is not checked; the independent decoder comparison for
-Sledding Game covers the formats listed above.
+### BC6H holds unsigned half floats
+
+A BC6H block does not say whether its endpoints are signed; the texture's format decides. Unity's BC6H (id 24) is the
+**unsigned** variant (Direct3D's `BC6H_UF16`): decoding 5,030 of the 123,850 BC6H textures of the installs both ways, the
+unsigned decode gives finite, non-negative, smooth values (largest value in any texture 8.43, mean of each texture
+0.15 to 0.82) and the signed decode of the same blocks gives a largest value of at least 22,416 (up to 65,504, the half-float
+maximum) and a mean of at least 2,720 in every one of the 5,030, and negative values in 734 of them. :observed{games="peak big-walk"} The sample is the 1,016
+BC6H textures of PEAK's loose `level1`, `level3` and `level4`, one level scene of each of PEAK's seven bundles (4,012
+textures) and Big Walk's two 2048² BC6H textures (`Mask - 2k Noise`, `Mask - 2k Square`, linear colour space, 12 levels):
+the unsigned decode of those is a noise field and a rounded square, the signed decode is saturated. :observed{games="peak big-walk"}
+A second implementation of both variants agrees with the first on the unsigned decode to within one 8-bit step on 24 sampled
+textures, and on the signed decode on all but 0.04% of the samples. :observed{games="peak"}
+
+PEAK stores 123,848 BC6H textures and as many BC4 textures, all unnamed and with one level, in 25 sizes (132×276 is the most
+common, 53,272 of them). :proven{games="peak"} SkateBIRD and Sledding Game have none. :proven{games="skatebird sledding"}
+
+:::open[Nibble order of ARGB4444 and RGBA4444]
+No texture of the four installs uses id 2 or 13, so the order of the four-bit channels inside the 16-bit value is not
+established by data. Community decoders disagree about it.
 :::
+
+### ARGB32 byte order
+
+Byte 0 of an `ARGB32` (id 5) pixel is alpha. :observed{games="big-walk"} Four of Big Walk's `GlobalTint` terrain textures
+(128², no alpha in the tint) have byte 0 equal to 255 in every pixel while the other three bytes vary; so the stored order is
+A, R, G, B. :observed{games="big-walk"}
 
 ## Colour space and normal maps
 

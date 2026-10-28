@@ -41,6 +41,23 @@ UnityPy 1.25.4's package gives the 6000.3.11f1 `PlayerSettings` layout 936 bytes
 read check reports the mismatch. :observed{games="sledding"} PEAK's 6000.3.15f1 `PlayerSettings` is 896 bytes against a layout of 892: the same 4-byte shortfall. :observed{games="peak"} A decoder
 that requires a tree to cover an object exactly refuses that one object and decodes the rest. :observed{games="sledding peak"}
 
+## Common strings in embedded trees
+
+An embedded tree stores each node's type name and field name as a 32-bit offset. With the top bit clear the offset is into
+the tree's own string buffer; with it set, the low 31 bits are an offset into the engine's built-in **common string table**,
+a run of NUL-terminated names (`AABB`, `Array`, `m_Name`, `Vector3f`, ...) that every tree of the Unity version shares.
+:sourced[UnityPy] The table grows between versions, always by appending, so an offset keeps its meaning. The type tree
+package lists it per version: 2019.4 has 107 strings (1,152 bytes), 2022.3 109 (1,169 bytes), 6000.0 110 (1,188 bytes) and
+6000.3 112 (1,209 bytes), the last adding `fixed_array` at offset 1,188 and `EntityId` at offset 1,200. The package AssetRipper
+publishes and the one UnityPy ships give the same table for each of those versions. :observed
+The embedded trees of the games use it: the 50 Sledding Game bundles (6000.3.12f1) use 52 distinct offsets, at most 1,161,
+and PEAK's bundles (6000.3.15f1; the 195 serialized files up to 40 MB of its seven level bundles, and its `maps` bundle)
+use 65 distinct offsets, at most 1,200 (`EntityId`, six times). Every offset resolves against the 6000.3 table, and a reader
+that carries only the 6000.0 table (110 strings) cannot resolve PEAK's offset 1,200. :observed{games="sledding peak"}
+No loose player file of SkateBIRD (31), PEAK (13) or Sledding Game (7) stores a tree, so none uses the table.
+:proven{games="skatebird sledding peak"} Reading the seven serialized files of Big Walk's `data.unity3d` up to 40 MB looks
+up no common string. :observed{games="big-walk"}
+
 ## Decoding rules
 
 Decoding walks the tree against the object's bytes. A reader that applies these rules decodes the objects of Sledding Game's

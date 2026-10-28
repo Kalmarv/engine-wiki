@@ -6,9 +6,21 @@ sources:
     url: https://github.com/AinTunez/DarkScript3
   - title: SoulsFormatsNEXT EMEVD
     url: https://github.com/soulsmods/SoulsFormatsNEXT
+  - title: Smithbox (EMEDF files and the EMEVD editor)
+    url: https://github.com/vawser/Smithbox
+  - title: soulstruct (Elden Ring EMEDF)
+    url: https://github.com/Grimrukh/soulstruct
+  - title: SoulSplitter (event flag reading)
+    url: https://github.com/FrankvdStam/SoulSplitter
+  - title: fromsoftware-rs (event flag and map id types)
+    url: https://github.com/vswarte/fromsoftware-rs
 implementations:
   - name: fromsoft-formats EMEVD reader
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/emevd.rs
+  - name: fromsoft-formats instruction schema (emedf)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/emedf/mod.rs
+  - name: fromsoft-formats event flags (eventflag)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/eventflag.rs
 ---
 
 EMEVD files store numbered events as instructions: an instruction bank and ID, raw argument bytes and an optional
@@ -193,18 +205,102 @@ So `2000:0` takes a leading slot number in both games, and `2000:6` takes it onl
 puts the function ID in the first argument does not describe Elden Ring's calls. The Sekiro `2000:6` calls carry 2 to 16
 words (7 in the part-state calls below), the Elden Ring ones 3 to 18 words. :proven
 
+## Instruction schema
+
+An instruction's argument bytes have a fixed layout given by its bank and number. The community keeps the table
+(DarkScript3's EMEDF files, which Smithbox ships for both games and soulstruct for Elden Ring): a name for each
+instruction, and for each argument a name, a type and sometimes the name of the enumeration its values come from. The
+types are signed and unsigned 8-, 16- and 32-bit integers, 32-bit floats and, in Sekiro's table, a string-table offset.
+The two tables hold 405 (Sekiro) and 361 (Elden Ring; soulstruct's copy has seven instructions Smithbox's lacks)
+instructions. :sourced[EMEDF files]
+
+The arguments follow one another at their natural alignment (a 32-bit value at a multiple of four, a 16-bit value at a
+multiple of two, a byte anywhere) and the block is padded to a multiple of four bytes. The last argument of the event
+initialisers `2000:0` and `2000:6` repeats, one 32-bit word for each argument of the event they start. Against every
+instruction of both installs these rules reproduce the stored argument length of all but four: they type all 42,885
+instructions of Sekiro's scripts (258 distinct bank and number pairs) and 107,635 of the 107,639 of Elden Ring's (315 of
+316 distinct pairs). The four are Elden Ring's `11:3`, which stores 8 bytes beside the player-on-hit conditions `11:0` to
+`11:2` and which the table lacks. :proven
+
+The substitutions confirm the offsets inside an instruction, not only its length: each of the 6,920 substitutions in
+Sekiro's scripts and 34,483 in Elden Ring's copies bytes onto exactly one argument of its typed instruction (same
+offset, same size). :proven
+
+Reading the arguments by their names in the table, the roles that matter for the world are these (counts are literal
+arguments, with those a substitution fills in brackets):
+
+| Role | Named | Sekiro | Elden Ring |
+|---|---|---:|---:|
+| Event flag | `Event Flag ID`, the ends and limits of flag ranges, the response flags | 8,279 (606) | 18,440 (6,648) |
+| Run of flags | `Base Event Flag ID` with `Number of Used Flag Bits` | 43 (0) | 166 (129) |
+| Entity | `Entity ID` and its variants (`Target Entity ID`, `Hit Entity ID`, `Area Entity ID` ...) | 16,393 (5,091) | 18,768 (22,602) |
+| Map as separate bytes | `Area ID`, `Block ID` and in Elden Ring `Region ID`, `Index ID` | 283 (10) | 260 (21) |
+| Map as one decimal number | `Map ID` | none | 65 (8) |
+| Event started or ended | `Event ID` of `2000:0`, `2000:1`, `2000:6` | 4,520 (0) | 16,606 (0) |
+
+:observed
+
+The event started by a literal `2000:0` or `2000:6` call is an event some script of the install defines in 4,350 of
+Sekiro's 4,520 calls and 16,593 of Elden Ring's 16,606; the others name events the base game's scripts do not hold.
+:observed Of the literal entity arguments, 13,455 of Sekiro's 16,393 are an entity ID that a layout of the install states
+(a part, a part group, a region or an event; 53 are 0 or -1), and 8,430 of Elden Ring's 18,768 (419 are 0 or -1); 2,610
+and 4,552 of the rest are 10000, the number the player is addressed by. The other entity arguments name no entity that
+the layouts read state. :observed
+
 ## Map IDs in arguments
 
-An argument that names a map stores four bytes in the order area, block, X, dd, so its little-endian u32 has the area in
-the low byte (`m60_41_38_00` is `3c 29 26 00`). In every non-zero literal word (149 of 149) of the Sekiro instructions `4:21` (at
-argument offset 8), `4:38` (0), `4:43` (20), `2002:4` (12), `2002:7` (4), `2002:13` (12), `2003:59` (0 and 8), `2003:88`
-(0) and `2003:93` (0), and every one (38 of 38) of Elden Ring's `3:35` (4), `4:28` (8), `2002:10` (4), `2002:11` (4) and `2003:14`
-(0), the bytes read in that order give the name of a map of the install (or of one of its scripts), and the reverse
-order gives none. Elden Ring's `1003:206` and `1003:208` (at 4) do the same in 33 of 37 words; the other four hold the
-number 50. :proven The map words stored in layouts have the opposite order; see
-[map words](/engines/fromsoft/world/areas-and-tiles/#map-words).
+An instruction names a map in one of two forms.
+
+- **Separate bytes.** The table's `Area ID`, `Block ID`, `Region ID` and `Index ID` arguments store the numbers of the
+  name `mAA_BB_CC_DD` in that order, so a 32-bit little-endian word that holds them has the area in its low byte
+  (`m60_41_38_00` is `3c 29 26 00`). The index byte holds the name's two digits as hexadecimal digits (`_10` is `0x10`)
+  and `0xff` stands for any. Sekiro's instructions name only the area and block, sometimes as 32-bit values (`2003:59`,
+  `2003:88`). Of Sekiro's 283 literal pairs, 277 name a map family of the install (the 6 others name `m25_01`, which the
+  install lacks); of Elden Ring's 253 literal four-byte quads, 43 hold a wildcard, 133 name a map of the install and 77 do
+  not (73 are the all-zero quad, 4 are `m12_00`, which has no files). :observed
+- **One decimal number.** Elden Ring's cutscene-and-warp instructions `2002:11`, `2002:12` and `2002:13` take a `Map ID` as
+  the digits of the name run together, `AABBCCDD`: `11050000` is `m11_05_00_00` and `60444500` is `m60_44_45_00`. 64 of the
+  65 literal values name a map of the install (the other is the number 16). :observed{games="elden-ring"}
+
+The map words stored in layouts have the opposite order; see [map words](/engines/fromsoft/world/areas-and-tiles/#map-words).
+
+Several positions whose non-zero words read, in that byte order, as the name of an installed map are not map arguments:
+they hold small numbers whose bytes happen to read as a name (the number 10 is `m10_00_00_00`). By the table, Sekiro's `4:21` at offset 8 is a message ID (always 10), `4:38`
+a count (15) and `4:43` a distance (15); in Elden Ring `3:35`, `1003:206` and `1003:208` take a ceremony ID (20, 30, 40 or
+50), `4:28` a threat level (31) and `2002:10` and `2002:11` hold the playback method (16 or 32) at offset 4. :observed
 
 ## Flag and entity numbering
+
+Flags are 32-bit numbers. Sekiro and Elden Ring store and number them differently.
+
+:only[sekiro] A flag is a decimal number `R AA G Z nnn` of at most eight digits: a region digit, a two-digit area, a block
+group digit, a zone digit and a three-digit number inside the zone. The game keeps 32 flags in a word; flag `nnn` is bit
+`31 - nnn % 32` of word `nnn / 32`, counted from the least significant bit. A flag whose area is 90 or more, or whose area
+and group digits are both 0, is kept apart from the blocks'. :sourced[fromsoftware-rs and SoulSplitter]
+
+:only[elden-ring] A flag is stored by its category, the number divided by 1000, in a block of 125 bytes (1000 bits): flag
+`nnn` is bit `7 - nnn % 8` of byte `nnn / 8` of its block. :sourced[fromsoftware-rs and SoulSplitter]
+
+What the digits mean is a convention the scripts follow, not something the storage needs. Over every literal flag
+argument of both installs (8,094 in Sekiro's scripts, 17,812 in Elden Ring's, those equal to 0 or -1 left out), by the
+script they stand in:
+
+| Game and script | Digits name no map | Name the script's own map | Name another map | Confidence |
+|---|---:|---:|---:|---|
+| Sekiro, a map's script | 3,145 | 2,088 | 120 | :observed |
+| Sekiro, the common scripts | 2,518 | | 223 (the script has no map of its own) | :observed |
+| Elden Ring, a dungeon's script | 2,196 | 3,616 | 159 | :observed |
+| Elden Ring, an `m60` or `m61` tile's script | 3,391 | 2,686 | 526 | :observed |
+| Elden Ring, the common scripts | 3,831 | | 1,407 (the script has no map of its own) | :observed |
+
+In Sekiro the digits are read as in the paragraph above. In Elden Ring a flag of eight digits `AA BB d nnn` is a block of
+the dungeon `mAA_BB` (4,354 of the 4,374 literal flags of that length name a block the install has files for) and one of
+ten digits is a tile of the open world, `10 XX ZZ d nnn` for `m60_XX_ZZ` and `20 XX ZZ d nnn` for `m61_XX_ZZ` (3,991 of the
+4,129 name a tile the install has files for, 29 name an absent tile and 109 have another two-digit prefix); shorter flags
+(4,129 of the 17,812 have ten digits, 4,374 eight, the other 9,309 fewer) are shared by every map.
+:observed{games="elden-ring"}
+
+### Flags set by `2003:66`
 
 Event flags are decimal numbers whose digits name the map they belong to, in a form that differs between the games.
 

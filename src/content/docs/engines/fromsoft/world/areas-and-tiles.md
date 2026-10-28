@@ -143,13 +143,14 @@ draws, and what the remaining structures belong to, was not established. :unknow
 
 ### Map words
 
-A map name's four numbers are stored in layouts and scripts in two byte orders, in addition to the name itself:
+A map name's four numbers are stored in layouts and scripts in two byte orders and, in one Elden Ring instruction, as one decimal number, in addition to the name itself:
 
 | Where | Bytes in file order | Little-endian u32 | Covered |
 |---|---|---|---|
 | Part tile-load configuration (`+152` slot), region and event extra block (Elden Ring) | `DD`, `Z`, `X`, area | area in the top byte | 77,026 + 625 + 131 words, every one that is not `0xffffffff` |
 | Connecting-collision type data (4 bytes after a part index) | area, `X`, `Z`, `DD` | area in the low byte | all 800 connecting collisions |
 | EMEVD instruction arguments that name a map | area, `X`, `Z`, `DD` | area in the low byte | see [EMEVD](/engines/fromsoft/gameplay/emevd/#map-ids-in-arguments) |
+| Elden Ring's `Map ID` argument of `2002:11` to `2002:13` | one decimal number `AABBCCDD` (`11050000` is `m11_05_00_00`) | not a byte order | 64 of 65 literal values name a map of the install; see [EMEVD](/engines/fromsoft/gameplay/emevd/#map-ids-in-arguments) |
 
 Read with the area in the top byte, 76,935 of the 77,026 tile-load words, all 625 region words and all 131 event words
 name a map of the install; the other 91 tile-load words name `m60_42_40_10` and `m60_47_42_10`, the two alternate tiles

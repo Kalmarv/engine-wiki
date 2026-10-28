@@ -108,6 +108,16 @@ far beyond the map they accompany: `m10_00_00_99` places 1,998 parts over x −2
 `m60_00_00_99` as a sky map drawn at the base map's origin. :sourced[Smithbox]{games="elden-ring"} That the game draws
 these layouts as a far-scenery overlay, and from where, is not established by the files. :inferred
 
+The running game (1.17.2, offline) loads the `_99` layout together with its base map. A scan of its committed memory
+after the player respawned at the Stormveil main gate found the names `m10_00_00_99.msb` and
+`m10_00_00_99_NNNNNN.mapbnd` for 25 of the 46 map-piece models that the layout's MSB lists (the same scan finds 94 of
+the 309 map-piece models of `m10_00_00_00`; every name found is a model of its MSB), and names of `.flver` members of
+three of those bundles, so their contents were read. None of the other 24 `_99` layouts is named, and a scan at the
+title screen finds no `_99` name. :observed{games="elden-ring"} The same scan finds the base map's and the `_99`
+layout's names in the same forms, and the names of `m34_10_00_00` and `m34_10_00_99` as well. :observed{games="elden-ring"}
+Whether the loaded pieces are drawn, and where they sit relative to the base map's origin, was not observed.
+:unknown{games="elden-ring"}
+
 ### Map words
 
 A map name's four numbers are stored in layouts and scripts in two byte orders, in addition to the name itself:

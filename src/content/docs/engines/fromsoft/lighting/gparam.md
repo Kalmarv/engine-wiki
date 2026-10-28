@@ -139,6 +139,14 @@ The draw-parameter files in the install are 446 in Elden Ring (47 `m` stems, 30 
 variants; no layout field names them. The open-world stems are `m60_00` (31 plain files and one `capturemap`) and
 `m61_00` (41 files, present although the install holds no `m61` layout). :observed{games="elden-ring"}
 
+In the running game (1.17.2, offline) a scan of its committed memory after the player respawned at the Stormveil main
+gate (`m10_00`) finds draw-parameter names in two groups. For each of `m10_00` and `m34_10` there are ten names
+`mAA_BB_0N00` for N = 0 to 9, including `m10_00_0700`, which the archive does not hold; and for `m00_00` there are 89 of
+its 93 names (the plain file, `weatherbase`, 82 of the 84 `weatheroutdoor` and 5 of the 7 `commonevent` names), whichever
+map is loaded. At the title screen only `m00_00_0000` is present. :observed{games="elden-ring"} So the `m00_00` files
+are not picked per map: the game holds almost the whole set, and the hundreds digit selects a slot of a ten-name table
+for the map's stem. :inferred
+
 :only[elden-ring] Additional files use `_weatherbase`, `_weatheroutdoor`, `_commonevent` and `_capturemap` layer
 names. Their presence does not establish how the layers combine. :observed{games="elden-ring"}
 

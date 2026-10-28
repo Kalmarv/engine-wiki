@@ -149,6 +149,14 @@ order, and the skeleton's reference pose is in memory exactly as stored. During 
 (4, 5, 6, 11 and 26) differ from every decoding of the clip by 2e-3 to 8e-3, and about 25 finger and twist bones by
 about 3e-4. :observed{games="sekiro"}
 
+The player's local pose array is rewritten once per frame: sampled from memory about 600 times a second for 24 s, it changed
+exactly 1,440 times, at the 60 Hz frame rate. :observed{games="sekiro"} Over those 1,440 snapshots, which cover standing
+idle, starting and stopping a walk, strafing and sprinting, every one of the 146 rotations has a length within 4.4e-7 of 1
+(float rounding). During the walk transitions and the sprint, bones sit up to 105 to 149 degrees from their idle rotation,
+so a linear blend of two such rotations that is not renormalised would be 0.27 to 0.7 short of unit length: the pose the
+game hands on is normalised. :observed{games="sekiro"} The arrays that hold the clip samples before blending were not
+found, so whether the blender or a later stage does the normalising is not established. :unknown{games="sekiro"}
+
 ## Elden Ring
 
 ### Binder relationships

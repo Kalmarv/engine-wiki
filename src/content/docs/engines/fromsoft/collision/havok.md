@@ -16,6 +16,10 @@ implementations:
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/mesh.rs
   - name: havok-formats extern mesh reader
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/extern_mesh.rs
+  - name: havok-formats bounding-volume tree decoder
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/bvtree.rs
+  - name: havok-formats simd tree decoder
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/simdtree.rs
 ---
 
 Map collision uses Havok tagfiles with `hknpCompressedMeshShape` geometry and FromSoftware-specific `fsnp` metadata.
@@ -124,13 +128,78 @@ extent, `min += e × h² ⁄ 226` and `max −= e × l² ⁄ 226`, where `h` and
 axis's byte. The root's nibbles are usually zero, not always (36 Sekiro and 911 Elden Ring section roots, 4 Sekiro
 and 801 Elden Ring mesh roots are not). :proven[every named collision binder]
 
-Over every tree of both games the nodes form one pre-order tree with every node reached once. Section-tree leaves name
-each of the section's primitives exactly once, dead primitives included; mesh-tree leaves name each section once.
+Over every tree of both games the nodes form one pre-order tree with every node reached once: an internal node's second
+child lies inside its subtree, and a leaf is the last node of its subtree. Section-tree leaves name each of the
+section's primitives exactly once, dead primitives included; mesh-tree leaves name each section once, and each section's
+`leafIndex` is the node of its leaf. A second decoder, written after the rules were found, counts the same trees and
+leaves on both installs: 3,344 Sekiro and 22,899 Elden Ring mesh trees, 273,228 and 722,405 section trees, 21,847,369
+and 58,630,675 section-tree leaves. :proven[every named collision binder]
+
 Every vertex of every triangle and quad lies inside its leaf's box, and every section's `domain` inside its mesh-tree
-leaf's box, to within 16 f32 units in the last place of the coordinate (4 Elden Ring triangles of one asset exceed
-that at a coordinate of 4 × 10⁻⁷ m, by 6 × 10⁻⁹ m). That is 21,846,092 Sekiro and 58,628,215 Elden Ring triangles
-and quads. :proven[every named collision binder] A divisor of 225 instead of 226 leaves 3% to 51% of them outside
-their leaves, depending on the binder set, and swapping the two nibbles' roles nearly all. :proven[every named collision binder]
+leaf's box, to within 16 f32 units in the last place of the largest magnitude among the coordinate, the box's bounds and
+the tree's `domain` on that axis. That is 21,846,092 Sekiro and 58,628,330 Elden Ring triangles and quads, 21,748,039 and
+58,537,786 of them inside exactly and the rest within 2.8 units (Sekiro) and 16 units (Elden Ring). :proven[every named collision binder]
+Measured at the coordinate's own magnitude alone, 7 Elden Ring triangles of two assets exceed 16 units: 4 of
+`aeg228_107_l` at z ≈ 4 × 10⁻⁷ m, by 6 × 10⁻⁹ m, in a section whose z reaches −0.24 m, and 3 of `aeg260_415_l`, by
+4.5 × 10⁻⁷ m at z ≈ 0.2 m, in a section whose z reaches −25 m; at the magnitude of the section's `domain` all 7 are
+within 0.5 unit. :proven[every named collision binder] The vertices are computed from the section's `domain` (an offset plus
+a code times a scale), which would make its magnitude the one that sets their rounding. :inferred A divisor of 225
+instead of 226 leaves 3% to 51% of them outside their leaves, depending on the binder set, and swapping the two
+nibbles' roles nearly all. :proven[every named collision binder]
+
+A node's box can come out inverted, its minimum above its maximum on an axis, when the nibbles take more than the whole
+extent of a box that is already thin: 13,490 Sekiro and 18,577 Elden Ring section-tree nodes, none in a mesh tree, by at
+most 73 μm in Sekiro and 51 μm in Elden Ring. The triangles under them lie within the 16 units above. :proven[every named collision binder]
+
+### Simd tree
+
+Every compressed mesh of both games, 3,344 Sekiro and 22,899 Elden Ring, also holds a `simdTree`: an `hkcdSimdTree`
+whose nodes each hold four boxes and four data words, a second bounding-volume tree over the mesh's primitives.
+:proven[every named collision binder]
+
+```layout
+title: Simd tree node (hkcdSimdTree::Node; 112 bytes in Sekiro, which has no flags)
+size: 128
+fields:
+  - {at: 0, size: 16, type: "f32[4]", name: lx, level: proven, note: "minimum x of each of the four lanes' boxes; hx, ly, hy, lz and hz follow at 16-byte steps"}
+  - {at: 16, size: 16, type: "f32[4]", name: hx, level: proven}
+  - {at: 32, size: 16, type: "f32[4]", name: ly, level: proven}
+  - {at: 48, size: 16, type: "f32[4]", name: hy, level: proven}
+  - {at: 64, size: 16, type: "f32[4]", name: lz, level: proven}
+  - {at: 80, size: 16, type: "f32[4]", name: hz, level: proven}
+  - {at: 96, size: 16, type: "u32[4]", name: data, level: proven, note: "one word per lane; the encoding differs by game, below"}
+  - {at: 112, size: 1, type: u8, name: isLeaf, level: proven, games: [elden-ring], note: "all four lanes are leaves (or empty)"}
+  - {at: 113, size: 1, type: u8, name: isActive, level: proven, games: [elden-ring], note: "0 in every node"}
+```
+
+Node 0 is a sentinel and the root is node 1. The sentinel has four empty lanes: a lane is empty when its box has its
+minimum above its maximum (about `+3.4 × 10³⁸` and `−3.4 × 10³⁸`) and its data holds nothing. A lane is empty
+exactly when its box is. A lane holds a child node, whose index is always above its node's, or a leaf; every node from 2
+on is the child of exactly one lane. :proven[every named collision binder]
+
+| | Sekiro | Elden Ring | Confidence |
+|---|---|---|---|
+| Empty lane | data `0` | data `0` in a node with `isLeaf` clear, `0xFFFFFFFF` in one with it set | :proven[every named collision binder] |
+| Child lane | even, non-zero data: child node = `data >> 1` | `isLeaf` clear: child node = `data` | :proven[every named collision binder] |
+| Leaf lane | odd data: shape key = `data >> 1` | `isLeaf` set: shape key = `data` | :proven[every named collision binder] |
+| Mixed node | a node can hold child and leaf lanes together | no: `isLeaf` is one flag for the node | :proven[every named collision binder] |
+
+A leaf names one primitive by the shape key of its first half: a triangle's key, and for a quad the key of its first
+triangle (the second half has no leaf). The leaves of a tree name each triangle, quad and custom primitive of the mesh
+exactly once and no dead primitive: 21,686,014 Sekiro and 58,578,382 Elden Ring leaves, 35 of the Elden Ring ones custom primitives.
+:proven[every named collision binder] A tree can have no leaf: 15 Sekiro meshes and 347 Elden Ring ones, which are 344
+meshes with `hasSimdTree` clear and 3 empty meshes (no primitive, `hasSimdTree` set). In Elden Ring `hasSimdTree` is set in every mesh whose tree has leaves and clear in the
+rest. :proven[every named collision binder]{games="elden-ring"}
+
+A child lane's box is exactly the union (componentwise minimum and maximum) of the boxes of the lanes of the node it
+names, in all 10,839,251 Sekiro and 22,785,723 Elden Ring child lanes. A leaf's box is exactly the box of its
+primitive's vertices (a quad's four) in all 21,686,014 Sekiro leaves and in 58,575,737 of the 58,578,347 Elden Ring
+leaves of triangles and quads; the 657 others are larger and the 1,953 others fall short by at most 16 units at the
+magnitude of the section's `domain`, none by more. :proven[every named collision binder]
+
+The tree object has `isCompact` in Elden Ring: 1 in every mesh whose tree has leaves and, in the others, a byte of any
+value from 0 to 246 rather than a boolean. :proven[every named collision binder]{games="elden-ring"} The mesh data's
+`hasSimdTree` is 0 or 1 in all of them. :proven[every named collision binder]{games="elden-ring"}
 
 ### Section fields
 
@@ -138,7 +207,7 @@ their leaves, depending on the binder set, and swapping the two nibbles' roles n
 |---|---|---|
 | `domain` | The box of every vertex the section's triangles and quads use, grown by the shape's `convexRadius` on every side (273,210 of 273,218 Sekiro and 722,324 of 722,374 Elden Ring sections; the others are larger on one side). Its `w` lanes are `1 − convexRadius` and `1 + convexRadius` (to rounding) in map meshes. | :proven[every named collision binder] |
 | `codecParms` | Offset (xyz) and scale (xyz) of the packed vertices. Not the domain: the offset equals the domain's minimum in only 1,085 Sekiro and 1,071 Elden Ring sections. In 99.2% of Sekiro and 95.2% of Elden Ring sections with packed vertices, some packed vertex has code 0 and some the top code on every axis, so the codec spans the box of the packed vertices. | :proven[every named collision binder] |
-| `leafIndex` | The node index of the section's leaf in the mesh-level tree, in all 273,228 Sekiro and 722,403 Elden Ring sections. | :proven[every named collision binder] |
+| `leafIndex` | The node index of the section's leaf in the mesh-level tree, in all 273,228 Sekiro and 722,405 Elden Ring sections. | :proven[every named collision binder] |
 | `page` | Shared-vertex page, above. | :proven[every named collision binder] |
 | `flags` | 1 in exactly the sections that hold a custom primitive or an extern reference (10 Sekiro, 65 Elden Ring), 0 in all others. | :proven[every named collision binder] |
 | `layerData` | 0 in every section; Sekiro's `unusedData` likewise. | :proven[every named collision binder] |
@@ -157,7 +226,7 @@ runs tile the three arrays in section order: a section's runs start where the pr
 section's at 0, and the last section's end at the end of each array. Every vertex index of a triangle or quad, and the
 first index of every custom primitive, is below the section's packed-vertex count plus its shared-index count. These
 hold in every compressed mesh of every named map, object and asset collision binder of both installs: Sekiro's 5,642
-tagfiles (3,344 mesh trees, 273,228 sections) and Elden Ring's 25,128 (22,897 mesh trees, 722,403 sections).
+tagfiles (3,344 mesh trees, 273,228 sections) and Elden Ring's 25,130 (22,899 mesh trees, 722,405 sections).
 :proven[every named collision binder]
 
 The two SDK versions name the runs differently:

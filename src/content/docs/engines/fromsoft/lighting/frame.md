@@ -55,23 +55,34 @@ CPU side, which a light packer can apply to the records it writes. :inferred{gam
 
 ## Sekiro
 
-The sky is not a pass of its own. It is drawn as material draws of the map, in one command list right after the
-volumetric fog's composite, into both light targets with depth testing: six depth-only boxes (`GXSimple_Transform_V`), the
-dome (`M[Sky]_SkyDome_Ver2`, 1,824 indices), the moon (`M[Moon]`, a quad of 6 indices), the far mountains
-(`M[LandScape]_FarMountain`) and the cloud layer (`M[LandScape]_CloudFog`, 60,324 indices), in a frame of the sunset sky.
-:observed{games="sekiro"} The dome's pixel program reads the sun's direction from `cbLight`, `FC_GlobalTime`, the camera,
-the volumetric fog and 37 material values of its own, per its resource definitions; no separate sun-disc draw is in the
-frame. :observed{games="sekiro"}
+The sky is not a pass of its own. It is drawn as material draws (programs of the materials' shader bundles), in one
+command list right after the volumetric fog's composite, into both light targets with depth testing: boxes
+(`GXSimple_Transform_V`) that write neither colour nor depth, the dome (`M[Sky]_SkyDome_Ver2`, 1,824 indices), the moon
+(`M[Moon]`, a quad of 6 indices), the far mountains (`M[LandScape]_FarMountain`) and the cloud layer
+(`M[LandScape]_CloudFog`, 60,324 indices), in two recorded frames of the sunset sky. :observed{games="sekiro"} The
+dome, the moon, the far mountains and the cloud layer draw with the same states: blended by the source alpha
+(`SRC_ALPHA`, `INV_SRC_ALPHA`), the depth tested with `GREATER_EQUAL` (the depth is reversed) and written, back faces
+culled. :observed{games="sekiro"} The dome's pixel program reads the sun's direction from `cbLight`, `FC_GlobalTime`, the
+camera, the volumetric fog and 37 material values of its own, per its resource definitions; no separate sun-disc draw is
+in the frame. :observed{games="sekiro"} None of the map pieces the layouts of the nine maps place draws a material whose
+name or definition names the sky or the moon (every map piece model of each layout read, a positive control finding
+1,590 pieces with `AMSN` materials), so the sky's models come from somewhere other than the map pieces.
+:observed{games="sekiro"}
+
+The dome and the far mountains follow the camera across the ground and keep their height: their object matrices are
+the identity rotation at the camera's horizontal position and height 0. :observed{games="sekiro"}
 
 :::open[Where is Elden Ring's sky?]
 Forward draws into the light targets come before the volumetric fog in the Elden Ring frame; the recorded frame lost the
 names of many programs, so which of them are the sky is not established.
 :::
 
-The moon follows the light: in that frame its quad's object matrix places it 25.0 units from the camera exactly along the
+The moon follows the light: in both frames its quad's object matrix places it 25.0 units from the camera exactly along the
 light set's direction towards its first directional light (0, 0.4226, −0.9063), with its rotation built from the same
-direction so that it faces the camera. :observed{games="sekiro"} So the moon moves with the light set's `Angle0` over the
-day. :inferred{games="sekiro"}
+direction so that it faces the camera. :observed{games="sekiro"} The quad is 10 by 10 units (corners at ±5 in its own x
+and y), its normal its own −z, and its vertices select the second of the draw's two object matrices, whose z axis is that
+direction, whose y axis is the world's up made perpendicular to it, and whose x axis completes a right-handed frame.
+:observed{games="sekiro"} So the moon moves with the light set's `Angle0` over the day. :inferred{games="sekiro"}
 
 :::open[Where does the moon's distance come from?]
 The distance of 25 and which part or parameter makes a model the light's disc are not established.

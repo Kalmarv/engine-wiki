@@ -9,6 +9,9 @@ sources:
   - title: Smithbox TAE event templates
     url: https://github.com/vawser/Smithbox
     note: Per-game event parameter templates (field order, types, asserted values)
+  - title: SekiroAnimationBridge
+    url: https://github.com/Beertraps/SekiroAnimationBridge
+    note: The four weapon slots of event 715
 implementations:
   - name: fromsoft-formats TAE reader
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/tae.rs
@@ -75,8 +78,8 @@ fields:
   - {at: 152, size: 8, type: u64, name: constant, level: unknown, note: 0x50}
   - {at: 160, size: 8, type: u64, name: reserved, level: unknown, note: 0}
   - {at: 168, size: 8, type: u64, name: constant, level: unknown, note: 0xB0}
-  - {at: 176, size: 8, type: u64, name: skeleton name offset, level: observed}
-  - {at: 184, size: 8, type: u64, name: SIB name offset, level: observed}
+  - {at: 176, size: 8, type: u64, name: skeleton name offset, level: observed, note: "In the 15 Sekiro weapon-part files whose animation table is at 0xD0 this is 0xD0, the table's own offset, and there is no name there"}
+  - {at: 184, size: 8, type: u64, name: SIB name offset, level: observed, note: "As the skeleton name offset"}
   - {at: 192, size: 16, type: "u64[2]", name: reserved, level: unknown, note: 0 and 0}
 ```
 
@@ -117,7 +120,9 @@ event 193's `Force Apply` in 12). So those types occur in shorter variants than 
 Event 715 stores a u8 selector, three zero bytes, four s32 dummy-polygon ids and a further s32. Community templates name
 it a weapon-position override and list the selector as 0 (right weapon) and 1 (left weapon). :sourced[Smithbox] In
 Sekiro's 372 events of this type, in 19 files, the selector is 0 on 174, 1 on 167, 2 on 16 and 3 on 15, so all four
-values occur. An id is -1 when its model index is unused: all four are -1 on 2 events, and the others have 1 to 3
+values occur. The Sekiro animation bridge, a community tool, names the selector's four slots as the sword, the
+prosthetic tools (parts `wp_a_0700` to `wp_a_0799`), the Mortal Blade and the grappling hook. :sourced[SekiroAnimationBridge]
+An id is -1 when its model index is unused: all four are -1 on 2 events, and the others have 1 to 3
 ids set. :observed{games="sekiro"} Elden Ring has no event 715. :observed
 
 ## Animation numbers and files

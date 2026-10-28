@@ -31,13 +31,13 @@ fields:
   - {at: 12, size: 4, type: u32, name: name offset, level: proven}
   - {at: 16, size: 12, type: float3, name: Euler rotation, level: proven}
   - {at: 28, size: 2, type: i16, name: parent index, level: proven}
-  - {at: 30, size: 2, type: i16, name: first child index, level: sourced}
+  - {at: 30, size: 2, type: i16, name: first child index, level: proven}
   - {at: 32, size: 12, type: float3, name: scale, level: proven}
-  - {at: 44, size: 2, type: i16, name: next sibling index, level: sourced}
-  - {at: 46, size: 2, type: i16, name: previous sibling index, level: sourced}
-  - {at: 48, size: 12, type: float3, name: minimum bounds, level: sourced}
-  - {at: 60, size: 4, type: u32, name: node flags, level: sourced}
-  - {at: 64, size: 12, type: float3, name: maximum bounds, level: sourced}
+  - {at: 44, size: 2, type: i16, name: next sibling index, level: proven}
+  - {at: 46, size: 2, type: i16, name: previous sibling index, level: proven}
+  - {at: 48, size: 12, type: float3, name: minimum bounds, level: proven, note: "Either a box or the inverted sentinel"}
+  - {at: 60, size: 4, type: u32, name: node flags, level: sourced, note: "Only the low four bits are used; bits 4 and 8 are unexplained"}
+  - {at: 64, size: 12, type: float3, name: maximum bounds, level: proven, note: "Either a box or the inverted sentinel"}
   - {at: 76, size: 52, type: bytes, name: reserved, value: 0, level: proven}
 ```
 

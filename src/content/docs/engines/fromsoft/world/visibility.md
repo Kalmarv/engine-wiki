@@ -49,10 +49,34 @@ assets gives 70,713 qualifying, 317,870 with zero draw groups and 37,192 qualify
 layouts. :observed So the arrays alone do not hide whole interiors of Ashina Castle; whether the zeros mean "always
 drawn" is not established.
 
-The 72-byte second block (collisions and connecting collisions in both games, assets in Elden Ring) starts with an i32
-that is -1 on every Elden Ring asset, on 1,887 of the 3,266 Elden Ring collisions and on 108 of the 1,304 Sekiro
-collisions, and otherwise a non-negative number, followed by eight words that are zero except on 341 Elden Ring
-collisions, 322 connecting collisions and 3 assets. :observed
+```layout
+title: Part draw block (payload slot +80)
+size: "388 in Sekiro, 392 in Elden Ring"
+note: The block of every part that stores one; the sizes are the distance to the next block.
+fields:
+  - {at: 0, size: 32, type: "u32[8]", name: display groups, level: sourced, note: "Named by SoulsFormatsNEXT; what a group does is the game's"}
+  - {at: 32, size: 32, type: "u32[8]", name: draw groups, level: sourced}
+  - {at: 64, size: 128, type: "u32[32]", name: collision mask, level: sourced}
+  - {at: 192, size: 4, type: "u8[4]", name: condition bytes, level: unknown, note: "The first two are 0 or 1 in both games; Elden Ring's third is 0 or 2 and its fourth 0, 1 or 2; Sekiro's third and fourth are 0"}
+  - {at: 196, size: 2, type: i16, name: unknown, level: unknown, games: [elden-ring], note: "-1 on all 457,108 parts"}
+  - {at: 198, size: 1, type: u8, name: unknown, level: unknown, games: [elden-ring], note: "0, or 1 on 177 map pieces"}
+  - {at: 196, size: 4, type: "u8[4]", name: unknown, level: unknown, games: [sekiro], note: "0"}
+  - {at: 200, size: variable, type: bytes, name: reserved, level: proven, value: 0, note: "Zero to the end of the block in both games"}
+```
+
+```layout
+title: Part second display block (payload slot +88)
+size: 72
+note: Collisions and connecting collisions in both games, assets in Elden Ring.
+fields:
+  - {at: 0, size: 4, type: i32, name: condition, level: unknown, note: "-1 on every Elden Ring asset, on 1,887 of the 3,266 Elden Ring collisions and on 108 of the 1,304 Sekiro collisions; otherwise a non-negative number"}
+  - {at: 4, size: 32, type: "u32[8]", name: display groups, level: sourced, note: "Zero except on 341 Elden Ring collisions, 322 connecting collisions and 3 assets, and on 11 Sekiro collisions and 73 of its connecting collisions"}
+  - {at: 36, size: 4, type: "u8[4]", name: unknown, level: unknown, note: "00 00 ff ff (a signed -1 in the last two bytes) on all but 15 connecting collisions (12 in Sekiro, 3 in Elden Ring), which store a 16-bit number there and, on 14 of them, a 1 in the first byte"}
+  - {at: 40, size: 32, type: bytes, name: reserved, level: proven, value: 0}
+```
+
+Both blocks read with no refusals on every part of both installs (Sekiro 55,352 parts, Elden Ring 457,108), their sizes
+and zero bytes as stated. :proven
 
 ## Shadow bytes
 

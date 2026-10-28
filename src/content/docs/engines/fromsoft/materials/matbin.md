@@ -123,8 +123,28 @@ A community table of 176 shader stems names the texture coordinate sets each rea
 its author is. :sourced[soulstruct] Held to the models that use the shaders, its tuple lengths fit: of the 451 stems on the 75,826
 meshes of the map, character, part, asset and object models that have a material binary (SpeedTree models excluded), 180 are in the
 table, and for every one of them the length of its tuple is the number of texture coordinate attributes of some mesh using it; 55,811 of
-the 56,770 meshes of those stems have exactly that many. :observed[the models of the map, character, part, asset and object binders] The table's
-group-to-set assignments are not checked against the shader programs here. :unknown
+the 56,770 meshes of those stems have exactly that many. :observed[the models of the map, character, part, asset and object binders]
+
+### What the pixel programs read
+
+A surface shader's pixel program computes each sampled coordinate from vertex-program outputs through constants of the material
+(`FC_TextureTilingScale`-style scale and offset), and the vertex program passes the coordinate on from a `TEXCOORD` input. A
+`TEXCOORD` input declared `int xy` is one coordinate set (two int16 lanes, divided by 2048), one declared `int xyzw` is a pair of
+sets (a `UVPair` vertex member), and a float one is a single attribute that is not always a coordinate (the `UVBlend` layer weights of
+`M[AMSN][Mb2]`); numbering the declared `TEXCOORD` inputs by index and counting a pair as two gives the shader's coordinate slots.
+:observed[the Gbuf pixel and vertex programs of the 688 stems of the install's shader bundles that have a pair, walked as DXIL]
+Of the 3,698 `Texture2D_<n>` textures they sample, 63 take no `TEXCOORD` into the coordinate, 204 also depend on the vertex position,
+normal, tangent or colour, and 392 depend on another texture's sampled value. :observed[the same programs]
+
+Against the community table, 172 of the 177 stems in it declare exactly as many coordinate slots as the table's tuple has entries;
+the five others are the vertex-animation shaders `C[AMSN][VA_Loop]` (4 declared, 6 in the table), `C[c3320]_VA_Frame` (3, 5) and
+`CS[c8901][VA_Frame]_Burn` with its `_cloth` variant (6, 8), and `M[AMSN_V][Mb3][3Mask][Ov_N]` (1, 2). :observed[the 177 stems of the
+table that have programs] Of the 980 textures whose group the table names (the group of each texture is in the shader's metaparam) and
+whose coordinate reads a slot, 811 read exactly the slot or slots whose name the table gives for the group and 169 read another; the
+169 are in 24 stems, all character, hair, eye, grass and test shaders (the map shaders agree: 144 of 146; the character shaders
+`C[...]`, `CS[...]` and `P[...]`: 579 of 740; `C[c4520]_Dragon`, `C[c4720]_Beast`, `C[c4480]_Flower_1` and `CS[c8901]_Burn`
+each read slot 0 for some of their groups that the table puts on `UVDetail`). :observed[the 980 textures] The table's authors' own marks (HIGH, MEDIUM, LOW)
+are not checked against this beyond the count. :unknown
 
 :::open[What do the MATBIN keys identify?]
 The keys are preserved and compared bit for bit, but their complete generation rule and runtime use are not

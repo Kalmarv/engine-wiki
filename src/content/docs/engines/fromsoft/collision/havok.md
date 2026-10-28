@@ -20,6 +20,14 @@ implementations:
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/bvtree.rs
   - name: havok-formats simd tree decoder
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/simdtree.rs
+  - name: havok-formats compressed mesh writer
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/mesh_write.rs
+  - name: havok-formats bounding-volume tree encoder
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/bvtree_write.rs
+  - name: havok-formats simd tree writer
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/simd_write.rs
+  - name: havok-formats extern mesh writer
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/extern_write.rs
 ---
 
 Map collision uses Havok tagfiles with `hknpCompressedMeshShape` geometry and FromSoftware-specific `fsnp` metadata.
@@ -99,6 +107,29 @@ and Elden Ring's `hkcdDefaultStaticMeshTree` stores `packedVertices` as `unsigne
 duplicated-edge member; it has a `triangleIsInterior` bit field, and the tree a `primitiveStoresIsFlatConvex` byte
 (0, or 255 in 11 Sekiro and 121 Elden Ring meshes). :proven[every named collision binder]
 
+### Shape-level members
+
+Besides its data, a compressed mesh shape stores members that follow from the mesh. `numTriangles` and `numConvexShapes`
+are 0 in every mesh of both installs. :proven[every named collision binder] The `connectivity` object of the data
+(`headers`, `localLinks` and `globalLinks`, the links between a triangle's edges and its neighbours) is empty in every
+mesh of both installs. :proven[every named collision binder]
+
+`triangleIsInterior` is a bit field of `maxKeyValue + 1` bits in `ceil(bits ⁄ 32)` words. Its bits are set only on the keys
+of triangles, never on a key no primitive has nor on a custom primitive's: between 32% and 48% of the triangle keys,
+depending on the binder set, and in 362 Sekiro and 5,557 Elden Ring meshes none at all. What decides a triangle's bit is
+not established. :proven[every named collision binder]
+
+The shape's `triangleIndexToShapeKey` (the games' own `fsnpCustomParamCompressedMeshShape`) holds, for each triangle of the
+source mesh, its key left-aligned in 32 bits with the `32 − numShapeKeyBits` low bits all ones. Every word of the 3,333
+Sekiro and 22,778 Elden Ring meshes that have the member is that, names a primitive that exists (a quad's second half
+included), and no key appears twice. Its length equals the number of triangles the mesh decodes to in 2,414 Sekiro and
+19,330 Elden Ring meshes and differs in the others. :proven[every named collision binder]
+
+Every section names exactly one data run, and it is `{0xFFFF, 0, the section's primitive count}`; every run of the
+tree's `primitiveDataRuns` is named by some section. In Sekiro the section's `dataRuns.data` word is the first run
+`<< 8` plus the run count (always 1). The list repeats a run in 1,136 Sekiro and 4,289 Elden Ring meshes, so a run is
+not found by its section's position alone. :proven[every named collision binder]
+
 ### Bounding-volume trees
 
 The mesh tree and each of its sections carry a static bounding-volume tree: `nodes` and a `domain` box. The mesh-level
@@ -151,6 +182,26 @@ A node's box can come out inverted, its minimum above its maximum on an axis, wh
 extent of a box that is already thin: 13,490 Sekiro and 18,577 Elden Ring section-tree nodes, none in a mesh tree, by at
 most 73 μm in Sekiro and 51 μm in Elden Ring. The triangles under them lie within the 16 units above. :proven[every named collision binder]
 
+The stored nibbles follow the floor of a square root. For a node below a parent box of extent `e`, `h` is the largest
+nibble with `parent min + e × h² ⁄ 226` not past the minimum of what lies below the node, and likewise `l` on the maximum
+side, where what lies below is the union of the boxes of the node's leaves, a leaf's box being its primitive's vertices
+grown by the shape's `convexRadius`. Applied from the root down on the stored topology, with each section's stored
+`domain` as the root's parent and each parent's box computed from its own nibbles, this gives the stored bytes of
+18,363,654 of the 21,241,946 inner nodes (86.5%), 16,123,721 of 21,786,968 leaves (74.0%) and all but 35 of 272,471 roots in
+Sekiro, and of 51,652,581 of 57,042,426 inner nodes (90.6%), 47,318,288 of 58,482,843 leaves (80.9%) and all but 177 of
+719,647 roots in Elden Ring; the 677 and 1,635 sections that hold a dead or custom primitive, which has no box, are left
+out. :observed[every section tree with a box for each primitive] Where a node differs, it differs by one nibble in about
+four cases of five. :observed[every section tree with a box for each primitive] With each node's box taken from its stored parent instead,
+93% of the inner nodes and 86% of the leaves of Sekiro's object trees match, and every difference of one nibble in
+them lies within half a codec step of the boundary between the two nibbles: the files' trees look to have been built
+from the vertices before they were quantised, the rule being applied here to the vertices after. :observed{games="sekiro"}
+
+The topology is not a rule that is known. In the 2,610 section trees of Sekiro's objects that have three or more nodes,
+none has its leaves' primitive indices in increasing order along the pre-order; of 203,099 splits, 94,168 give the two
+children the same number of leaves, 105,811 of 203,011 split along the longest axis of their node's tight box, and the
+children's boxes overlap on the split axis in 191,620 of 203,011. In the mesh trees of two or more sections the section
+indices run in increasing order along the pre-order in 68 of 155. :observed{games="sekiro"}
+
 ### Simd tree
 
 Every compressed mesh of both games, 3,344 Sekiro and 22,899 Elden Ring, also holds a `simdTree`: an `hkcdSimdTree`
@@ -200,6 +251,15 @@ magnitude of the section's `domain`, none by more. :proven[every named collision
 The tree object has `isCompact` in Elden Ring: 1 in every mesh whose tree has leaves and, in the others, a byte of any
 value from 0 to 246 rather than a boolean. :proven[every named collision binder]{games="elden-ring"} The mesh data's
 `hasSimdTree` is 0 or 1 in all of them. :proven[every named collision binder]{games="elden-ring"}
+
+The nodes of a simd tree are numbered by a rule that differs by game. In Elden Ring a node's children are numbered in lane
+order when the node is taken from a stack: the root's children are 2 to 5, then the last of them is taken and its
+children get the next numbers, then the one before it, and so on; a node of leaves counts as a child like any other. In
+Sekiro the nodes are numbered as a depth-first walk from the root reaches them, taking a node's lanes from the last to
+the first: the root's last child is node 2, and a node's last child follows it. Both rules held on every simd tree of 300
+nodes or fewer: 278,433 Elden Ring trees (the compressed meshes and the version 3 extern meshes) and 959 Sekiro ones.
+:observed
+
 
 ### Section fields
 
@@ -271,7 +331,11 @@ of constant radius, 0.20 m and 0.04 m), `o205300`'s are two eight-corner boxes a
 consecutive shared-index entries. :observed The collision surface is presumably the points' convex hull. :inferred
 
 The first word's high byte is the vertex count (up to 36). Its low byte is `0x52` for a point set and `0x92` for an
-extern reference; what its bits mean beyond that is not established. :unknown The third word is
+extern reference: the low nibble is 2 in both, bits 4 and 5 are 1 (the points are 32-bit codes) and bits 6 and 7 are the
+number of words after the slot, 1 in a point set and 2 in an extern reference, whose two words are the index. A record is
+`2 +` that many words long, and in a section the next record starts where the previous one ends in all 17 pairs of
+consecutive records in Sekiro and 223 of the 225 in Elden Ring. :observed The meaning of the bits is read off the record lengths; whether the engine reads
+them so is not known. :inferred The third word is
 `0x3D4D` on 21 Sekiro records, `0x3C9D`, `0x3CC7` or `0x3C8B` on the other 6, and `0x3C24` on all 28 Elden Ring
 records; the section's data run gives these primitives `0xFFFF` like every other. :unknown
 
@@ -326,6 +390,31 @@ this shows a shared tile frame in x and z and no more. :observed{games="elden-ri
 
 Smithbox calls the `f` set fall protection, used for enemies. :sourced[Smithbox] Whether the player collides with
 the `f` meshes is not established. :unknown
+
+### Extern mesh bounding volumes
+
+The `boundingVolumeData` of an `hknpExternMeshShape` (an `hknpExternMeshShapeData`) takes one of two forms, by the version
+of its class. Version 2, in all 12,688 Sekiro bodies and 40 Elden Ring ones, has an `aabbTree` and a simd tree that is only
+its two empty nodes. Version 3, in 264,816 other Elden Ring bodies with a triangle (and two without), has the simd tree
+alone, with `isCompact` 1 in every one that has a triangle. :proven[every `f` binder of both installs]
+
+The `aabbTree` is a static tree like the others with 6-byte nodes (`hkcdStaticTree::Codec3Axis6`): the three nibble bytes,
+then `hiData` (a byte) and `loData` (a 16-bit little-endian word) with `value = (hiData & 0x7F) << 16 | loData`. Bit 7
+of `hiData` set is an internal node whose second child is `2 × value` nodes after it; clear is a leaf for triangle
+`value`. A tree of `n` triangles has `2n − 1` nodes and its leaves name each triangle once, in all 12,728 trees.
+:proven[every `f` binder of both installs] The nibbles shrink the box the same way as in the other trees, from the tree's
+`domain`, which is the box of the mesh's vertices: 515,025 of Sekiro's 537,436 leaves hold their triangle exactly and
+the rest fall short by at most 0.15 mm; 369 of the 386 triangles of the Elden Ring trees hold theirs, the rest short by
+at most 4 μm. :observed[every `f` binder of both installs]
+
+The simd form has one leaf per triangle, keyed by the triangle's index in the `hkGeometry`; a node holds four lanes that
+are all leaves or all children, with exactly the boxes of the other simd trees (a leaf's box is the triangle's vertex box).
+In meshes of up to 32 triangles a node of leaves holds four consecutive keys; in larger meshes the groups follow the
+geometry in a way that was not decoded: the keys read in lane order are 0 to `n − 1` in 195,662 of 264,816 trees.
+:observed{games="elden-ring"}
+
+`numShapeKeyBits` is `bitlen(n)` for the version 2 form and `bitlen(n) + 1` for version 3 (`n` the triangle count), in
+all 12,728 and 264,816 bodies with a triangle. :proven[every `f` binder of both installs]
 
 ## Sekiro
 

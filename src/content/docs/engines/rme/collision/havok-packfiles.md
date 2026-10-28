@@ -7,7 +7,7 @@ sources:
     note: a third-party Havok reader; it has no physics classes, so it cannot read these files; its packfile header names the header words
   - title: soulstruct-havok (Grimrukh)
     url: https://github.com/Grimrukh/soulstruct-havok
-    note: Havok 5.5 and 2010 class tables; the member names of the rigid body and the mesh material record
+    note: Havok 5.5 and 2010 class tables; the member names of the rigid body and the mesh material record; the MOPP command table of the Demon's Souls and Dark Souls codes
   - title: hkx-rs (kronerm)
     url: https://gitlab.com/kronerm/hkx-rs
     note: a packfile reader and writer for Havok 2014; computes the class signatures it writes
@@ -20,6 +20,8 @@ sources:
 implementations:
   - name: "havok-formats (packfile reader, image and writer, class metadata and layout rules)"
     url: https://github.com/Kalmarv/havok-formats/tree/main/src/packfile
+  - name: "havok-formats (the MOPP code walker and box query)"
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/mopp.rs
   - name: "primase worlds/shred (collision.rs, conversion of the Havok data)"
     url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/collision.rs
 ---
@@ -375,7 +377,51 @@ No single scale of the vertices or the planes makes the violating shapes consist
 An `hkpMoppCode` is a 48-byte body followed by its code bytes. `+0x10` holds an offset and a scale (four `f32`); `+0x20` the code (a byte array whose data starts at `+0x30`, right after the body, and the object ends where the code ends); `+0x2C` a byte that is 0; every other byte of the body is zero. :proven[all 1,705]
 For the 1,704 trees over a mesh, the offset is the minimum corner of the mesh's stored box, and the scale times the box's largest extent is 0.99 × 2^24. :proven[all 1,704]
 The cylinders (180 of them fixed) are the `ConstructionMarker_*` traffic cones; they are not rails. :observed
-The MOPP code is a search tree over the mesh and is not needed to read the triangles. It is not decoded.
+The code is not needed to read the triangles: it is the bounding-volume tree a collision query runs to find which triangles
+a box can touch, stored as a bytecode program. Every multi-byte argument is big endian. The program walks a tree of
+splits and ends in *terminals*, each a shape key `subpart << (32 − numBitsForSubpartIndex) | triangle`; the mesh's
+`numBitsForSubpartIndex` is 12 in all 1,704. :proven[all 1,704]
+
+The 1,705 codes (5,917,936 bytes; the longest is 964,064) execute 68 distinct opcodes and no others, and every path of every
+code ends at a terminal. :proven[all 1,705 codes] The command table, which agrees with the one soulstruct documents for
+Demon's Souls and Dark Souls codes, :sourced[soulstruct-havok] is ("reached" counts each distinct address and terminal offset a full walk of every code reaches once):
+
+| Opcodes | Command | Reached |
+|---|---|---|
+| `0x01`-`0x04` | rescale: three frame bytes `x y z`; the query box becomes `(q − (frame << 16)) << opcode` per axis | 28,395 / 22,441 / 13,332 / 9,061 |
+| `0x05`, `0x06` | jump forward by the 8-bit or 16-bit argument that follows, counted from the end of the command | 332 / 308 |
+| `0x70` | jump to the absolute 32-bit address that follows | 17,269 |
+| `0x09`, `0x0A` | add the 8-bit or 16-bit argument to the terminal offset | 27,113 / 31,192 |
+| `0x0B` | set the terminal offset to the 32-bit argument | 59,516 |
+| `0x10`-`0x12` | split on the x, y or z plane: `left_max right_min right_jump8` | 144,790 / 134,888 / 145,305 |
+| `0x13`-`0x1C` | the same on a diagonal plane | 8,098 to 35,386 each |
+| `0x20`-`0x22` | split on one value: `value right_jump8` | 1,305 / 904 / 1,192 |
+| `0x23`-`0x25` | split with 16-bit jumps: `left_max right_min left_jump16 right_jump16` | 1,669 / 1,021 / 1,903 |
+| `0x26`-`0x28` | bounds on the x, y or z axis: `min max` | 163,356 / 150,565 / 165,963 |
+| `0x30`-`0x4F` | terminal: key = terminal offset + opcode − `0x30` | 2,763 to 119,525 each |
+| `0x50`-`0x53` | terminal: key = terminal offset + the following 8, 16, 24 or 32-bit value | 118,664 / 39,188 / 1,633 / 29,749 |
+
+:proven[all 1,705 codes] No code executes `0x00` (return), `0x07` or `0x08` (longer jumps), `0x0C` (a jump to a numbered
+512-byte chunk) or `0x29`-`0x2B` (bounds with 24-bit arguments), which the Demon's Souls and Dark Souls codes use. :proven[all 1,705 codes]
+
+A split sends a query to its left branch (the next command) when the query box's minimum, as the high byte of its
+integer coordinate, is at most `left_max`, and to its right branch when the maximum is at least `right_min`; both when
+the box straddles. A world position is the unsigned integer `floor((p − offset) × scale)` per axis with the code's
+`offset` and `scale` (`+0x10`), and a command compares the high byte (`>> 16`) of the coordinate in the current
+frame. Run with a triangle's own box, the code returns that triangle's key for all 637,213 triangles that have a
+terminal, along with other keys (33 on average, since a diagonal split is followed on both sides in this model); run
+with a box a million metres away it returns nothing for all 1,704. :proven[all 1,705 codes]
+
+The terminals of the 1,704 codes over a mesh are the keys of the mesh's triangles without the degenerate ones: a triangle
+whose squared edge cross product, taken from either of its first two vertices in `f32`, is under 10⁻⁷. That separates 8,755 of the 8,760
+triangles the codes leave out from the 637,213 they keep (none of those is under it). Five more triangles in
+three meshes are left out although they are not under it: thin triangles with a squared cross product of 6.3 × 10⁻⁷ to
+0.031, while 21,986 kept triangles have one under 10⁻⁶. No terminal names a triangle the mesh lacks. The one code over a
+list shape has 5 terminals, the keys of its child shapes. :proven[all 1,705 codes]
+
+:::open[Why does a MOPP code leave out five thin triangles?]
+They are in three meshes (one each in two, three in a third), with squared cross products between 6.3 × 10⁻⁷ and 0.031 and edges up to 39 m long; the degenerate test above keeps them.
+:::
 
 ## Rigid bodies
 

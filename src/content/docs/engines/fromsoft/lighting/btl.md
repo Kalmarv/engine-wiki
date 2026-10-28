@@ -123,10 +123,47 @@ and 180 are zero in all 735 Sekiro and 11,229 Elden Ring lights. :proven[every l
 Ashina Castle's examined banks `0000`, `0002` and `0004` contain point and spot lights with shadows disabled.
 :observed{games="sekiro"}
 
+## How the renderer takes a light
+
+Sekiro's deferred lighting stage takes every point light as one 208-byte record and every spot light as one 192-byte record,
+from two structured buffers of 1,024 records that the engine fills each frame; compute programs sort the lights into
+screen tiles and a tile-lighting pass shades with them. A per-light variant of the shader family reads one record from a
+constant buffer instead. Over four frames of Ashina Castle the lighting passes that ran were the organise and tile-lighting
+programs, with 19 point records in the buffer and none for spot lights. :observed{games="sekiro"}
+
+A point record holds, as floats: the light's position in view space and `1 / radius^2` (offset 0); the diffuse colour (red,
+green, blue) and a fourth value (16); the specular colour and a fourth value (32); the translucency parameters (48) and the
+radius (60); the light type (64). :observed{games="sekiro"} Against the stored values of the five lights of the map's banks that
+the frames held (matched by position, within 0.01 m, over two frames):
+
+| Record field | Value | Largest relative difference |
+|---|---|---|
+| diffuse colour | `(diffuse byte / 255)^2 * diffuse power` per channel | 1.4e-7 |
+| specular colour | `(specular byte / 255)^2 * specular power` per channel (0 for the four lights of specular power 0) | 7e-8 |
+| position | the stored position, moved into view space | 2e-5 m |
+| `1 / radius^2` and radius | the stored radius (offset `0x58`) | 2e-8 |
+| diffuse fourth value | 1 divided by the float at record offset `0xA4` (0.5 on four lights, 4 on one) | 0 |
+| specular fourth value | `0.2989 r + 0.5866 g + 0.1145 b` of the record's specular colour (0 where the power is 0) | 2e-8 |
+
+The colour transfer is therefore the square of the byte over 255, not the sRGB curve: for a byte of 158 the record holds
+0.3839 of the power where sRGB would give 0.3416. :observed{games="sekiro"}[5 lights, 2 frames, one area]
+
+In the lighting shaders' disassembly the radius enters a point light's contribution only as the window `saturate(1 -
+distance^2 / radius^2)`, which multiplies a wrapped Lambert term whose wrap depends on `distance * (the diffuse fourth
+value)`; the colour is the record's diffuse colour times that. The same expression is in the tile compute program and in the
+per-light pixel program. A spot light's record has a range instead of `1 / radius^2` (the shader squares it), the same window,
+and a second factor `saturate(1 - x^2 - y^2)` on its position in the cone's projection space, which is zero at the edge of the
+base. :observed{games="sekiro"}[disassembly of the programs, read not run]
+
+:only[elden-ring] The lighting programs (DXIL) declare the same point-light structure (position and radius, diffuse colour,
+specular colour, translucency parameters, light type) and apply the same window. :observed{games="elden-ring"}[one program read]
+How the stored bytes and power reach that record in Elden Ring is not read.
+
 :::open[How do bank powers map to physical light units?]
-RGB transfer functions, power calibration, exact cone interpretation and spot orientation need runtime evidence;
-stored values alone do not establish watts, lumens or lux. The lights of [effect files](/engines/fromsoft/effects/fxr/#placing-the-lights-of-an-effect)
-are not on a common scale with these powers: no single factor relates them.
+The renderer's unit is the record's `colour^2 * power`; stored values still do not establish watts, lumens or lux. The exact
+cone interpretation of a BTL spot light and its orientation were not on screen in the captured frames. The lights of
+[effect files](/engines/fromsoft/effects/fxr/#how-the-renderer-takes-an-effect-light) are in the same unit: an effect light's
+multiplier times its colour alpha is a BTL power, with no factor between them.
 :::
 
 :::open[What is the version-15 BTL layout?]

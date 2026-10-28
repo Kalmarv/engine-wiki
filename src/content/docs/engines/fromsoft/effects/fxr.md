@@ -296,7 +296,8 @@ shadow and fog fields shifted: jitter flag 1, acceleration 2, jitter 4 to 6, int
 separate specular 11, shadow darkness 12, fade-out frames 15, volume density 19, phase function 21, asymmetry 22,
 adaptation exponent 23. :proven[against the fxr project, all 30 spot lights]
 The fxr project presents a spot light's multipliers divided by ten; the stored values are ten times what it prints (8.0 where it
-prints 0.8). :sourced[fxr]
+prints 0.8). :sourced[fxr] The executable's code for a spot light reads the stored multiplier into the light's intensity without
+dividing it (below). :inferred[code read, not run]
 
 A light's place in its effect is the chain of its nodes. The static node transform (action 35) is six float field words, a translation
 and a rotation in degrees, and sits in a config, never in a node's own actions: 20,878 Sekiro configs and 81,215 Elden Ring
@@ -306,6 +307,46 @@ Counted per light, 167 of Sekiro's 847 and 725 of Elden Ring's 5,016 have a rota
 that state 0 chooses; the rest sit under translations only. :proven
 The rotation order and the translation's place relative to it are the fxr project's (rotations Z, X, Y, then the translation).
 :sourced[fxr]
+
+## How the renderer takes an effect light
+
+A light action becomes a light object of the renderer through a per-frame update in the executable: it evaluates the action's
+properties at the effect's time and writes the object's colour, intensity, radius and flicker state. :inferred[Sekiro 1.06 code read, not run]
+The light object is the one a BTL light becomes, so both reach the lighting shader as the same record
+(see [BTL light banks](/engines/fromsoft/lighting/btl/#how-the-renderer-takes-a-light)): the record's diffuse colour is
+`colour^2 * intensity` per channel. :observed{games="sekiro"}
+
+For a point light the code gives, per frame:
+
+| Light object field | Value |
+|---|---|
+| colour | the diffuse colour's red, green and blue, times the effect instance's own colour scale (1 unless the effect is spawned with another) |
+| intensity | diffuse multiplier times the diffuse colour's alpha times the instance's mean scale (the mean of its three scale values) times the instance's brightness factor |
+| radius | the radius property times the instance's mean scale |
+| fourth diffuse value | 1 divided by a property of the second list (`unk_ds3_p2_0` in the fxr project's naming) |
+
+:inferred[code read, not run] The effect's light settings are applied only when the effect has a light-parameter record, which none
+of the lights read back had. The fixed scale constants in that code are all 1.0. :inferred
+
+Read back from a running Sekiro in Ashina Castle (four frames, 19 point records each):
+
+- Effect 300's light (a steady light: no flicker, colour 200/230/255, alpha 1, multiplier 0.05, radius 1.5) is the record
+  with diffuse colour 0.030757403, 0.040676665, 0.05, radius 1.5 and fourth value 5 = 1 / 0.2: `colour^2 * multiplier`
+  exactly, to float rounding, and 1 / `unk_ds3_p2_0`. :observed{games="sekiro"}[1 light, 4 frames]
+- Each of the other 14 non-BTL records of the first frame has the colour direction and radius of a stored effect light and a
+  largest colour channel between the stored multiplier times alpha times flicker brightness and the stored multiplier times
+  alpha (for example 4.80 to 6.40 for the 6.4 multiplier lights of flicker brightness 0.75; 9.0 to 9.8 for a multiplier
+  of 10 and flicker 0.875). Over four frames the readings of one light vary within that band. :observed{games="sekiro"}[14 lights, 1 frame]
+
+So an effect light's multiplier times its colour alpha is in the same unit as a BTL light's power, with no factor between them;
+the data's earlier estimate (an effect's brightness about five times the nearest BTL light's power) is a difference in how
+the lights were authored, not in the unit. :observed{games="sekiro"} No alpha other than 1 was among the lights read back, so
+the product with alpha rests on the code. :inferred
+
+A spot light's update is the point light's, with the multiplier at property 2 and the colour alpha taken the same way: no
+divisor by ten appears in the update, the packing or the shaders, and the packing's scale factor for spot lights is 1.0 by default.
+The cone is built from the near and far planes and two angles `2 * atan(radius / 2 / far)`, so the stored radii act as the
+full width and height of the base rather than as half-extents. :inferred[code read, not run; no spot light was in the captured frames]
 
 ## How the games name an effect
 
@@ -379,10 +420,12 @@ The part's type data has no relative-id field as the Elden Ring asset part's; ro
 x 1000 exist for 335, 209, 66 and 51 placed objects, and what chooses them is not read.
 :::
 
-:::open[Which way does an effect's spot light shine, and in what unit is a light's brightness?]
-The spot light stores a near plane, a far plane and the half-extents of an elliptic base there, and no axis: the axis is
-the effect's own local direction, which the file does not name. The brightness (alpha times multiplier) has no stated unit,
-and no factor relates it to the BTL powers (above). Both need the game's lighting code or a capture of an effect light.
+:::open[Which way does an effect's spot light shine?]
+The spot light stores a near plane, a far plane and the extents of an elliptic base there, and no axis: the axis is the
+effect's own local direction, which the file does not name. The light object takes a transform from the effect's node, but
+which of its axes the renderer's cone follows was not read, and no effect spot light was captured. The code's cone angle
+(`2 * atan(radius / 2 / far)`, above) and the absence of a tenth on a spot's multiplier need one captured frame with a spot
+light to be proven.
 :::
 
 :::open[What do the action's flag bytes and unknown word mean?]

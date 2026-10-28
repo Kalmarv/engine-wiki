@@ -159,6 +159,35 @@ names. Their presence does not establish how the layers combine. :observed{games
 Volumetric-fog groups include `GameScale`, near and far depth, fixed density, height density, scattering and light
 colour fields. :observed The density unit and its relationship to `GameScale` are unresolved. :unknown
 
+## From the light set to the lighting constants
+
+The deferred sun program `GXLightAcc_DDirLightShadowed1` reads the light set from the constant buffer `cbLight`, field
+`FC_DirLight[2]`: two light sets of 72 floats each, holding four directions, four diffuse colours, four specular colours,
+then the ambient terms. :observed{games="sekiro"}
+
+In a frame captured from the running game at the Ashina Castle gate (`m11_01`, 1.06) each set is one file's `LightSet
+ParamEditor` value ID 0 at the 18:00 key, and no other: set 0 is `m11_01_0020`, set 1 is `m11_01_0000`. Predicting every
+stored light field of every file and value ID of `m11_01` at 18:00 and comparing with both sets, each set agrees with exactly
+one candidate on all five fields (the first direction, two diffuse and two specular colours), to float precision.
+:observed{games="sekiro"} The volumetric fog's far depth (300) and fixed density (0.0015) in the same frame are the 18:00
+values too. :observed{games="sekiro"}
+
+| Stored field | Constant | Transfer | Confidence |
+|---|---|---|---|
+| `Directional Light DiffColor<n>` (r, g, b, w) | diffuse colour `n` of the set | (r²·w, g²·w, b²·w, w²) | :observed[n = 0, 1 of both sets of one frame]{games="sekiro"} |
+| `Directional Light SpecColor<n>` (r, g, b, w) | specular colour `n` of the set | (r²·w, g²·w, b²·w, w²) | :observed[n = 0, 1 of both sets of one frame]{games="sekiro"} |
+| `Directional Light Angle0` (rx, ry) radians | direction 0 of the set | (sin ry · cos rx, −sin rx, cos ry · cos rx) | :observed[both sets of one frame]{games="sekiro"} |
+
+So the stored colours are squared and multiplied by the weight before the light reaches the program, the same squaring as
+the colours of [BTL](/engines/fromsoft/lighting/btl/) light records. :inferred A sun stored as
+(1.0, 0.784, 0.588, 2) lights the frame with (2, 1.230, 0.692). :observed{games="sekiro"}
+
+:::open[How do the two light sets reach the pixels?]
+The program chooses a set per pixel by the [G-buffer](/engines/fromsoft/shaders/gbuffer/)'s light-group selector; which
+parts write which value, and what selects `_0020` beside `_0000` for the map, is not established. The ambient terms of the set (spherical-harmonic rows) and the second direction
+are not yet tied to stored fields.
+:::
+
 :::open[Which environment is active, and how are time keys interpolated?]
 The selection from map, collision scene bytes, weather and events is not fully established. Nor are the engine's
 curves between stored hours; linear interpolation is not an established engine rule.

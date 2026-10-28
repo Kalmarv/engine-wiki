@@ -9,6 +9,8 @@ sources:
 implementations:
   - name: havok-formats spline reader and sampler
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/spline.rs
+  - name: havok-formats spline block writer and encoder
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/spline_encode.rs
 ---
 
 `hkaSplineCompressedAnimation` stores transform tracks in aligned blocks, with static, absent and spline-valued
@@ -185,6 +187,56 @@ quaternion ending within 2 bytes of the aligned end would otherwise let the read
 
 :only[sekiro] The same geometry occurs in 1,243 of the 10,865 final blocks, and none is followed by extra bytes; the
 2016.2 data ends at the aligned end. :proven[over the animations read]
+
+## How the stored values are made
+
+What the stored values show of the encoder that made them, over the 60,209 spline animations of every binder of both
+installs (Sekiro 11,581, Elden Ring 48,628).
+
+**Every byte is accounted for.** Laying out the values each block stores (masks, knot bytes, bounds, quantized control
+points, packed quaternions, float tracks) by the rules on this page, with zero for every padding byte and the 16 guard
+bytes where the rule above puts them, gives back the data, `blockOffsets` and `floatBlockOffsets` of all 60,209
+animations byte for byte; so every padding byte, the tail of the mask area included, is zero.
+:proven[over the 60,209 animations]{games="sekiro elden-ring"}
+
+**The header is f32 arithmetic.** In all 60,209, `maxFramesPerBlock` is 256, and the three durations are these
+expressions bit for bit, each operation rounded to f32: `frameDuration = duration / (numFrames - 1)`,
+`blockDuration = frameDuration * (maxFramesPerBlock - 1)`, `blockInverseDuration = 1 / blockDuration`.
+:proven[over the 60,209 animations]{games="sekiro elden-ring"}
+
+**Knots are clamped frame numbers.** Every spline's knot bytes begin with `degree + 1` zeros and end with `degree + 1`
+equal bytes, which in every transform track's spline are the block's last frame; no interior knot repeats more than
+three times, and only degree 3 splines repeat one at all. :proven[over the 60,209 animations]{games="sekiro elden-ring"} That is the shape an error-bounded
+global approximation leaves (*The NURBS Book*, algorithm A9.10: knots removed from the polyline through every frame
+while each frame stays within a tolerance, the degree raised one step at a time, every knot gaining a copy at each step),
+with degree 1 where degree 3 would need more control points than the block has frames. :inferred A fit of that kind,
+given each animation's decoded frames with a tolerance of 0.001 on every part, writes the stored header of all 60,193
+animations that store no NaN, and the stored data of 892 of Sekiro's and 4,554 of Elden Ring's byte for byte.
+:observed[decoded frames re-encoded]{games="sekiro elden-ring"}
+
+**Flag bytes.** A spline rotation's flag byte keeps static bits beside its spline bits: 45,839 of Sekiro's 852,415
+spline rotations and 126,953 of Elden Ring's 2,382,563 have a non-zero low nibble (`0x5a`, x and z spline with y and w
+static, 11,076 and 17,158 times), though the whole quaternion is stored as a spline. No position or scale flags the w
+lane, and no component is flagged both static and spline. :proven[over the 60,209 animations]{games="sekiro elden-ring"}
+
+**Positions and scales are 16-bit.** Every track of both games selects 16-bit control points for its position and its
+scale (code 1 in bits 0-1 and 6-7 of the quantization byte). :proven[over the 60,209 animations]{games="sekiro elden-ring"}
+A spline lane's integers (a position, scale or float track spline component) run from 0 to 65535 or 65534: the lowest
+control point is stored as 0 in every lane, and the highest as 65534 in 147,207 of Sekiro's 391,016 lanes and 678,375 of Elden Ring's 1,944,817 (as 65535 in the others;
+lanes whose two bounds are equal, or not finite, are left out). :proven[over every spline lane]{games="sekiro elden-ring"}
+Rounding could not give 65534 for the highest point, so the integers are truncated; and the quotient that reaches
+65534.99... instead of 65535 points to a division by an approximate reciprocal. Computing
+`trunc((v - min) * r * 65535)` with `r` one Newton step from an x86 processor's `rcpss` estimate of `1 / (max - min)`
+gives the stored top integer of 99.84% of Elden Ring's lanes and 76.9% of Sekiro's. :observed[over every spline
+lane]{games="sekiro elden-ring"} Processors differ in that estimate, which would account for Sekiro's lower share.
+:inferred
+
+**A packed NaN.** 1,006 ThreeComp40 control points (108 in Sekiro's animation binders, 898 in Elden Ring's) store the
+five bytes `00 80 00 00 80`: bit 39, outside the 39 bits the format uses, is set, and the three 12-bit components are
+0, 8 and 0. :proven[over every 40-bit quaternion]{games="sekiro elden-ring"} That is what a quaternion of NaNs gives
+when each component is truncated to a 32-bit integer (NaN becoming the most negative one), offset by 2047, saturated
+to 16 bits and packed; normalising a control point of length zero gives such NaNs. :inferred Decoded, the point is three
+components of about −0.707 and a fourth of 0, not a unit quaternion. :proven
 
 ## Absent components
 

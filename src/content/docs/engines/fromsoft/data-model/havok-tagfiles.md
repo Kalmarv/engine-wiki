@@ -291,10 +291,42 @@ compendium, 3,960 with their own types, the one of SDK 2015.1) and all 68,722 of
   Each of Sekiro's 34,339 and Elden Ring's 109,341 `hkRelArray` slots holds 0 or the index of an item of its element
   type. :proven{games="sekiro elden-ring"} The members that use it include `hknpConvexPolytopeShape`'s vertices,
   planes, faces and indices.
+- **Real numbers** have two formats: `float` (format word `0x174605`, 228 types in Sekiro's tables and 875 in Elden
+  Ring's) and `hkHalf16` (`0x74605`, 56 and 215 types). :proven{games="sekiro elden-ring"} No table of either game
+  stores a double or any other width. :proven{games="sekiro elden-ring"} A half is the top 16 bits of a `float`, not an
+  IEEE binary16: every `hknpMaterial` of Sekiro's `h` collision of one area (173 materials) and of one Elden Ring tile
+  (1) stores `dynamicFriction` and `staticFriction` `0x3F00`, `restitution` `0x3ECC` and
+  `massChangerHeavyObjectFactor` `0x3F80`, which read as top halves are 0.5, 0.5, 0.3984375 (0.4 with the low 16 bits
+  of its `float` dropped) and 1.0, and read as binary16 would be 1.75, 1.75, 1.699 and 1.875.
+  :observed{games="sekiro elden-ring"}
+- **Integers** are stored with the width in bits 10 and up of the format word and the sign in bit 9 (`0x200`); no
+  integer type of either game sets bit 8 (`0x100`). A string type's format word is `0x3` in both games and also `0x83`
+  in Elden Ring (1,744 types, 21,971 members), never with bits 5 and 6 set. :proven{games="sekiro elden-ring"}
 - **Strings** are UTF-8. Every string with a byte of `0x80` or above decodes as UTF-8: 37 in Sekiro and 1,971 in Elden
   Ring, all of them `hkStringPtr` values (the ones examined are Japanese object names). Of them, 36 and 1,709 are not
   valid Shift-JIS.
   :proven{games="sekiro elden-ring"}
+
+## Packfiles, versions 9 and 11
+
+The packfiles of both games (Sekiro's 29 and Elden Ring's 6 distinct files) use the same container as
+[Tony Hawk's SHRED](/engines/rme/collision/havok-packfiles/) with 8-byte pointers and little-endian words: layout bytes
+`08 01 00 01` at `0x10` in all 35 files, three sections `__classnames__`, `__types__` and `__data__`, a contents version of
+`hk_2013.1.0-r1` (file version 9: 6 files) or `hk_2014.1.0-r1` (version 11: 29 files). :proven{games="sekiro elden-ring"}
+
+- **Version 9** has 48-byte section headers, the words `0` and `0xFFFFFFFF` at `0x38` and `0x3C`, and the first
+  section starts at `0xD0`. :proven{games="sekiro elden-ring"}
+- **Version 11** has 64-byte section headers (the last 16 bytes `0xFF`) and `0` at `0x38`. At `0x3C` two 16-bit fields hold 21
+  and the size of a region of that many bytes between the root header and the first section header: 16 in 28 of the 29 files,
+  where it holds `14 00` and zeros; the other file stores 0 and has no region. :proven{games="sekiro elden-ring"}
+- `__types__` is empty in all 35 (its start is the data section's start and its offsets are 0), so the files carry no class
+  metadata; the class names start with `hkClass` `33D42383` and `hkClassMember` `B0EFA719`. :proven{games="sekiro elden-ring"}
+- Fixups follow the SHRED rules with 8-byte pointers: sources 8-aligned, objects and global targets 16-aligned (365 objects
+  and 354 global fixups). A local target is 2-byte aligned: of 2,526 local fixups 43
+  point to a place that is not a multiple of 4 and none to an odd one, the strings of an array of strings, which follow
+  each other from 2-byte boundaries and are padded to 16 bytes only after the last. :proven{games="sekiro elden-ring"}
+- Writing a file's objects, arrays, strings and pointers out by the SHRED page's ordering rules gives back all 35 files byte
+  for byte. :proven{games="sekiro elden-ring"}
 
 ## Class versions
 

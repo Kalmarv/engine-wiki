@@ -18,14 +18,16 @@ sources:
     url: https://git.kroner.dev/HKX2/HKX2Builders
     note: lists the 2014.2 signatures that the dump reproduces
 implementations:
-  - name: "havok-formats (packfile reader)"
+  - name: "havok-formats (packfile reader, image and writer, class metadata and layout rules)"
     url: https://github.com/Kalmarv/havok-formats/tree/main/src/packfile
   - name: "primase worlds/shred (collision.rs, conversion of the Havok data)"
     url: https://github.com/Kalmarv/primase/blob/main/worlds/shred/src/read/collision.rs
 ---
 
 Collision is not stored with the render meshes. Each level has Havok **packfiles**, `.hkw` entries in the `PHYSICS` section of its [PAKs](/engines/rme/archives/pak/) (482 of them) and eight `.HKX` files in `physics` (ragdolls). All 490 are Havok **7.1.0-r1**
-packfiles: version 7, 32-bit pointers, big-endian, three sections (`__classnames__`, an empty `__types__`, `__data__`). All 490 parse. :proven[all 490 files]
+packfiles: version 7, 32-bit pointers, big-endian, three sections (`__classnames__`, `__types__`, `__data__`). All 490 parse. :proven[all 490 files]
+`__types__` is empty in 482 files; the eight ragdoll files carry the class metadata of the classes they use in it
+([below](#class-metadata-in-the-ragdoll-files)). :proven[all 490 files]
 The version string is also in the executable, so the engine ships the library it reads them with ([Robomodo RME](/engines/rme/)). :observed
 
 A level is the sum of its files: the base `<NAME>.hkw` holds the static world, and each session layer (`trainingsession`, `speedsession`, `tricksession`, `freeskatesession`, `challengesession`, `scoringspotsession`, `grind`, `bigair`, ...) holds more. A map's collision is its base file plus the layer files that map loads. :observed
@@ -168,7 +170,83 @@ classes that did not change) and fifteen differ, as a CRC over the class descrip
 | `hkpConstraintInstance` | `4FB4E6BB` | `DA4CE91E` | differs |
 | `hkpRagdollConstraintData` | `17A4D42F` | `ED9648F7` | differs |
 | `hkpLimitedHingeConstraintData` | `1C566B11` | `75AAE5A3` | differs |
-The `__types__` section is empty, so the files do not describe their own classes. The member layouts below follow Havok 7.1's member order and each was checked against the data. :observed
+In the 482 files with an empty `__types__` section the files do not describe their own classes: the member layouts below follow Havok 7.1's member order and each was checked against the data. :observed
+The eight ragdoll files do describe the classes they use, and every member offset they state is the one the layout rules
+give ([below](#class-metadata-in-the-ragdoll-files)). :proven[all 544 classes of the eight files]
+
+### Class metadata in the ragdoll files
+
+The eight ragdoll files (`RAGDOLL`, `RAGDOLLB`, `RAGDOLLF`, `RAGDOLLFB` and the four `AVATAR_` ones) fill their `__types__`
+section: 80 objects each, 68 `hkClass` (the classes of the file's objects, their ancestors and the structs their members
+hold) and 12 `hkClassEnum`. :proven[all eight files] `__classnames__` lists 16 names in each: the four reflection classes and
+the 12 classes of the file's data objects; the metadata objects are not listed under their own names, and the other 56
+classes have no signature in the file. :proven[all eight files] The metadata objects are laid out like any other object, in
+the same pointer width and byte order, and their fixups (local and global) point inside the section.
+
+```layout
+title: hkClass
+size: 48
+games: [shred]
+fields:
+  - {at: 0, size: 4, type: ptr, name: name, level: proven, note: "a string"}
+  - {at: 4, size: 4, type: ptr, name: parent, level: proven, note: "another hkClass, or null"}
+  - {at: 8, size: 4, type: u32, name: object size, level: proven, note: "the class's size in bytes"}
+  - {at: 12, size: 4, type: u32, name: implemented interfaces, level: proven, note: "0 in 520 classes, 1 in 16, 4 in 8"}
+  - {at: 16, size: 8, type: "ptr, u32", name: declared enums, level: proven, note: "an array of 20-byte hkClassEnum structs, and its length"}
+  - {at: 24, size: 8, type: "ptr, u32", name: declared members, level: proven, note: "an array of 24-byte hkClassMember structs, and its length"}
+  - {at: 32, size: 4, type: ptr, name: default struct, value: "null", level: unknown, note: "null in all 544 classes"}
+  - {at: 36, size: 4, type: ptr, name: attributes, value: "null", level: unknown, note: "null in all 544 classes"}
+  - {at: 40, size: 4, type: u32, name: flags, value: "0", level: unknown, note: "0 in all 544 classes"}
+  - {at: 44, size: 4, type: u32, name: described version, level: unknown, note: "0 in 456 classes, 1 in 48, 2 in 8, 3 in 24, 8 in 8"}
+```
+
+```layout
+title: hkClassMember
+size: 24
+games: [shred]
+fields:
+  - {at: 0, size: 4, type: ptr, name: name, level: proven}
+  - {at: 4, size: 4, type: ptr, name: class, level: proven, note: "the hkClass of a struct, or of what a pointer or array points to; else null"}
+  - {at: 8, size: 4, type: ptr, name: enum, level: proven, note: "an hkClassEnum, or null"}
+  - {at: 12, size: 1, type: u8, name: type, level: proven}
+  - {at: 13, size: 1, type: u8, name: subtype, level: proven}
+  - {at: 14, size: 2, type: u16, name: array size, level: proven, note: "the length of a C array of the type, 0 for none"}
+  - {at: 16, size: 2, type: u16, name: flags, level: proven, note: "0, 256, 1024 or 1536"}
+  - {at: 18, size: 2, type: u16, name: offset, level: proven, note: "in the class's object"}
+  - {at: 20, size: 4, type: ptr, name: attributes, value: "null", level: unknown, note: "null in all 2,296 members"}
+```
+
+```layout
+title: hkClassEnum
+size: 20
+games: [shred]
+fields:
+  - {at: 0, size: 4, type: ptr, name: name, level: proven}
+  - {at: 4, size: 8, type: "ptr, u32", name: items, level: proven, note: "an array of 8-byte items (an i32 value and a name string), and its length"}
+  - {at: 12, size: 4, type: ptr, name: attributes, level: unknown}
+  - {at: 16, size: 4, type: u32, name: flags, level: unknown}
+```
+
+Together the eight files state 2,296 members and 240 declared enums. The member types they use are (type number: count)
+1: 152, 3: 40, 4: 256, 5: 48, 6: 152, 7: 88, 8: 136, 10: 8, 11: 296, 12: 168, 13: 16, 14: 8, 18: 24, 20: 280, 22: 152,
+24: 104, 25: 264, 30: 48, 32: 8 and 33: 48. :proven[the eight files]
+
+Two checks tie the metadata to the rest of the file:
+
+- **Signatures.** The signature stored beside each class name in `__classnames__` is the CRC-32 of the description
+  [above](#how-a-signature-is-computed) computed from this metadata: all 96 stored signatures (12 classes in each file)
+  recompute, with the interface counts the metadata stores. :proven[all 96]
+- **Offsets.** Every member offset and every class size follows from the member lists: a member sits at the next
+  multiple of its alignment after the one before; a class starts where its parent's members end; each interface a class
+  implements takes one 4-byte table pointer before its first member (`hkBaseObject` implements one and its members
+  start at 4, `hkpCollisionFilter` implements four on its 8-byte parent and starts at 24); a C array is its length times
+  the element; flags `256` make the member 16-aligned. The sizes and alignments are 1 for types 1, 3 and 4; 2 for 5, 6
+  and 32 (a half); 4 for 7, 8 and 11 and for a pointer (20), a string pointer (33) and `ulong` (30); 8 for 10; 16 for
+  12 and 13; 48 for 14 (aligned 16); 64 for 18 (aligned 16); 12 for an array (22, aligned 4); an enum (24) is as wide
+  as its subtype's integer; a struct (25) is its class. All 2,296 member offsets and 544 class sizes (68 classes in each
+  of the eight files) come out as stored. :proven[all 2,296 members and 544 classes]
+  No class in these files tells whether a derived class may start in its parent's tail padding: they come out the
+  same either way. :observed[the 68 classes]
 
 ### Fixups, arrays and padding
 
@@ -179,6 +257,9 @@ These rules hold in every one of the 490 files; each was counted over all of the
 - An `hkArray` is a pointer, a `u32` size and a `u32` capacity word. The capacity word is `size | 0x80000000` in all 114,784 array headers, empty arrays included; an empty array never has a fixup and a non-empty one always has one. :proven[all 490 files]
 - Members that Havok does not serialize are written as zeros, except arrays: the three such arrays of every rigid body (`+0x60`, `+0xB4`, `+0xC0`) read `0, 0, 0x80000000` in all 12,789 bodies. :proven[all 490 files]
 - Every other byte that belongs to no serialized member is zero: the vtable slots, the alignment gaps inside every object and every array element, and the padding between an object's body, its arrays and its strings, over all 47,915 objects. Bytes that are not zero belong to members: the `userData` word of the material records and the 16-bit word at `+0x1FC` of the rigid bodies (below). :proven[all 490 files]
+- The objects are written depth-first from the root, taking each object's pointer slots in offset order and following a slot that owns an array or string into it before the next slot: that is the order of all 47,915 objects. :proven[all 490 files]
+- An object is its body (padded to 16 bytes), then the arrays and strings its body's pointers own, each starting on a 16-byte boundary; 82,847 of them, 980 of which are owned by an array's element rather than by the body. Those 980 (the strings of the root container's variant: its name and class name) follow the array at once, from a 2-byte boundary, and each is padded to 16 bytes. :proven[all 490 files]
+- The fixup tables end in `0xFFFFFFFF` words up to a 16-byte boundary and have no terminator when they end on one. Local and global fixups are in the order the walk above meets their pointers; virtual fixups ascend by object. The class-name list is the four reflection classes, then each class in the order of its first object. Reading a file's objects, arrays, strings and pointers and writing them out by these rules gives back all 490 files byte for byte (59,692,192 bytes), the eight with class metadata included. :proven[all 490 files]
 - Local fixups are listed in ascending source order, which in every file is also ascending destination order. Global fixups are in ascending source order in every file; in 100 files that is not the destination order. Virtual fixups are in ascending object order. :proven[all 490 files]
 - The class-name entries are followed by `0xFF` up to the next 16-byte boundary: 4 to 15 bytes. The names never end on a 16-byte boundary in these files, so they do not show what follows names that do. :proven[all 490 files]
 

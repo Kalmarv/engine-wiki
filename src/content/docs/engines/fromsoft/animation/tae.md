@@ -115,6 +115,30 @@ Elden Ring events: in 4,310 and 205 of them only zero-asserted or padding fields
 named or unasserted field is (event 96's `State Info` in 158 and 48 events, event 401's third word in 143, Elden Ring
 event 193's `Force Apply` in 12). So those types occur in shorter variants than the template states. :observed
 
+### What the templates hold
+
+Sekiro's template defines 190 event types (148 with a name) and Elden Ring's 156 (141 named); the installs store 109 and 124
+event types, of which 106 and all 124 are defined. :proven[every event of every distinct event file of both installs] A field is a
+boolean byte (`b`), an integer of 1, 2, 4 or 8 bytes or a 32-bit float, sometimes with a list of named values (`entry`), a value
+it must hold (`assert`, always 0) and the param table a value is a row of (`ref`: `SpEffectParam` on 9 fields in Sekiro's
+template and 10 in Elden Ring's, `DecalParam` on 5, `LockCamParam` on 3 and 2, `MaterialEx` on 2, `AiSoundParam` on 2,
+`Bullet` on 1). :sourced[Smithbox]
+
+The fields follow each other with no alignment: every one of the asserted fields sits at the offset that packing gives and holds
+its value, in all events of both installs. :observed[553,355 and 2,050,123 asserted fields] No byte after the last template field of
+an event is other than zero. :proven[every event of both installs] Every boolean field holds 0 or 1. :proven[every event of both
+installs]
+
+Where the template and the data disagree:
+
+| Disagreement | Sekiro | Elden Ring | Confidence |
+|---|---|---|---|
+| A field the template types as a float stores a word that is not a finite float: events 708 (fields 3, 10 and 12: `0xffffffff` in all 1,497 events), 730 (fields 0 and 1: negative integers such as -45 and -90, in 419 and 429 events) and 156 (fields 0 and 1, in 39 and 27 events) | 5,405 fields | none | :proven[every event of both installs] |
+| A stored value that no `entry` of its field names (event 0's jump table 6,826; event 700's field 5, 6,261; event 715's selector 31, ...) | 13,142 of 215,388 values read, in 5 of 24 slots | 4,069 of 1,867,190, in 8 of 51 slots (event 700's field 5: 2,800; event 1's second field: 694; event 300's first: 385) | :proven[every event of both installs] |
+| An event stored shorter than the template's fields (above) | 4,627 events | 268 | :proven[every event of both installs] |
+
+So the named values are the common ones, not a closed set, and a field's type is the editor's reading.
+
 ## Event 715
 
 Event 715 stores a u8 selector, three zero bytes, four s32 dummy-polygon ids and a further s32. Community templates name

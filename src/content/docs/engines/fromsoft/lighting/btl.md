@@ -112,13 +112,17 @@ and 180 are zero in all 735 Sekiro and 11,229 Elden Ring lights. :proven[every l
 | `0x78` | flicker interval maximum | 0.0 (646), 0.8 (55) or 1.0 (34) | 0.0 |
 | `0x7C` | flicker brightness multiplier | 1.0 (646) or 0.6 (89) | 1.0 |
 | `0x80` | event ID (i32) | -1 | -1 |
-| `0x9C` | near clip | 1.0 | 1.0 |
+| `0x9C` | near clip (not the spot's near plane) | 1.0 | 1.0 |
 | `0xA3` | shadow model cull flip (byte) | 1 (729) or 0 (6) | 0 (9,599) or 1 (1,629) |
-| `0xA4` | sharpness | 33 values, 0.2 to 30 | 70 values, 0.01 to 80 |
-| `0xB8` | width | 16 values, 0 to 90 (0 on 668) | 28 values, 0 to 100 (0 on 11,006) |
-| `0xBC` | light start cutoff | 20 values, 0 to 34 (0 on 670) | 23 values, 0 to 60 (0 on 10,997) |
+| `0xA4` | sharpness (the diffuse record's fourth value is 1 divided by it) | 33 values, 0.2 to 30 | 70 values, 0.01 to 80 |
+| `0xB8` | width (a spot's full horizontal cone angle in degrees) | 16 values, 0 to 90 (0 on 668) | 28 values, 0 to 100 (0 on 11,006) |
+| `0xBC` | light start cutoff (a spot's near plane) | 20 values, 0 to 34 (0 on 670) | 23 values, 0 to 60 (0 on 10,997) |
 | `0xC4` | enable distance | 8 values, 0 to 1000 (0 on 685) | 27 values, 0 to 1000 (40 on 4,928; 0 on 1,611) |
 | `0xD0` | volume density | 17 values, 0 to 10 (1.0 on 302; 0 on 193) | 16 values, 0 to 10 (0 on 8,008; 1.0 on 2,221) |
+
+The meanings in the parentheses are read back from a running Sekiro (below, "Spot lights" and "How the renderer takes a light");
+the other names are the editor's and rest on the values fitting them. :observed{games="sekiro"} The word at `0xE0` is the exposure
+weight (below), 0 on every Elden Ring light. :proven[all 109 banks]{games="elden-ring"}
 
 Ashina Castle's examined banks `0000`, `0002` and `0004` contain point and spot lights with shadows disabled.
 :observed{games="sekiro"}

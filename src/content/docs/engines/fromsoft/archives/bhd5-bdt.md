@@ -191,6 +191,16 @@ dictionaries the community has assembled (UXM ships one per game); a hash no dic
 not known, not a missing file. :proven Because the hash is lossy, a dictionary can map two paths to one hash; both are
 then candidates for that file. :inferred
 
+### The community's path lists
+
+Smithbox's file dictionaries list, for each path, the archive it is said to be in and a flag that says whether the path was
+validated. Sekiro's lists 8,949 paths (no archive named; 8,752 flagged valid and in the index, 197 flagged invalid and not) that
+name 8,752 of the 8,765 index entries. :proven{games="sekiro"} Elden Ring's lists 130,951 lines (130,946 distinct paths) and
+names all 97,118 index entries; 97,123 of its lines hash into the index (five paths twice). The archive it states is the pair
+that holds the path for all but five paths (stated `dlc`, in `Data3`), but the flag is not exact: 10,467 paths flagged invalid are
+in the index, and 33,750 flagged valid are in none; 33,757 of the lines state the archive `dlc`, which the index does not
+list. :proven{games="elden-ring"}
+
 :::open[What is the byte at offset 5 of the index header?]
 It is 0 or 1. Neither reference reader gives it a meaning, and reading does not depend on it.
 :::

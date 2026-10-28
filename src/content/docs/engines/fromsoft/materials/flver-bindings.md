@@ -5,6 +5,9 @@ sources:
   - title: SoulsFormatsNEXT
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats/FLVER/FLVER2
     note: Material, Texture and GXList readers
+  - title: Smithbox GX item descriptors
+    url: https://github.com/vawser/Smithbox
+    note: Names and types for the words of the GX items
   - title: RunDevelopment GX investigation
     url: https://github.com/JKAnderson/SoulsFormats/issues/14
     note: GXMD framing and optional flag records
@@ -120,6 +123,28 @@ except `GX18` version 101 (565 Elden Ring items of 4 bytes). :observed The names
 `GX05` 100 (translucency scale) is 1.0 or 10.0 in Sekiro and always 1.0 in Elden Ring; the first three words of `GX14` 101
 (albedo colour) are within 0 to 1 and the fourth (its multiplier) within 0.8 to 1.0 in Sekiro and 0.79 to 1.36 in Elden
 Ring. The remaining words of `GX03` and `GX05` are zero in every item. :observed
+
+### Named GX items
+
+The community's descriptors give every word of an item a name and a type (an integer, a float, or one the editor leaves unnamed).
+:sourced[Smithbox] The items below occur in the installs; all other words are 0 in every item unless the row says otherwise. Sekiro
+has 71,699 items and Elden Ring 114,256 over their materials. :proven[every material of both archive sets]
+
+| Item | Words the editor names | Sekiro | Elden Ring | Confidence |
+|---|---|---|---|---|
+| `GX03` 100 | `[Emissive] EmissiveIntensity` (float) | 252 items, 0.7 to 3.32 in 4 values | 9 items, 0.6 or 1 | :observed |
+| `GX05` 100 | `[Translucency] TranslucencyScale` (float) | 2,062 items, 1 or 10 | 5,140 items, 1 | :observed |
+| `GX14` 101 | `[AlbedoColor]` red, green, blue, multiplier (floats) | 206 items, colour 0 to 1, multiplier 0.8 to 1 | 735 items, colour 1, multiplier 0.79 to 1.36; 684 store 16 bytes (the four named words), 51 the full 28 | :observed |
+| `GX09` 100 | `Parallax1` and `Parallax2` offset and middle height | 3 items, offset 0, middle height 0.5 | 1 item, the same | :observed |
+| `GX07` 104 | The water settings: three normal and two diffuse scroll speeds, Fresnel minimum and maximum, reflection and refraction offsets, depth fog colour, density and transparency, two fade ranges | 2 items (the `M[ARSN]_Water_3normaltet` river and waterfall of one map): normal V speeds -0.02 to -0.12, refraction offset 0.04, fog colour (0, 0.118, 0.118, 0.8), density 1, transparency 0.01, fade ranges 0.1 | none | :observed{games="sekiro"} |
+| `GX04` 100 | Displacement mapping and tessellation mode (integers 0 or 1), tessellation factors, `Back Face Cull`, distances, bias, height (floats) | 6,480 items | 155 items | :observed |
+| `GX20` to `GX34` | Per texture type, a U and a V scroll speed (floats) | `GX20` 1,116 items, `GX22`, `GX24`, `GX26` 912, `GX32` 252, `GX30` 23, the rest 3 | `GX20` 233, `GX22`, `GX24`, `GX26` 183, `GX30` 2, `GX32` 9 | :observed |
+| `GX00` 100 to 102 | `Decal` and `[PaintDecal] SlotNo` (100); version 102 names none, its first four words are integers (0 to 3, 0 or 1, 0 to 2, -1 to 3) | 43,237 items | 86,390 items | :observed |
+| `GX06` 101, `GX15` 100, `GX39` 100, `GX80` 100, `GX81` 100 | `SnowMaskIntensity`; unnamed floats; `Soft Volume`; damage rate and tiling | 2, 382, 7, 6 and 6 items | `GX15` 857 items | :observed |
+
+Names that the values do not fit: `GX04`'s `Back Face Cull` is a float taking 0, 0.5 and 5 in Sekiro and 0.5 in Elden Ring, and its
+distance and factor words take 1 and 5. :observed The parallax-occlusion items (`GX02`, `GX12`) and the others the editor names but
+neither install stores (`GX01`, `GX08`, `GX13`, `GX35` to `GX37`) do not occur. :proven[every material of both archive sets]
 
 ### GXMD payloads
 

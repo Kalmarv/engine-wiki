@@ -197,6 +197,12 @@ four-character code instead of a DX10 header. :proven[all 30,613 Sekiro and 301,
 | 112 | BC7 sRGB (DXGI 99) | 2 | none |
 | 115 | BC6H unsigned float (DXGI 95) | 2,232 | 44,536 |
 
+The 32-bit codes differ in channel order where the DDS header gives channel masks: code 9 stores blue, green, red, alpha
+(masks `0xff0000`, `0xff00`, `0xff`, `0xff000000`), code 105 stores red, green, blue, alpha (`0xff`, `0xff00`, `0xff0000`,
+`0xff000000`), code 10 stores blue, green, red and an unused byte (`0xff0000`, `0xff00`, `0xff`), and code 6 stores
+one alpha bit over five bits each of red, green and blue (`0x8000`, `0x7c00`, `0x3e0`, `0x1f`). :proven[every texture of both installs whose header states masks:
+3 of code 9, 1 of code 10, 2 of code 6 and 1,002 of code 105]
+
 Codes 3, 8, 23, 24, 25, 29, 33, 36, 100 and 113 of the reference table above never occur in a PC package of either
 install. The codes that occur map to the families the reference table gives them, with two differences: code 22 is
 half-float (legacy format 113), not 16-bit UNORM as the reference table has it, and the textures of codes 108 and 110

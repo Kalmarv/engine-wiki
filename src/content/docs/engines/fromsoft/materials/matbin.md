@@ -6,9 +6,14 @@ sources:
   - title: SoulsFormatsNEXT
     url: https://github.com/soulsmods/SoulsFormatsNEXT/blob/master/SoulsFormats/Formats/MATBIN.cs
     note: Independent material binary reader
+  - title: soulstruct
+    url: https://github.com/Grimrukh/soulstruct
+    note: Elden Ring shader stem grammar, map names and per-shader texture coordinate tables
 implementations:
   - name: fromsoft-formats (matbin.rs)
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/matbin.rs
+  - name: fromsoft-formats (shader.rs)
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/shader.rs
 ---
 
 MATBIN stores the shader source path, material source path, parameters and samplers behind a FLVER material's
@@ -79,6 +84,47 @@ The type code alone therefore does not describe every byte after a value offset.
 
 The separate [METAPARAM](/engines/fromsoft/materials/metaparam/) supplies binding offsets, colour flags and texture
 UV groups; MATBIN's stored values alone do not specify the uploaded shader words. :observed
+
+## Shader names
+
+A material names its shader by a stem, the file name of its shader path without the extension: `C[DetailBlend][S2]_cloth`,
+`M[AMSN_V][Mb2][Ov_AN]_Edge`, `P[ChrCustomize][Hair]`. Most stems follow one grammar: ASCII letters for the category
+(`C` a character, `CS` a cut-scene character, `P` a player part, `M` a map piece, `S` a sky or scenery piece, `PC`), the
+shader family in the first brackets, any number of further bracketed tags, and suffixes after underscores. :proven[all 20,619
+material binaries of the install] Of the 975 distinct stems, 692 follow it (19,867 materials) and 283 do not (752 materials):
+the `GXFlver_*` family of Sekiro's layout, `SpeedTree_*`, `MultiBlend<n>_*`, test shaders (`Test_*`, `Fujir_*`) and a few
+others. :proven[all 20,619 material binaries of the install] A stem rebuilt from its parts is the stem, for all 692.
+:proven[all 20,619 material binaries of the install]
+
+| Part | What the install holds | Confidence |
+|---|---|---|
+| Category | `M` 11,016 materials, `C` 8,082, `S` 378, `P` 280, `CS` 109, `PC` 2 | :proven[all material binaries] |
+| Family | The last tag, else the first brackets, that is one of `AMSN` (10,796 materials), `DetailBlend` (5,592), `Fur` (911), `Crystal` (269), `Hair` (159), `Shell` (84), `Eye` (18), `Face` (8); the first brackets as written for the rest (232 distinct families in all) | :proven[all material binaries] |
+| `[MbN]` tag | The number of blended layers: 1 for 16,679 materials, 2 for 1,644, 3 for 908, 4 for 617, 5 for 19 | :sourced[soulstruct] for the meaning, :proven[all material binaries] for the counts |
+| `[Ov_*]` tag | An overlay layer and the maps it holds: `N` 4,289 materials, `AN` 873, then eight other spellings (5,314 in all) | :sourced[soulstruct] for the meaning, :proven[all material binaries] for the counts |
+| Suffixes | `cloth` 1,293, `Edge` 914, `Glow` or `Emissive` 590, `SSS` 207, `Alpha` 144; a `Snow` tag on 211 | :proven[all material binaries] |
+
+## Sampler names
+
+A sampler's kind name is `<shader>_snp_Texture2D_<n>_<map>` with an optional `GSBlendMap_` or `RGB_` before the map name and an
+optional `_<k>` index after it (`C_DetailBlend__snp_Texture2D_7_AlbedoMap`, `M_AMSN_Mb2__snp_Texture2D_1_GSBlendMap_AlbedoMap_0`).
+:proven[152,138 samplers of the install, except 2,269 legacy names] The map names fold into sixteen kinds: `AlbedoMap` (59,034
+samplers), `NormalMap` and `Normal` (62,747), `MetallicMap` (15,810), `Mask1Map` (5,863), `Mask3Map` (2,507), `EmissiveMap` (930),
+`DisplacementMap` (625), `VectorMap` (588), `BlendEdgeTexture` and `BlendEdge` (422), `DistortionDepth` (312), `ReflectanceMap` (253),
+`ShininessMap` (156), `Shadowmap` (21), `3Mask` (19), `BlendMaskTexture` (16) and `UniqueOpacityMask` (4). :proven[all
+samplers of the install] Another 562 samplers carry 47 other map names (`FlowMap` 113, `Generic_*` sky maps, `Fire___*` effect maps,
+`Extra__Base`), and 2,269 samplers of 28 names (`g_DiffuseTexture`, `g_BumpmapTexture2`, ...) have no `_snp_Texture2D_` part: they
+belong to the `GXFlver_*` shaders. :proven[all samplers of the install]
+
+## Texture coordinate sets per shader
+
+A community table of 176 shader stems names the texture coordinate sets each reads (`UVTexture0`, `UVTexture1`, `UVDetail`,
+`UVFurAlpha`, `UVSubNormals`, `UVBlend`) and, for 168 of them, the set each sampler group reads; it marks the entries by how sure
+its author is. :sourced[soulstruct] Held to the models that use the shaders, its tuple lengths fit: of the 451 stems on the 75,826
+meshes of the map, character, part, asset and object models that have a material binary (SpeedTree models excluded), 180 are in the
+table, and for every one of them the length of its tuple is the number of texture coordinate attributes of some mesh using it; 55,811 of
+the 56,770 meshes of those stems have exactly that many. :observed[the models of the map, character, part, asset and object binders] The table's
+group-to-set assignments are not checked against the shader programs here. :unknown
 
 :::open[What do the MATBIN keys identify?]
 The keys are preserved and compared bit for bit, but their complete generation rule and runtime use are not

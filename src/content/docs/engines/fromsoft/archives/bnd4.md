@@ -126,6 +126,23 @@ Reading a member by name needs no ID, but the IDs follow conventions that hold o
 
 In `.objbnd` and `.partsbnd` binders the IDs of a second and later model count up from 200 and 1100.
 
+## Divided binders
+
+A character's animation binder can point at other binders that hold the rest of its files, by marker members named
+`<id>_<set>` (`.txt` or `.blf`); the binder `/chr/<set>.anibnd.dcx` is in the archive. Sekiro's player (`c0000`) names seven this
+way with `.txt` markers (`c0000_a000_hi`, `c0000_a000_lo`, `c0000_a000_md`, `c0000_a00x`, `c0000_a05x`, `c0000_a07x`, `c0000_a2xx`),
+and no other of Sekiro's 142 character animation binders names any. :proven{games="sekiro"} In Elden Ring, 96 of the 567 character
+animation binders hold `<id>_div00.blf`, `<id>_div01.blf` and so on (261 lists; 61 characters have two, 17 three, 9 four, 5 six,
+3 five and 1 seven), each naming the binder `<id>_div<nn>.anibnd.dcx`; the player's binder names eleven by `.txt` markers, and two
+further player markers name no binder of the archive. :proven{games="elden-ring"}
+
+A `.blf` load list is text with CR LF line ends, `BLI3` on the first line and `#FILE_VERSION = 301` on the second, `//`
+comment lines in Shift-JIS, and commands: a line `$<number>` and a line of six comma-separated fields, a path pattern in quotes
+(a regular-expression dialect), three numbers, a file kind and a replacement in quotes. All 261 lists hold the same three commands:
+`$1000000000`, the animation files (`_HKX`) of that division by a pattern over the animation numbers; `$6000000`, `div_data.txt`
+(`_TXT`); `$9999999`, `ver_0001.txt` (`_TXT`); every number triple is `16, 2, 1`. :proven[all 261 lists] What the patterns and numbers
+mean to the packager is not known. :unknown
+
 ## Split payload
 
 BHF4 uses the same 64-byte header arrangement as BND4, with a zero field at offset 40. Its records point into BDF4,

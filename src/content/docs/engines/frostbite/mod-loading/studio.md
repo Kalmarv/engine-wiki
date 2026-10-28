@@ -5,6 +5,9 @@ games: [skate]
 sources:
   - title: ReSkate documentation
     url: https://github.com/Dingo-Shenanigans/docs
+  - title: ReSkate Map Creator
+    url: https://github.com/jonigiuro/ReSkate-Map-Creator
+    note: "A third-party map editor whose Blender export (scripts/export_blend.py) writes Studio's Blender input; its stated authoring conventions"
 ---
 
 ReSkate Studio's `compile-map` consumes `map.json` and geometry in GLB files, producing Frostbite level content.
@@ -43,6 +46,31 @@ Input materials cannot directly select an arbitrary stock material key. :observe
 LOD options include `--no-lods`, `--lod-ratios`, `--lod-distances` and `--lod-min-triangles`. In the measured
 Numbani map, 299 of 552 MeshSets have three LODs under defaults. There is no corresponding map.json input for
 supplying a source game's separate low/medium models as authored LODs. :observed
+
+### Blender authoring conventions
+
+Studio also takes maps authored in Blender through its add-on. A third-party editor that writes such files states
+the conventions below in its exporter's source; they are its author's statements, not measurements on the game.
+:sourced[ReSkate Map Creator]
+
+| Input | Stated convention | Confidence |
+|---|---|---|
+| Collections | `Map`, `Markers`, `Grind curves`, `NPC routes`, `Lights` | :sourced[ReSkate Map Creator] |
+| Per-object properties | `sk8_collision_mode` and `sk8_hide_from_pause_map` on meshes; curves flagged `sk8_grind_curve` with a radius and a surface | :sourced[ReSkate Map Creator] |
+| Spawn | One empty named `spawn` with the property `xl_marker = "spawn"`; the skater faces the empty's local −Z | :sourced[ReSkate Map Creator] |
+| Travel points | Empties whose names start with `TravelPoint` | :sourced[ReSkate Map Creator] |
+| Lights | A seven-bit `sk8_light_tod` mask: morning 1, noon 2, afternoon 4, evening 8, night 16, weatherday 32, weathernight 64 | :sourced[ReSkate Map Creator] |
+| UVs | The game reads the mesh's first UV layer | :sourced[ReSkate Map Creator] |
+| Rotation | Rotation belongs on the mesh objects; a rotation on a parent empty is applied about a different axis in the game (yaw becomes pitch or roll) | :sourced[ReSkate Map Creator] |
+| Height | The exporter lifts every position by 200 m, stating that the game collides badly with a map at the world origin | :sourced[ReSkate Map Creator] |
+
+How Studio turns grind curves into collision is under
+[physics and grinds](/engines/frostbite/collision/physics-and-grinds/).
+
+:::open[Does collision misbehave for a map at the world origin?]
+The 200 m lift rests only on the editor author's statement; no measurement of collision near the origin is
+recorded. :unknown
+:::
 
 ## Material traps
 

@@ -1,6 +1,6 @@
 ---
 title: Skater camera
-description: Where the third-person camera sits relative to the skater right after spawn, and how reproducible its framing is.
+description: Where the third-person camera sits relative to the skater right after spawn, how reproducible its framing is, and where its framing height is stored.
 games: [skate]
 ---
 
@@ -21,4 +21,17 @@ reproducible only to about 7°. :observed
 :::open[What sets the camera's pitch and yaw after spawn?]
 Two launches give different angles at the same spawn; whether they follow the spawn's own orientation, the
 skater's settling or input is not established. :unknown
+:::
+
+## Framing height
+
+The camera's framing height, High or Low, is a player-profile value, `UseHighCam`. A profile written with High
+read Low again after ordinary play, the profile having advanced from revision 3,332 to 3,359, so the game itself
+rewrites the value during play. :observed The game option "Camera height control" (Gameplay > Advanced Camera,
+option asset `camera_enableheightinput`) lets the player change the height in play; with it off, the stored
+height presumably stays as written. :inferred
+
+:::open[What in play switches the framing height?]
+The value changed during ordinary play; which input or event writes it, and whether turning camera height control
+off holds it, have not been observed. :unknown
 :::

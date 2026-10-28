@@ -204,6 +204,11 @@ visible effect: PerfOverlay enable/FPS settings read back as one without drawing
 An unfocused game window presents at about 23 frames per second wherever the camera is, so frame-rate
 measurements need a focused window. :observed
 
+Frame rate also falls over a session. Players report a decline from 150 frames per second at half GPU load to
+about 20 at full load within one session, and custom maps dropping to about 10–40 frames per second after another
+map is loaded in game, which stock maps do not; only restarting the game restores it. :sourced[ReSkate community reports]
+Frame-rate comparisons therefore start from a fresh launch. :inferred
+
 ## Settings values
 
 Live values read at the main menu at the Ultra quality tier:

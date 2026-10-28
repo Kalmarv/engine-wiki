@@ -66,19 +66,20 @@ culled. :observed{games="sekiro"} The dome's pixel program reads the sun's direc
 camera, the volumetric fog and 37 material values of its own, per its resource definitions; no separate sun-disc draw is
 in the frame. :observed{games="sekiro"} None of the map pieces the layouts of the nine maps place draws a material whose
 name or definition names the sky or the moon (every map piece model of each layout read, a positive control finding
-1,590 pieces with `AMSN` materials). :observed{games="sekiro"} The domes are map piece models all the same, kept in map
-folders but placed by no layout: the map `m89_00_00_99` holds one dome per sky state (models `m900000` to `m900095`,
-materials `M[Sky]_SkyDome_<state>`: morning, afternoon, evening, night, past night, dawn, dark clouds, storm, fog, cloud
-sea, fire, and two night domes with a cloud layer), each 12.6 km across (±6,293.6 m) and from −1,191.2 m to 3,000 m in
-height, 1,824 indices; `m10_00_00_00`, `m11_01_00_00` and `m17_00_00_00` hold domes of their own (±6,000 m, 0 to 3,000 m).
-:observed{games="sekiro"} In the recorded frame the dome draw's index and vertex data are byte for byte those of the
-`m89_00_00_99` morning, evening and night domes, which share their geometry. :observed{games="sekiro"} Which state the
-frame drew is not established: the draw's material constants match none of the states' material definitions, which
-suggests the engine blends them. :unknown
+1,590 pieces with `AMSN` materials). :observed{games="sekiro"} The sky is a map of its own, `m89_00_00_99`, whose layout
+places at the origin one dome per sky state (map pieces `m900000` to `m900095`, materials `M[Sky]_SkyDome_<state>`:
+morning, afternoon, evening, night, past night, dawn, dark clouds, storm, fog, cloud sea, fire, and two night domes with
+a cloud layer), one ring of far mountains per state (`m900100` to `m900200`, `M[LandScape]_FarMtn_<state>`) and the moon,
+the object `o005900`. :observed{games="sekiro"} Each dome is 12.6 km across (±6,293.6 m) and spans −1,191.2 m to 3,000 m
+in height, 1,824 indices. :observed{games="sekiro"} `m10_00_00_00`, `m11_01_00_00` and `m17_00_00_00` keep domes of their
+own (±6,000 m, 0 to 3,000 m) that their layouts do not place. :observed{games="sekiro"} In the recorded frame the dome
+draw's index and vertex data are byte for byte those of the `m89_00_00_99` morning, evening and night domes, which share
+their geometry. :observed{games="sekiro"} Which state the frame drew is not established: the draw's material constants
+match none of the states' material definitions. :unknown
 
-The moon's material is `M[Moon]`, masked by the texture `m99_Moon_3m`. :observed{games="sekiro"} Its quad is in none of
-the map piece binders of the nine maps or of `m89_00_00_99` and in none of the effect binders (searched for the material,
-the texture and the quad's vertex bytes, with a positive control on a dome's material). :observed{games="sekiro"}
+The moon `o005900` is a 10 by 10 quad with the material `M[Moon]` (masked by the texture `m99_Moon_3m`), skinned whole to
+the second of its two bones, with a skeleton and animations of its own; the recorded moon draw's vertex and index data are
+byte for byte its model's. :observed{games="sekiro"}
 
 A map's `_farmodel` param (`FAR_MODEL_PARAM_ST`) names placed parts by parts group, not the sky.
 :observed{games="sekiro"}
@@ -99,11 +100,10 @@ direction, whose y axis is the world's up made perpendicular to it, and whose x 
 :observed{games="sekiro"} So the moon moves with the light set's `Angle0` over the day. :inferred{games="sekiro"}
 
 :::open[Where does the moon's distance come from?]
-The distance of 25 and which part or parameter makes a model the light's disc are not established, nor which file
-holds the moon's quad.
+The distance of 25 and what moves the object `o005900` (its bone or its placement) to the light are not established.
 :::
 
 :::open[What chooses the dome?]
-Which parameter selects one of a map's dome models (or `m89_00_00_99`'s) by time of day or weather, and whether two are
-blended, is not established.
+Which of `m89_00_00_99`'s domes and far-mountain rings is drawn, by time of day or weather, and whether two are blended,
+is not established: no event instruction names their entity ids, and the draw parameters name no model.
 :::

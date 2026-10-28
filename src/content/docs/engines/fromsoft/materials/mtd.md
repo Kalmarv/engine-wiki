@@ -124,3 +124,11 @@ MATBINs whose shader is named `Edge` state a positive first word in 878 of 924; 
 `Edge`. :proven[every definition of both installs] Definitions with blend mode 2 and a positive reference exist as well
 (Sekiro 55 MTDs, Elden Ring 416 MATBINs and 62 MTDs), so the blend mode does not make the alpha test redundant.
 :proven[every definition of both installs]
+
+## Shader names
+
+Sekiro's 3,170 definitions name 257 distinct shader stems. 56 of them (1,077 definitions: the map shaders `M[Multiple]` 457,
+`M[Translucency]` 169, `M[MultipleGround]` 169, `M[LandScape]` 54, `M[Sky]` 46, `M[Mb2]` 44, and eight `C[...]` definitions) follow
+the bracket grammar of [Elden Ring's MATBIN shader names](/engines/fromsoft/materials/matbin/#shader-names); 201 (2,093 definitions)
+do not: `Character_AMSN_[DetailBlend]` (293, with `_cloth` 88), `character_AMSN` (578), `Character_AMSN_SSS` (115), `Fur_NTC` (218),
+the `GXFlver_*` family and the test shaders. :proven[all 3,170 definitions]

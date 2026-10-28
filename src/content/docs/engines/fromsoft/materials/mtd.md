@@ -44,7 +44,12 @@ fields:
 
 Some stock blocks overstate their lengths. Typed counts, nested structure and markers still describe the complete
 file; this discrepancy does not establish whether the game uses or ignores the declared lengths. :proven[all binder definitions]
-The definitions with an overstated length are 83 of the 3,170. :inferred{games="sekiro"}
+A declared length is never shorter than the bytes the block's structure spans, and is longer for at least one block in
+83 of Sekiro's 3,170 definitions and 92 of Elden Ring's 2,602, by 4 to 388 bytes in Sekiro's and 4 to 384 in Elden Ring's.
+:proven[every definition of both installs] A writer that gives each block the length it declares and each marker the
+alignment bytes it holds reproduces every definition of both installs byte for byte; one that gives each block the length
+it spans and zero alignment bytes reproduces 3,087 of Sekiro's and 2,509 of Elden Ring's.
+:proven[an independent writer over every definition of both installs]
 
 | Block kind | Version | Contents | Confidence |
 |---|---:|---|---|
@@ -100,8 +105,10 @@ file, not data. :inferred Nothing else in the file is odd: every block's declare
 structure spans, and the shader (`RecursiveCrystal.spx`), description, ten parameters and four texture slots equal those
 of `character\Special\C[Crystal].mtd`, which has clean padding. :observed{games="elden-ring"} The two differ in the
 texture declarations: this file stores version 3 (no path, no floats) where the sibling stores version 5.
-:observed{games="elden-ring"} Declarations without a path (version 3) also occur in Sekiro definitions and in Elden Ring's SpeedTree definitions with zero
-padding, so the version does not explain the bytes. :observed
+:observed{games="elden-ring"} Version 3 declarations occur in 86 Elden Ring definitions (174 declarations), 85 of which have zero
+padding throughout, so the version does not explain the bytes. :proven{games="elden-ring"} Sekiro stores no version 3
+declaration: nine definitions hold 90 version 5 declarations with an empty path and no floats.
+:proven{games="sekiro"}
 
 :::open[Which consumers rely on overstated block lengths?]
 Structural parsing and independent values agree, but that does not settle how the runtime treats an incorrect

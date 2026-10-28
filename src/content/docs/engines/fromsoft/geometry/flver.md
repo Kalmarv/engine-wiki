@@ -200,6 +200,44 @@ About 8,200 non-shadow Sekiro meshes, 19.4 million triangles, have face sets wit
 they include roofs, walls and the `AMSN_light_e` light geometry. Read with the flag's meaning, the game draws them
 two-sided. :observed{games="sekiro"}
 
+## Order of the file
+
+After the header and the tables, the file continues in this order, each section starting at a multiple of 16 bytes: for
+version `0x2001A`, the skeleton set's two lists of 16-byte records (they follow the descriptor at once); the vertex layouts'
+members (20 bytes each); the meshes' bounds (six floats, nine in version `0x2001A`); the bone palettes; the lists of face
+set indices of each mesh; the lists of vertex buffer indices of each mesh; the material extension (GX) area; the strings,
+each material's name and definition path followed by its textures' paths and slot names, then the bones' names; and the
+data block. :proven[every FLVER of both installs] The face set table and the vertex buffer table list the meshes' face sets
+and buffers in mesh order, so each mesh's lists are consecutive runs of indices (all 14,459 Sekiro and 22,169 Elden Ring
+files). :proven A mesh without a bone palette points its palette offset at the start of the palette section; 44,972 of
+Sekiro's 44,974 meshes and 89,027 of Elden Ring's 89,029 have none. :proven The bounds offset is 0 for 2 Sekiro and 969
+Elden Ring meshes. :proven In the data block each mesh's face set indices come first and then its vertex buffers, each
+starting at a multiple of 16 bytes (the SpeedTree models reverse the order, see below); the block ends at a multiple of 16
+too. :proven
+
+The skeleton set's first list is the model's bone tree (parent, first child, next and previous sibling, and the bone's own
+index) in every one of the 14,442 Sekiro and 22,047 Elden Ring files of version `0x2001A`; the second list is the same in
+13,399 and 18,276 of them and a reordering of the bones in the others. :proven The GX area runs from the end of the buffer
+index lists to the first string. Its lists are the GX items of the materials followed by a terminator, with the id
+`0x7fffffff`, the word 100 and the length 12 (25,109 lists in Sekiro, 32,208 in Elden Ring); several materials share one
+list in 4,898 Sekiro and 11,705 Elden Ring files, and 5,115 Sekiro and 20 Elden Ring files hold lists that no material
+names. :proven The header bounds and face counts, the meshes' bounds and the face sets' index widths are stored values
+that cannot be derived from the vertices in every file (see above); a face set states the width of its indices (16 or 32)
+whether or not the header states one. :proven
+
+### SpeedTree models
+
+The 119 Elden Ring SpeedTree models differ from the layout above in four places: each texture path is followed by one more
+zero unit (so a path string ends in two zero units), the data block starts at the next multiple of 2,048 bytes after the
+strings, each mesh's vertex buffers precede its face sets, and the file is padded with zeros to a multiple of 2,048 bytes.
+Their header word at 0x48 is 16 and the one at 0x68 is 5, which also makes the GX terminators state their length without
+the 12 bytes of their header (684 lists, length 0). :proven{games="elden-ring"} A writer that follows the order and the
+rules above rebuilds all 14,064 distinct Sekiro and 20,557 distinct Elden Ring files byte for byte from their parsed
+tables, vertex buffers and indices. :proven[an independent writer over every FLVER of both installs] Every vertex buffer
+of every distinct file (45,371 in Sekiro's, 83,004 in Elden Ring's, and 967 in the SpeedTree models) is rebuilt from the
+decoded attributes of [vertex formats](/engines/fromsoft/geometry/vertex-formats/) to the same bytes: each 8- and 16-bit
+encoding is inverted exactly by rounding, which holds for every stored value. :proven
+
 Material and texture records are described under [FLVER material bindings](/engines/fromsoft/materials/flver-bindings/);
 nodes and attachment points under [nodes and skinning](/engines/fromsoft/geometry/nodes-and-skinning/).
 

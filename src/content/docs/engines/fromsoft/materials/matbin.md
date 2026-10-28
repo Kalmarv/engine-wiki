@@ -82,6 +82,16 @@ A stored value's actual extent can end before its nominal type size, because the
 sooner. Some files also contain unreferenced tail bytes, including strings from an earlier material revision.
 The type code alone therefore does not describe every byte after a value offset. :proven
 
+## String and value order
+
+After the sampler records every string and value is packed with no padding and no alignment between them, in this order:
+for each parameter its name and then its value, for each sampler its kind name and then its path, the shader path, the
+material's source path, and the unreferenced tail. A string may start at an odd offset. :proven[all 20,619 MATBIN files]
+The tail holds every byte after the source path: it is empty in 17,623 files and holds 2,235,891 bytes in the other 2,996.
+The source path is the last referenced item of all 20,619. :proven[all 20,619 MATBIN files] Writing the records and the
+items in this order, with each value at its stored extent and the tail as it is, reproduces every file byte for byte.
+:proven[an independent writer over all 20,619 MATBIN files]
+
 The separate [METAPARAM](/engines/fromsoft/materials/metaparam/) supplies binding offsets, colour flags and texture
 UV groups; MATBIN's stored values alone do not specify the uploaded shader words. :observed
 

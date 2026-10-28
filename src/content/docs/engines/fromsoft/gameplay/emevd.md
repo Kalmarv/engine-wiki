@@ -190,6 +190,20 @@ fields:
   - {at: 24, size: 8, type: i64, name: unknown, level: unknown, note: Observed 1}
 ```
 
+## Order of the tables
+
+After the header the tables follow each other with no byte between them, in this order: events, instructions, layers,
+arguments, substitutions, linked-file offsets, strings; the unused table's offset is the layer table's. Each event's
+instructions and substitutions are the next run of their tables, so the offsets in the event records count up through the
+tables. :proven[every script of both installs] A layer table holds one record per distinct layer value, in the order the
+instructions first name them. Each instruction's arguments are padded to a multiple of four bytes, the block to a multiple
+of sixteen, and an instruction without arguments stores -1 for its argument offset, as an instruction without a layer
+does for its layer offset. :proven[every script of both installs] An event without instructions or substitutions stores -1
+for that list's offset in every event of both installs but six, in four Sekiro scripts, whose empty substitution lists
+store the running offset of the table instead (0 in four of them, 13,152 and 10,592 in the others). Writing the tables in
+this order reproduces 26 of Sekiro's 30 scripts and all 446 distinct scripts of Elden Ring's 589 byte for byte; the four
+Sekiro scripts differ in those six offsets only. :proven[an independent writer over every script of both installs]
+
 ## Initialising events: `2000:0` and `2000:6`
 
 `2000:0` (initialise event) and `2000:6` (initialise common event) start another event with arguments. Their first

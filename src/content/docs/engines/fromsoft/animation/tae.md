@@ -107,6 +107,24 @@ type: of the 106 Sekiro event types that occur in the files with a following rec
 length, usually differing by 8. A parameter offset of 0
 occurs on 7 Sekiro events, all of type 943, which store no parameter bytes; Elden Ring has none. :observed
 
+### Order of the file
+
+After the 208-byte header come, in this order: the skeleton name and the SIB name (UTF-16, each followed by zero bytes to
+a multiple of 16, nothing written for a name the file does not state), the animation table, the group header and its
+entries, every animation's 48-byte body, and then for each animation in table order its mini header block, its times
+table, its event headers, its event data, its event group headers and its event group data. The tables are ordered by
+animation number and pack with no byte between them except the padding to 16 bytes that ends the names, each times
+table, each event's parameter bytes and each event group's data. :proven[every event file of both installs]
+A mini header block is 48 bytes: its type word, the offset of the 16-byte record after it, that record (the motion file
+name's offset, the flags or import numbers, two zero words); the motion file name, where there is one, follows the block,
+and an animation without one points its name offset at the place after the block, which is its times table, or the next
+animation's block when it has no events. An event with type 943 stores 0 for its parameter offset, every other event the
+offset after its record. :proven[every event file of both installs] Writing the file in this order, with each event's
+parameter bytes (padding included) as stored, reproduces all 326 Sekiro and all 1,071 Elden Ring event files of the
+animation binders byte for byte. :proven[an independent writer over every event file of both installs]
+One further Sekiro file in TAE format, in the movie folder, has a shorter header (it ends at 0xC0, with both name offsets 0)
+and is not covered by the layout above. :observed{games="sekiro"}
+
 ## Event parameter templates
 
 A community template lists an event type's parameter fields in order as scalars, several of them zero-asserted

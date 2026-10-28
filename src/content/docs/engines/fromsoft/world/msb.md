@@ -75,6 +75,17 @@ fields:
   - {at: after record offsets, size: 8, type: u64, name: next section offset, level: proven, note: Zero terminates the chain}
 ```
 
+### Section layout
+
+In every file of both installs a section is: its header (revision, pointer count, name offset), the table of record offsets
+ending in the next section's offset, the section's name directly after the table, zero bytes to the next multiple of 8, and
+its records back to back. A record runs to the next record's offset, the last record of a section to the next section's
+start, so the padding after a record belongs to it, and every record of both installs is a multiple of 8 bytes long. An
+empty section has the table's single slot, its name and the padding, and the next section follows at once. The last
+section's next-section slot is 0. :proven[every MSB of both installs] Laying the sections out again from their
+revisions, names and records this way reproduces all 10 Sekiro and all 887 distinct Elden Ring files byte for byte.
+:proven[an independent writer over every MSB of both installs]
+
 ## Parts
 
 Ashina Castle's map-piece and object names, model references, positions, rotations and scales agree bit for bit with

@@ -42,8 +42,12 @@ the whole install. :observed
 
 Sekiro's five indexes list 8,765 files, of which UXM's path dictionary names 8,752. :proven{games="sekiro"}
 Elden Ring's six installed indexes list 97,118 files (5,878 in `Data0`, 39,419 in `Data1`, 39,684 in `Data2`, 1,672 in
-`Data3`, 8,650 in `sd/sd` and 1,815 in `sd/sd_dlc02`); UXM's dictionary names 97,045 of them and a community file
-dictionary for the game names all 97,118. :proven{games="elden-ring"}
+`Data3`, 8,650 in `sd/sd` and 1,815 in `sd/sd_dlc02`); hashing every line of three community lists with the game's rule
+and intersecting them with the six indexes shows that UXM's Elden Ring dictionary (revision 9501be8) names 97,031 of them,
+the newer copy of that list bundled with Smithbox names 97,045, and Smithbox's own file dictionary (130,951 paths, no two
+sharing a hash) names all 97,118. :proven{games="elden-ring"} The 87 entries UXM 9501be8 leaves unnamed are 77 `.dcx` files
+(54 `parts/*.partsbnd`, 8 `chr/*.texbnd`, 4 `chr/*.anibnd`, 4 `chr/*.chrbnd`, 3 asset geometry binders, 2 `.gparam`
+and 2 `.devpatch` shader bundles), 5 `.bnk` and 5 `.wem`. :proven{games="elden-ring"}
 `Data5` holds the map files: its salt is `NTC_map` and its index lists 5,449 of them. :observed{games="sekiro"}
 
 ## The index is wrapped in RSA

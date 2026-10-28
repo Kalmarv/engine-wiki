@@ -80,6 +80,16 @@ chainmail, seams, straw, rope, bandage, skin detail, hand and footwear) are in t
 `/parts/common_body.tpf.dcx`. Characters also take textures from texture-only characters that their material
 names mention: `c1010`'s body uses `c1019_body_merge_SSS.mtd`, whose textures are in `/chr/c1019.texbnd.dcx`;
 `c1019` has no model binder. :observed{games="sekiro"}
+Over the materials of all 129 character model binders of the install, the definitions bind 3,237 (model, texture) pairs
+by a texture path of the definition (the FLVER's own texture paths are empty in 99.4% of its bindings). 2,257 are in the
+model's own `texbnd`, `common_body.tpf.dcx` or `systex.tpf.dcx`; 939 are in the `texbnd` of a character whose id the
+definition's texture path names (`c7201` binds `c7209_tilingskin03_a`, held by `/chr/c7209.texbnd.dcx`): 581 in the model's
+own sibling `cNNN9` (the install holds 16 such binders: `c1019`, `c1029`, `c1219`, `c1259`, `c1459`, `c1559`, `c5069`,
+`c5089`, `c5209`, `c5409`, `c7019`, `c7109`, `c7209`, `c7309`, `c7409`, `c7439`), 279 in another `cNNN9` and 79 in the binder
+of a character with another id (`c5440` binds `c5408_weapon00_a`); the other 41 are in no character binder (20 are in the
+area package `/map/m25/m25_0000`, 21 in no texture package of the install). No stem is held by both a `cNNN9` binder and
+`common_body.tpf.dcx` or `systex.tpf.dcx`, so the order in which a reader searches them does not change which texture a
+name gives. :proven{games="sekiro"}
 
 :only[sekiro] A low-resolution `_l` part binder holds `_l` textures (`BD_M_9120_a_l`) while its materials name the
 full textures (`bd_m_9120_a`), which are in the full sibling binder `parts/bd_m_9120.partsbnd`. The face's

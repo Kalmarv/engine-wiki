@@ -118,9 +118,9 @@ and 0020, then 0100, 0120, 0200, 0220, 0300, 0320, 0400, 0420, 0600, 0700, 0710,
 Three things name an ID, each by these two numbers:
 
 - A collision's scene block names one (next section): the first scene byte is the slot and, in Elden Ring, the byte at
-  `+32` the sub id. The file of that ID exists for all 1,304 of Sekiro's collisions and for 3,019 of the 3,056 Elden Ring
-  collisions of the maps that have draw-parameter files (37 name a file their map lacks; 210 more stand in the 27 maps,
-  `m31` and `m32`, that have none). :proven{games="sekiro"} :observed{games="elden-ring"}
+  `+32` the sub id. The file of that ID exists for all 1,304 of Sekiro's collisions and for 3,209 of the 3,266 Elden Ring
+  collisions (57 name a file their map's files lack; the 210 collisions of the 27 caves and tunnels, `m31` and `m32`, which use
+  the catacombs' `m30_00` files, name one of them in 190 cases). :proven{games="sekiro"} :observed{games="elden-ring"}
 - Sekiro's `2003:88` (the community calls it Set Area Gparam Sub ID) gives an area, a block, a sub id and a time in
   seconds. Its 43 calls, in 14 map scripts and the common script, name sub ids 0, 10, 20, 30, 40 and 50, and 35 of them
   name an area that has a file of exactly that number (`m11_00_0020` for sub id 20 of area 11 block 0); the other 8 name 40
@@ -140,6 +140,32 @@ The game keeps this state in `CSWorldSceneDrawParamManager`: per area block an o
 override ID, a flag that an override is being transitioned to and its duration, and the manager holds sixteen
 interpolators (`CSGparamIdLerper`: a destination ID, a begin ID and a timer) beside them. :sourced[fromsoftware-rs]{games="elden-ring"}
 
+### The game's own tables
+
+Elden Ring keeps three params that decide which draw-parameter file applies. The first is keyed by decimal map numbers, the
+digits of the name run together (`30010000` is `m30_01_00_00`; the same form as the `Map ID` of the cutscene-warp
+instructions, see [EMEVD](/engines/fromsoft/gameplay/emevd/#map-ids-in-arguments)); so are several others
+(`MapDefaultInfoParam`'s 875 rows, `GparamRefSettingsParam`, the cutscene time and weather params).
+
+- `GparamRefSettingsParam` (`GPARAM_REF_SETTINGS_PARAM_ST`, 32-byte rows, 70 rows): a map's row names in `RefTargetMapId` the map
+  whose draw-parameter files it uses. 35 rows send the caves and tunnels (`m31_00` to `m31_22` and twelve of `m32_00` to `m32_12`, there being no `m32_06`) to
+  `m30_00`; 20 send `m30_01` to `m30_20` to `m30_00`, 12 send expansion maps (`m21_01`, `m21_02`, `m40_01` ... `m43_01`) to
+  their family's `_00`, one sends `m30_00` to itself, and two rows (`m99_99_00_01`, `m99_99_00_02`) hold -1. For the 56
+  rows whose target map has files in the install, the files the map's own stem and its family's `mAA_00` give it
+  are the target's. :observed{games="elden-ring"} The one base-game map with no row and no files of its own is `m11_72`,
+  whose family `m11_00` has them. :observed{games="elden-ring"}
+- `WeatherParam` (`WEATHER_PARAM_ST`, 68-byte rows, 162 rows): `GparamId` at `+20` is the number of the global weather set the
+  weather uses. All 82 distinct values name a file `m00_00_<id>_weatheroutdoor` of the install, which holds 84 such files
+  (the two no row names are 98 and 150). :proven{games="elden-ring"} So the `m00_00` weather files are chosen by the
+  weather, not by the map.
+- `WeatherLotParam` (`WEATHER_LOT_PARAM_ST`, 82-byte rows, 164 rows): sixteen `weatherType` entries (16-bit `WeatherParam` row IDs
+  at `+4`) with sixteen `lotteryWeight` values (`+36`) and five time-zone bytes (`+68`). The 272 entries with a weight
+  all name a `WeatherParam` row: 19 distinct rows, reaching 14 of the 82 file IDs. :observed{games="elden-ring"}
+
+The event scripts name lots by ID (`IF Weather Lot Active`, `3:37`, 61 calls) and weathers (`Change Weather`, `2003:68`, 120
+calls). How a lot is chosen for a map and an hour, and how the weather's file combines with the map's file, is not established.
+:unknown{games="elden-ring"}
+
 ### Collision selectors
 
 A collision's scene block (80 bytes at the part's `+120` slot) holds the selector bytes. In Elden Ring it holds a float
@@ -156,8 +182,10 @@ file ID under the map's stem, with one rule needed for the stem:
 | `m60` tiles (39), stem `m60_00` | 38 | n/a | 1 (value 5; no `m60_00_0500`) |
 
 Trying all 10,000 IDs of every two-block stem of the install's layouts (and `m00_00`, `m61_00`) against the archive
-finds no draw-parameter file for `m31_*`, `m32_*` or their `_00` family stems: 20 of 21 `m30` maps have none under their
-own stem and use `m30_00`, and the caves and tunnels name selectors whose files do not exist. :proven{games="elden-ring"}
+finds no draw-parameter file for `m31_*`, `m32_*` or their `_00` family stems; 20 of 21 `m30` maps have none under their
+own stem either. :proven{games="elden-ring"} The game's own table sends all of them to `m30_00` (below), and the first
+selector byte of every one of the 139 collisions of `m31` and `m32` that stores one names a file `m30_00` holds (slots 2, 4,
+5 and 9). :observed{games="elden-ring"}
 In Sekiro the first byte alone is the slot: it is 0 to 9 on 398 of the 1,304 collisions (-1 on the other 906), and
 `byte × 100` is a file of the map's stem for every one of the 398. A rule that takes the second byte as a tens digit
 names an existing file for only 267 of the 588 collisions that store a selector. :observed{games="sekiro"}

@@ -311,7 +311,7 @@ The rest of the body holds, in all 12,789 bodies: :proven[all 12,789 bodies]
 | Offset | Contents |
 |---|---|
 | `+0x28`, `+0x2A` | bytes: 1 in every body; 0 in fixed bodies and 4 in dynamic ones |
-| `+0x5C` | an `f32`: the largest `f32` (3.4 × 10^38) in exactly the 2,021 fixed bodies, 0.015 to 0.635 in the dynamic ones (0.635 in 10,620) |
+| `+0x5C` | an `f32`: `0x7F7FFFEE` (3.40282 × 10^38, 17 units in the last place below the largest `f32`) in exactly the 2,021 fixed bodies, 0.015 to 0.635 in the dynamic ones (0.635 in 10,620) |
 | `+0x84` to `+0x8B` | zero |
 | `+0x9C` | `f32` 1.0 |
 | `+0xD0` to `+0xD2` | zero |
@@ -325,12 +325,14 @@ The rest of the body holds, in all 12,789 bodies: :proven[all 12,789 bodies]
 | `+0x190` | a radius (`f32`, positive) |
 | `+0x194`, `+0x198` | two damping factors: 0 and 0.05 in fixed bodies and in most dynamic ones, up to 0.6 in a few |
 | `+0x19C` to `+0x19E` | 127, 127, then 1 in fixed bodies and 2 in dynamic ones |
-| `+0x1A0` | inertia (xyz) and inverse mass (w): all zero in the 2,021 fixed bodies, all positive in the 10,768 dynamic ones |
+| `+0x1A0` | the inverse inertia (xyz) and the inverse mass (w): all zero in the 2,021 fixed bodies, all positive in the 10,768 dynamic ones |
 | `+0x1B0`, `+0x1C0` | linear and angular velocity: zero |
 | `+0x1D0` to `+0x1FB` | zero |
 | `+0x1FC` | a `u16` with 468 different values, 0 in 8,160 bodies; it follows no pattern and looks uninitialised |
 | `+0x1FE` | 1.0 as a 16-bit float (the top half of an `f32`) |
 | `+0x200` to `+0x21F` | zero; the body is 0x220 bytes and its name string follows it |
+
+The xyz at `+0x1A0` are the inverse of the inertia, not the inertia: for the 587 dynamic bodies whose shape is a box, `x` times the solid box's `m/3 (hy² + hz²)` (`m` the reciprocal of the `w` lane, `h` the half extents) lies between 0.8 and 1.05 in 494 of them, and the quotient of the two is near 1 in none. :observed[587 dynamic box bodies of the 490 files]
 
 The radius at `+0x190` is not a strict bound: for 2,051 of the 10,758 dynamic bodies with a convex shape it is smaller than the distance from the centre of mass to the farthest vertex plus the convex radius (by more than 10% in 141 of them). :proven[all 12,789 bodies]
 

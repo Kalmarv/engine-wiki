@@ -42,6 +42,7 @@ Ring. :proven[every named character and parts binder]
 | Field | Values | Confidence |
 |---|---|---|
 | `hclClothData.targetPlatform` | 2 in all 650 Sekiro and 4,357 Elden Ring cloth datas | :proven[every named character and parts binder] |
+| same, counted over every distinct tagfile of the install | 2 in all 610 Sekiro (149 tagfiles) and 2,692 Elden Ring (814 tagfiles) cloth datas | :proven[every tagfile of both installs] |
 | Platform value 2 | x64 | :sourced[HKX2Library] |
 | `hclLocalRangeConstraintSet.shapeType` (32-bit) | Sekiro: 0 in all 656 sets; Elden Ring: 0 in 4,527 sets, 1 in 117 | :proven[every named character and parts binder] |
 | Shape type 0, 1 | Sphere, cylinder | :sourced[HKX2Library] |

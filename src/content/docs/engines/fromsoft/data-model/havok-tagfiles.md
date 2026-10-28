@@ -112,6 +112,8 @@ presence word announces, in this order. :proven{games="sekiro elden-ring"}
 contain 294 such bytes and Elden Ring's 1,297. :observed{games="sekiro elden-ring"}
 
 The subtype (bit 2) occurs only on pointer types (format kind 6) and array types (kind 8). :proven{games="sekiro elden-ring"}
+Every one of them stores its own format word: 25,275 pointer and 20,192 array types in Sekiro's 229 distinct tables,
+111,486 and 91,351 in Elden Ring's 875, and none takes its kind from a parent. :proven{games="sekiro elden-ring"}
 
 ### Field count word
 

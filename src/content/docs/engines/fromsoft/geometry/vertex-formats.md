@@ -99,6 +99,28 @@ mostly follows its shader. Of the 76,822 meshes whose material has a MATBIN, the
 store the same count; the other 38 stems, mostly `M[AMSN_V]` variants, have meshes with one, two and three.
 :proven[every mesh of the install with a MATBIN material, without the `DLC` archive pair]
 
+How many attributes of each kind a vertex holds, over every FLVER the archives store as an entry or as a member of a
+top-level BND4 binder: Sekiro's 14,459 models (166,873,569 vertices) and Elden Ring's 22,169 models (324,042,558
+vertices). Entries stored over 256 MiB are not read, nor is one Sekiro entry whose DCX envelope the reader refuses; no
+FLVER is refused. A UV attribute is one decoded four-lane value; the `0x13` columns count only the normalized-byte
+members among them.
+
+| Attributes a vertex holds | UV (Sekiro) | UV (Elden Ring) | `0x13` UV members (Sekiro) | `0x13` UV members (Elden Ring) | Tangents (Sekiro) | Tangents (Elden Ring) | Colours (Sekiro) | Colours (Elden Ring) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0 | 0 | 712 | 93,568,599 | 233,709,961 | 41,746,830 | 57,234 | 40,906,598 | 1,219,968 |
+| 1 | 81,437,549 | 191,305,507 | 13,634,708 | 80,268,043 | 124,451,716 | 314,976,632 | 124,659,947 | 310,859,158 |
+| 2 | 20,838,573 | 109,753,690 | 6,377,043 | 9,542,189 | 650,807 | 8,509,680 | 1,307,024 | 11,963,432 |
+| 3 | 10,794,264 | 15,838,052 | 818,674 | 306,041 | 24,216 | 499,012 | 0 | 0 |
+| 4 | 1,177,797 | 6,405,513 | 399,113 | 175,579 | 0 | 0 | 0 | 0 |
+| 5 | 515,941 | 307,685 | 0 | 40,745 | 0 | 0 | 0 | 0 |
+| 6 | 0 | 369,346 | 52,075,432 | 0 | 0 | 0 | 0 | 0 |
+| 7 | 34,013 | 42,459 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 8 | 52,075,432 | 19,594 | 0 | 0 | 0 | 0 | 0 | 0 |
+
+No vertex holds more than eight UV attributes, three tangents or two colours. Sekiro's 52,075,432 vertices with eight
+UV attributes (31 % of its vertices) are the ones that hold six `0x13` members: the same count. :observed[a census of
+every model the archives hold as an entry or top-level binder member]
+
 ### Half4 pivots
 
 For the checked vegetation UV-semantic Half4 members, XYZ is a model-space pivot and W is zero. A vertex program

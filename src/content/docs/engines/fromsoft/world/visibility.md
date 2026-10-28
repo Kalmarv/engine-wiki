@@ -48,6 +48,30 @@ draw groups that are all zero, and one qualifies for no collision; over all of S
 assets gives 70,713 qualifying, 317,870 with zero draw groups and 37,192 qualifying for none, in 29 of the 935
 layouts. :observed So the arrays alone do not hide whole interiors of Ashina Castle.
 
+Elden Ring's `_99` overlay layouts ([overlays](/engines/fromsoft/world/areas-and-tiles/)) hold no collision of their own,
+and the draw groups of their parts are met by the display groups of the collisions of the base map they overlay, as the
+intersection reading predicts:
+
+| Overlay | Parts with draw groups | Met by the overlay's own collisions | Met by the base map's collisions |
+|---|---:|---:|---:|
+| `m10_00_00_99` | 1,298 | 0 | 1,279 |
+| `m11_00_00_99` | 1,240 | 0 | 1,203 |
+| `m11_05_00_99` | 668 | 0 | 644 |
+| `m12_02_00_99` | 31 | 0 | 30 |
+| `m13_00_00_99` | 80 | 0 | 80 |
+| `m14_00_00_99` | 734 | 0 | 732 |
+| `m15_00_00_99` | 109 | 0 | 109 |
+| `m16_00_00_99` | 555 | 0 | 112 |
+| `m39_20_00_99` | 787 | 0 | 787 |
+| `m45_00_00_99`, `m45_01_00_99`, `m45_02_00_99` | 750, 107, 106 | 0 | 0 |
+
+The other 12 `_99` layouts that have a base layout store no non-zero draw group. :observed{games="elden-ring"} That the groups of a part are
+compared with those of the collision the player stands on is the community's reading (soulstruct's field notes: a part is
+drawn while its draw group is among the active display groups, and display groups function on collisions)
+:sourced[soulstruct]{games="elden-ring"}; that most parts of the largest underground maps (`m12_01`: 8,205 of 10,297 parts
+with draw groups, `m12_02`: 5,096 of 8,069) meet no display group of their own map's collisions even when the second block's
+groups and the connecting collisions' are added (8,049 and 5,063 remain) is not explained by it. :observed{games="elden-ring"}
+
 In the running game (1.17.2, offline, the layout `m10_00_00_00` replaced by a test file), a part whose draw groups are set to
 all zero is not drawn: setting the draw groups of every map piece and asset to zero (7,773 of the 8,065 stored a non-zero
 array; display groups left as stored) removes the walls, floor and props around the Stormveil spawn, as moving all of them

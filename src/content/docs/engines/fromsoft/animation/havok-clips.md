@@ -69,7 +69,11 @@ Elden Ring's). The value 2 occurs on three Sekiro bindings, all in `c9520`, whos
 `a000_009999`) have the same numbers as additive clips that every other Sekiro character stores with 1.
 :proven[over the bindings read]{games="sekiro elden-ring"} The type tables name the enum `hkaAnimationBinding::BlendHint`
 but list no members, so the files do not say what 1 and 2 mean (whether an additive clip's deltas are in the parent's
-or the child's space). :proven[over every table of both installs]{games="sekiro elden-ring"}
+or the child's space). :proven[over every table of both installs]{games="sekiro elden-ring"} Other sources name the
+values differently: HKLib's Havok 2018.1 registry names 1 `ADDITIVE_PARENT_SPACE` and 2 `ADDITIVE_CHILD_SPACE`
+:sourced[HKLib], while the Havok 2014 class dumps Smithbox carries for Dark Souls III name 0 `NORMAL`,
+1 `ADDITIVE_DEPRECATED` and 2 `ADDITIVE`. :sourced[Smithbox] Both agree that 1 and 2 are additive; neither is checked
+against Sekiro's 2016.2 runtime.
 
 The one interleaved clip of each game stores `duration` as `(samples - 1)` frames of 1/30 s: Sekiro's `c1050`
 `a000_400600` has 166 samples of 101 tracks and lasts 5.5 s; Elden Ring's `c4751` `a000_030000` has 2 samples of 185

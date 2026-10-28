@@ -2,6 +2,10 @@
 title: ShaderBlockDepots and material parameters
 description: Material-key lookup, relocatable depot containers, typed parameters and texture bindings.
 games: [skate]
+sources:
+  - title: FrostyToolsuite (Skate2025 branch)
+    url: https://github.com/CadeEvs/FrostyToolsuite
+    note: ShaderBlockDepot reader of a community fork's skate. profile; GPL-3.0
 implementations:
   - name: frostbite-formats (depot.rs)
     url: https://github.com/Kalmarv/frostbite-formats/blob/main/src/depot.rs
@@ -131,4 +135,10 @@ and over UTF-16 with `0xff` framing, plain and lowercased, match none of the 1,8
 in the binding sets of all 28,045 permutations of globals and dingolevel_root, tried against 128,552 candidate
 strings from every EBX document of those two TOCs. Block hashes agree for equal measured blocks but do not match tested FNV, MD5 or SHA-1
 representations. These are separate unresolved identities. :unknown
+
+FrostyToolsuite's skate. profile (the `Skate2025` branch of a community fork) builds a depot parameter's 64-bit name
+hash as the low 48 bits of a CityHash64 ORed with the djb2-XOR hash of the lowercased parameter name shifted left by
+48, so the top 16 bits are the low half of the name hash. :sourced[FrostyToolsuite] That profile reuses the Battlefield 2042 code paths, and the recipe is not checked
+against skate.'s depots; the census above found no EBX string whose djb2-XOR hash forms the top 16 bits together with
+the `u16` at +14, which leaves open whether parameter names occur in the EBX documents at all.
 :::

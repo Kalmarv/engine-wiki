@@ -144,6 +144,14 @@ fields:
 The format byte shares its code space with [Enhanced textures](/engines/rage/textures/ytd/); it is not a direct DXGI
 enum cast. [Vertex-colour roles](/engines/rage/materials/vertex-colours/) depend on the shader. :proven
 
+### Tangent frames
+
+A tangent's fourth component `w` is the handedness sign: the bitangent is `cross(T, N) × w`, and a normal map's red
+channel runs along `T` and its green channel along that bitangent. :observed[against CodeWalker's reading of the same
+vertices] Measured over the triangles of `dt1_23_build2.ydr`, this stored frame equals the frame derived from
+`TEXCOORD0` with the bitangent pointing along +v on 98.5% of the surface area (2,578 of 2,616 m²); 1.1% of the area has
+degenerate UVs and 0.3% is mirrored. :observed[one drawable]
+
 ## Fragments and data exceptions
 
 A fragment's extra drawable can have no shader group and inherit the main drawable's shaders. Its first physics LOD

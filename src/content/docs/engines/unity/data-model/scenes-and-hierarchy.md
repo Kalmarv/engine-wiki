@@ -49,7 +49,11 @@ negate z, triangle winding reverses, and a tangent's `w` flips because the mirro
 independent decoder]{games="sledding"}
 
 A Transform stores a local position, rotation (a quaternion `x, y, z, w`) and scale; the world matrix is the product of
-the chain from the root, `Matrix4x4.TRS(position, rotation, scale)` at each step. :sourced[Unity manual] A RectTransform's
+the chain from the root, `Matrix4x4.TRS(position, rotation, scale)` at each step. :sourced[Unity manual] The product of
+such steps is not always a rotation and a scale: a rotated child under a parent with a non-uniform scale is sheared, and
+an odd number of negative scale components mirrors it. :inferred In Sledding Game's first level 6 composed world
+matrices are mirrored and 1,224 are sheared, so they cannot be written back as one position, rotation and scale.
+:observed{games="sledding"} A RectTransform's
 stored local `x` and `y` can be stale: they come from its anchors: the parent rectangle's minimum plus its size times the
 anchors interpolated at the pivot, plus the anchored position. :observed{games="sledding"}
 

@@ -6,6 +6,8 @@ sources:
     url: https://github.com/soulsmods/SoulsFormatsNEXT/blob/master/SoulsFormats/Formats/GPARAM.cs
   - title: Smithbox
     url: https://github.com/vawser/Smithbox
+  - title: fromsoftware-rs (CSWorldSceneDrawParamManager)
+    url: https://github.com/vswarte/fromsoftware-rs
 implementations:
   - name: fromsoft-formats GPARAM reader
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/gparam.rs
@@ -105,6 +107,39 @@ These are value IDs within the active GPARAM, not names of GPARAM files. Collisi
 signed bytes that Elden Ring's reference reader names as the base and override GPARAM sub-IDs, selecting hundreds
 digits of file IDs. :sourced[SoulsFormatsNEXT]
 
+### File IDs: slot and sub id
+
+A draw-parameter file's four-digit ID is a *slot*, its hundreds digit, and a *sub id*, its last two digits. Every file of
+both installs has a 0 as its first digit: the largest ID is 0930 in Sekiro and 0978 in Elden Ring. Sekiro's `m11_00` holds
+0000, 0020 and 0030, then slots 1 to 9 with sub ids 0 and 20 (0100, 0120, 0200, 0220 and so on); `m11_01` holds 0000, 0010
+and 0020, then 0100, 0120, 0200, 0220, 0300, 0320, 0400, 0420, 0600, 0700, 0710, 0720, 0740, 0750, 0800 and 0820.
+:observed
+
+Three things name an ID, each by these two numbers:
+
+- A collision's scene block names one (next section): the first scene byte is the slot and, in Elden Ring, the byte at
+  `+32` the sub id. The file of that ID exists for all 1,304 of Sekiro's collisions and for 3,019 of the 3,056 Elden Ring
+  collisions of the maps that have draw-parameter files (37 name a file their map lacks; 210 more stand in the 27 maps,
+  `m31` and `m32`, that have none). :proven{games="sekiro"} :observed{games="elden-ring"}
+- Sekiro's `2003:88` (the community calls it Set Area Gparam Sub ID) gives an area, a block, a sub id and a time in
+  seconds. Its 43 calls, in 14 map scripts and the common script, name sub ids 0, 10, 20, 30, 40 and 50, and 35 of them
+  name an area that has a file of exactly that number (`m11_00_0020` for sub id 20 of area 11 block 0); the other 8 name 40
+  or 50 of `m11_01` and 30 of `m11_02`, which have no such file. :observed{games="sekiro"}
+- Elden Ring's `2012:11` (Activate Gparam Override: a sub id and a time in seconds) and `2012:12` (Deactivate, a time).
+  The 11 activations name 0, 1, 2, 3, 4 and 500; of the 10 that belong to a map's script, 6 name an existing file (0 in the
+  open-world tiles, 500 in `m14_00`, which holds `m14_00_0500`); the other 4 name 1 in `m11_10` (whose only file is
+  0000) and 4, 2 and 3 in `m20_01`, `m21_01` and `m25_00`, expansion maps whose draw-parameter files the base archives
+  do not hold. There are 14 deactivations. :observed{games="elden-ring"}
+
+Sekiro's `2003:81` (Set Lighting) takes a time of day, 1 to 5 (the community names them morning, noon, afternoon,
+evening, night), and a time in seconds: 42 calls in 15 scripts. Whether the time of day is the slot (the map's files have
+the slot `time of day - 1` in all 42 calls, and the slot `time of day` in 41) is not decided by that join.
+:observed{games="sekiro"}
+
+The game keeps this state in `CSWorldSceneDrawParamManager`: per area block an object holding two weather ids, an
+override ID, a flag that an override is being transitioned to and its duration, and the manager holds sixteen
+interpolators (`CSGparamIdLerper`: a destination ID, a begin ID and a timer) beside them. :sourced[fromsoftware-rs]{games="elden-ring"}
+
 ### Collision selectors
 
 A collision's scene block (80 bytes at the part's `+120` slot) holds the selector bytes. In Elden Ring it holds a float
@@ -123,8 +158,9 @@ file ID under the map's stem, with one rule needed for the stem:
 Trying all 10,000 IDs of every two-block stem of the install's layouts (and `m00_00`, `m61_00`) against the archive
 finds no draw-parameter file for `m31_*`, `m32_*` or their `_00` family stems: 20 of 21 `m30` maps have none under their
 own stem and use `m30_00`, and the caves and tunnels name selectors whose files do not exist. :proven{games="elden-ring"}
-Sekiro's first two bytes do not follow a `byte × 100 + byte × 10` rule: it names an existing file for 267 of 588
-collisions with a selector. :observed{games="sekiro"}
+In Sekiro the first byte alone is the slot: it is 0 to 9 on 398 of the 1,304 collisions (-1 on the other 906), and
+`byte × 100` is a file of the map's stem for every one of the 398. A rule that takes the second byte as a tens digit
+names an existing file for only 267 of the 588 collisions that store a selector. :observed{games="sekiro"}
 
 In the overworld a second value appears. The collision type data holds a byte `GparamOverride` at `+0x35`: 255 on
 3,225 collisions, otherwise 0, 1, 2, 3, 21, 31 or 41 on 41 collisions of `m60` tiles. The pair byte at `+32` of the

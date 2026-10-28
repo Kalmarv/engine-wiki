@@ -14,6 +14,8 @@ implementations:
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/tagfile.rs
   - name: havok-formats compressed mesh reader
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/mesh.rs
+  - name: havok-formats extern mesh reader
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/extern_mesh.rs
 ---
 
 Map collision uses Havok tagfiles with `hknpCompressedMeshShape` geometry and FromSoftware-specific `fsnp` metadata.
@@ -218,10 +220,38 @@ copy) and `f`. Their bodies are compressed meshes, apart from a few convex bodie
 Every body of every `f` file is an `hknpExternMeshShape` whose `hknpDefaultExternMeshShapeGeometry` holds an
 `hkGeometry`: vertices as `hkVector4` with `w` = 1 and triangles `{a, b, c, material}`. The body's pose is the
 identity, its motion type 0, its mass −1 and its motion-properties index `0xFFFF`; every triangle's material is −1 and
-every vertex index is in range. That is 12,688 bodies (539,652 vertices, 537,436 triangles) in Sekiro's 1,145 `f`
-files and 264,858 bodies (2,233,804 vertices, 1,707,650 triangles, at most 796 to a body) in Elden Ring's 1,850.
-:proven[every named collision binder] Smithbox calls the `f` set fall protection, used for enemies.
-:sourced[Smithbox]
+every vertex index is in range. That is 12,688 bodies (539,652 vertices, 537,436 triangles, none with a repeated
+corner) in Sekiro's 1,145 `f` files and 264,858 bodies (2,233,804 vertices, 1,707,650 triangles, none with a repeated
+corner, at most 796 to a body) in Elden Ring's 1,850. :proven[every named collision binder] A reader that follows the
+class tables of each file takes all of them: the geometry class of the 2016.2 files (all of Sekiro's, and 67 of Elden
+Ring's `f` files) lacks the `useTriangleMaterialAsShapeTag` flag that the 2018.1 class (the other 1,783 Elden Ring
+files) carries. :proven[every `f` binder of both installs]
+
+The binders are named `f<area>.hkxbhd` with a `.hkxbdt` payload, in the area's folder (`/map/<area>/` in Sekiro,
+`/map/<mXX>/<area>/` in Elden Ring), and their members `f<area>_<model>.hkx`, with the binder's compendium beside
+them. Sekiro has nine such binders (nine of its ten maps) and Elden Ring 603; every one is named by the games' map
+names. A map part names its collision model by the number of its `h` file, and the `f` file with the same model number
+is the part's mesh of this set: 1,087 of Sekiro's 1,145 `f` files have an `h` file of the same model with triangles
+and are measured below, 12 have none, and 327 `h` files have no `f` file. :observed{games="sekiro"}
+
+The `f` meshes lie in the same frame as the `h` collision beside them. Measured over every vertex of the 1,087 paired
+Sekiro files (1,554,264 vertices, each against the nearest triangle of the `h` file of its model, exact to 4 m), 22.8%
+lie within 1 cm of an `h` triangle, 41.3% within 5 cm, 72.6% within 25 cm and 97.2% within 1 m; the same vertices
+swapped in y and z lie within 1 m of one for 0.6%, and measured against an `h` file of another model, 1.0%.
+:observed{games="sekiro"} Sekiro's `f` meshes are therefore a coarser shell that follows the `h` surface and does not
+coincide with it (a minority of vertices lie on it). :observed{games="sekiro"} In the Elden Ring legacy dungeons
+(`m10` to `m16`) the shell follows `h` more loosely: 68.6% of `m10_00`'s `f` vertices lie within 2 m, 87.4% of `m15`'s
+and 77.9% of `m16`'s. :observed{games="elden-ring"} The dungeons `m30`, `m31`, `m32`, `m34` and `m35` store one-triangle placeholders in
+their `h` and `l` files and keep their real collision in `f` (tens of thousands of triangles per file), so there is
+nothing beside them to compare with. :observed{games="elden-ring"} In the open-world `m60` tiles `f` and `h` share the tile's horizontal extent (±128 in x and z) but not the vertical
+range, and no three-dimensional distance relates them: over 14 paired files of two tile groups (`m60_34_5`, `m60_41_3`;
+150,648 `f` vertices), 0.1% lie within 1 m of an `h` triangle, against 1.2% for an `h` file of another tile.
+:observed{games="elden-ring"} Ignoring the height, 56.6% of the vertices lie within 1 m of an `h` triangle's footprint,
+against 20.1% for another tile's; the control is high because the vertices on the tile's border exist in every tile, so
+this shows a shared tile frame in x and z and no more. :observed{games="elden-ring"}
+
+Smithbox calls the `f` set fall protection, used for enemies. :sourced[Smithbox] Whether the player collides with
+the `f` meshes is not established. :unknown
 
 ## Sekiro
 

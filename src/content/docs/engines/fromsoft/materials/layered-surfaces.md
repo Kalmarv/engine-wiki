@@ -49,6 +49,29 @@ from both m10_00 and m11_01, and need not be an affine transform of UV0. :observ
 
 ## Elden Ring
 
+### Layer weights of the Mb families
+
+The layered programs of the `Mb2`, `Mb3` and `Mb4` families take their layer weights from the second UV member of the
+vertex layout, kind `0x13`, four unsigned bytes read as `byte / 255`: 8,140 of 8,860 `Mb2`, 4,910 of 5,892 `Mb3` and 1,360
+of 3,512 `Mb4` meshes have exactly that second member (a `UV` short pair first). Over the 28,597,065, 14,421,619 and
+6,785,862 vertices of those meshes that have one, the bytes of lanes x, y and z cover 0 to 255 (most are 0, 3% to 18%
+are 255) and lane w is 0 on every vertex. :observed{games="elden-ring"} The vertex programs read it as a float input
+`TEXCOORD1` and pass lanes x, y and z on unchanged to a pixel input; there is no remapping from a signed range.
+:observed{games="elden-ring"}
+
+Running the lifted vertex and pixel programs of `M[AMSN][Mb2]_Gbuf` with the weight swept from 0 to 1 gives the blend
+weight `w = saturate((v - p (1 - v) (m + 0.01)) (1 + q t))`, where `v` is lane x, `m` the first lane of the mask
+texture, `p` and `q` the material's `float_0` and `float_1` and `t` the pixel input `TEXCOORD0.w`; the albedo is
+`lerp(AlbedoMap_0, AlbedoMap_1, w)`. `M[AMSN][Mb3][Ov_AN]_Gbuf` gives `w_a = saturate(1 - 1.4 s1 (m + 1 - 2 a))`
+and `w_b = saturate(1 - 1.4 s2 (m + 1 - 2 b))` with `a` and `b` lanes x and y, `s1` and `s2` its `float_1` and
+`float_2`; the albedo is `AlbedoMap_1` blended to `AlbedoMap_2` by `w_a`, and that to `AlbedoMap_3` by `w_b`; lane z
+changes nothing. Both agree with the formulas read from the disassembly (`w = 0.44` at `a = 0.4`, `s1 = 2`, mask 0).
+:observed{games="elden-ring"} Sweeping each lane of `TEXCOORD1` of the `*_Gbuf` programs of the Mb families (104
+programs: 21 without a `TEXCOORD1` input, 5 that the executor does not run, 30 whose albedo does not change under the
+constants used) shows lane x alone changing the albedo in 36 (30 `Mb2`, 1 `Mb3`, 5 `Mb5`), lanes x and y in 9 (7 `Mb3`,
+2 `Mb2`), lanes x, y and z in `M[AMSN_V][Mb4]` and lane z alone in 2 `Mb4` programs: the plain families with n layers
+use n - 1 lanes. :observed{games="elden-ring"}
+
 ### Masked blends and overlays
 
 The inspected `M[AMSN][Mb2][Ov_AN]_Gbuf.ppo` uses

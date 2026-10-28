@@ -57,8 +57,8 @@ fields:
   - {at: 28, size: 4, type: u32, name: node count, level: proven}
   - {at: 32, size: 4, type: u32, name: mesh count, level: proven}
   - {at: 36, size: 4, type: u32, name: vertex buffer count, level: proven}
-  - {at: 40, size: 12, type: float3, name: minimum bounds, level: sourced}
-  - {at: 52, size: 12, type: float3, name: maximum bounds, level: sourced}
+  - {at: 40, size: 12, type: float3, name: minimum bounds, level: observed, note: "see Header bounds"}
+  - {at: 52, size: 12, type: float3, name: maximum bounds, level: observed, note: "see Header bounds"}
   - {at: 64, size: 4, type: u32, name: nondegenerate non-motion-blur face count, level: observed, note: "see Face counts in the header"}
   - {at: 68, size: 4, type: u32, name: total face count, level: observed, note: "see Face counts in the header"}
   - {at: 72, size: 1, type: u8, name: default index width in bits, level: proven}
@@ -81,6 +81,14 @@ contain 16-byte records. SoulsFormatsNEXT calls them base and all skeletons. :so
 
 Elden Ring files may have zero padding from the end of the declared data block to the next 2,048-byte boundary.
 :observed{games="elden-ring"}
+
+### Header bounds
+
+The two header bounds are the box of every vertex of every mesh, static vertices posed by their node as described
+under [scale in the hierarchy](/engines/fromsoft/geometry/nodes-and-skinning/#scale-in-the-hierarchy), whether or not a
+face set uses the vertex. This holds within 0.1% of the box's largest bound plus one metre for 13,040 of the 13,054 Sekiro models and all 21,174
+Elden Ring models that have no scaled node, and for the models with scaled nodes in the way the section there states;
+22 Sekiro and 3 Elden Ring models match neither way. :observed
 
 ## Meshes and buffers
 
@@ -151,6 +159,15 @@ contains a restart marker (`0xFFFF` in a 16-bit set, `0xFFFFFFFF` in a 32-bit on
 three, and the value `0xFFFF` in a 32-bit set (519 times in 177 Sekiro sets, 1,047 times in 356 Elden Ring sets) is an
 ordinary vertex index. :proven[every face set of both archive sets] The two reserved words at 20 and 28 are zero in every
 face set. :proven[every face set of both archive sets]
+
+### Which face set is the mesh
+
+Every mesh of both installs that has any face set with neither a coarser-LOD bit nor the motion-blur bit has exactly
+one, and it is the mesh's first face set (43,312 of Sekiro's 44,974 meshes and 83,740 of Elden Ring's 89,029). The
+other meshes hold only coarser-LOD face sets (1,662 in Sekiro, 5,279 in Elden Ring, plus 10 Elden Ring meshes with no
+face set): separate meshes that exist for a distant level, so reading a mesh's first face set as its LOD0 takes their
+coarse geometry for a finished mesh. :proven[every mesh of both installs] The cull-backfaces byte is equal across all
+face sets of a mesh in every mesh of both installs, motion-blur and coarser-LOD sets included. :proven[every mesh of both installs]
 
 ### Face counts in the header
 

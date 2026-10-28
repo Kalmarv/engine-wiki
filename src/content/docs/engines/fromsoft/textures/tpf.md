@@ -160,6 +160,17 @@ material sample, 96 GSBlendMap albedo bindings point at DX10 sRGB DDS formats an
 at linear formats. This payload correlation does not prove every runtime resource-view format.
 :observed{games="elden-ring"}
 
+Over the albedo bindings of Elden Ring's models (each material a model uses, each sampler named `AlbedoMap`, the
+FLVER texture of that name or else the definition's own path; 229,596 bindings, 74,348 of them with no path anywhere
+and 837 naming a texture no package holds), 154,411 find their texture in a package. Of those, 152,518 (98.8%) have a
+DX10 sRGB format (147,247 BC1, 5,271 BC7), 1,768 (84 textures) a legacy `DXT1` header, 122 (37 textures) BC7 UNORM
+and 3 `ATI1`. The same format byte (0 or 102) occurs with and without the sRGB tag, so the tag is the DDS header's
+alone. :observed{games="elden-ring"} The shader METAPARAM category 1 (albedo) of the slot is the sampler named
+`AlbedoMap` in all 140,357 bindings where both exist, and 99.1% of them carry the sRGB tag; categories 4 (normal),
+10 (flow) and 14 to 17 (metallic and masks) carry it on 0 to 2.2% of their bindings and category 6 (emissive) on 90%.
+:observed{games="elden-ring"} Whether the game views the untagged albedo textures as sRGB is not in the files.
+:unknown{games="elden-ring"}
+
 ## Package format codes in the installs
 
 Over every texture of both installs, a package format code always means one DDS pixel family; within a code the DDS

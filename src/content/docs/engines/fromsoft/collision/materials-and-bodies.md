@@ -79,6 +79,24 @@ Reducing an ID modulo 100 groups repeated class numbers; treating the higher dig
 decoded bitfield. :inferred A class named “None” does not by itself establish an invisible blocker in another game.
 :inferred
 
+### Hit ids in the installs
+
+Over every collision file that carries shape-key materials (Sekiro 4,420 files, 25,954,138 triangles, 1,231,204 of them
+with no material; Elden Ring 23,102 files, 67,859,768 triangles, 1,741,768 with none), triangles use 97 distinct ids in
+Sekiro and 122 in Elden Ring. :observed Both games' HitMtrlParam holds 51 rows (Sekiro ids 0 to 80 with gaps, Elden Ring
+0 to 62). The ids below 100 (42 and 43 of them used) each have a row; the 55 Sekiro and 79 Elden Ring ids of 100 or more
+(7.9% and 1.2% of the triangles that have an id; hundreds digits 1, 2 and 4 to 8 in Sekiro, 1, 2 and 4 in Elden Ring) have none, and
+every one of them has a class (its id modulo 100) that does. :observed Sekiro's Smithbox names cover 50 of its 51 rows
+(row 0 is blank; rows 2 and 25 are named "Unused" and are used by 59,208 and 267 triangles); Elden Ring's cover 18 of 51
+and leave 29 of the 46 classes in use unnamed (6.2% of the triangles). :sourced[Smithbox]
+
+Sekiro's row 29 ("None") and row 0 (blank in the community list) are byte-identical in the regulation; row 40, named
+"Cloud", differs from them in `disableFallDamage` (1) and `hardnessType` (0), and only two files (the `h` and `l`
+collision of one `m25_00` piece, 1,296 triangles each) use it. :observed{games="sekiro"} Dark Souls' numbering (class 29
+"Empty", class 40 "Trigger", :sourced[soulstruct-havok]) is not these games'. In Elden Ring the unnamed class 29 is used
+by 236,710 triangles in 1,539 files and its row differs from row 0 (`isHardnessForSoundReverb` is 1), so a class that is
+an invisible blocker in Sekiro's Ashina Castle is not shown to be one there. :observed{games="elden-ring"}
+
 ## Object and asset collision
 
 Where each game keeps object and asset collision is in its section below.

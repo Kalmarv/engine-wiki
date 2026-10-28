@@ -112,3 +112,15 @@ declared length. :unknown
 The one definition with non-zero padding ships in the install, but whether the game loads it, or what it does with
 the padding, is not established. :unknown
 :::
+
+## Blend mode and alpha reference
+
+Material definitions state `g_BlendMode` and `g_AlphaRef`. `g_BlendMode` takes the values 0, 2, 3, 4 and 5 and is
+absent from two definitions of each game; the value 1 occurs in no definition: not in Sekiro's 3,170 MTDs (0 in 2,957,
+2 in 191, 3 in 1, 4 in 17, 5 in 2), nor in Elden Ring's 20,619 MATBINs (0 in 19,433, 2 in 1,065, 3 in 10, 4 in 97,
+5 in 12) or 2,602 MTDs (0 in 2,458, 2 in 113, 4 in 24, 5 in 5). :proven[every definition of both installs] `g_AlphaRef`
+is an integer pair; a first word above 0 is the alpha-test reference (over 255), 0 states none. :observed Elden Ring
+MATBINs whose shader is named `Edge` state a positive first word in 878 of 924; Sekiro's shader and material names contain no
+`Edge`. :proven[every definition of both installs] Definitions with blend mode 2 and a positive reference exist as well
+(Sekiro 55 MTDs, Elden Ring 416 MATBINs and 62 MTDs), so the blend mode does not make the alpha test redundant.
+:proven[every definition of both installs]

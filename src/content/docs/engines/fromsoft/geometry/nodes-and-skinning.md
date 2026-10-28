@@ -2,6 +2,9 @@
 title: FLVER nodes and skinning
 description: Transform nodes, dummy attachment points, rigid bone selection and bind-space vertices.
 sources:
+  - title: soulstruct-blender
+    url: https://github.com/Grimrukh/soulstruct-blender
+    note: States that bone scale is never inherited and how dummy points follow a scaled parent
   - title: SoulsFormatsNEXT
     url: https://github.com/soulsmods/SoulsFormatsNEXT/tree/master/SoulsFormats/Formats/FLVER
     note: Node and dummy records
@@ -88,6 +91,30 @@ fields:
   - {at: 12, size: 4, type: u32, name: reserved, value: 0, level: proven}
 ```
 
+## Scale in the hierarchy
+
+A node's world transform is its parent's world transform composed with its own local transform, scale included, so a
+scaled node scales the translations of its descendants and the vertices and dummy points they carry. The vertex
+extents the file stores in its header (offset 40, see [FLVER](/engines/fromsoft/geometry/flver/#header-bounds)) show it:
+posing every vertex of a model through this full product of affine maps reproduces the stored bounds within 0.1% in
+14,250 of the 14,272 Sekiro models that hold vertices and in 21,935 of the 21,938 Elden Ring models that do (119
+SpeedTree models, whose bounds are the instance's, and 112 models without vertices are left out). :observed
+The community importer's rule, in which a node's translation is its parent's translation plus the parent's scale-free
+rotation of the local translation and a node's own scale applies only to what the node carries, :sourced[soulstruct-blender]
+gives the same positions wherever no ancestor is scaled and different ones below a scaled ancestor. Sekiro has 158
+models and Elden Ring 9 with static vertices on such a node (2,248 nodes and 478,300 vertices in Sekiro, 33 nodes and
+18,229 vertices in Elden Ring); the full product matches the stored bounds in all 167, the importer's rule in 9 of
+the 158 Sekiro models and 1 of the 9 Elden Ring models (where the vertices it moves do not change the box). :observed
+
+Scaled nodes: Sekiro has 10,713 nodes with a scale component off 1 by more than 0.001 in 1,220 of its 14,459 models
+(7,078 roots, 3,635 others; 3,507 with unequal components), and Elden Ring 5,901 in 778 of its 22,169 (4,943 roots,
+958 others; 2,291 unequal). :proven[every node of both installs] A node has a scaled strict ancestor, so that the two
+rules place what it carries differently, on 2,337 Sekiro nodes and 806 Elden Ring nodes. :proven[every node of both installs]
+No node of either install has a negative scale component (129,270 Sekiro and 535,503 Elden Ring nodes), so no node
+mirrors what it carries. :proven[every node of both installs] 544 Elden Ring nodes in 272 models have a zero component;
+none carries a vertex or a dummy point, and the 88,340 and 20,268 dummy points of the installs name none as parent or
+attach node. :proven[every node and dummy point of both installs]
+
 ## Rigid and dynamic data
 
 Static vertices with a stored normal W use that integer to identify their rigid bone, at implicit weight one.
@@ -153,6 +180,29 @@ or a colour with the red and green bytes zero and the blue 208. :proven[every du
 flag at 46 is 1 when the attach bone is set and 0 when it is -1 on 86,081 of Elden Ring's 88,340 dummy points and 20,232 of
 Sekiro's 20,268 (it is 0 with an attach bone on 2,157 and 8, and 1 without one on 102 and 28). :proven[every dummy point of both installs]
 The use-upward flag at 47 is 1 on all of them. :proven[every dummy point of both installs]
+
+### Placing and orienting a dummy point
+
+A dummy point's position and direction vectors are in its parent node's space, so they follow the parent's world
+matrix, scale included. :inferred The two scale rules above place a dummy point differently only when the parent has a
+scaled strict ancestor: 16 of Sekiro's 20,268 dummy points (in four object models' 8 files) and 2 of Elden Ring's 88,340.
+:proven[every dummy point of both installs] A scale on the parent itself moves a point the same way under both rules
+(885 Sekiro and 10 Elden Ring dummy points have a scaled parent). :proven[every dummy point of both installs]
+Sekiro's object `o005380` embeds the model `o000100` (a pouch, 0.357 m high, dummy points with reference IDs 90 and 170
+at 0.266 m and 0.766 m) as a node scaled 0.8 under a root scaled 1.25. Under the full product the pouch's vertices and
+its two points reproduce `o000100` itself, its own size and the points' heights; with the parent's own scale only the
+pouch shrinks to 0.285 m while the points stay put. In the sibling objects `o005390`, `o005391` and `o005392` (pouch
+node 0.64 under 1.25) the full product scales the points with the pouch (to 0.213 m and 0.613 m, the pouch 0.265 m high),
+and the other rule leaves the first point at 0.266 m, above a pouch 0.212 m high that contains it in `o000100`.
+:observed{games="sekiro"}
+
+The use-upward-vector byte is 1 on all 20,268 Sekiro and 88,340 Elden Ring dummy points, so every point stores both a
+forward and an upward vector. :proven[every dummy point of both installs] The forward vector points along -Z on
+11,458 Sekiro points (56.5%) and 46,718 Elden Ring points (52.9%) and along +Z on 3,372 (16.6%) and 2,228 (2.5%);
+the upward vector is +Y on most of them, and the rest are oblique or on other axes. :observed The two vectors are not
+always perpendicular: 164 Sekiro and 4,216 Elden Ring points have |cos| above 0.01, up to 0.70, with parents that are
+not scaled in the cases examined. :observed Which local axis of a socket a consumer takes as the forward direction is
+not stored. :unknown
 
 The reference ID identifies the point to scripts and effects; its meaning is external to FLVER. The parent bone
 supplies the initial transform, while the attach bone is the bone the point follows physically, according to the

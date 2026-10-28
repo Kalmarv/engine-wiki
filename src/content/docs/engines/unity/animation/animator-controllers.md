@@ -1,7 +1,7 @@
 ---
 title: Avatars, Animators and controllers
 description: "The Mecanim objects: Avatar skeletons, the compiled AnimatorController (layers, state machines, transitions, blend trees), how blend tree weights and state time are computed, and SkateBIRD's bird controller."
-games: [skatebird, sledding]
+games: [skatebird, sledding, peak, big-walk]
 sources:
   - title: Unity manual, Mecanim and Blend Trees
     url: https://docs.unity3d.com/Manual/BlendTree-1DBlending.html
@@ -47,6 +47,19 @@ A generic avatar has an empty human skeleton. :observed{games="skatebird"}
 
 A transition's `destination` below 30,000 names a state of its machine; 30,000 + *n* names selector node *n* (an entry or an
 exit). :observed{games="sledding"}
+
+A selector transition's destination can also be `0xFFFFFFFF`, which names no state and no selector node; the destination of a state
+or any-state transition is never −1. It occurs 16 times among the 1,671 selector transitions of the 699 compiled controllers read
+in 529 serialized files of PEAK, Sledding Game, Big Walk and SkateBIRD (PEAK's seven level bundles and loose files, Sledding Game's
+50 bundles and loose files, Big Walk's `data.unity3d`, SkateBIRD's data folder, and the builtin `Resources` files, which hold no
+controller; PEAK's one-node `maps` manifest bundle was not read). Each is the only transition of the entry node of a state machine
+with no states (a layer with nothing in it), whose exit node leads to selector node 0 (30,000); the 16 are PEAK's `Ambience`
+controller (machine 0) and `Scout` controller (machine 6), each stored once in the shared assets of each of the seven level bundles
+and once in the loose `resources.assets`. :observed{games="peak"} Every other entry-node transition leads to a state, and every
+other exit-node transition to a selector node, except 4 exit transitions in Big Walk, 3 in SkateBIRD and 1 in Sledding Game that
+lead to a state. :observed{games="peak big-walk sledding skatebird"} That the value means "no destination" (an entry node of a
+machine with no state to enter) is reasoned from where it occurs; the engine's own handling of it has not been observed.
+:inferred
 
 ### Blend trees
 

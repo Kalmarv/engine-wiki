@@ -46,6 +46,13 @@ The scene constants `cbSceneParam` carry `SC_PreExposure` and `SC_InvPreExposure
 recorded Sekiro frame, and in all 50 distinct `cbSceneParam` contents the Elden Ring frame binds (and its loading frame).
 :observed So in these frames neither game scales its light targets by a pre-exposure factor through this constant.
 
+Elden Ring's `cbSceneParam` also carries `SC_SceneExposure` and `SC_InvSceneExposure` (offsets 1152 and 1156, reciprocal):
+37.696 at night at the Stormveil gate and 19.886 in a loading frame. :observed{games="elden-ring"} None of the 96 programs
+that declare `cbSceneParam` in the `gxrenderershader`, `gxposteffect`, `gxffxshader`, `gxshader`, `gxdecal` and grass bundles
+reads them: the 72 that read that row
+read only `SC_PreExposure`, by their DXIL. :observed{games="elden-ring"} The scene exposure is therefore a value of the
+CPU side, which a light packer can apply to the records it writes. :inferred{games="elden-ring"}
+
 ## Sekiro
 
 The sky is not a pass of its own. It is drawn as material draws of the map, in one command list right after the
@@ -61,7 +68,11 @@ Forward draws into the light targets come before the volumetric fog in the Elden
 names of many programs, so which of them are the sky is not established.
 :::
 
-:::open[What sets the moon's position?]
-The moon is a quad with its own world matrix; whether the game places it from the time of day or a light set's direction is
-not established.
+The moon follows the light: in that frame its quad's object matrix places it 25.0 units from the camera exactly along the
+light set's direction towards its first directional light (0, 0.4226, −0.9063), with its rotation built from the same
+direction so that it faces the camera. :observed{games="sekiro"} So the moon moves with the light set's `Angle0` over the
+day. :inferred{games="sekiro"}
+
+:::open[Where does the moon's distance come from?]
+The distance of 25 and which part or parameter makes a model the light's disc are not established.
 :::

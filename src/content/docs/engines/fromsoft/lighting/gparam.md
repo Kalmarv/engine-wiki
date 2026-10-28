@@ -176,7 +176,12 @@ values too. :observed{games="sekiro"}
 |---|---|---|---|
 | `Directional Light DiffColor<n>` (r, g, b, w) | diffuse colour `n` of the set | (r²·w, g²·w, b²·w, w²) | :observed[n = 0, 1 of both sets of one frame]{games="sekiro"} |
 | `Directional Light SpecColor<n>` (r, g, b, w) | specular colour `n` of the set | (r²·w, g²·w, b²·w, w²) | :observed[n = 0, 1 of both sets of one frame]{games="sekiro"} |
-| `Directional Light Angle0` (rx, ry) radians | direction 0 of the set | (sin ry · cos rx, −sin rx, cos ry · cos rx) | :observed[both sets of one frame]{games="sekiro"} |
+| `Directional Light Angle0` (rx, ry) radians | direction 0 of the set: towards the light | (sin ry · cos rx, −sin rx, cos ry · cos rx) | :observed[both sets of one frame]{games="sekiro"} |
+
+The program decodes the world normal from G-buffer target 0, lights a surface by `saturate(dot(normal, direction))` and
+forms its half vector from the view direction plus this direction, so the stored angle names the direction from the
+surface towards the light, in the world frame; it picks the set by the light-group selector times 18 rows of 16 bytes (one
+set is 288 bytes). :observed[the program's code]{games="sekiro"}
 
 So the stored colours are squared and multiplied by the weight before the light reaches the program, the same squaring as
 the colours of [BTL](/engines/fromsoft/lighting/btl/) light records. :inferred A sun stored as

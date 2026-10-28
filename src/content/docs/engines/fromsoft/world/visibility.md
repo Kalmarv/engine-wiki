@@ -46,8 +46,15 @@ assumption, not an established rule), 5,217 of the 5,310 map pieces and objects 
 draw groups that are all zero, and one qualifies for no collision; over all of Sekiro's maps 49,433 of 51,508 qualify,
 654 store zeros and 1,421 qualify for none (1,130 of them in `m20_00`). The same count over Elden Ring's map pieces and
 assets gives 70,713 qualifying, 317,870 with zero draw groups and 37,192 qualifying for none, in 29 of the 935
-layouts. :observed So the arrays alone do not hide whole interiors of Ashina Castle; whether the zeros mean "always
-drawn" is not established.
+layouts. :observed So the arrays alone do not hide whole interiors of Ashina Castle.
+
+In the running game (1.17.2, offline, the layout `m10_00_00_00` replaced by a test file), a part whose draw groups are set to
+all zero is not drawn: setting the draw groups of every map piece and asset to zero (7,773 of the 8,065 stored a non-zero
+array; display groups left as stored) removes the walls, floor and props around the Stormveil spawn, as moving all of them
+300 m up does. What stays on screen is not made of this layout's parts: lifting the 292 parts that store zero draw groups
+and zeroing the rest gives the same picture. :observed{games="elden-ring"} Whether parts that already store zero draw groups
+(27 map pieces, all at the origin, and 265 assets in this layout) are drawn by another rule was not seen: none of them is in
+view at the spawn. :unknown{games="elden-ring"}
 
 ```layout
 title: Part draw block (payload slot +80)

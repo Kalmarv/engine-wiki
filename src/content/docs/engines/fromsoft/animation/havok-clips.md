@@ -163,6 +163,16 @@ found, so whether the blender or a later stage does the normalising is not estab
 
 ## Elden Ring
 
+### Rewritten clips are loaded
+
+The player's skeleton has 150 bones and the running game (1.17.2, offline) holds the local pose as arrays of 150 `hkQsTransform`
+records, rewritten every frame; bone 7, `RootPos`, has a static Y translation of 0.9349806 in the live pose and in the clips. A clip
+of the player's animation binders rewritten with one static translation changed (that bone's Y plus 0.6 m, in each of the 1,257
+clips of eleven binders whose `RootPos` Y is a single static value) is loaded and played: the live pose then holds 1.5349805, the stock
+value plus 0.6, and nothing crashes. The same holds when each rewritten clip carries its type table inline (`TYPE`) in place of the
+`TCRF` reference to the binder's compendium: the compendium's `TYPE` container is put where the `TCRF` leaf was and the outer
+length is updated. :observed{games="elden-ring"} The character's position does not follow the changed root bone. :observed{games="elden-ring"}
+
 ### Binder relationships
 
 :only[elden-ring] Character animation can be split into divisions. For example, `c2010.anibnd` contains the skeleton

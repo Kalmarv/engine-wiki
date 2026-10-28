@@ -135,8 +135,11 @@ the 309 map-piece models of `m10_00_00_00`; every name found is a model of its M
 three of those bundles, so their contents were read. None of the other 24 `_99` layouts is named, and a scan at the
 title screen finds no `_99` name. :observed{games="elden-ring"} The same scan finds the base map's and the `_99`
 layout's names in the same forms, and the names of `m34_10_00_00` and `m34_10_00_99` as well. :observed{games="elden-ring"}
-Whether the loaded pieces are drawn, and where they sit relative to the base map's origin, was not observed.
-:unknown{games="elden-ring"}
+With the `m10_00_00_99` layout's 1,998 parts moved 300 m up in a test run (the base layout's parts hidden so that the view is
+open), the scaffolded house and the grass cliff on one side of the spawn view disappear, and the structures on the other
+side stay. So parts of the `_99` layout are drawn, at the positions the layout stores, in the base map's coordinate frame.
+:observed{games="elden-ring"} Which of its 28 map pieces and 1,970 assets are the house and the cliff, whether every part
+draws, and what the remaining structures belong to, was not established. :unknown{games="elden-ring"}
 
 ### Map words
 

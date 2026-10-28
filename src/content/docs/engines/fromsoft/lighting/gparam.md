@@ -147,6 +147,12 @@ map is loaded. At the title screen only `m00_00_0000` is present. :observed{game
 are not picked per map: the game holds almost the whole set, and the hundreds digit selects a slot of a ten-name table
 for the map's stem. :inferred
 
+At the Stormveil spawn the tone map's colour scale reaches the screen from `m10_00_0000` alone. Replacing the `ColorScale`
+value of seven of the map's draw-parameter files by seven different tints turns the whole picture red, the tint of
+`m10_00_0000`; none of the other six slots' tints shows, as a blend or product of them with it would. :observed{games="elden-ring"}
+Which slot another weather, time or event state selects, and whether a slot that lacks a group falls back to slot 0, was not
+observed. :unknown{games="elden-ring"}
+
 :only[elden-ring] Additional files use `_weatherbase`, `_weatheroutdoor`, `_commonevent` and `_capturemap` layer
 names. Their presence does not establish how the layers combine. :observed{games="elden-ring"}
 

@@ -104,6 +104,14 @@ A signature is a CRC-32 over a description of the class (its members' names, typ
 those of its parents), not over its name, so it identifies the class definition a file was written with: a file whose
 `hkpRigidBody` carries another signature has another rigid-body layout. :sourced[hkx-rs]
 
+The first two entries name the Havok generation of a file without reading its layout. A 7.1 file begins `hkClass`
+`14425E51`, `hkClassMember` `4A986551`. The packfiles of Sekiro and Elden Ring (little endian, 8-byte pointers, file
+version 9 with contents version `hk_2013.1.0-r1` and version 11 with `hk_2014.1.0-r1`) begin `hkClass` `33D42383`,
+`hkClassMember` `B0EFA719`, the same two signatures as a dump of Havok 2014.2's class tables from *The Legend of Zelda:
+Breath of the Wild* lists, so the pair separates 7.1 from the 2013 to 2014 generation but not 2013.1, 2014.1 and 2014.2
+from one another: the file version and the contents-version text in the header do. :proven[all 35 distinct packfiles of
+the two installs: 29 of Sekiro, 6 of Elden Ring]
+
 #### How a signature is computed
 
 The signature is the standard CRC-32 (the zlib polynomial) of one byte string, with every integer written

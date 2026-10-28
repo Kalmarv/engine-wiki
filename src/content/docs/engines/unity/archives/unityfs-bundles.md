@@ -9,6 +9,9 @@ sources:
   - title: AssetRipper
     url: https://github.com/AssetRipper/AssetRipper
     note: documents the archive flags and their version-dependent meaning
+implementations:
+  - name: unity-formats (bundle.rs)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/src/bundle.rs
 ---
 
 A **UnityFS** file is Unity's archive: a header, a compressed table of blocks and files, and the files' bytes in
@@ -83,16 +86,64 @@ end of the last file, and the file's length is the start of the data plus the bl
 | Node flags 0 | a stream file (`.resS`, `.resource`) (PEAK 24, Sledding Game 16, Big Walk 7) | :proven{games="big-walk peak sledding"} |
 
 A block is an LZ4 block of plain literal runs and matches. A reader decompresses blocks in order and concatenates them,
-so the file at an offset is found by walking the cumulative uncompressed sizes. :sourced[UnityPy] An LZ4 block decoder
-written from the format decompresses the blocks needed to read the headers of every serialized file in Big Walk's bundle.
-:observed{games="big-walk"}
+so the file at an offset is found by walking the cumulative uncompressed sizes. :sourced[UnityPy] Two block readers written
+from this description, one of them reading only the blocks a byte range needs, give the same SHA-256 for each of the 526
+nodes of the 59 bundles (PEAK's 441, Sledding Game's 66, Big Walk's 19: 38.9 GB, 0.2 GB and 5.7 GB of decompressed bytes).
+:proven{games="big-walk peak sledding"}
+
+## Nodes and the files they point at
+
+A node's path is the file's name inside the bundle. PEAK's level bundles name them `BuildPlayer-Level_<N>` (a scene),
+`BuildPlayer-Level_<N>.sharedAssets` and, for 24 of them, `BuildPlayer-Level_<N>.resource` (a stream); its manifest bundle
+`maps` and Sledding Game's Addressables bundles name a serialized file `CAB-<32 hex digits>` and a stream
+`CAB-<32 hex digits>.resS`; Big Walk's bundle names the player's own files (`level2`, `sharedassets1.assets`,
+`Resources/unity_builtin_extra`). :proven{games="peak sledding big-walk"} Node paths are unique within a bundle, and every
+node lies inside the blocks' decompressed bytes. :proven{games="peak sledding big-walk"}
+
+A serialized file in a bundle points at other files by their external paths
+([SerializedFile externals](/engines/unity/archives/serialized-files/#references-between-objects)). Three forms occur:
+
+| External path | Names | Where it occurs |
+|---|---|---|
+| `archive:/<root>/<node>` | the node `<node>`, in this bundle or another; `<root>` is the first node's path of the bundle that holds it, without its extension (`CAB-…` names are whole) | 1,392 externals of PEAK's and Sledding Game's serialized files: 1,311 name a node of their own bundle (PEAK), 81 a node of another bundle (Sledding Game); every one names a node of the installed bundles |
+| `Library/unity default resources`, `Resources/unity_builtin_extra` | the engine's built-in resources, which are not nodes of PEAK's bundles | 416 and 208 externals of PEAK's files (every level file names the first, every shared-assets file the second; the files are the loose `PEAK_Data/Resources/unity default resources` and `unity_builtin_extra`); 11 and 5 of Big Walk's, whose bundle holds `Resources/unity_builtin_extra` as a node |
+| `globalgamemanagers.assets`, `resources.assets`, `sharedassets<N>.assets` | the player's files by their plain names | 35 externals of Big Walk's twelve files, each naming a node of the same bundle |
+
+:proven{games="peak sledding big-walk"}
+
+PEAK shares assets across levels inside a bundle: every level bundle has one `sharedAssets` file of about a gigabyte
+(1.04 to 1.11 GB) that 63 of the bundle's 64 serialized files point at (31 of 32 in the last bundle), and several smaller
+shared-asset files that other levels point at. A level therefore needs, beside its own scene and shared assets, the shared
+assets of other levels. :proven{games="peak"} Sledding Game's 50 bundles point at one another the same way: its 81
+`archive:/` externals all name nodes of other bundles. :proven{games="sledding"}
+
+A streamed resource (`StreamingInfo`: path, offset, size) in a bundled file names a stream node of the same bundle by the
+last segment of its path; all 317 of Sledding Game's, 206,661,032 bytes in all, lie inside the stream node they name.
+:proven{games="sledding"} No decoded object of PEAK's level files carries a `StreamingInfo`; the 24 `.resource` nodes are
+named by fields of another shape. :proven{games="peak"}
 
 ## Type trees in bundles
 
-A serialized file inside an AssetBundle or Addressables bundle **keeps its type trees** (the has-type-tree byte is 1),
-unlike the player's own loose files, which strip them. :observed{games="peak sledding"} A bundle's contents can therefore be
-decoded without an outside [type tree package](/engines/unity/data-model/type-trees/); the player-data bundle of Big
-Walk, like loose player files, has none. :observed{games="big-walk"}
+A serialized file inside an AssetBundle or Addressables bundle **stores its type trees** (the has-type-tree byte is 1),
+unlike the player's own loose files, which strip them: 466 of the 479 serialized files in the bundles of the three games
+do (all 416 PEAK level files, which hold 83,643 types, and all 50 of Sledding Game's, 224 types), and each stores a tree
+for every one of its types. :proven{games="peak sledding"} The 13 that store none are PEAK's `maps` manifest bundle and
+the 12 files of Big Walk's `data.unity3d`, the player's own, which are stripped like loose player files.
+:proven{games="peak big-walk"} A stored tree is read without an outside
+[type tree package](/engines/unity/data-model/type-trees/) except for the engine's common strings, whose table the
+package supplies per Unity version. :proven{games="peak sledding"}
+
+Trees are stored per type, not per object: the 83,643 types of PEAK's 416 level files hold 586 different trees, 60 of them
+for the 60 classes other than MonoBehaviour (a class has the same tree in every file) and 526 for MonoBehaviour (one per
+script, so a file has one MonoBehaviour type per script it uses). :proven{games="peak"} Sledding Game's 224 types hold 17
+different trees, 6 of them MonoBehaviour's. :proven{games="sledding"} A MonoBehaviour's tree holds the script's own fields
+after the base fields, which a stripped player file does not.
+:proven{games="peak sledding"}
+
+The stored trees of the classes other than MonoBehaviour equal the type tree package's trees for the file's Unity version,
+node for node (type, name, byte size, version, meta flags): all 8,367 such types of PEAK's level files and all 173 of Sledding
+Game's. :proven{games="peak sledding"} The layout of a stored tree is in the
+[SerializedFile type entry](/engines/unity/archives/serialized-files/#type-entry-with-a-stored-tree).
 
 ## Sledding Game's Addressables
 
@@ -112,7 +163,7 @@ PEAK 3.0.0 (Unity `6000.3.15f1`) ships its game levels as **seven AssetBundles**
 `.manifest` text file beside it), plus a bundle `maps` that holds the `AssetBundleManifest`. :observed{games="peak"} They
 hold 208 generated scenes, `Assets/8_SCENES/Generated/Level_0.unity` to `Level_207.unity` (32 per bundle, 16 in the
 last), by the manifests' asset lists. :observed{games="peak"} The `maps` manifest lists no dependencies between the seven
-bundles. :observed{games="peak"}
+bundles, and no file of one bundle points at a node of another. :proven{games="peak"}
 
 A level bundle is 2.18 GB (1.41 GB for the last) and holds, per level, two serialized files, `BuildPlayer-Level_N` (the
 scene) and `BuildPlayer-Level_N.sharedAssets` (the assets only that level uses), and some levels' `.resource` streams

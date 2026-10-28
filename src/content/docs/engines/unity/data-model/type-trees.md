@@ -54,6 +54,9 @@ The embedded trees of the games use it: the 50 Sledding Game bundles (6000.3.12f
 and PEAK's bundles (6000.3.15f1; the 195 serialized files up to 40 MB of its seven level bundles, and its `maps` bundle)
 use 65 distinct offsets, at most 1,200 (`EntityId`, six times). Every offset resolves against the 6000.3 table, and a reader
 that carries only the 6000.0 table (110 strings) cannot resolve PEAK's offset 1,200. :observed{games="sledding peak"}
+Across all 466 files that store trees (PEAK's 416 level files and Sledding Game's 50) every common-string offset of every
+one of the 83,867 trees resolves against the package's table for the file's Unity version, and the resulting names equal
+an independent reader's, node for node. :proven{games="peak sledding"}
 No loose player file of SkateBIRD (31), PEAK (13) or Sledding Game (7) stores a tree, so none uses the table.
 :proven{games="skatebird sledding peak"} Reading the seven serialized files of Big Walk's `data.unity3d` up to 40 MB looks
 up no common string. :observed{games="big-walk"}
@@ -76,6 +79,18 @@ serialized files to exactly their stored sizes, except the one object whose layo
 An `Array` child's own flag aligns its vector. :sourced[UnityPy] A decoder can bound a vector's count by the bytes left
 (a count whose elements would not fit is an error, not an allocation) because each node type has a least size.
 :inferred
+
+## Stored trees and the package's
+
+The tree a bundled file stores for a class other than MonoBehaviour equals the type tree package's release tree for the
+file's Unity version, node for node, for every such type in PEAK's level bundles and Sledding Game's Addressables bundles
+(8,367 and 173 types, none differs). :proven{games="peak sledding"} A tree stored for a
+MonoBehaviour is that script's own, with its fields after the base fields; the package has only the base fields.
+:proven{games="peak sledding"} Decoding every object of the 466 files by its stored tree consumes exactly the object's
+bytes for 136,275,632 of PEAK's 136,474,698 objects (2 have no tree: the manifest bundle's) and 1,333 of Sledding Game's
+1,427. :proven{games="peak sledding"} All the others, 199,064 and 94, are MonoBehaviours with a `[SerializeReference]` field
+(a managed reference node in their tree), which a decoder that has only the tree cannot read: it needs the file's reference
+types. :proven{games="peak sledding"}
 
 ## What a tree does not cover
 

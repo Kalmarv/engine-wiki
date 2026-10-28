@@ -33,11 +33,16 @@ into one; Big Walk does.
 | Sledding Game | 22 | `6000.3.12f1` | 7 | none | :proven |
 | PEAK 3.0.0 | 22 | `6000.3.15f1` | 13 | none | :proven |
 | Big Walk | 22 | `6000.3.17f1` | 12 (inside `data.unity3d`) | none | :proven |
+| Sledding Game's Addressables | 22 | `6000.3.12f1` | 50 (inside 50 bundles) | every type | :proven |
+| PEAK 3.0.0's level bundles | 22 | `6000.3.15f1` | 417 (inside 8 bundles) | every type of 416 files, none in the manifest bundle `maps` | :proven |
 
 "Proven" here is a census of every serialized file of the install: each header parses, the stated file size equals
 the file's size, the data offset is a multiple of 16 and lies after the metadata, the target platform is 19
 (Windows x64), and the has-type-tree byte is 0. Player builds strip type trees from their files; the layout of each
-class is supplied from outside ([type trees](/engines/unity/data-model/type-trees/)).
+class is supplied from outside ([type trees](/engines/unity/data-model/type-trees/)). The files in
+[bundles](/engines/unity/archives/unityfs-bundles/) are the other case: the same census of the 479 serialized files of the
+three games' bundles (a second reader agrees on every header, type, object table and external) finds the has-type-tree byte 1
+in 466 of them, where each type is followed by its tree.
 
 ## Header
 
@@ -95,7 +100,7 @@ on all 503,045 objects of the 31 files (path ids, class ids, byte offsets and si
 | Objects | count, then one [object entry](#object-entry) each | :proven |
 | Script types | count, then per entry a file index (`i32`), 4-byte alignment, a path id (`i64`) | :proven{games="skatebird"} |
 | External files | count, then per entry an empty string, a 16-byte GUID, a kind (`i32`) and a path string | :proven{games="skatebird"} |
-| Reference types | count, then type entries with a script id when the script index is not negative | :inferred |
+| Reference types | count, then type entries with a script id when the script index is not negative; with stored trees each is followed by its tree and three strings | :proven{games="peak sledding big-walk"} |
 | User information | NUL-terminated string | :proven{games="skatebird"} |
 
 ### Type entry
@@ -110,6 +115,44 @@ fields:
   - {at: 5, size: 2, type: i16, name: script type index, level: proven, note: "-1 for a class other than MonoBehaviour"}
   - {at: 7, size: 16, type: "u8[16]", name: script id, level: proven, note: "only present when the class id is 114 (MonoBehaviour): the hash of the script's identity"}
   - {at: "7, or 23 with a script id", size: 16, type: "u8[16]", name: old type hash, level: sourced, note: "UnityPy's name; the hash of the class's layout"}
+```
+
+### Type entry with a stored tree
+
+When the has-type-tree byte is 1, each type entry (and each reference type entry) continues after its old type hash with
+the type's tree, then, for an ordinary type, a list of type indices, and for a reference type three strings.
+:proven{games="peak sledding"} The metadata of all 466 files that store trees is consumed exactly to its stated end by this
+layout, and an independent reader gives the same tree for every one of the 83,867 types. :proven{games="peak sledding"}
+
+```layout
+title: Stored type tree (after the old type hash)
+size: variable
+games: [peak, sledding]
+note: "In the metadata endianness (little). Nodes are in depth-first order; a node's parent is the nearest earlier node whose level is one less."
+fields:
+  - {at: 0, size: 4, type: i32, name: node count, level: proven, note: "at least 1"}
+  - {at: 4, size: 4, type: i32, name: string buffer size, level: proven}
+  - {at: 8, size: "32 per node", type: "node[]", name: nodes, level: proven, note: "see the node layout"}
+  - {at: "after the nodes", size: "string buffer size", type: "char[]", name: string buffer, level: proven, note: "NUL-terminated strings"}
+  - {at: "after the buffer", size: variable, type: "i32 count + i32[]", name: type dependencies, level: proven, note: "ordinary types: indices into the type table (empty for most)"}
+  - {at: "after the buffer", size: variable, type: "char[] x3", name: "class, namespace and assembly", level: proven, note: "reference types instead of the dependency list: three NUL-terminated strings"}
+```
+
+```layout
+title: Stored type tree node
+size: 32
+games: [peak, sledding]
+note: "In the metadata endianness (little)."
+fields:
+  - {at: 0, size: 2, type: i16, name: version, level: proven, note: "the node's version, as in a package's tree"}
+  - {at: 2, size: 1, type: u8, name: level, level: proven, note: "0 for the root, a child's level is its parent's plus one"}
+  - {at: 3, size: 1, type: u8, name: type flags, level: observed, note: "0, or 1 on Array and TypelessData nodes, 2 on managedReference nodes, 4 on ManagedReferencesRegistry, 8 on the element type of an array of managed references: values 0, 1, 2, 4 and 8 in 180,511 nodes of 13 files"}
+  - {at: 4, size: 4, type: u32, name: type string offset, level: proven, note: "top bit clear: offset into the string buffer; top bit set: the low 31 bits are an offset into the engine's common string table"}
+  - {at: 8, size: 4, type: u32, name: name string offset, level: proven, note: "as the type string offset"}
+  - {at: 12, size: 4, type: i32, name: byte size, level: proven, note: "-1 where the size varies"}
+  - {at: 16, size: 4, type: i32, name: index, level: observed, note: "the node's position in the list, in all 180,511 nodes of 13 files"}
+  - {at: 20, size: 4, type: u32, name: meta flags, level: proven, note: "0x4000 aligns the position to 4 bytes after the node"}
+  - {at: 24, size: 8, type: u64, name: reference type hash, level: observed, note: "0 in all 180,511 nodes of 13 files"}
 ```
 
 ### Object entry

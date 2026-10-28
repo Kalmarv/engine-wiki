@@ -14,6 +14,8 @@ implementations:
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/param.rs
   - name: fromsoft-formats paramdef reader
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/paramdef.rs
+  - name: fromsoft-formats WorldMapLegacyConvParam reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/overworld.rs
 ---
 
 A PARAM is a numbered table of fixed-width rows. The file names its param type and data version, but does not carry
@@ -211,6 +213,45 @@ earlier release between it and the previous one. Nine params exist only from a l
 `FinalDamageRateParam` from 1.07, and from 1.12.1 `ChrEquipModelParam`, `MapGridCreateHeightDetailLimitInfo`,
 `MapNameTexParam_m61`, `MapPieceTexParam_m61`, `MimicryEstablishmentTexParam_m61`, `SignPuddleSubCategoryParam`,
 `SignPuddleTabParam` and `WeatherLotTexParam_m61`. :observed{games="elden-ring"}
+
+### WorldMapLegacyConvParam
+
+`WORLD_MAP_LEGACY_CONV_PARAM_ST` (data version 2) has 48-byte rows and 196 rows in the installed 1.17.3 regulation. Each
+row says that a point of a legacy map (any map that is not an `m60` or `m61` overworld tile) is a point of another map: a
+source map with its reference point, a destination map with the same point in the destination's frame, and a flag for
+the row that is the source's base connection. :observed{games="elden-ring"} The rows carry no rotation.
+:observed{games="elden-ring"} [Legacy maps in the overworld](/engines/fromsoft/world/areas-and-tiles/#legacy-maps-in-the-overworld)
+uses them to place each legacy map among the tiles.
+
+```layout
+title: WORLD_MAP_LEGACY_CONV_PARAM_ST row (data version 2)
+size: 48
+games: [elden-ring]
+fields:
+  - {at: 0, size: 1, type: u8, name: flags, level: sourced, note: "Bit 0 is Paramdex's disableParam_NT (183 of 196 rows set it); the other bits are zero in every row"}
+  - {at: 1, size: 3, type: "u8[3]", name: padding, level: proven, value: 0}
+  - {at: 4, size: 1, type: u8, name: source area, level: observed, note: "The area of the source map's name (14 of m14_00_00_00); at most 99"}
+  - {at: 5, size: 1, type: u8, name: source grid X, level: observed}
+  - {at: 6, size: 1, type: u8, name: source grid Z, level: observed}
+  - {at: 7, size: 1, type: u8, name: padding, level: proven, value: 0}
+  - {at: 8, size: 12, type: "f32[3]", name: source reference point, level: observed, note: "Metres in the source map's frame (X, Y, Z)"}
+  - {at: 20, size: 1, type: u8, name: destination area, level: observed}
+  - {at: 21, size: 1, type: u8, name: destination grid X, level: observed}
+  - {at: 22, size: 1, type: u8, name: destination grid Z, level: observed}
+  - {at: 23, size: 1, type: u8, name: padding, level: proven, value: 0}
+  - {at: 24, size: 12, type: "f32[3]", name: destination reference point, level: observed, note: "The same point in the destination map's frame"}
+  - {at: 36, size: 1, type: u8, name: isBasePoint, level: observed, note: "Bit 0; 194 of 196 rows set it, and every one of the 98 source maps has a base row"}
+  - {at: 37, size: 11, type: "u8[11]", name: padding, level: proven, value: 0}
+```
+
+All 196 rows read with every padding byte zero, area and grid numbers at most 99 and finite coordinates, and an independent
+parser of the decoded param gives the same fields. :proven{games="elden-ring"} The rows name 98 source maps and 110 maps in
+all; 163 rows have an `m60` (118) or `m61` (45) tile as destination, 33 another legacy map. :proven{games="elden-ring"}
+The map numbers have no variant byte: the destination `m60_35_45` is the tile `m60_35_45_00`. :observed{games="elden-ring"}
+The reference points of 132 of the 196 rows are corroborated by the maps' own connection regions: the destination's layout holds a
+connection region naming the source at the destination reference point, or the source's holds one naming the destination
+at the source's. Of the other 64 rows, 59 name a map that is not in the base-game install, and 5 name only installed maps and
+have no such region (rows 5, 10, 11, 16 and 17). :observed{games="elden-ring"}
 
 ### BonfireWarpParam
 

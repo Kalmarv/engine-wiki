@@ -12,6 +12,8 @@ sources:
 implementations:
   - name: fromsoft-formats PARAM reader
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/param.rs
+  - name: fromsoft-formats paramdef reader
+    url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/paramdef.rs
 ---
 
 A PARAM is a numbered table of fixed-width rows. The file names its param type and data version, but does not carry
@@ -99,6 +101,31 @@ placing bit fields byte by byte so that none straddles a byte boundary moves ten
 `pad_05` in 347 and 113 of them. Across all params of the two installs, the 238 `dummy8` bit fields are zero in every row
 under the container rule except one in Sekiro's `AtkParam_Npc`, whose two-bit padding field has its lower bit set in 22
 of 2,396 rows.
+:observed{games="sekiro elden-ring"}
+
+### Typing rows with a definition
+
+A definition belongs to a param by the param type string of the file's header, not by the name of the binder member:
+the 194 members of the installed Elden Ring regulation have 160 distinct param types, and 11 types are shared by 45
+members (`WWISE_VALUE_TO_STR_CONVERT_PARAM_ST` by 13, the two draw-distance scale types by 7 each,
+`GRASS_TYPE_PARAM_ST` and `KEY_ASSIGN_PARAM_ST` by 3). :observed{games="elden-ring"} Paramdex states that its file names
+are arbitrary and that a definition is applied by its metadata. :sourced[Paramdex]
+
+Smithbox's copy of Paramdex's definitions, laid out by the container rule at the binder's regulation number, types every
+param of every regulation examined: the 194 params of the installed Elden Ring regulation (179,358 rows), 135 of Sekiro's
+138 (36,083 rows; the three 32-bit-form params are not read) and all 5,295 params of the 28 earlier Elden Ring regulations
+(4,137,031 rows). In every row each text field decodes (`fixstr` as Shift-JIS, `fixstrW` as UTF-16, each ending at its
+first NUL) and no bit that the definition does not declare is set. A second decoder written separately (its own XML,
+PARAM header, layout and value code) gives the same value for every field of every row of all 5,624 params.
+:observed{games="sekiro elden-ring"}
+
+The upstream Paramdex repository (the March 2026 head) has no `FirstVersion` or `RemovedVersion` in its Elden Ring or
+Sekiro definitions; only its Nightreign definitions carry them. Its Elden Ring definitions give the installed row size for
+188 of the 194 params. The six that differ each give a smaller row than the installed regulation: `BUDDY_PARAM_ST` (96 against 160), `CHR_MODEL_PARAM_ST` (12 against 16), `GAME_SYSTEM_COMMON_PARAM_ST`
+(800 against 1,024), `POSTURE_CONTROL_PARAM_WEP_RIGHT_ST` (112 against 144), `SIGN_PUDDLE_PARAM_ST` (32 against 48) and
+`SOUND_CUTSCENE_PARAM_ST` (32 against 36). Its Sekiro definitions give the row size of all 135 params. :observed{games="sekiro elden-ring"}
+
+Every bit field in the Elden Ring and Sekiro definitions has the type `u8`, `u16`, `u32` or `dummy8`; none is signed.
 :observed{games="sekiro elden-ring"}
 
 ## NpcParam

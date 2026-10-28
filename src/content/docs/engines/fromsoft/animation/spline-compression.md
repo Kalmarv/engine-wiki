@@ -36,13 +36,14 @@ the header fields obey these relations to a relative tolerance of 1e-5, every bl
 | `blockOffsets` | strictly ascending, each a multiple of 16 |
 | `maskAndQuantizationSize` | `4 * numberOfTransformTracks`, the size of the mask area (4 bytes a track) the walk finds in every block |
 | `transformOffsets`, `floatOffsets` | empty arrays |
-| `numberOfFloatTracks` | 0 |
+| `numberOfFloatTracks` | 0 (the cutscene binders' animations with float tracks have 1, see [Float tracks](#float-tracks)) |
 
 The last three rows hold in all 49,634 animations. `maskAndQuantizationSize` equals `4 * transform tracks + float
 tracks` rounded up to a multiple of 4, which is the transform-track formula with no float tracks; the per-track offset
 arrays are therefore never populated, and whether their entries would count bytes or words is not observable in
-these files. :proven[over the animations read]{games="sekiro elden-ring"} Every animation's `numberOfFloatTracks` and
-every binding's float-track list is empty, so no stored clip drives a float slot. :proven[over the animations read]{games="sekiro elden-ring"}
+these files. :proven[over the animations read]{games="sekiro elden-ring"} In the animation binders every animation's
+`numberOfFloatTracks` is 0 and every binding's float-track list is empty, so no clip there drives a float slot; the
+cutscene binders' do, below. :proven[over the animations read]{games="sekiro elden-ring"}
 
 The 11 Sekiro tagfiles left out above read the same way: ten whose compendium another binder holds, and the SDK 2015.1
 clip, together 11 spline-compressed animations of 1,286 transform tracks in 12 blocks. In them `maskAndQuantizationSize`
@@ -87,11 +88,88 @@ selector of every track's mask whether its rotation is stored or absent, selecto
 and selectors 0, 3 and 4 never. :proven[over the tracks read]{games="sekiro elden-ring"}
 
 Every spline track of every part (position, rotation, scale) has degree 1 or 3: Sekiro 578,820 tracks of degree 1 and
-445,248 of degree 3, Elden Ring 1,562,834 and 1,436,343. Degrees 2 and 4 never occur, so the stored degree byte
+445,248 of degree 3, Elden Ring 1,562,834 and 1,436,343 in the animation binders; the cutscene binders add 2,750 and
+5,430 (Sekiro) and 153,042 and 82,981 (Elden Ring). Degrees 2 and 4 never occur, so the stored degree byte
 spans 1 to 3 in these files. :proven[over the tracks read]{games="sekiro elden-ring"}
+
+The cutscene binders (`cutscene/*.cutscenebnd.dcx`, 705 Sekiro and 9,856 Elden Ring spline animations, 17,014 and
+267,433 transform tracks) use one selector each: every Sekiro track selects 1 (6,613 store a rotation spline, 8,157 a
+static rotation, the rest none) and every Elden Ring track selects 5 (95,255 splines, 132,031 static, the rest none), so
+Elden Ring's cutscene rotations are stored as four floats. Over both kinds of binder, the 60,209 spline animations
+(5,526,279 transform tracks, absent rotations included) of every tagfile of both installs, selectors 0, 3 and 4 never
+occur, and every block of selector 1, 2 and 5 reads to exactly the place the header says. :proven[over the tracks read]{games="sekiro elden-ring"}
 
 Selector 0 (Polar32) therefore never appears in the examined clips of either game, and nothing here exercises its
 layout or the scale of its angle. :proven[over the tracks read]{games="sekiro elden-ring"}
+
+## Float tracks
+
+Spline animations with float tracks occur in the cutscene binders only: 66 of Sekiro's 705 and 542 of Elden Ring's 9,856
+cutscene spline animations, in 1,110 blocks. None of the 60,209 spline animations of every tagfile in both installs has
+a float track anywhere else. :proven[over every tagfile of both installs]{games="sekiro elden-ring"}
+
+Each has exactly one: `numberOfFloatTracks` is 1, the binding's float-track list is `[0]`, and the skeleton the binding
+names has one float slot, `camNNNN_FOV` (`cam0010_FOV`, `cam0120_FOV`, ...), whose reference value is 0. It is the field
+of view of a cutscene camera; the animation's one transform track is the camera's. :proven[over the 608 animations]{games="sekiro elden-ring"}
+The values lie between 0.12 and 1.75 in the 1,110 blocks, which reads as radians. :inferred
+
+In a block the mask area holds one mask byte for each float track straight after the transform masks, then padding to
+`maskAndQuantizationSize`, which is `4 * transform tracks + float tracks` rounded up to 4 in all 60,209 animations; the
+padding bytes are zero in all 1,110 blocks. The float data begins at `floatBlockOffsets`, where the transform data ends
+(this holds for all 67,673 blocks), and ends where the padding to 16 reaches the next block or the end of the data: no
+block with float tracks is followed by more bytes, so the 16 zero bytes of the rule below do not occur there.
+:proven[over all blocks]{games="sekiro elden-ring"}
+
+| Mask byte | Float track | Blocks (Sekiro, Elden Ring) | Confidence |
+|---|---|---|---|
+| `0x03` | one f32 for the whole block | 946 (87, 859) | :proven[layout read to the exact block end in all 946]{games="sekiro elden-ring"} |
+| `0x12` | a spline of 16-bit control points | 164 (12, 152) | :proven[layout read to the exact block end in all 164]{games="sekiro elden-ring"} |
+
+No other mask byte occurs. Read as bits, `0x01` is static, `0x10` spline and `0x02` a 16-bit quantization (the transform
+masks put the static flags in the low nibble and the spline flags in the high one), but with two values in the data the
+split is not tested; whether a mask without `0x02` stores 8-bit control points is not shown. :inferred
+
+```layout
+title: Float track, mask 0x12 (a spline)
+size: variable
+note: Little-endian. The count and degree are the head of a transform spline track.
+fields:
+  - {at: 0, size: 2, type: i16, name: count, level: proven, note: "control points - 1"}
+  - {at: 2, size: 1, type: u8, name: degree, level: proven, note: "1 (7 blocks) or 3 (157 blocks)"}
+  - {at: 3, size: "points + degree + 1", type: "u8[]", name: knots, level: proven, note: "frames within the block, not decreasing"}
+  - {at: "padded to 4", size: 4, type: f32, name: lowest, level: proven}
+  - {at: "lowest + 4", size: 4, type: f32, name: highest, level: proven}
+  - {at: "highest + 4", size: "2 * points", type: "u16[]", name: control points, level: observed, note: "lowest + (highest - lowest) * value / 65535"}
+```
+
+The static track (`0x03`) is a single f32 and nothing else. A spline's control points number from 4 to 255 in a block,
+and its largest value is 65534 or 65535 in each of the 164 blocks, never more, which is what a scale of 65535 gives.
+:observed[over the 164 spline blocks]{games="sekiro elden-ring"} Blocks share their boundary frame, so the value at the
+last frame of a block is the first of the next: the two agree to within 8e-6 over all 502 seams between consecutive
+blocks of float tracks (33 in Sekiro, 469 in Elden Ring). Over the 99 seams where a spline meets a spline or a static
+value, the scale 1/65535 gives a smaller mean seam error (9.7e-7) than 1/65534 (1.3e-6) or 1/65536 (2.5e-6).
+:observed[over the 502 and 99 seams]{games="sekiro elden-ring"} Eight-bit control points do
+not fit: read that way, 118 of the 164 blocks would not end where the next begins. :proven[over the 164 blocks]{games="sekiro elden-ring"}
+
+:::open[What pads between two float tracks?]
+Every animation with float tracks has exactly one, so the alignment of a second float track's data after the first is not
+shown. The same holds for the meaning of a mask byte without the `0x02` bit.
+:::
+
+## Non-finite stored floats
+
+A stored float can be NaN or infinite where the value is a quantization bound or a static component, and, in an
+uncompressed rotation (selector 5), in a control point. Over the 60,209 spline animations, Elden Ring's animation
+binders hold 3 position vectors and 7 scale vectors with a non-finite value or bound, its cutscene binders 250 scale
+vectors, and Sekiro's binders none. Two Elden Ring cutscene animations store a rotation control point of four quiet NaNs
+(`0x7FC00000` each): `s12_05_0020` `cut0040` (control point 180 of 249, block 0) and `cut0060` (control point 36 of 256,
+block 1), both in track 190 of 225, the rotation of the `R_Wing_12` support bone of the skeleton `c8905_0000`. The other
+control points of those splines are finite unit quaternions, and the block parses to the exact place the next begins, so
+the point is stored data, not a misread. :proven[over the 60,209 animations]{games="elden-ring"}
+
+:::open[What does the game do when a rotation spline blends a NaN control point?]
+Evaluated as a B-spline, either span next to the point is NaN in every component.
+:::
 
 ## Trailing zero bytes after the last block
 

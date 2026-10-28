@@ -102,12 +102,35 @@ of Sekiro and 29 words (116 bytes) in the 16 Shader Model 4.0 containers of Sled
 the number of `sample`, `sample_l`, `sample_d`, `sample_b` and `gather4` instructions and the number of load instructions in
 444 and 446 of the 448. Words 2 (definitions), 10, 16 and 17 are `0` in all 448. :observed{games="sekiro sledding"} (In a Shader Model 6 container `STAT` is a second bitcode module instead; see below.)
 
+Microsoft's own reflection names the words. `D3DReflect` (`d3dcompiler_47`) returns a `D3D11_SHADER_DESC` for every container that
+has the part, and word 0 equals its `InstructionCount`, word 1 `TempRegisterCount`, word 3 `DclCount`, word 4
+`FloatInstructionCount`, word 5 `IntInstructionCount`, word 6 `UintInstructionCount`, word 7 `StaticFlowControlCount`, word 8
+`DynamicFlowControlCount`, word 14 `TextureNormalInstructions`, word 15 `TextureLoadInstructions`, word 16
+`TextureCompInstructions` and word 18 `TextureGradientInstructions`, in all 469 containers that have it: the 432 of Sekiro, the 16
+of Sledding Game and 21 compiled with fxc 10.0.26100.0 from small sources (a word counts only where it is not zero in every
+container). :observed[469 containers] Words 2, 9 to 13, 17 and 22 to 36 are `0` in all 448 game containers; word 19 and word 21 are
+not zero and equal no count of the decoded instructions that was tried (all `mov`, the conversions); word 20 is not a field of that structure and equals the `movc` count
+in the 466 of the 469 containers the decoder reads. :observed Shader Model 4.0 and 4.1 targets (including the level 9
+targets) write 29 words (22 containers) and Shader Model 5.0 targets 37 (447). :observed[469 containers] In a hull program word 1 is the largest
+`dcl_temps` of its phases, not their sum. :observed[the hull fixtures of two compilations]
+
 `SFI0` is a 64-bit mask of the shader features the program needs. The 20 Sledding Game containers whose mask is `0x10` all have
 bit 5 of `dcl_global_flags` set (minimum precision) and `ISG1`/`OSG1` parts. The one whose mask is `0x2` declares a raw or
 structured resource in a Shader Model 4.0 pixel program, has global flags `0x9` (no forced early depth-stencil) and no other
-feature, so bit 1 reads as raw and structured buffers in Shader Model 4.x. :observed{games="sledding"} One container is too few to rule out
-the other reading of bit 1 (early depth-stencil); none of the 24 Riders Republic programs that force early depth-stencil carries an
-`SFI0` part at all. :observed{games="riders-republic"}
+feature, so bit 1 reads as raw and structured buffers in Shader Model 4.x. :observed{games="sledding"} Compiling with fxc
+10.0.26100.0 settles the other reading of bit 1 (early depth-stencil): a `ps_4_0` program that reads a `ByteAddressBuffer`
+gets `SFI0` equal to `0x2` and the global flag `enableRawAndStructuredBuffers`, while a `ps_5_0` program with `[earlydepthstencil]`
+(`forceEarlyDepthStencil`) gets no `SFI0` part and fxc lists "Early depth-stencil" separately. :observed[test compilations] So no
+SFI0 bit is early depth-stencil, which fits the 24 Riders Republic programs that force it and carry no `SFI0` part.
+:observed{games="riders-republic"}
+
+Programs compiled to need one feature each give the bit names. fxc 10.0.26100.0 (targets `4_0` to `5_0`) sets bit 0 for
+double-precision floating point, 1 raw and structured buffers (Shader Model 4.x), 2 UAVs at every shader stage, 3 more than 8
+UAV slots, 4 minimum-precision data types, 5 the 11.1 double-precision extensions, 6 the 11.1 shader extensions, 7 comparison
+filtering at feature level 9 (a `ps_4_0_level_9_1` target), 8 tiled resources, 9 a pixel shader's stencil reference output, 10
+inner coverage, 11 typed UAV loads of additional formats, 12 raster-ordered views and 13 a render-target or viewport array index
+from any shader that feeds the rasterizer; each compiled container's `SFI0` equals the compiler's own listing of what the program
+requires. :observed[test compilations of one program per feature] The bits 14 and up are not produced by fxc.
 
 ## Shader Model 4 and 5 token streams
 
@@ -183,6 +206,7 @@ words for stream 0 (the geometry programs write one stream). A hull program adds
 |---|---|---|---|
 | 1.5 | 36 bytes | 16 bytes | 10 Elden Ring |
 | 1.6 | 48 bytes | 24 bytes | 45,992 Elden Ring (67 without resources, which have no record size) |
+| 1.7 (dxc 1.7.2308) | 48 bytes | 24 bytes | 96 test compilations (7 without resources) |
 | 1.10 | 52 bytes | 24 bytes | 19,240 skate. (86 without resources) |
 
 :observed{games="skate elden-ring"}
@@ -193,7 +217,20 @@ words for stream 0 (the geometry programs write one stream). A hull program adds
 or quad operation (1,053 of 19,445 skate. modules, and 2 of 50,283 Elden Ring modules, none without); bit 3 exactly when the
 module declares more than 8 UAV slots (17 skate. modules); bit 25 exactly when it creates a handle from the descriptor heap (8
 skate. modules); and bit 20 is set in all 100 modules that use a ray query (16 more modules set it without one). The mask is `0`
-in 18,114 skate. modules and 50,278 Elden Ring modules. :observed{games="skate elden-ring"}
+in 18,114 skate. modules and 50,278 Elden Ring modules. :observed{games="skate elden-ring"} The bits set in the stock modules are
+2, 3, 4, 11, 14, 15, 20 and 25, in 12 distinct non-zero masks of skate. and 2 of Elden Ring, and no stock mask sets a bit that the table below leaves unnamed.
+:observed{games="skate elden-ring"}
+
+dxc 1.7.2308 (Shader Model 6.0 to 6.7), run on one small program per feature, sets the bits below, and each container's `SFI0`
+equals the compiler's own listing of what the program requires. Bit 0 is double-precision floating point, 2 UAVs at every
+shader stage, 3 more than 8 UAV slots, 4 minimum-precision data types, 5 and 6 the 11.1 double and shader extensions, 8 tiled
+resources, 9 a pixel shader's stencil reference output, 10 inner coverage, 11 typed UAV loads of additional formats, 12
+raster-ordered views, 13 a render-target or viewport array index from any shader feeding the rasterizer (bits 0 to 13 are fxc's
+too), 14 wave operations, 15 64-bit integers, 16 view instancing, 17 barycentrics, 18 native low precision, 19 shading rate,
+20 ray queries (raytracing tier 1.1), 22 64-bit atomics on typed resources, 23 on group-shared memory, 24 derivatives in mesh and
+amplification shaders, 25 resource descriptor heap indexing, 26 sampler descriptor heap indexing, 28 64-bit atomics on heap
+resources, 29 advanced texture operations and 30 writeable MSAA textures. :observed[test compilations of one program per feature]
+None of the test programs set bit 21 (sampler feedback; a sampler-feedback write compiled to a mask of 0), 27 or 31 and up, and bits 1 and 7 are known from fxc alone.
 
 The `dx.entryPoints` record's properties list pairs a tag with a value. The tags present are `0` (the shader flags), `1`
 (geometry), `2` (domain), `3` (hull), `4` (compute thread group), `5`, `6`, `7` and `8` (library auto-binding space, ray payload
@@ -205,8 +242,10 @@ the great majority of programs (skate. 6,684 pixel, 3,206 vertex, 3,001 compute;
 occur in compute programs and libraries. :observed{games="skate elden-ring"}
 
 A signature element's metadata record has 11 operands; the last is a tail list of tag and value pairs, null in 7,418 of skate.'s
-145,462 elements and 86,015 of Elden Ring's 545,303, and otherwise only tag `3` (a component mask). Tags `0` (stream) and
-`2` (dynamic-index mask) never occur. The semantic-index list of an element runs `first`, `first + 1`, … and is as long as the
+145,462 elements and 86,015 of Elden Ring's 545,303, and otherwise only tag `3`, the usage mask. Tags `0` (stream) and
+`2` (dynamic-index mask) never occur. The usage mask counts from the element's first component: dxc prints the signature table's
+"Used" column in absolute components, and a scalar packed into component `w` states `1` in the mask where the column
+shows `w`, a `float3` of which the program reads `y` states `2`. :observed[test compilations against the listing] The semantic-index list of an element runs `first`, `first + 1`, … and is as long as the
 element's row count in every element. :observed{games="skate elden-ring"}
 
 A resource record has 8 operands (constant buffer, sampler), 9 (SRV) or 11 (UAV) in every record; the trailing tag list holds
@@ -217,9 +256,12 @@ No program has a string function attribute: the libraries of skate. have none, a
 `stack-protector-buffer-size`, `unsafe-fp-math`, `use-soft-float`), so no module sets a float-denormal mode. :observed{games="skate elden-ring"}
 
 Instruction attachments name `dx.controlflow.hints`, `tbaa`, `noalias`, `alias.scope`, `llvm.loop`, `range` and `dx.precise`.
-`dx.precise` occurs only in skate.: 107,109 times in vertex programs and 360 in compute programs, never in pixel programs, and
+`dx.precise` occurs only in skate.: 107,109 times in 3,185 of 3,341 vertex programs and 360 times in 12 of 5,780 compute programs, never in pixel programs, and
 never in Elden Ring (18.0 million floating-point add, subtract, multiply, divide and remainder instructions in its modules). `dx.nonuniform` does not occur in
-either. :observed{games="skate elden-ring"}
+either. :observed{games="skate elden-ring"} The attachment sits on `dx.op` calls: 88,541 `tertiary` (mad), 13,005 `loadInput`,
+3,546 `unary`, 1,421 `dot3`, 331 `legacyF16ToF32`, 307 `binary`, 213 `dot4` and 105 `dot2`, and on no plain floating-point
+instruction. :observed{games="skate"} dxc 1.7.2308 puts it on the `loadInput` calls that feed a `precise` value and not on the
+arithmetic, in a test program. :observed[one test compilation]
 
 The address spaces of the modules are `0` and `3` only: 431,441 skate. pointer types and 1,114,031 Elden Ring ones are in space
 `0`, 6,587 and 66 in space `3` (group shared), and every global variable is in space `0` (34,764 in the two games, 32,461 of them constant) or `3` (8,516). A pointer type's

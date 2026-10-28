@@ -53,8 +53,10 @@ resource metadata is `{table offset, table bytes, trailing bytes, 0}`. :proven[a
 Exactly one stock MeshSet has trailing data (2,001,568 bytes, a development character mesh), and its LOD 0 is the
 only one of the 126,014 LODs whose geometry chunk GUID is all zero. That LOD's vertex buffer (1,733,616 bytes) and
 index buffer (267,948 bytes) add up to 2,001,564 bytes, four less than the trailing data, so the trailing data is
-that LOD's geometry stored inside the resource instead of in a chunk. :proven[all 47,758 MeshSets] for the counts,
-:inferred for the reading
+that LOD's geometry stored inside the resource instead of in a chunk. :proven[all 47,758 MeshSets] for the counts
+The trailing data is the vertex buffer, then the index buffer, then four zero bytes: read as the chunk is read, all
+133,974 16-bit indices name one of the section's 24,078 vertices (the largest is 24,077, and 24,078 × 72 bytes is
+the vertex buffer), and the last four bytes are zero. :observed[the one MeshSet with trailing data]
 
 ```layout
 title: MeshSet LOD fields
@@ -114,7 +116,7 @@ fields:
   - {at: 8, size: 8, type: u64, name: material name pointer, level: proven}
   - {at: 16, size: 8, type: u64, name: bone list pointer, level: proven}
   - {at: 24, size: 2, type: u16, name: bone count, level: proven}
-  - {at: 27, size: 1, type: u8, name: flags, level: observed, note: "0x0e opaque shadow-casting, 0x0a decal, 0x04 shadow proxy"}
+  - {at: 27, size: 1, type: u8, name: flags, level: observed, note: "15 values below 0x20; 0x0a (170,233 sections), 0x04 (116,897) and 0x0e (10,935) are the commonest; the byte does not say which section list holds the section (0x0a is on sections of list 0 alone and of list 2 alone)"}
   - {at: 28, size: 1, type: u8, name: material slot index, level: observed, note: Index in the mesh asset's Materials.}
   - {at: 30, size: 1, type: u8, name: total vertex stride, level: proven}
   - {at: 32, size: 4, type: u32, name: primitive count, level: proven}

@@ -11,6 +11,12 @@ sources:
   - title: hkx-rs (kronerm)
     url: https://gitlab.com/kronerm/hkx-rs
     note: a packfile reader and writer for Havok 2014; computes the class signatures it writes
+  - title: havok-reflection (zephenryus)
+    url: https://github.com/zephenryus/havok-reflection
+    note: a dump of Havok 2014.2's runtime class tables from the Switch game The Legend of Zelda, Breath of the Wild (984 classes, MIT); the inputs of the second signature check
+  - title: HKX2Builders
+    url: https://git.kroner.dev/HKX2/HKX2Builders
+    note: lists the 2014.2 signatures that the dump reproduces
 implementations:
   - name: "havok-formats (packfile reader)"
     url: https://github.com/Kalmarv/havok-formats/tree/main/src/packfile
@@ -97,6 +103,63 @@ every file that lists it: :proven[all 490 files]
 A signature is a CRC-32 over a description of the class (its members' names, types and flags and its enums, with
 those of its parents), not over its name, so it identifies the class definition a file was written with: a file whose
 `hkpRigidBody` carries another signature has another rigid-body layout. :sourced[hkx-rs]
+
+#### How a signature is computed
+
+The signature is the standard CRC-32 (the zlib polynomial) of one byte string, with every integer written
+little-endian whatever the file's byte order. The string is the description of the class followed by the description
+of each parent up to the root class. :observed[the stored signature of each of the 24 classes of the 490 files, and the signatures of 18 classes of Havok 2014.2 (the Switch game *The Legend of Zelda: Breath of the Wild*) recomputed from a public dump of that game's runtime class tables; all 42 reproduce]
+
+A class description is, in order:
+
+1. the number of implemented interfaces (`i32`);
+2. each enum the class declares: its name, then for each item the item's name and its value (`i32`), then the item
+   count (`i32`); then the enum count (`i32`);
+3. each declared member in declaration order:
+   - when the member names a class and neither its type nor its sub-type is a pointer, the description of that
+     class and of its parents, in full;
+   - when the member has an enum, the enum as in 2;
+   - the member's name, then `u16` values for its type, sub-type, the extra value below when there is one, its C-array
+     size and its flags;
+4. the member count (`i32`).
+
+The type and sub-type are Havok's member type numbers (`void` 0, `pointer` 20, `zero` 19, `enum` 24, `flags` 31).
+Two rewrites apply to a member before its name, type and flags are written:
+
+- An enum or flags member has sub-type `void`, and the flags have the enum's storage size in bytes times 8 toggled.
+- A member with the serialize-ignored flag (`0x400`) loses the flag and its type becomes `zero`; its old type moves
+  to the sub-type, and its old sub-type, when it is not `void`, is written as the extra `u16` after the sub-type. Without
+  that `u16`, four of the 18 2014.2 classes (`hkClass`, `hkClassMember`, `hkClassEnum`, `hkpRigidBody`) and five of the
+  24 SHRED classes (the same four and `hkpConvexVerticesShape`) do not reproduce. :observed[18 and 24 signatures recomputed with and without the value]
+
+The implemented-interface count is a field of every runtime class, but the public dump does not list it. It is 1 for
+`hkBaseObject` (so for every chain that ends in the base object), `hkpShapeCollection` and `hkpShapeContainer`, and 0
+for every other class in the chains of these 42 signatures (81 classes in the SHRED chains). With 0 for the three, 19 of
+the 24 SHRED signatures and 13 of the 18 2014.2 signatures fail; with 1, all reproduce. :observed[the 7.1 class tables give 1 for exactly these three of the 81 classes the 24 signatures hash; for 2014.2 each value is the only one of 0 to 3 that reproduces the signatures of the classes that depend on it]
+
+Havok 2014.2 stores 18 signatures that can be compared with SHRED's. Three are the same in both versions (the three
+classes that did not change) and fifteen differ, as a CRC over the class description predicts: :observed[18 of 18 recomputed from the public dump; the 2014.2 values equal those a 2014.2 reader library lists]
+
+| Class | 7.1.0-r1 | 2014.2 | |
+|---|---|---|---|
+| `hkClass` | `14425E51` | `33D42383` | differs |
+| `hkClassMember` | `4A986551` | `B0EFA719` | differs |
+| `hkClassEnum` | `8A3609CF` | `8A3609CF` | same |
+| `hkClassEnumItem` | `CE6F8A6C` | `CE6F8A6C` | same |
+| `hkRootLevelContainer` | `2772C11E` | `2772C11E` | same |
+| `hkpPhysicsData` | `C2A461E4` | `47A8CA83` | differs |
+| `hkpPhysicsSystem` | `FF724C17` | `B3CC6E64` | differs |
+| `hkpRigidBody` | `AA8C3B19` | `CD2E69E5` | differs |
+| `hkpConvexVerticesShape` | `4E8AB2B7` | `C21C8B5A` | differs |
+| `hkpBoxShape` | `3444D2D5` | `DCA2D1A7` | differs |
+| `hkpCapsuleShape` | `DD0B1FD3` | `FDA179F3` | differs |
+| `hkpSphereShape` | `0795D9FA` | `37AA32C9` | differs |
+| `hkpListShape` | `A1937CBD` | `F2EC3ED5` | differs |
+| `hkpCylinderShape` | `3E463C3A` | `FAAE1F08` | differs |
+| `hkpConvexTranslateShape` | `5BA0A5F7` | `A3F8BF6A` | differs |
+| `hkpConstraintInstance` | `4FB4E6BB` | `DA4CE91E` | differs |
+| `hkpRagdollConstraintData` | `17A4D42F` | `ED9648F7` | differs |
+| `hkpLimitedHingeConstraintData` | `1C566B11` | `75AAE5A3` | differs |
 The `__types__` section is empty, so the files do not describe their own classes. The member layouts below follow Havok 7.1's member order and each was checked against the data. :observed
 
 ### Fixups, arrays and padding

@@ -102,6 +102,14 @@ The game's level files use the same hash for their own names (spots and splines)
 `SCRIPTS.SDAT` is an NPD-wrapped file that the RPCS3 emulator decrypts without any key to a PAK of this format: 1,282 entries, four section markers and 1,278 compiled Lua 5.1 scripts, 252 of them in CSTR streams. :observed
 The scripts are not decompiled; their constants were parsed from every chunk. :observed
 
+A strict Lua 5.1 reader (header, bounds, the opcode and operand checks of `luac`'s code verifier that need no symbolic execution, nesting depth, no bytes after the chunk) accepts every one of the 1,278 chunks (3,496,540 decoded bytes) and refuses none. :proven[all 1,278 script chunks]
+
+- All 1,278 share one header, `1B 4C 75 61 51 00 01 04 04 04 08 00`: format 0, little-endian, 4-byte `int`, `size_t` and instruction, 8-byte floating-point numbers. :proven[all 1,278 script chunks]
+- The chunks are stripped: none of the 1,323 functions has a source name, line table, local-variable record or upvalue name. :proven[all 1,323 functions]
+- 1,273 scripts are the main function alone. Five have nested functions, 45 in all. :proven[all 1,278 script chunks]
+- 695 scripts are straight-line code in their main function; the other 583 have a nested function or one of the jump, comparison, test, loop or closure opcodes there. :proven[all 1,278 script chunks]
+- Every function, nested ones included, ends in `RETURN` with `B` equal to 1 (1,323 of 1,323). :proven[all 1,323 functions]
+
 :::open[What does the offset of a section marker mean?]
 A marker has zero sizes and, in the entries inspected, an offset equal to the start of the entry after it. The loader's use of that field is not traced.
 :::

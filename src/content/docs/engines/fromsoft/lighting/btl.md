@@ -12,6 +12,7 @@ implementations:
 BTL banks store named point, spot and directional lights, with separate diffuse and specular colours and powers.
 Sekiro's 18 banks (735 lights) all use version 16 and 107 of Elden Ring's 109 banks version 18; both use 232-byte
 records. The other two Elden Ring banks store version 15 with a 240-byte record (see the open question below).
+Point and spot lights also appear inside effect files; see [FXR effect files](/engines/fromsoft/effects/fxr/).
 :proven[all 18 Sekiro banks]{games="sekiro"} :proven[107 version 18 banks, 2 version 15]{games="elden-ring"}
 
 The whole-install Elden Ring census covers 109 BTL banks, 11,229 lights: 107 version 18 banks hold 11,228 lights and

@@ -67,10 +67,10 @@ fields:
   - {at: 36, size: 3, type: "u8[3]", name: specular RGB, level: sourced}
   - {at: 39, size: 1, type: u8, name: cast shadows, level: sourced}
   - {at: 40, size: 4, type: f32, name: specular power, level: sourced}
-  - {at: 44, size: 4, type: f32, name: cone angle, level: sourced}
+  - {at: 44, size: 4, type: f32, name: cone angle, level: observed, note: "Spot: full angle in degrees of the vertical axis of the cone; see below"}
   - {at: 48, size: 8, type: "u8[8]", name: unknown, level: unknown, note: Retained as two words}
   - {at: 56, size: 12, type: "f32[3]", name: position, level: proven}
-  - {at: 68, size: 12, type: "f32[3]", name: rotation, level: sourced}
+  - {at: 68, size: 12, type: "f32[3]", name: rotation, level: observed, note: "Radians"}
   - {at: 80, size: 8, type: "u8[8]", name: unknown, level: unknown, note: Retained as two words}
   - {at: 88, size: 4, type: f32, name: radius, level: sourced}
   - {at: 92, size: 140, type: "u8[140]", name: auxiliary fields, level: unknown, note: Includes zero words at 96; 140; 148; 168; 176; 180}
@@ -91,10 +91,10 @@ fields:
   - {at: 36, size: 3, type: "u8[3]", name: specular RGB, level: proven}
   - {at: 39, size: 1, type: u8, name: cast shadows, level: proven}
   - {at: 40, size: 4, type: f32, name: specular power, level: proven}
-  - {at: 44, size: 4, type: f32, name: cone angle, level: proven}
+  - {at: 44, size: 4, type: f32, name: cone angle, level: proven, note: "Spot: full angle in degrees of the vertical axis of the cone (read for Sekiro, see below)"}
   - {at: 48, size: 8, type: "u8[8]", name: unknown, level: unknown, note: Retained as two words}
   - {at: 56, size: 12, type: "f32[3]", name: position, level: proven}
-  - {at: 68, size: 12, type: "f32[3]", name: rotation, level: proven}
+  - {at: 68, size: 12, type: "f32[3]", name: rotation, level: proven, note: "Radians (every spot light of the install lies in -pi..pi)"}
   - {at: 80, size: 8, type: "u8[8]", name: unknown, level: unknown, note: Retained as two words}
   - {at: 88, size: 4, type: f32, name: radius, level: proven}
   - {at: 92, size: 140, type: "u8[140]", name: auxiliary fields, level: unknown, note: Includes zero words at 96; 140; 148; 168; 176; 180}
@@ -155,13 +155,42 @@ per-light pixel program. A spot light's record has a range instead of `1 / radiu
 and a second factor `saturate(1 - x^2 - y^2)` on its position in the cone's projection space, which is zero at the edge of the
 base. :observed{games="sekiro"}[disassembly of the programs, read not run]
 
-:only[elden-ring] The lighting programs (DXIL) declare the same point-light structure (position and radius, diffuse colour,
-specular colour, translucency parameters, light type) and apply the same window. :observed{games="elden-ring"}[one program read]
-How the stored bytes and power reach that record in Elden Ring is not read.
+### Spot lights
+
+A spot light's record (192 bytes) holds the position and the range (the stored radius), the diffuse and specular colours as a point
+light's, the translucency parameters, and a 4 x 4 matrix of rows that take a view-space position into the cone's space; the
+shader shades with `max(0, 1 - x^2 - y^2)` of the cone-space coordinates, so there is no inner cone. :observed{games="sekiro"}
+Read back from a running Sekiro in Ashina Castle, five spot records of two maps (the spot buffer held one record in one view and
+five in another) match their banks' lights as follows. :observed{games="sekiro"}[5 lights, 2 maps]
+
+| Bank word | Spot record |
+|---|---|
+| diffuse bytes and power, radius, the word at offset 164 | as for a point light: `(byte / 255)^2 * power`, range = radius, fourth diffuse value `1 / word` (to 2e-7) |
+| cone angle (44) | the vertical axis's full angle in degrees: that row's scale is `cot(angle / 2)` (to 1.5e-7) |
+| the word at 184 (community name "width") | the horizontal axis's full angle in degrees, `cot(angle / 2)`; where it is 0 the cone angle serves both (code read) |
+| the word at 188 (community name "light start cutoff") | the near plane: the depth row's scale is `far / (far - near)` (to 1e-7) |
+| rotation (68), radians | the beam is `Ry(y) * Rx(x) * Rz(z)` applied to +Z in the map frame, the cone's horizontal axis the rotated +X and its vertical axis the rotated +Y (to 4e-8) |
+
+The five lights carry angles of 30 x 30, 90 x 8, 20 x 30, 10 x 50 and 25 x 20 degrees (horizontal x vertical). In the executable's
+loader a spot light whose two angles are both 0 is left switched off. :inferred[code read]
+
+### The exposure term
+
+A light object carries a weight, read from the bank word at offset 224, and the packer multiplies the record's colours by
+`2^(-weight * X)` where `X` is a value of the renderer's scene parameters (the engine's per-frame exposure term) when the weight
+is not 0. :inferred[code read, Sekiro 1.06 and Elden Ring 1.17.2] Two Sekiro lights of weight 1 read back with a colour 1.081215
+times their `(byte / 255)^2 * power` (identical on both lights to 1e-7, red, green and blue), a light of weight 0 with 1.0000000;
+the weight is 0 on 120 of the 122 lights of the five Ashina banks (1.0 on two) and on all 11,228 lights of version 18 Elden Ring banks.
+:observed{games="sekiro"}[3 lights] :proven{games="elden-ring"}[the weight word of every light]
+
+:only[elden-ring] The lighting programs (DXIL) declare the same point-light structure and apply the same window; the executable's
+point-light packer is the Sekiro packer's: the same squaring of the colour (through a helper that squares the three channels and keeps
+the fourth), the same `1 / radius^2`, `1 / word` and exposure term (its scene value one field further on). :observed{games="elden-ring"}[code read] One
+light of a bank was read back (`m10_00_00_00_0000` light 32: bytes 240, 180, 120, power 0.5, radius 8, fourth word 2): the record's diffuse
+colour is `(byte / 255)^2 * power` per channel, 0.4429066, 0.2491350 and 0.1107266, to 2e-6. :observed{games="elden-ring"}[1 light]
 
 :::open[How do bank powers map to physical light units?]
-The renderer's unit is the record's `colour^2 * power`; stored values still do not establish watts, lumens or lux. The exact
-cone interpretation of a BTL spot light and its orientation were not on screen in the captured frames. The lights of
+The renderer's unit is the record's `colour^2 * power`; stored values still do not establish watts, lumens or lux. The lights of
 [effect files](/engines/fromsoft/effects/fxr/#how-the-renderer-takes-an-effect-light) are in the same unit: an effect light's
 multiplier times its colour alpha is a BTL power, with no factor between them.
 :::

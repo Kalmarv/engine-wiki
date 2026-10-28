@@ -346,7 +346,26 @@ the product with alpha rests on the code. :inferred
 A spot light's update is the point light's, with the multiplier at property 2 and the colour alpha taken the same way: no
 divisor by ten appears in the update, the packing or the shaders, and the packing's scale factor for spot lights is 1.0 by default.
 The cone is built from the near and far planes and two angles `2 * atan(radius / 2 / far)`, so the stored radii act as the
-full width and height of the base rather than as half-extents. :inferred[code read, not run; no spot light was in the captured frames]
+full width and height of the base rather than as half-extents. :inferred[code read, not run; no effect spot light was in the captured frames]
+The spot record the packer writes, the setter that turns two full angles into the cone's matrix and the shader were read back for
+five bank spot lights ([BTL light banks](/engines/fromsoft/lighting/btl/#spot-lights)): the setter takes full angles per axis, so the
+effect update's `2 * atan(radius / 2 / far)` is a half-angle of `atan(radius / 2 / far)`. :inferred[bank spot lights read back; the effect update's step read from code]
+
+:only[elden-ring] An effect light's record is scaled by the exposure term of the light object
+([BTL light banks](/engines/fromsoft/lighting/btl/#the-exposure-term)), which for these lights is not 0: over a read of Stormveil
+Castle's gate (263 light records of the lighting stage's buffers, 41 distinct radius, fourth-value and colour groups) the records
+that stand on a stored effect light (same radius, same `1 / unk_ds3_p2_0`, same colour direction) hold the stored brightness
+(multiplier times alpha, times a flicker factor between the flicker brightness and 1) times a factor of 0.0353 to 0.0427; the nine groups
+whose stored effect lights flicker give lower bounds of 0.0414 to 0.0432 for the factor, consistent with one factor for every effect.
+:observed{games="elden-ring"}[9 groups] Effect 300's light, which does not flicker (multiplier 0.2, colour (245, 255, 250) / 255,
+alpha 1, radius 2.5), reads 0.00705 to 0.00854 in its largest channel over six records found in 2.5 minutes in a steady scene,
+so its factor is `2^(-X)` with `X` between 4.55 and 4.83 and changes between records (five of them lie within 0.2 % of one
+another, one is 17 % lower); one reading of the exposure value that fits a record (-4.5516038 for the factor 0.0426413) is also stored in the
+process's memory with the opposite sign. :observed{games="elden-ring"}[6 readings of 1 light] Bank lights of the same read have
+weight 0 and the factor 1 ([BTL light banks](/engines/fromsoft/lighting/btl/#spot-lights)), so an effect light's brightness
+is about 25 times a bank power of the same value in this scene, not equal to it as in Sekiro, where effect lights read back with
+factor 1. :observed{games="elden-ring"} That the factor comes from a weight of 1 set on effect lights by the effect's light
+update, rather than from a constant, is an inference from the shape of the factor (it moves with the scene). :inferred
 
 ## How the games name an effect
 

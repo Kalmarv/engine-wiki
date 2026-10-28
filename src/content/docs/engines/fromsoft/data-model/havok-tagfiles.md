@@ -12,6 +12,8 @@ sources:
     url: https://github.com/blueskythlikesclouds/TagTools
     note: 2016 tagfile reader and writer
 implementations:
+  - name: havok-formats tagfile writer
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/tagfile_write.rs
   - name: havok-formats tagfile reader
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/tagfile.rs
   - name: havok-formats type table reader
@@ -250,6 +252,32 @@ Sekiro and 2,141,042 Elden Ring items of that kind, the root's included, and ite
 :proven{games="sekiro elden-ring"} An empty string is stored as an item holding only its terminator, so it has a
 nonzero index and a patch; a null string has index 0. Sekiro has 12,408 empty strings and Elden Ring 51,693.
 :proven{games="sekiro elden-ring"} One Sekiro tagfile has no `PTCH` because it holds no reference. :observed{games="sekiro"}
+
+## Order and layout of `DATA`
+
+A tagfile's items are numbered and laid out by one walk of the object graph from the root; no stock file departs from it,
+and a writer that applies the rules below to the items of a file reproduces that file byte for byte. Applied to the items of each of them, with the sections in the order `SDKV`, `DATA`, `TYPE` or
+`TCRF`, `INDX` (`ITEM`, then `PTCH` when the file has a reference) and the type section as it was, they make `ITEM`, `PTCH` and
+`DATA` identical to the file's for all 19,137 distinct tagfiles of Sekiro (15,176 with a
+compendium, 3,960 with their own types, the one of SDK 2015.1) and all 68,722 of Elden Ring (46,793 and 21,929).
+:proven{games="sekiro elden-ring"}
+
+- **The walk.** Objects (kind `0x10`) are taken from a first-in first-out queue that starts with the root. An object is
+  laid out when it is taken; then the runs (kind `0x20`) it refers to are laid out level by level: all the runs the
+  object refers to, then all the runs those refer to, and so on. An object found on the way (through a pointer, in the
+  object or in a run) joins the end of the queue. :proven{games="sekiro elden-ring"}
+- **Numbering.** An item gets the next index when the walk first meets a reference to it: the references of the item
+  being processed, in one order: every reference that is not a string first, then the strings; within each group by the
+  slot's offset in one element of the item's type, and then by element. So the elements of a run give all their first
+  members' references before the second members', and a name string of every element is numbered after every pointer and
+  array. A run is laid out in the order of its numbers. :proven{games="sekiro elden-ring"}
+- **Alignment.** The root is at offset 0. An object starts on a multiple of the larger of 2 and its type's alignment. A
+  run that an array refers to starts on a multiple of 16, one that a string refers to on a multiple of 2. The padding
+  between items is zero, and `DATA` ends on a multiple of 16 with zero bytes. :proven{games="sekiro elden-ring"}
+- **Patches.** `PTCH` is made from the references: for every slot that holds a nonzero index, the slot's type and its
+  offset in `DATA`, sorted by the two. :proven{games="sekiro elden-ring"}
+- **Section framing.** Every section's length word counts its eight header bytes; `SDKV`, `DATA`, `ITEM`, `PTCH` and the
+  type table's `TCRF` carry the leaf flag, `TAG0`, `INDX` and `TYPE` do not. :proven{games="sekiro elden-ring"}
 
 ## Values
 

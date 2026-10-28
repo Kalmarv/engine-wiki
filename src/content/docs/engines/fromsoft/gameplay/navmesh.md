@@ -168,6 +168,12 @@ the two directional costs, the two world-up vectors, `direction`, `space` and `f
 all of them; `forceAlign` is 1 in all; `direction` is 1 or 3; `space` is 0 or 1 in Elden Ring and 1 in Sekiro. Sekiro
 tagfiles carry the arrays too, though their meshes have no user edges. :observed
 
+A box's `transform` is stored as a flat array of 16 floats, not as a class: the rotation's three columns of four floats,
+then the translation and one more float. The columns' xyz are orthonormal in all 4,272 boxes (2,926 in Sekiro, 1,346 in
+Elden Ring); the fourth float of each column is padding, 0 in every Elden Ring box and stale data in all but 2 of Sekiro's;
+the float after the translation is 0 in every Sekiro box and not 0 in any Elden Ring one; the half extents are positive in
+all. :proven
+
 :::open[Which navmesh data do the `.nva` files hold?]
 The dictionaries name a `.nva.dcx` file beside many Elden Ring navmesh binders. It is not a Havok tagfile and is not
 read here.

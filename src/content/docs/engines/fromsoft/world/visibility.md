@@ -72,6 +72,13 @@ drawn while its draw group is among the active display groups, and display group
 with draw groups, `m12_02`: 5,096 of 8,069) meet no display group of their own map's collisions even when the second block's
 groups and the connecting collisions' are added (8,049 and 5,063 remain) is not explained by it. :observed{games="elden-ring"}
 
+The draw groups of the collisions relate to the parts' too. Over the map pieces, objects and assets with draw groups (the
+collisions of the base map standing for an overlay's), 107,130 of Elden Ring's 107,905 have every set bit among the draw
+groups of some collision of their map, against 29,325 among the display groups of some; Sekiro's figures are 32,731 and
+14,090 of 50,854. Elden Ring's 3,266 collisions store draw groups on 1,053 (none stores all 256 bits), Sekiro's 1,304 on 1,185.
+:observed Which of the two sets a collision contributes when the player stands on it, or whether both, is not established.
+:unknown
+
 In the running game (1.17.2, offline, the layout `m10_00_00_00` replaced by a test file), a part whose draw groups are set to
 all zero is not drawn: setting the draw groups of every map piece and asset to zero (7,773 of the 8,065 stored a non-zero
 array; display groups left as stored) removes the walls, floor and props around the Stormveil spawn, as moving all of them

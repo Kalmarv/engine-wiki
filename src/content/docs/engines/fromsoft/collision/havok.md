@@ -234,6 +234,11 @@ names. A map part names its collision model by the number of its `h` file, and t
 is the part's mesh of this set: 1,087 of Sekiro's 1,145 `f` files have an `h` file of the same model with triangles
 and are measured below, 12 have none, and 327 `h` files have no `f` file. :observed{games="sekiro"}
 
+Some `f` files hold no body at all: a tagfile of 808 bytes (Sekiro) or 824 (Elden Ring) whose `bodyCinfos` is empty, so
+0 vertices and 0 triangles. Counted from the tagfiles' stored array lengths, Ashina Castle's binder has 192 files, 185
+with triangles and 7 without (models 4900, 5100, 12200, 15800, 15900, 16500 and 16600); Hirata Estate's has 140 with 2
+(11500 and 11600); Stormveil Castle's has 98 with 43; Raya Lucaria's has 71 with 14. :observed{games="sekiro elden-ring"}
+
 The `f` meshes lie in the same frame as the `h` collision beside them. Measured over every vertex of the 1,087 paired
 Sekiro files (1,554,264 vertices, each against the nearest triangle of the `h` file of its model, exact to 4 m), 22.8%
 lie within 1 cm of an `h` triangle, 41.3% within 5 cm, 72.6% within 25 cm and 97.2% within 1 m; the same vertices

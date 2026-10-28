@@ -26,6 +26,12 @@ What was read, by game (the programs extracted from each install; the counts bel
 | skate. | 19,445 `CompiledBytecode` containers: 10,118 pixel, 3,341 vertex, 5,780 compute, 1 mesh, 205 libraries | Shader Model 6.0 to 6.6 DXIL | :observed{games="skate"} |
 | Elden Ring | 50,283 containers of its shader bundles: 25,183 pixel, 18,769 vertex, 1,731 compute, 150 domain, 136 hull, 33 geometry, 4,281 libraries | Shader Model 6.0 (programs) and 6.3 (libraries) DXIL | :observed{games="elden-ring"} |
 
+Elden Ring's 4,281 library containers hold DirectX Raytracing shaders. Classed by the kind of their entry function, there are 3
+ray-generation, 2,138 any-hit, 2,138 closest-hit and 2 miss shaders, which together make up all 4,281.
+:observed[every library container of the bundles]{games="elden-ring"} Shaders of these kinds run only through a ray-tracing
+dispatch, so they belong to the game's optional ray-traced effects and not to its ordinary G-buffer, shadow and lighting passes.
+:inferred{games="elden-ring"}
+
 ## Container
 
 The container header is the same in every program: version word `1`, the stored total size equal to the file size, parts

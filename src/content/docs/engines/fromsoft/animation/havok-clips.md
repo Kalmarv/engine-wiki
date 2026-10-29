@@ -114,6 +114,16 @@ pose converted to the parent's space, compared with the stock pose and the clip'
 started at another place of the map than the two others (the player's spawn position), the same pointers reaching the array. Runs with
 unrelated edits started at that other place too, so the move is not tied to the hint.) :unknown
 
+In a capture at the stock spawn, with one behaviour member edited so that the layer `AddBlend02` plays `a000_098200` (a stored `blendHint` 0 clip of
+the face) at a constant weight 1, and the player's pose array tied as above, `Head`, `Jaw` and `Lips_Lower` of the final pose are within 0.01 rad of
+the clip's values in every one of 415 snapshots sampled from 1,659 of 20 s of idle (their median distance from the clip: 0.0000, 0.0018, 0.0009 rad;
+from their rotation in the stock run: 0.127, 0.107, 0.146 rad; within 0.01 rad of the reference rotation in 100%, 5% and 7% of the snapshots).
+:observed{games="elden-ring"} A hint 0 clip that a layer samples at weight 1 in the stock scene reaches the final pose, where the hint 1 and hint 2
+clips of the same layer do not (above). :observed{games="elden-ring"} In the same capture 43 of the 130 bones, the legs, feet and foot targets
+and the left arm among them, differ from the stock run by more than 0.01 rad (feet targets 0.2 to 0.62 rad) without taking the clip's values, so the
+leg bones that the hint 0 capture above leaves unexplained are not the layer's clip either. :observed{games="elden-ring"} (The edit's file was not
+logged as served in this run; the clip's values on `Jaw` and `Lips_Lower`, which the stock run does not have, are what show it was read.)
+
 The one interleaved clip of each game stores `duration` as `(samples - 1)` frames of 1/30 s: Sekiro's `c1050`
 `a000_400600` has 166 samples of 101 tracks and lasts 5.5 s; Elden Ring's `c4751` `a000_030000` has 2 samples of 185
 tracks and lasts 1/30 s. :observed

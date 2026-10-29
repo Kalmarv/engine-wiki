@@ -128,8 +128,8 @@ Three things name an ID, each by these two numbers:
 - Elden Ring's `2012:11` (Activate Gparam Override: a sub id and a time in seconds) and `2012:12` (Deactivate, a time).
   The 11 activations name 0, 1, 2, 3, 4 and 500; of the 10 that belong to a map's script, 6 name an existing file (0 in the
   open-world tiles, 500 in `m14_00`, which holds `m14_00_0500`); the other 4 name 1 in `m11_10` (whose only file is
-  0000) and 4, 2 and 3 in `m20_01`, `m21_01` and `m25_00`, expansion maps whose draw-parameter files the base archives
-  do not hold. There are 14 deactivations. :observed{games="elden-ring"}
+  0000) and 4, 2 and 3 in `m20_01`, `m21_01` and `m25_00`, expansion maps, none of which has a file of that number (`m20_01` holds 0000 and 0200 to 0800, `m21_01`
+  none, `m25_00` 0000 and 0100). There are 14 deactivations. :observed{games="elden-ring"}
 
 Sekiro's `2003:81` (Set Lighting) takes a time of day, 1 to 5 (the community names them morning, noon, afternoon,
 evening, night), and a time in seconds: 42 calls in 15 scripts. Whether the time of day is the slot (the map's files have

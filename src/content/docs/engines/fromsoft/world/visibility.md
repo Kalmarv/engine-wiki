@@ -94,6 +94,12 @@ display groups as stored); a display group the floor collision holds draws it (t
 stay on screen when every draw group is zero are those with display groups, which the group-200 arms replaced. :inferred
 Neither term, neither array and neither part kind is tested alone.
 
+With all 256 bits set in both group arrays of every collision, and the parts as stored, the spawn view equals the stock view
+at the noise level (2.5 % of pixels differ by more than 24/255, against 1.9 % between two arms known to look alike; the
+player read at the spawn position at the time). This agrees with a gate that every stock part already passes and with no gate
+at all. :observed{games="elden-ring"} The same layout with both arrays zero on every collision ended the game at world load
+in the one launch made. :observed{games="elden-ring"}
+
 In the running game (1.17.2, offline, the layout `m10_00_00_00` replaced by a test file), a part whose draw groups are set to
 all zero is not drawn: setting the draw groups of every map piece and asset to zero (7,773 of the 8,065 stored a non-zero
 array; display groups left as stored) removes the walls, floor and props around the Stormveil spawn, as moving all of them

@@ -150,9 +150,9 @@ instructions, see [EMEVD](/engines/fromsoft/gameplay/emevd/#map-ids-in-arguments
 - `GparamRefSettingsParam` (`GPARAM_REF_SETTINGS_PARAM_ST`, 32-byte rows, 70 rows): a map's row names in `RefTargetMapId` the map
   whose draw-parameter files it uses. 35 rows send the caves and tunnels (`m31_00` to `m31_22` and twelve of `m32_00` to `m32_12`, there being no `m32_06`) to
   `m30_00`; 20 send `m30_01` to `m30_20` to `m30_00`, 12 send expansion maps (`m21_01`, `m21_02`, `m40_01` ... `m43_01`) to
-  their family's `_00`, one sends `m30_00` to itself, and two rows (`m99_99_00_01`, `m99_99_00_02`) hold -1. For the 56
-  rows whose target map has files in the install, the files the map's own stem and its family's `mAA_00` give it
-  are the target's. :observed{games="elden-ring"} The one base-game map with no row and no files of its own is `m11_72`,
+  their family's `_00`, one sends `m30_00` to itself, and two rows (`m99_99_00_01`, `m99_99_00_02`) hold -1. For each
+  of the 68 rows with a target, the files that the map's own stem and its family's `mAA_00` give it in the install (the
+  expansion archives included) are the target's. :observed{games="elden-ring"} The one base-game map with no row and no files of its own is `m11_72`,
   whose family `m11_00` has them. :observed{games="elden-ring"}
 - `WeatherParam` (`WEATHER_PARAM_ST`, 68-byte rows, 162 rows): `GparamId` at `+20` is the number of the global weather set the
   weather uses. All 82 distinct values name a file `m00_00_<id>_weatheroutdoor` of the install, which holds 84 such files

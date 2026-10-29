@@ -24,6 +24,8 @@ implementations:
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/mesh_write.rs
   - name: havok-formats interior flags
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/interior.rs
+  - name: havok-formats degenerate-triangle test
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/degenerate.rs
   - name: havok-formats quad pairing
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/quads.rs
   - name: havok-formats primitive tree and cut
@@ -165,6 +167,26 @@ source mesh, its key left-aligned in 32 bits with the `32 − numShapeKeyBits` l
 Sekiro and 22,778 Elden Ring meshes that have the member is that, names a primitive that exists (a quad's second half
 included), and no key appears twice. Its length equals the number of triangles the mesh decodes to in 2,414 Sekiro and
 19,330 Elden Ring meshes and differs in the others. :proven[every named collision binder]
+
+### Triangles the stock tool leaves out
+
+A source row of the shape's `pParam` can have no key in `triangleIndexToShapeKey`, and then no triangle in the mesh. A test
+that the stock tool applies to a triangle before keeping it is the one the MOPP codes of Tony Hawk's SHRED show (see
+[Havok packfiles](/engines/rme/collision/havok-packfiles/)): the triangle is degenerate when the sum of the squares of the
+components of its edge cross product, worked out from either of its first two vertices in `f32`, is under a threshold of
+10⁻⁷, or when its points are exactly collinear by `|u|² |v|² − (u · v)² = 0` in `f32`. Every triangle the meshes keep passes
+it: none of the 24,704,951 kept triangles of Sekiro and 66,147,210 of Elden Ring is degenerate by it. :observed[every named collision binder]
+Of the rows without a key whose three source vertices a kept row also uses (taking the position from that row), it calls
+13,345 of 87,100 degenerate in Sekiro (15%) and 267,763 of 549,405 in Elden Ring (49%); in Sekiro's object meshes 1,994 of 2,270 (88%).
+:observed[every named collision binder] A threshold of 10⁻⁶ would call 2,574 of the kept triangles of Sekiro's objects degenerate.
+:observed{games="sekiro"} The positions here are the ones the files keep after quantising, so a thin triangle can pass or fail by
+rounding.
+
+:::open[Why else does the stock tool leave a source row out?]
+Most rows without a key in the map meshes are not degenerate by the test above (85% of those whose vertices are known in
+Sekiro, 51% in Elden Ring), and 27,874 and 538,167 use a vertex no kept row uses. Duplicate triangles, repeated indices after
+welding vertices within a distance, and rows of other primitive kinds are possible reasons; none has been tested.
+:::
 
 ### Which triangles are joined into quads
 

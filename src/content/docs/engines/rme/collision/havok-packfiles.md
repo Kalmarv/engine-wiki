@@ -412,16 +412,18 @@ frame. Run with a triangle's own box, the code returns that triangle's key for a
 terminal, along with other keys (33 on average, since a diagonal split is followed on both sides in this model); run
 with a box a million metres away it returns nothing for all 1,704. :proven[all 1,705 codes]
 
-The terminals of the 1,704 codes over a mesh are the keys of the mesh's triangles without the degenerate ones: a triangle
-whose squared edge cross product, taken from either of its first two vertices in `f32`, is under 10⁻⁷. That separates 8,755 of the 8,760
-triangles the codes leave out from the 637,213 they keep (none of those is under it). Five more triangles in
-three meshes are left out although they are not under it: thin triangles with a squared cross product of 6.3 × 10⁻⁷ to
-0.031, while 21,986 kept triangles have one under 10⁻⁶. No terminal names a triangle the mesh lacks. The one code over a
-list shape has 5 terminals, the keys of its child shapes. :proven[all 1,705 codes]
-
-:::open[Why does a MOPP code leave out five thin triangles?]
-They are in three meshes (one each in two, three in a third), with squared cross products between 6.3 × 10⁻⁷ and 0.031 and edges up to 39 m long; the degenerate test above keeps them. No threshold separates them from the triangles that have terminals: not on the squared cross product, on it divided by the longest edge, by the product of the two longest edges or by the shortest edge, on the shortest edge, the perimeter, or the cross product of the vertices quantised to the code's grid (all five are far from degenerate there), and thinner triangles keep their terminals in the same meshes. In one mesh a mirror pair of slivers (squared cross products 0.00428 and 0.00429, edges 14.29, 14.30 and 0.013 m against 14.27, 14.29 and 0.013 m) has one left out and one kept. None of the five has a twin at the same positions, a repeated vertex index, or a mesh scaling other than 1. :observed[all 1,705 codes]
-:::
+The terminals of the 1,704 codes over a mesh are exactly the keys of the mesh's triangles without the degenerate ones. A
+triangle is degenerate when the squared edge cross product, taken from either of its first two vertices in `f32` (the sum of
+the squares of its three components, each product and sum in the order of the formula), is under 10⁻⁷, or when its three
+points are exactly collinear by the identity `|u|² |v|² − (u · v)² = 0` evaluated in `f32` for two of its edges. That
+separates all 8,760 triangles the codes leave out from the 637,213 they keep (none of those passes it). The squared
+cross product alone separates 8,755: the other five triangles, in three meshes (one each in two, three in a third), have a
+squared cross product of 6.3 × 10⁻⁷ to 0.031 and edges up to 39 m, and the identity comes out exactly zero for each of them
+because the single-precision rounding of the two large products swallows the small difference. :proven[all 1,705 codes]
+The same test, with the same threshold and order of operations, is the one the compressed-mesh builder of Sekiro and Elden
+Ring applies to a triangle before keeping it (see [Havok containers and compressed meshes](/engines/fromsoft/collision/havok/)).
+:observed[every named collision binder] No terminal names a triangle the mesh lacks. The one code over a list shape has
+5 terminals, the keys of its child shapes. :proven[all 1,705 codes]
 
 ## Rigid bodies
 

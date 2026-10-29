@@ -74,8 +74,19 @@ the object `o005900`. :observed{games="sekiro"} Each dome is 12.6 km across (±6
 in height, 1,824 indices. :observed{games="sekiro"} `m10_00_00_00`, `m11_01_00_00` and `m17_00_00_00` keep domes of their
 own (±6,000 m, 0 to 3,000 m) that their layouts do not place. :observed{games="sekiro"} In the recorded frame the dome
 draw's index and vertex data are byte for byte those of the `m89_00_00_99` morning, evening and night domes, which share
-their geometry. :observed{games="sekiro"} Which state the frame drew is not established: the draw's material constants
-match none of the states' material definitions. :unknown
+their geometry. :observed{games="sekiro"} The draw drew the evening dome: its material constants (`cbMtdParam`) equal
+`M[Sky]_SkyDome_Evening`'s parameters on all 37 fields, a colour being its stored value raised to the power 2.2 and
+multiplied by its `-Intensity` parameter, in nine recorded frames of one save at the 18:00 lighting; the next closest state
+(dawn) matches 28 fields. :observed{games="sekiro"} Each of those frames draws one dome and no blend of two.
+:observed{games="sekiro"}
+
+The game's executable loads the sky map's 27 models and the moon's object from a fixed list of paths whatever the area.
+:observed{games="sekiro"} Its run-time code moves the sky map's parts every frame: each part whose enabled flag is set
+gets the world matrix "translation (camera x, 0, camera z) times the part's own transform", and the moon is then placed
+at a distance the in-game step stores as 25.0 when it is built (a debug value, `Moon Distance`, can change it), read from
+the decrypted code of the running game. :inferred{games="sekiro"} The part's enabled flag is set only by the engine's
+enable-entity call, by entity id, in the same code. :inferred{games="sekiro"} The layout puts every dome, ring and the
+moon in draw group 0, so draw groups do not pick the state. :observed{games="sekiro"}
 
 The moon `o005900` is a 10 by 10 quad with the material `M[Moon]` (masked by the texture `m99_Moon_3m`), skinned whole to
 the second of its two bones, with a skeleton and animations of its own; the recorded moon draw's vertex and index data are
@@ -87,9 +98,9 @@ A map's `_farmodel` param (`FAR_MODEL_PARAM_ST`) names placed parts by parts gro
 The dome and the far mountains follow the camera across the ground and keep their height: their object matrices are
 the identity rotation at the camera's horizontal position and height 0. :observed{games="sekiro"}
 
-:::open[Where is Elden Ring's sky?]
+:::open[Where is Elden Ring's sky drawn in the frame?]
 Forward draws into the light targets come before the volumetric fog in the Elden Ring frame; the recorded frame lost the
-names of many programs, so which of them are the sky is not established.
+names of the material programs, so which draws are the sky is not established.
 :::
 
 The moon follows the light: in both frames its quad's object matrix places it 25.0 units from the camera exactly along the
@@ -99,11 +110,29 @@ and y), its normal its own −z, and its vertices select the second of the draw'
 direction, whose y axis is the world's up made perpendicular to it, and whose x axis completes a right-handed frame.
 :observed{games="sekiro"} So the moon moves with the light set's `Angle0` over the day. :inferred{games="sekiro"}
 
-:::open[Where does the moon's distance come from?]
-The distance of 25 and what moves the object `o005900` (its bone or its placement) to the light are not established.
+:::open[What chooses the dome?]
+Which of `m89_00_00_99`'s domes and far-mountain rings is enabled, and by what (the event scripts' `Set Lighting` time of
+day, 1 to 5, is the likely input), is not established: no event instruction names their entity ids, and no code constant
+names them.
 :::
 
-:::open[What chooses the dome?]
-Which of `m89_00_00_99`'s domes and far-mountain rings is drawn, by time of day or weather, and whether two are blended,
-is not established: no event instruction names their entity ids, and the draw parameters name no model.
+## Elden Ring
+
+The sky is a family of assets, `AEG096` (82 asset binders): skyspheres 53 to 86 km across (`aeg096_010` to `_016`,
+`_101`, `_102`), cloud layers (`_400` and up), the aurora (`_201`), a rainbow (`_200`) and pieces of the Erdtree, drawn by
+the sky material families (`M[Sky3]` to `M[Sky9]`, `M[Clouds…]`, `M[Atmosphere][Clouds]_…`, `M[DistantClouds]_…`) whose
+materials are named `Field_Skysphere_…`. :observed{games="elden-ring"} They are placed by the areas' `_99` maps: the
+open world's `m60_00_00_99` places 38 of them. :observed{games="elden-ring"}
+
+Which show depends on the weather: `WeatherAssetReplaceParam` (1,007 rows) lists, for a `_99` map and a weather id, the
+assets drawn; every one of `m60_00_00_99`'s 38 sky assets is listed for some weather, and its 18 weathers list 1 to 27 of
+them (weather 0: the clear skysphere `aeg096_010` with its clouds and the Erdtree; weather 99: `aeg096_102` alone).
+:observed{games="elden-ring"} `WeatherAssetCreateParam` (8 rows) spawns the rainbow between 7 and 16 h and the aurora
+between 21 and 3 h, by weather. :observed{games="elden-ring"} `AssetGeometryParam`'s `isSkydomeFlag` ("treated as a
+celestial sphere: follows the player", by its definition) is set on one asset only, `AEG620_002`, and no layout part names
+one of the 17 `PartsDrawParam` rows that set `isSkydomeDrawPhase` (935 layouts read). :observed{games="elden-ring"}
+
+:::open[Do Elden Ring's skyspheres follow the camera?]
+How a weather's list combines with the `_99` map's own placements, and whether the skyspheres move with the camera as
+Sekiro's sky map does, are not established.
 :::

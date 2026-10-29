@@ -109,7 +109,7 @@ on `Lips_Lower` and `Jaw` exists in the process and does not exist in the stock 
 pose, in either composition space. :observed{games="elden-ring"} With the hint set to 0, the same array holds the clip's
 values on 112 of the 130 bones the clip drives (within 0.01 rad over 1,579 snapshots; the median over those bones is 0.996 rad from the stock
 pose): a hint 0 clip in that layer replaces the pose. The 18 other bones are the four eye bones, which the blinking layer above sets, and 14 leg bones, whose
-difference from the clip (0.019 to 1.571 rad) is not explained. :observed{games="elden-ring"} (Rotations of the live model-space
+difference from the clip is not explained: the calf, foot and foot-target bones are 1.571 rad from the identity (the clip's values) and 0.9 to 1.6 rad from the stock pose, the knee helper bones half of that from the identity (0.785), the calf twists at the identity. A modifier list above the layer generator holds a foot IK controls modifier, handle-on-bone modifiers for the foot targets and twist modifiers on the thighs, legs and feet, and the capture is of another spawn, so the legs may come from a later stage or from another state of the player. :observed{games="elden-ring"} (Rotations of the live model-space
 pose converted to the parent's space, compared with the stock pose and the clip's values; one capture of 20 s of idle each. The hint 0 capture
 started at another place of the map than the two others (the player's spawn position), the same pointers reaching the array; why a hint 0
 edit of every clip moves the spawn is not known.) :unknown

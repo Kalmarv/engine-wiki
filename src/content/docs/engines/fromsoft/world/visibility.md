@@ -87,6 +87,16 @@ and zeroing the rest gives the same picture. :observed{games="elden-ring"} Wheth
 (27 map pieces, all at the origin, and 265 assets in this layout) are drawn by another rule was not seen: none of them is in
 view at the spawn. :unknown{games="elden-ring"}
 
+The same test with a shared group tells that a bit in common with the display groups of the collisions does not draw a part.
+With the draw groups of every map piece and asset set to group 200 alone, the near scenery (gate, walls, floor, rubble) is
+not drawn when every collision's display groups are set to group 200, nor when they are set to group 201, nor when only the
+22 collisions that store no display group are set to 200; the three screenshots differ from each other in under 2 % of their
+pixels (lamp flicker), against 55 % from the stock view. :observed{games="elden-ring"} The grace and the castle front that
+stay visible when every draw group is zero are gone in these arms too; the likely reason is that the parts which store no
+group are drawn while they have none and hidden once group 200 is on them, but which parts those are was not tested.
+:observed{games="elden-ring"} (Each arm is one recording read by eye; whether group 200
+is in the range the game tests is not separated from the rule.) :unknown{games="elden-ring"}
+
 ```layout
 title: Part draw block (payload slot +80)
 size: "388 in Sekiro, 392 in Elden Ring"

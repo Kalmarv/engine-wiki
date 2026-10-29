@@ -76,8 +76,8 @@ values differently: HKLib's Havok 2018.1 registry names 1 `ADDITIVE_PARENT_SPACE
 against Sekiro's 2016.2 runtime.
 
 In Elden Ring, setting `blendHint` to 1 or to 2 on every clip of the player's 11 animation binders changes the player's
-final pose in the same way for both values: idling and walking, the 150 bones that a clip drives come out as the clip's value
-for 126 (hint 1) and 127 (hint 2) bones, as with the stored hint, and 7 bones that no clip drives (the foot, hand and pelvis
+final pose in the same way for both values: idling and walking, 126 (hint 1) and 127 (hint 2) of the 150 bones come out as with the stored hint, which for a bone
+a clip drives is the clip's value, and 7 bones that no clip drives (the foot, hand and pelvis
 dummies, `Jaw`, `Lips_Lower`) hold the identity rotation instead of their reference-pose rotation. :observed{games="elden-ring"}
 (Rotations of the live model-space pose compared with the stock pose frame by frame, over 20 s of idle and 10 s of walking
 in each of the three runs; 17 helper bones the graph derives from others differ otherwise and are not explained.) The

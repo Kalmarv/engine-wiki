@@ -17,6 +17,9 @@ Characters use `chr/cNNNN.chrbnd.dcx` model binders and animation binders, while
 `parts/<part>.partsbnd.dcx`. One part binder can contain multiple forms with separate models and animations.
 :observed
 
+Some part binders hold no model at all, only `.tpf` textures: 7 in Sekiro and 76 in Elden Ring, `fc_m_0000` among
+them. :observed[a listing of the part binders a viewer opens]
+
 Sekiro's `wp_a_0761_l` contains closed and open Loaded Umbrella forms, each with its own animation binder.
 :observed{games="sekiro"} Elden Ring's `wp_a_1152_l` has two forms sharing mesh geometry with different materials.
 :observed{games="elden-ring"}
@@ -45,6 +48,12 @@ applies is not established. :unknown
 The NPC row comes from each enemy or dummy-enemy placement; it is not necessarily a property shared by every
 occurrence of a character model. Every map enemy's model/NPC-row link in the independent comparison matches the MSB
 decode. :proven
+
+Some characters carry a mark on every mesh, so the model draws nothing until an NPC row enables a group: Sekiro's
+`c1100` and `c1500` and Elden Ring's `c5250` are such models. :observed A row can also switch off groups of such a
+model on purpose: every mesh of Sekiro's `c1320` is marked, and its NPC row 13209200 turns off groups 10, 11 and 12.
+That is the row's data, not a misreading of the mask bytes, which match SoulsFormats and Paramdex on all 1,279 Sekiro
+NPC rows (see [params](/engines/fromsoft/data-model/params/)). :observed{games="sekiro"}
 
 :only[elden-ring] `c3000` uses groups `#00#` through `#12#` for swords, crossbows, spears, shields, torch and whistle.
 This makes visible weapons part of the mesh-mask selection for that model. :observed{games="elden-ring"}

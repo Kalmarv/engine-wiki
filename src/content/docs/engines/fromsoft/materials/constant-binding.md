@@ -38,7 +38,7 @@ For scale `(u,v)`, captured rows are `(u,v,(1-u)/2,(1-v)/2)`, giving
 | Nonzero definition texture scale before UV group | Four discriminating Sekiro buffer contents support this precedence | :observed{games="sekiro"} |
 | Definition sampler scale or UV-group scale | Captured Elden Ring character rows match both paths | :observed{games="elden-ring"} |
 | Metaparam default when no authored UV-group value exists | Plausible fallback, but the cited Sekiro captures do not distinguish it | :inferred{games="sekiro"} |
-| Elden Ring non-unit FLVER scale precedence | Available reliably identified draws do not exercise this case | :unknown{games="elden-ring"} |
+| Elden Ring non-unit FLVER scale precedence | The install has 1,203 bindings with a FLVER texture scale, in 288 materials of 22 MATBINs, but no reliably identified captured draw uses one; `AEG006_031` to `AEG006_045` among them are placed in no MSB | :unknown{games="elden-ring"} |
 
 ## Sekiro
 
@@ -107,6 +107,7 @@ draws that have one, and its textures tie equally to the `c9506` eye and the `FG
 :observed{games="elden-ring"}
 
 :::open[Which runtime inputs account for unmatched tiling and eye words?]
-Unexplained Sekiro tiling contents remain. Elden Ring's non-unit FLVER scale precedence has no decisive capture,
-and the eye constants could reflect a runtime override, but that explanation is not established. :unknown
+Unexplained Sekiro tiling contents remain. Elden Ring's non-unit FLVER scale precedence has no decisive capture;
+placed assets whose two scales disagree would decide it, such as `AEG004_805` in `m60_42_37_00` (FLVER scale 2, UV
+group scale 1) and `AEG007_200` in `m60_23_19_01` (160 against 30). The eye constants could reflect a runtime override, but that explanation is not established. :unknown
 :::

@@ -26,6 +26,27 @@ The archives fall into these groups. :observed
 
 Beside the executable are also the shader bundles `ekshadersPChigh.bin`, `ekshadersPCmed.bin` and `ekshadersPClow.bin` (see [SDB2](/engines/anvil/shaders/sdb2/)). The installed copy examined also carries `.forge.patch` files beside several forges; their layout has not been examined. :unknown
 
+### The patched build
+
+A patched copy of the game (executable dated 2011-08-23, forges dated 2010-10-27) differs from the recorded build in its
+data. :observed It holds 40 forges: the same 33 `DataPC*` data forges plus seven `DataPC_StreamedSounds*.forge`.
+:observed[one patched copy]
+
+| | Recorded build | Patched build | Confidence |
+|---|---|---|---|
+| `DataPC.forge` | 38 entries, 20,545,833 bytes | 11 entries, 19,661,097 bytes | :observed |
+| Entries of the 33 data forges | 3,894 | 3,867 | :observed |
+| Other 32 data forges | | Same version, entry count and size as in the recorded build; 10 of them (dated 2010-10-19) byte-identical, 22 with other content | :observed |
+| `DataPC_01.forge` | | Byte-identical | :observed |
+
+Two independent readers of the forge tables, entry headers and block chunk tables agree on the patched `DataPC.forge`;
+its `Graphic Bootstrap` entry keeps the same blocks (26 bytes stored raw, then 16 chunks decoding to 512,822 bytes).
+No data forge of the patched copy has a bad chunk checksum, an entry header disagreeing with its records, or blocks that
+do not fill their payload. :observed[every data forge of the patched copy]
+
+The seven sound forges hold 10,308 entries besides their `GlobalMetaFile`s, and none of them begins with the
+[data block](/engines/anvil/archives/data-blocks/) magic: their payloads are framed some other way. :observed
+
 ## Levels
 
 The six numbered forges are the game's main levels, named by the game's district table and the strings of the English text ([localization](/engines/anvil/gameplay/localization/)). Each name below carries the id of its string. :observed

@@ -221,6 +221,10 @@ low-resolution `_l` twin; other textures are in `/other/*.tpf` and in objects' o
 archives hold 3,522 textures, mostly 256 to 1,024 px, with sky and cloud textures up to 2,048 × 512.
 :observed{games="sekiro"}
 
+A material of `m10_00_00_00` names a texture `3dsmax`, the name of the authoring tool rather than of a texture, and no
+archive of the install holds a texture of that name. A reader of that area has to treat it as absent.
+:observed{games="sekiro"}
+
 | Role | DDS format | Textures | Confidence |
 |---|---|---:|---|
 | Albedo `_a` | DXGI 72, BC1 sRGB | 749 | :observed{games="sekiro"} |

@@ -210,6 +210,13 @@ reference implementation on inputs of 0 to 1,000 bytes, and none of its 264,603 
 key hash, its low 48 bits or its high 48 bits from a parameter asset's name (exact case, lower case or last component) in
 nine argument layouts under emulation; the same sweep finds the engine's CityHash64 when asked for CityHash64 of the name.
 :observed[the 203 parameter assets of known name; the executable image]
+In a stock launch to the hub (two launches, about 150 s each, hardware execution breakpoints on the engine's CityHash64 at
+`+0x547fcc0`, its seeded wrapper at `+0x54801c0` and its generic byte hasher at `+0x379c310`), none of the three ran once,
+while a control function ran 310 times: the engine computes no parameter key from a name through them while a level loads.
+:observed[2 launches]
+After the hub has loaded, 6.6 GB of private memory holds 10,759 to 12,444 depot parameter records (638 to 712 of the 1,636 key
+hashes) and about 69,000 more occurrences of 1,550 key hashes, in the material parameter nodes (hash at +8 of a node);
+none of the strings within two pointer hops of the first 60,000 of them is a parameter name. :observed[2 launches]
 Block hashes agree for equal measured blocks but do not match tested FNV, MD5 or SHA-1 representations; they are a separate
 identity. :unknown
 :::

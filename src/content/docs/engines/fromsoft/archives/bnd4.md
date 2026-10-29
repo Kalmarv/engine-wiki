@@ -96,11 +96,11 @@ fields:
   - {at: 0, size: 8, type: u64, name: hash entries offset, level: proven, note: "file offset of the hash entries, directly after the groups"}
   - {at: 8, size: 4, type: u32, name: group count, level: proven, note: "the smallest prime not below the member count divided by 7 (integer division)"}
   - {at: 12, size: 4, type: u32, name: constant, level: unknown, note: "bytes `10 08 08 00` in every table"}
-  - {at: 16, size: "8 × group count", type: "Group[]", name: groups, level: proven, note: "member count u32, first hash entry index u32; groups are contiguous in order"}
-  - {at: after groups, size: "8 × member count", type: "Hash[]", name: hash entries, level: proven, note: "path hash u32, member index u32; ascending by hash inside a group; the group is the hash modulo the group count"}
+  - {at: 16, size: "8 Ã— group count", type: "Group[]", name: groups, level: proven, note: "member count u32, first hash entry index u32; groups are contiguous in order"}
+  - {at: after groups, size: "8 Ã— member count", type: "Hash[]", name: hash entries, level: proven, note: "path hash u32, member index u32; ascending by hash inside a group; the group is the hash modulo the group count"}
 ```
 
-The hash is the base-37 hash of the [BHD5 archives](/engines/fromsoft/archives/bhd5-bdt/#path-hashes): `h = h × 37 + unit` over
+The hash is the base-37 hash of the [BHD5 archives](/engines/fromsoft/archives/bhd5-bdt/#path-hashes): `h = h Ã— 37 + unit` over
 the member's stored name with backslashes turned into forward slashes, a leading `/` added and ASCII letters
 lower-cased, in 32 bits. The stored name is hashed whole, drive prefix included. It equals the stored hash for all
 61,580 named members of Sekiro's 7,676 hashed binders and all 474,981 of Elden Ring's 53,547 (BND4 and BHF4 alike).

@@ -96,6 +96,7 @@ stay visible when every draw group is zero are gone in these arms too; the likel
 group are drawn while they have none and hidden once group 200 is on them, but which parts those are was not tested.
 :observed{games="elden-ring"} (Each arm is one recording read by eye; whether group 200
 is in the range the game tests is not separated from the rule.) :unknown{games="elden-ring"}
+Setting the draw groups of the collisions to group 200 as well, in the arm with display group 201, does not bring the scenery back either; that view differs from the others (the character is out of frame, the camera on a rock and barrels in fog), so the arm cannot be read further. :observed{games="elden-ring"}
 
 ```layout
 title: Part draw block (payload slot +80)

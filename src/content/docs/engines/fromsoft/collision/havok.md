@@ -22,6 +22,8 @@ implementations:
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/simdtree.rs
   - name: havok-formats compressed mesh writer
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/mesh_write.rs
+  - name: havok-formats interior flags
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/interior.rs
   - name: havok-formats bounding-volume tree encoder
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/bvtree_write.rs
   - name: havok-formats simd tree writer
@@ -115,19 +117,44 @@ are 0 in every mesh of both installs. :proven[every named collision binder] The 
 mesh of both installs. :proven[every named collision binder]
 
 `triangleIsInterior` is a bit field of `maxKeyValue + 1` bits in `ceil(bits ⁄ 32)` words. Its bits are set only on the keys
-of triangles, never on a key no primitive has nor on a custom primitive's: between 32% and 48% of the triangle keys,
-depending on the binder set, and in 362 Sekiro and 5,557 Elden Ring meshes none at all. :proven[every named collision binder]
+of triangles and quads, never on a key no primitive has nor on a custom primitive's: between 32% and 48% of the triangle
+keys, depending on the binder set, and in 362 Sekiro and 5,777 Elden Ring meshes on none at all. :proven[every named collision binder]
 
-A set bit is on a triangle each of whose three edges meets another triangle (edges compared by the exact bits of their
-decoded vertices): 8,080,707 of the 8,080,712 set bits of Sekiro and 25,136,048 of the 25,136,262 of Elden Ring, the others
-having two or fewer such edges. Of the triangles with three such edges in the meshes that have any bit, 41% (Sekiro) and
-44% (Elden Ring) have it set. :observed[every named collision binder] Which of them is not established: against the
-angles to the neighbours, the vertex valences, the key and its parity, the half of a quad, the area and edge lengths,
-the normal's direction, whether the neighbours' source vertex indices match, the triangle's `primitiveDataIndex`, and
-whether a ray from the triangle along its normal meets the mesh, none separates the set from the clear ones.
-:observed{games="sekiro"} (The source vertex indices are in the `triangleDataArray` of the shape's `pParam`
+A mesh that has any bit set has them from one pass over the finished mesh, run on the vertices as their codes decode
+(`code × scale + offset` in single precision; a shared vertex's scale is the extent of the tree `domain` times the
+single-precision value of `1 ⁄ 2,097,151`, `1 ⁄ 4,194,303` for z). The pass reproduces every bit of every such mesh from
+those vertices alone: 25,383,271 keys in 2,982 Sekiro meshes (8,080,712 set) and 65,846,233 keys in 17,122 Elden Ring
+meshes (25,136,262 set), with no key wrong. :proven[every named collision binder] It has four steps.
+
+1. *Neighbours.* The triangles are visited in key order, a triangle's edges in vertex order (`a b`, `b c`, `c a`; a quad's
+   halves are `a b c` and `a c d`). An edge is paired with the same two vertices in the opposite direction when one has
+   been visited and is still unpaired, the latest such, and then neither is unpaired; an edge nobody pairs waits. A
+   vertex is identified by its section and slot when it is packed, by its entry in the shared-vertex index (the page
+   not counted) when it is shared. The edge between a quad's two halves is paired directly. A quad is *flat* when the
+   tree's `primitiveStoresIsFlatConvex` byte ANDed with the quad's second vertex slot is more than its fourth: a flat quad
+   is one polygon `a b c d` with the four outer edges, and its bit is kept under its first half's key. A triangle or
+   polygon that has a missing neighbour on any edge is never set. :proven[every named collision binder]
+2. *Convex edges.* A triangle's raw normal is `(b − a) × (c − a)` (a polygon's, that of its first three corners). An edge
+   from corner `p` to the next corner `q`, with `e` the unit vector from `p` to `q` and `m` the unit normal of the
+   triangle across the edge, is convex when `e · (n × m)` is more than the single-precision epsilon `2⁻²³`. :proven[every named collision binder]
+3. *Order.* Each triangle with all its neighbours gets the weight `|n| + 10 × (its convex edges)`, `|n|` being the length of
+   its raw normal (twice its area); the triangles are sorted ascending by weight with a quicksort that takes the middle
+   element as pivot, swaps elements strictly on the wrong side and is not stable, so triangles of equal weight, which are
+   many, come out in the order that procedure gives. :proven[every named collision binder]
+4. *Marking.* In that order a triangle is set unless one of its convex edges meets a triangle that is already set, or one
+   whose unit normal makes an angle of more than 70° with its own (`n · m` below the single-precision cosine). :proven[every named collision binder]
+
+The arithmetic is single-precision in the order of the operations, with a unit vector made from the reciprocal square root
+estimate `r` of its squared length `s` by one Newton step, `(3 − (r s) r)(r ⁄ 2)`. Which edges are convex is often decided
+by a rounding step, and the estimate decides it: an estimate that reproduces every bit is the reciprocal square root of
+the middle of a cell of `2¹³` units in the last place of `s` (cells that share an exponent parity and the top ten
+mantissa bits), rounded to the nearest multiple of `2¹¹` units in the last place of the result. An exact reciprocal
+square root, or the table of one current processor, leaves some hundreds of bits per million wrong. :observed[every named collision binder]
+That table is a fit to the bits, not a copy of the table of the machine that made the files. :inferred
+
+The source vertex indices of the games' own layer are in the `triangleDataArray` of the shape's `pParam`
 (`fsnpCustomMeshParameter`), one entry per source triangle with `vertexIndexA`, `B`, `C`, `primitiveDataIndex` and
-`triangleDataIndex`.) :observed{games="sekiro"}
+`triangleDataIndex`. :observed{games="sekiro"}
 
 The shape's `triangleIndexToShapeKey` (the games' own `fsnpCustomParamCompressedMeshShape`) holds, for each triangle of the
 source mesh, its key left-aligned in 32 bits with the `32 − numShapeKeyBits` low bits all ones. Every word of the 3,333

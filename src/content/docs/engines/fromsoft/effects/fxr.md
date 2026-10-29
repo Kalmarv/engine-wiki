@@ -312,6 +312,15 @@ Counted per light, 167 of Sekiro's 847 and 725 of Elden Ring's 5,016 have a rota
 that state 0 chooses; the rest sit under translations only. :proven
 The rotation order and the translation's place relative to it are the fxr project's (rotations Z, X, Y, then the translation).
 :sourced[fxr]
+A spot light under a node stored as rotation (-65, -75, -35) degrees and offset (0, 1, 0), with a child at (0, 0, -1), stands at
+the node offset plus the child offset turned by the rotation, and shines along (-0.4082, -0.9063, 0.1094): the axis in the
+lighting pass's spot buffer is the negated turned child offset. That axis is the image of +Z when Z turns first, then X, then Y,
+with the Y angle in the usual right-handed sense and the X angle negated. Of the 48 readings (six orders of the three
+rotations, each axis in either sense) exactly two reproduce the axis to 1e-3, the two that differ only in the sense of Z; the
+nearest of the other 46 is 0.23 away (the unit-vector distance). :observed[one stored triple, Sekiro 1.06, the 18
+spot records of each of four captures, all identical]
+The sense of the Z angle does not move a light's axis when Z turns first, so it is not determined by a spot light whose child
+offset lies on Z; a chain with the child on X or Y would show it. :unknown
 
 ## How the renderer takes an effect light
 

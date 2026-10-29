@@ -417,33 +417,62 @@ the effect file is in the common binder for 6,533 and 17,127, only in `commoneff
 1,224 (Sekiro: `m10` to `m25`) and 7, in another character's binder for 515 (Elden Ring), and in no binder of
 the install for 7 and 3,194. :observed[the inventory of every FXR member of every `sfxbnd` binder against every such event]
 Of the 3,194 Elden Ring events that no binder holds, 2,916 are the player's (`c0000`) and 3,009 name one of ten numbers from 400 to
-422 (400, 420, 410, 401, 421, 411, 412, 403, 422, 402, by count), which are not effect files. :observed
+422 (400, 420, 410, 401, 421, 411, 412, 403, 422, 402, by count), which are not effect files in Elden Ring although all ten are
+files of Sekiro's common binder (with 430 to 432; Elden Ring's holds 430 to 434 and 440 to 442 as files). :observed
 All 3,009 are type 96 events: 2,891 in the player's animations (235 animation numbers from 30000 to 201400, among them the attack
 animations; dummy polygon 80 in 2,878, 82 in 7 and 81 in 6; the follow and restrict flags set and no spawn condition or state in
 all but one) and 118 in the animations of `c3510`, `c3060`, `c2270` and other characters. :observed[every such event of every
-character animation binder] The commoneffects binders hold files
-numbered `number * 1000 + a variant` for most of these numbers: `401000`, `401001`, `401002`, `401004` to `401007`, `411000`, `411001`,
-`411002`, `411007`, `412000` to `412002`, `412007`, `420000` to `420002`, `420007`, `421000` to `421002`, `421007`, `422000` to
-`422002`, `422007` and `400001` to `400003`; none for 410 and 403 (`411000`, `420000` and `401000` are one effect file of 12,208 bytes
-and 41 actions, `x001` a file of 1,312 bytes that spawns `x000`, `x002` and the later variants files of 12,240 to 13,104 bytes).
-:observed[the inventory of every FXR member] The 2,272 of the 3,009 events whose number has such files (400: 1,067, 420: 730, 401:
-159, 421: 125, 411: 116, 412: 35, 422: 26, 402: 14) are probably a family of weapon trail effects, since the weapons' own trail
-field `traceSfxId0` is `401000` for 3,052 of 3,636 weapons and the non-player attack param's trail field holds `411000` to `414000`,
-`420000`, `421000` and `434000`. :inferred Which variant an event starts is not stored in the event or in any param: no field of
-the weapon, attack, bullet or special-effect params holds a member of these families other than `401000`, the 4xx0xx numbers
-that the bullet and special-effect params hold are the `402xxx` and `404xxx` families, and the hit effect param's rows 400 to
-404, 410 and 420 to 424 hold other numbers (`266000` to `267402`). :observed[every field of every param of the install] The
-selector is therefore either in the executable or in the equipped weapon's other data. :unknown
-A type 118 event whose dummy-polygon source (the 16-bit word at byte 4) is not 0 is a blade on a weapon's polygons: 8 events in
-Sekiro (source 1, characters `c1020` and `c9820`, base polygon 300, tip 301) and 382 in Elden Ring (source 2 on 357 and source 1 on
-25, 376 of them in `c0000`). :observed[the same events] The community template of the Elden Ring events names the source's values
-0 body, 1 left weapon and 2 right weapon, and the two polygons the blade's base and tip. :sourced[community animation-event
-template] The base polygon is 300 in 320 of the 382 events (tip -1 in 282, 302 in 31, 301 in 4, 0 in 3), 120 with tip 100 in 26, 100
-with tip 120 in 5, 310 in 15, 10300 in 9, 330 in 4, and 11300, 303 and 305 in one each. :observed[the same events] The weapon
-models carry those polygons: in the 50 lowest-numbered weapon models (their FLVER dummy tables), dummy reference ids 100, 120, 130, 400 and
-401 are on all 50, 300 and 301 on 49, 302 on 13, 303 on 2 and 305 on 1, and 310, 330 and 10300 on none. :observed This agrees with
-the source naming the weapon model the polygons are looked up on; it does not show which weapon (the one in the hand, by hand)
-the game takes. :inferred
+character animation binder] The commoneffects binders hold files numbered `number * 1000 + a variant` for most of these
+numbers: `401000`, `401001`, `401002`, `401004` to `401007`, `401010` to `401012`, `401020`, `401021`, `401030`, `411000`,
+`411001`, `411002`, `411007`, `412000` to `412002`, `412007`, `420000` to `420002`, `420007`, `421000` to `421002`, `421007`,
+`422000` to `422002`, `422007` and `400001` to `400003`; none for 410 and 403 (`411000`, `420000` and `401000` are one effect
+file of 12,208 bytes and 41 actions, `x001` a file of 1,312 bytes that spawns `x000`, `x002` and the later variants files of
+12,240 to 13,104 bytes). :observed[the inventory of every FXR member]
+The engine's handler of type 96 does not turn the event's number into one of these: it stores the first word of the event, with the
+dummy polygon and the slot, in a slot of the character's effect module as it is, and the module hands that number to the
+effect manager, whose create call looks up exactly that number in its table of loaded effects (numbers -2, 0 and 2000 to 2999
+start nothing) and asks the file loader for the file of that number where the table has none. :observed[decompilation of the
+executable's event dispatcher, effect module, instance and manager of one build] The handler reads no parameter and no state
+of the character or the weapon. :observed[the same code] That the 3,009 events start nothing for lack of a file is therefore
+what the code and the files show; what the loader does with a number that names no file is not decoded. :inferred
+The family files are reached by type 118. A blade event (type 118) is 16 bytes: the effect number (32 bits), the dummy polygon
+source (16 bits at byte 4), the base polygon (16 bits at byte 6), the tip polygon (byte 8) and the slot (byte 10).
+:observed[the handler's reads and 2,723 events] Its handler adds to the effect number a number the character's data keeps for
+the hand, at byte `0x1e8` of the data for the right hand and `0x1f0` for the left: the source 2 adds the right hand's, 1 the
+left's, and 0 the one the character's hand state names (-1 right, -2 left, any other none). :observed[decompilation of the
+handler] The number of a stock blade event is `401001` (1,289 events), `401002` (872), `401004` (29), `401005` (4), `401007` (19),
+`405000` (2), `411002` (5), `412002` (1), `413002` (3), `416002` (5), `420002` (4), `421001` (11), `421002` (7) and the numbers
+of other characters' own effects. :observed[the same events] Added to `401001` the offsets 1, 3 to 6, 9 to 11, 19 and 20 give
+files (`401002`, `401004` to `401007`, `401010` to `401012`, `401020`, `401021`) and 2, 12, 14 to 18, 21 and 24 to 28 do not; added
+to `401002` the offsets 2 to 5, 9, 10, 18, 19 and 28 do. :observed[the file inventory] The special-effect param's `traceSfxIdOffsetType` takes the values 1 to 6, 9
+to 12, 14 to 21 and 24 to 28 in 119 rows and is described by the community param documentation as the offset applied to a
+blade trail's effect number, used for enchantments and weapon trails. :sourced[community param definitions] The character's
+two numbers are therefore the sums of that field over the special effects active on the hand, or something the field selects.
+:inferred How the field becomes the number is not decoded; the plain sum does not give a file for `401001` plus 2, a value that 12
+rows hold. :observed The weapons' own `traceSfxId0` to `traceSfxId3` hold `401000` or -1 in all 3,636 rows. :observed[every
+row] The enchantment path, which does not go through events, adds the weapon's `enchantSfxSize` to the effect number of a
+special-effect row that sets the offset flag (`midstSfxId`, the `303xxx` numbers): the weapon row's field is read in one place
+of the executable, the effect module's update of the special effects. :observed[decompilation, a scan of the image for reads of
+the field]
+A blade event whose dummy-polygon source is not 0 is a blade on a weapon's polygons: 8 events in Sekiro (source 1, characters
+`c1020` and `c9820`, base polygon 300, tip 301) and 382 in Elden Ring (source 2 on 357 and source 1 on 25, 376 of them in
+`c0000`). :observed[the same events] The community template of the Elden Ring events names the source's values 0 body, 1 left
+weapon and 2 right weapon, and the two polygons the blade's base and tip. :sourced[community animation-event template] For a
+source of 1 or 2 the handler first maps the base and tip numbers through a table of the engine's by the weapon's hand: a
+number `n` becomes `20000 + n % 1000` for source 1 (the left hand's first weapon; `21000`, `22000` and `23000` for the next
+three) and `10000 + n % 1000` for source 2 (the right hand's first weapon; `11000`, `12000`, `13000`), and `1000`, `2000`,
+`3000` and `4000` for four more kinds. :observed[decompilation of the mapping and the table's values in the image]
+Source 0 events name the character's dummy polygons as they are numbered in its combined table, and the player's blades are
+such events: of Elden Ring's 2,723 blade events 2,341 have source 0, of which 1,577 name a polygon from 10000 to 11999 (809 the
+right hand's first weapon's 300, i.e. `10300`, and 300 the second's `11300`), 58 one from 20000 to 21999, and 706 a polygon below
+1000. :observed[the same events] The player's model (`c0000`) has 513 dummy polygons with 288 reference ids, none above 999:
+100, 101, 110, 111, 120 and 121 on the left side (attach bone 73, 0.6 m to the left) and 130 on the right (bone 45), the places
+a held weapon's own `100`, `120` and `130` meet. :observed[the model's dummy table] The weapon models carry the blade's polygons:
+of the 496 weapon models of the 507 the weapon param names that the install holds (their FLVER dummy tables), reference ids 100,
+120 and 130 are on 471, 110 on 466, 122 on 341, 300 and 301 on 337, 400 on 325, 401 on 286, 302 on 145 and 303 on 94, and 310,
+330 and 10300 on none. :observed In weapon model 0100 the blade's polygons 300 and 301 lie along the
+model's -y axis at -0.08 and -0.40, the grip polygons 100 to 130 between -0.36 and 0.12. :observed It does not show which
+weapon (the one in the hand, by hand and slot) the game takes. :inferred
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed
 An asset's effect attaches to the dummy polygon the row names (`dmypolyId_n`, 200 in the light rows). :observed

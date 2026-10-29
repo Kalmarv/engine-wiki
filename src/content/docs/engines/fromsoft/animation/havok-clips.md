@@ -79,7 +79,7 @@ the parent-space reading, quaternion product with the right operand acting first
 child-space reading). Every one of the 30 pose snapshots of each run matches its own reading to 0.002 rad on all 47 bones and the other
 two readings fit fewer (the nearest one 83 percent of the bones). :observed[one clip, one layer, one run per hint value]{games="sekiro"}
 This matches HKLib's names (1 parent space, 2 child space); the Smithbox names say nothing about the space.
-Elden Ring's runtime is not checked.
+In Elden Ring's runtime the space is not shown yet: what hints 1 and 2 do there is below.
 
 In Elden Ring, setting `blendHint` to 1 or to 2 on every clip of the player's 11 animation binders changes the player's
 final pose in the same way for both values: idling and walking, 126 (hint 1) and 127 (hint 2) of the 150 bones come out as with the stored hint, which for a bone

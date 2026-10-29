@@ -91,15 +91,16 @@ Every animation stores the `type` of its class, so the class and the value say t
 :observed[every distinct tagfile read]
 
 The player's behaviour graph has a layer generator above its state machines whose layers each play one clip, with the
-weight bound to a float variable (`AddBlend00` to `AddBlend09`, initial value 0) and an initial weight in the layer
-itself of 1.0. :observed{games="elden-ring"} Two of those layers play `a000_098120` (`Jaw` up to 0.12 rad, `Lips_Lower` 0.351 rad) and `a000_098130`
-(both `eyeA` bones 0.620 rad), stored with `blendHint` 1. With the layers' variable bindings removed, so that the weight is a constant 1.0,
-the player's idle pose still has `Jaw` and `Lips_Lower` within 0.001 rad of their reference rotation in 1,234 snapshots: a
-`blendHint` 1 clip in a layer at weight 1 changes neither of those two bones. :observed{games="elden-ring"} With the same
-two clips set to `blendHint` 0 and the same constant weight, `Lips_Lower` is exactly the clip's rotation (0.000 rad) and `Jaw` is within 0.01 rad of
-the clip's value in every snapshot, so the layers are evaluated and the edited graph is in effect. :observed{games="elden-ring"} Merely setting the initial value
-of the weight variables to 1.0 changes nothing: the value is reset at runtime. :observed{games="elden-ring"} The `eyeA` bones stay at their reference
-rotation in every run, so another stage sets them after the graph. :observed{games="elden-ring"}
+weight of ten of them bound to a float variable (`AddBlend00` to `AddBlend09`, initial value 0) and the stored weight 1.0.
+:observed{games="elden-ring"} Two of those layers play `a000_098120` (`Jaw` up to 0.12 rad, `Lips_Lower` 0.351 rad) and `a000_098130`
+(both `eyeA` bones 0.620 rad), stored with `blendHint` 1. Above them, the speaking layer (off by default, switched by events, bone weights
+`Jaw` and `Lips_Lower`) and the blinking layer (on by default, weight variable 1.0, bone weights the four eye bones) set those bones, so the
+`eyeA` rotations of the final pose say nothing about the clips below. :observed{games="elden-ring"} With the two layers' initial weight variables set to 1.0, or with the
+variable bindings removed so that the weight is a constant 1.0, a buffer that holds the clip's own sampled values on `Lips_Lower` and `Jaw`
+exists in the process and does not exist in the stock run, while the player's final pose has `Jaw` and `Lips_Lower` within 0.001 rad of their
+reference rotation in 1,214 and 1,234 snapshots: a `blendHint` 1 clip that the layer samples does not change those two bones of the
+final pose. :observed{games="elden-ring"} Whether the layer was blended into the final pose at weight 1 is not shown (no positive control with a
+`blendHint` 0 clip in a layer that has bone weights has a valid capture yet). :unknown
 (Rotations of the live model-space pose converted to the parent's space, compared with the stock pose and the clip's values; one capture of
 20 s of idle each.)
 

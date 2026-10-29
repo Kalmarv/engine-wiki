@@ -79,6 +79,21 @@ groups of some collision of their map, against 29,325 among the display groups o
 :observed Which of the two sets a collision contributes when the player stands on it, or whether both, is not established.
 :unknown
 
+The parts' own display groups are not empty: of the 425,775 map pieces, objects and assets of Elden Ring's layouts that
+store a draw block, 283,976 set at least one display group (48,895 of the 107,905 with draw groups, 235,081 of the 317,870
+without), and of Sekiro's 51,508, 34,362 (34,091 of the 50,854 with draw groups, 271 of the 654 without). In `m10_00` of Elden
+Ring 4,085 of the 7,773 parts with draw groups and 171 of the 292 without set one. :observed With the collisions of an
+overlay's base map standing for its own, a part's display groups are among the display groups of some collision of its map
+for 32,427 of the 48,895 Elden Ring parts that have both, and its draw groups among the draw groups of some collision for all
+48,895 (its display groups among the draw groups of some for 46,973); of the 235,081 parts without draw groups, 11,552 have a
+display group among those of the collisions (9,198 counting each layout's own collisions only). :observed{games="elden-ring"} Each array of a part is thus mostly
+met by the array of the same name of the collisions. Read that way (a part is drawn when a draw group is among the draw
+groups, or a display group among the display groups, of the collision under the player) the running-game pictures above agree:
+draw groups equal to a group no collision holds hide a part (the group-200 arms and the arm with every draw group zero and
+display groups as stored); a display group the floor collision holds draws it (the group-9 arm); and the stock-zero assets that
+stay on screen when every draw group is zero are those with display groups, which the group-200 arms replaced. :inferred
+Neither term, neither array and neither part kind is tested alone.
+
 In the running game (1.17.2, offline, the layout `m10_00_00_00` replaced by a test file), a part whose draw groups are set to
 all zero is not drawn: setting the draw groups of every map piece and asset to zero (7,773 of the 8,065 stored a non-zero
 array; display groups left as stored) removes the walls, floor and props around the Stormveil spawn, as moving all of them

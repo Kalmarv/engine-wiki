@@ -88,4 +88,5 @@ buffer, 176 bytes in the standard and 336 bytes in the spark programs. :observed
 Which program a draw selects from its blend mode, soft-edge, glow and light flags, how the vertex buffers of the plain draws are
 built from an effect's properties (the order and meaning of the constants of `PSCommonBuffer` and `VSCommonBuffer`), the
 contents of the 176 and 336-byte particle records, and what the second render target holds are not recorded. :unknown{games="sekiro"}
+The per-particle state the billboard appearance keeps before it draws is on [Particle appearances in the executable](/engines/fromsoft/effects/particle-appearance/).
 :::

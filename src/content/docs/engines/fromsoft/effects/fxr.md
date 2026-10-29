@@ -411,6 +411,18 @@ events (114, 115) name their effect through a param row by the template's "param
 (117) and foot (792) events through an index. :sourced[community templates] Dummy polygon reference ids in type 96 are one of 166
 (Sekiro) or 270 (Elden Ring) values; 6,907 of Sekiro's 7,589 and 18,448 of Elden Ring's 20,082 type 96 events set the follow flag.
 :observed
+Of the 7,764 Sekiro and 23,892 Elden Ring events of types 96, 118 and 120 with a positive first word and no weapon source (below),
+the effect file is in the common binder for 6,533 and 17,127, only in `commoneffects_dlc02` for none and 1,322, in the
+`sfxbnd_c<NNNN>` binder of the character whose animation binder holds the event for none and 1,727, in a map binder alone for
+1,224 (Sekiro: `m10` to `m25`) and 7, in another character's binder for 515 (Elden Ring), and in no binder of
+the install for 7 and 3,194. :observed[the inventory of every FXR member of every `sfxbnd` binder against every such event]
+Of the 3,194 Elden Ring events that no binder holds, 2,916 are the player's (`c0000`) and 3,009 name one of ten numbers from 400 to
+422 (400, 420, 410, 401, 421, 411, 412, 403, 422, 402, by count), which are not effect files; what they stand for is not known.
+:observed :unknown
+A type 118 event whose dummy-polygon source (the 16-bit word at byte 4) is not 0 is a blade on a weapon's polygons: 8 events in
+Sekiro (source 1, characters `c1020` and `c9820`, base polygon 300, tip 301) and 382 in Elden Ring (source 2 on 357 and source 1 on
+25, 376 of them in `c0000`). :observed[the same events] Which weapon model a source stands for is not stored in the event.
+:inferred
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed
 An asset's effect attaches to the dummy polygon the row names (`dmypolyId_n`, 200 in the light rows). :observed

@@ -417,12 +417,33 @@ the effect file is in the common binder for 6,533 and 17,127, only in `commoneff
 1,224 (Sekiro: `m10` to `m25`) and 7, in another character's binder for 515 (Elden Ring), and in no binder of
 the install for 7 and 3,194. :observed[the inventory of every FXR member of every `sfxbnd` binder against every such event]
 Of the 3,194 Elden Ring events that no binder holds, 2,916 are the player's (`c0000`) and 3,009 name one of ten numbers from 400 to
-422 (400, 420, 410, 401, 421, 411, 412, 403, 422, 402, by count), which are not effect files; what they stand for is not known.
-:observed :unknown
+422 (400, 420, 410, 401, 421, 411, 412, 403, 422, 402, by count), which are not effect files. :observed
+All 3,009 are type 96 events: 2,891 in the player's animations (235 animation numbers from 30000 to 201400, among them the attack
+animations; dummy polygon 80 in 2,878, 82 in 7 and 81 in 6; the follow and restrict flags set and no spawn condition or state in
+all but one) and 118 in the animations of `c3510`, `c3060`, `c2270` and other characters. :observed[every such event of every
+character animation binder] The commoneffects binders hold files
+numbered `number * 1000 + a variant` for most of these numbers: `401000`, `401001`, `401002`, `401004` to `401007`, `411000`, `411001`,
+`411002`, `411007`, `412000` to `412002`, `412007`, `420000` to `420002`, `420007`, `421000` to `421002`, `421007`, `422000` to
+`422002`, `422007` and `400001` to `400003`; none for 410 and 403 (`411000`, `420000` and `401000` are one effect file of 12,208 bytes
+and 41 actions, `x001` a file of 1,312 bytes that spawns `x000`, `x002` and the later variants files of 12,240 to 13,104 bytes).
+:observed[the inventory of every FXR member] The 2,272 of the 3,009 events whose number has such files (400: 1,067, 420: 730, 401:
+159, 421: 125, 411: 116, 412: 35, 422: 26, 402: 14) are probably a family of weapon trail effects, since the weapons' own trail
+field `traceSfxId0` is `401000` for 3,052 of 3,636 weapons and the non-player attack param's trail field holds `411000` to `414000`,
+`420000`, `421000` and `434000`. :inferred Which variant an event starts is not stored in the event or in any param: no field of
+the weapon, attack, bullet or special-effect params holds a member of these families other than `401000`, the 4xx0xx numbers
+that the bullet and special-effect params hold are the `402xxx` and `404xxx` families, and the hit effect param's rows 400 to
+404, 410 and 420 to 424 hold other numbers (`266000` to `267402`). :observed[every field of every param of the install] The
+selector is therefore either in the executable or in the equipped weapon's other data. :unknown
 A type 118 event whose dummy-polygon source (the 16-bit word at byte 4) is not 0 is a blade on a weapon's polygons: 8 events in
 Sekiro (source 1, characters `c1020` and `c9820`, base polygon 300, tip 301) and 382 in Elden Ring (source 2 on 357 and source 1 on
-25, 376 of them in `c0000`). :observed[the same events] Which weapon model a source stands for is not stored in the event.
-:inferred
+25, 376 of them in `c0000`). :observed[the same events] The community template of the Elden Ring events names the source's values
+0 body, 1 left weapon and 2 right weapon, and the two polygons the blade's base and tip. :sourced[community animation-event
+template] The base polygon is 300 in 320 of the 382 events (tip -1 in 282, 302 in 31, 301 in 4, 0 in 3), 120 with tip 100 in 26, 100
+with tip 120 in 5, 310 in 15, 10300 in 9, 330 in 4, and 11300, 303 and 305 in one each. :observed[the same events] The weapon
+models carry those polygons: in the 50 lowest-numbered weapon models (their FLVER dummy tables), dummy reference ids 100, 120, 130, 400 and
+401 are on all 50, 300 and 301 on 49, 302 on 13, 303 on 2 and 305 on 1, and 310, 330 and 10300 on none. :observed This agrees with
+the source naming the weapon model the polygons are looked up on; it does not show which weapon (the one in the hand, by hand)
+the game takes. :inferred
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed
 An asset's effect attaches to the dummy polygon the row names (`dmypolyId_n`, 200 in the light rows). :observed

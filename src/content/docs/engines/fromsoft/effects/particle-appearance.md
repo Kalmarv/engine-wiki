@@ -51,9 +51,18 @@ The random numbers of the particle are two draws of a shared xorshift generator 
 each turned into a float as the bits of 1.0 plus the draw modulo `0x800001`, minus 1: a number from 0 to 1 inclusive.
 :observed[the generator's update steps and the mantissa construction in the method]{games="sekiro"}
 
-:::open[What does the draw method put in the vertex buffer and constants?]
-The two draw methods of the appearance (the seventh and eighth table entries) build the corners, texture coordinates and
-colours of the quads and select the program. Their decompilation is large (the second is about 4,000 lines of vector
-arithmetic); what they write, and what fills `PSCommonBuffer` and `VSCommonBuffer` of the effect programs, is not read.
+## What reaches the GPU
+
+The vertex that the running engine submits for a billboard particle is recorded in [the effect draws](/engines/fromsoft/shaders/effects/):
+one vertex of 112 bytes for each particle of the plain textured draw, whose colour at byte 12 is the packed colour of the record
+above, with the sprite's texture coordinates and a 3 by 4 matrix holding its axes (scaled by the particle's size) and its
+position. :observed{games="sekiro"} The record of the particle is therefore turned into the vertex by the draw methods, which
+keep the colour as it is and fold size, rotation and position into the matrix rows. :inferred
+
+:::open[Which expressions does the draw method use to fill the vertex?]
+The two draw methods of the appearance (the seventh and eighth table entries) build the vertices and select the program. Their
+decompilation is large (the second is about 4,000 lines of vector arithmetic); the field-by-field derivation of the second
+colour, the texture coordinates and the 16-bit fractions from the effect's properties is not read, and the values of the
+constant buffers are recorded but not tied to the effect properties that set them.
 :unknown{games="sekiro"}
 :::

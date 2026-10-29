@@ -10,6 +10,9 @@ sources:
 
 Tony Hawk: SHRED (Robomodo, Activision, 2010) is a skateboarding and snowboarding game on Robomodo's own [RME engine](/engines/rme/). It runs on the
 PlayStation 3 and checks for a skateboard-shaped controller peripheral at start-up; the disc, title ID `BLUS30542`, version `01.00`, is the one recorded here. :observed
+The check reads the capability word the controller reports and refuses a controller that declares an analog stick
+(bit 8, `HP_ANALOG_STICK`). With that single test skipped in the executable, an emulated controller that reports the bit moves on from the "no board connected" screen to the board's
+calibration screen. :observed[the executable's check, read; one run under RPCS3 with the test skipped]
 Every observation in the wiki's SHRED pages comes from one dump of that disc: 1,124 files, 5,875,743,333 bytes, decrypted. :observed
 
 ## Where the data lives

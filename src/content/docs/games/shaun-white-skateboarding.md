@@ -47,6 +47,14 @@ do not fill their payload. :observed[every data forge of the patched copy]
 The seven sound forges hold 10,308 entries besides their `GlobalMetaFile`s, and none of them begins with the
 [data block](/engines/anvil/archives/data-blocks/) magic: their payloads are framed some other way. :observed
 
+### Videos
+
+The game's videos are loose Bink files under `Videos/`, not forge entries: the patched copy holds 77 `.bik` files,
+253.7 MB and 32,596 frames in all, every one Bink 1 of revision `i`, played through the `binkw32.dll` (version 1.9u)
+beside the executable. None of the 40 forges of that copy has a Bink entry, by their name records and by a byte scan.
+:observed[the patched copy] Five are top-level clips, three play at start-up and 69 are trick-book clips. Five carry
+audio: four clips with four tracks each at 48 kHz, and `head_tv.bik` in stereo at 44.1 kHz. :observed[the patched copy]
+
 ## Levels
 
 The six numbered forges are the game's main levels, named by the game's district table and the strings of the English text ([localization](/engines/anvil/gameplay/localization/)). Each name below carries the id of its string. :observed

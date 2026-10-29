@@ -6,6 +6,8 @@ games: ["shaun-white-skateboarding"]
 
 Shaun White Skateboarding ships its Direct3D 9 shaders as bundles beside the executable: `ekshadersPChigh.bin`, `ekshadersPCmed.bin` and `ekshadersPClow.bin` for the three quality levels, three `...compress.bin` siblings and `ekshadersinitpccompress.bin`. The three named bundles are uncompressed and carry both the original HLSL source of the effects and the compiled Shader Model 3 programs; the compressed siblings have not been read. :observed{games="shaun-white-skateboarding"}
 
+The executable takes its shaders from these bundles only, never from the forges, and checks the magic `SDB2` and the version 39 when it opens one. :observed{games="shaun-white-skateboarding"}[the executable's loader, read]
+
 ## Container
 
 All three uncompressed bundles start with the same 24-byte header. :proven[all three quality files]

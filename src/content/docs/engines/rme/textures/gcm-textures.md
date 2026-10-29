@@ -85,7 +85,8 @@ Decoded B8 (ambient occlusion maps), ARGB (art, in A, R, G, B byte order), DXT1 
 
 ### Cube maps
 
-A cube map has six faces one after another in the chain; the faces of a swizzled cube are aligned to 128 bytes. :observed[RPCS3 layout, checked against the sizes]
+A cube map has six faces one after another in the chain; the faces of a swizzled cube are aligned to 128 bytes. :sourced[RPCS3]
+The padding is between faces only: each face's mip chain is padded up to a multiple of 128 bytes before the next face, and nothing follows the sixth. A 256 × 256 DXT1 face with 9 mips is a 43,704-byte chain at a stride of 43,776, so the cube is 5 × 43,776 + 43,704 = 262,584 bytes; its tail faces are 10,936 bytes at a stride of 11,008, 65,976 bytes in all. Dividing a cube's size by six does not give the face stride. :proven[all 600 cube maps, 3,600 faces]
 Each cube appears in `TEXTURES_STREAMED` as `<name>.txp` plus `<name>_m1.txp` (the tail), and the tail equals the prefetch copy exactly: 600 of 600 pairs, 3,600 faces, with face strides of 43,776 and 11,008 bytes. :proven[all 600 cube maps]
 
 ### Prefetch and streamed copies

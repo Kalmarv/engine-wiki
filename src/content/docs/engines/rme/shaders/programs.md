@@ -180,6 +180,16 @@ Destination 0 is the position, written by every program. Destinations 2 to 5 and
 RPCS3's vertex disassembler, an independent implementation of the same format, run over the 170 microcodes, prints the operations the decode finds (5,862 operations in all): the same opcodes in the same order, the same write masks, the same sources (register, swizzle, negate, absolute value), the same saturate and condition fields, and for every temporary result the same register. A vector `MOV` with the update flag and no destination temporary (`MOVC RC.x, R4.x`) writes the condition register alone, and RPCS3 prints `RC` as its destination. :proven[all 170 distinct vertex programs]
 Its names for the output destinations are indexed by the destination number as if destination 0 were a colour, so they cannot be used to name an output. :observed
 
+### The transform constants
+
+Vertex constants `c32` to `c35` hold the draw's model-view-projection matrix: the placement's world transform from the [SCP](/engines/rme/geometry/placements/), times the camera's view, times its projection. :observed[one frame of the CHARLIE training lesson]
+A capture of the RSX commands of that frame (under RPCS3, at a fixed camera) has 2,105 geometry ranges in 1,516 draw scopes. The 991 ranges drawn with a vertex program of the classes that hold `env_base_vs` write all sixteen lanes of the four registers in the frame. For 781 of them a placement of the level gives a compatible matrix and for 210 none does. For two rotated placements whose captured vertex bytes equal the stored MMP bytes, and whose captured triangles all belong to that submesh, the four registers equal model × view × projection within 1.2 × 10⁻⁶. :observed[one frame]
+Those two draws use only part of the submesh's triangles in their index buffers. :observed[one frame]
+
+:::open[What do the 210 unmatched ranges draw?]
+In the captured frame, 210 ranges of the `env_base` program classes have no placement whose matrix fits the four registers. Whether they are objects placed by something other than the SCP, or the registers mean something else for them, is not established. :unknown
+:::
+
 ## Programs that only scale a texture
 
 Seven pixel program files contain only programs that sample one texture at the first texture coordinate and multiply the sample by named uniforms: one `TEX`, then `MOV` and `MUL` of registers and named constants, with no other interpolant and no flow control. They are `env_skydome` (all ten of its programs multiply by `GlobalBrightness`), `env_challenge`, `env_icon`, `confident_arrows`, `confident_line`, `base_textured_2d_simple` (texture unit 0) and `albedo_multiply` (texture unit 1). No other pixel program file has this form. :proven[all 765 pixel program files]

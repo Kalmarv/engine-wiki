@@ -100,6 +100,10 @@ fields:
 | 6 | Kraken | one 3-byte big-endian quantum header per block (compressed size minus one in the low 18 bits; `0x3FFFF` marks a memset quantum followed by one fill byte) | 26,139 | 116,161 |
 | 2 | LZB16 | 16 quanta of 16,384 decoded bytes per block, each with a 2-byte big-endian header (compressed size minus one in the low 14 bits) | 934 | 960 |
 
+Decoder type 2 is LZB16, not LZNIB: compressing with each compressor of `oo2core` versions 5, 6 and 9, only the LZB16
+compressor writes blocks beginning `8C 02`, and the LZNIB compressor writes `8C 01`. :observed oozextract names its
+type-2 decoder `Lznib`; the framing it reads is the one above, and the name is the only disagreement. :sourced[oozextract]
+
 Every block of every payload has the restart bit set: the first blocks begin `8C 06`, `8C 02` or (stored) `CC 06`, and
 the 303,703 later blocks of Elden Ring and 70,897 of Sekiro begin `8C 06` or `CC 06`. No block has the checksum bit,
 and no payload uses another decoder type. Of the quantum kinds beyond a compressed run, only the memset one occurs (67

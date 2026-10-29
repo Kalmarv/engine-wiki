@@ -76,4 +76,11 @@ functions' loads and stores, compared with the buffers' variable offsets] Which 
 configuration byte comes from, and which draw-parameter field becomes which variable of the pixel and domain programs' common buffers,
 is not read: the function that writes the common buffers was not identified, and the values captured from a running game carry no
 record of which effect drew them. :unknown{games="sekiro"}
+
+The appearances are made by factories that a single draw-system object registers in its constructor (one caller, an object of which the
+running engine keeps one); the constructor also creates four GPU buffers of 0x2b0, 0x2c0, 0x3c0 and 0x50 bytes, whose sizes are the
+candidates for the common buffers of the effect programs. :inferred[the constructor's decompiled stores]{games="sekiro"} A billboard
+appearance holds its node at byte 8 and is made only for a node whose data holds the action type 0x25b at byte 0x240. :inferred
+The list of live effects, the class of an effect instance and the link from an appearance up to the effect it belongs to are not
+read. :unknown{games="sekiro"}
 :::

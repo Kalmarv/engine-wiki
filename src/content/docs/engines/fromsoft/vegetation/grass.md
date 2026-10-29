@@ -57,7 +57,7 @@ fields:
   - {at: 0, size: 4, type: u32, name: first child, level: proven, note: "Index of a volume after this one, 0 for none"}
   - {at: 4, size: 4, type: u32, name: second child, level: proven, note: As the first child}
   - {at: 8, size: 4, type: u32, name: first face, level: proven, note: The faces under the volume run from here}
-  - {at: 12, size: 4, type: u32, name: end face, level: proven, note: To here, exclusive}
+  - {at: 12, size: 4, type: u32, name: end face, level: proven, note: "To here, exclusive"}
   - {at: 16, size: 4, type: u32, name: grass types, level: proven, note: A bit for each of the six types a vertex of one of its faces grows}
 ```
 

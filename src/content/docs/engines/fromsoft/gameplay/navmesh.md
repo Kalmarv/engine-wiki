@@ -87,9 +87,12 @@ Faces wind counter-clockwise seen from above (+y), except 199 of Sekiro's and 8,
 (zero area; 2,061 in Elden Ring). :proven About 5 % of Sekiro's faces (13,019) and 2 % of Elden Ring's (135,629) are not
 convex seen from above, and a face's corners lie up to 0.65 m (Sekiro) and 1.38 m (Elden Ring) off its mean plane, so
 a fan from one corner is wrong for some faces. Cutting each face into triangles by ear clipping in the plane of its
-Newell normal gives 602,450 triangles in Sekiro and 11,075,816 in Elden Ring, none turned against its face, with the
-projected area of the triangles equal to the face's within 1e-9 of it on every face; two zero-area faces of Elden Ring
-have no ear. :proven
+Newell normal, dropping only cuts with no area in 3-space, gives 602,658 triangles in Sekiro and 11,079,642 in Elden
+Ring, none turned against its face, with the projected area of the triangles equal to the face's within 1e-9 of it and
+their area vectors adding up to the face's within 2e-11 of it on every face; two zero-area faces of Elden Ring have no
+ear. :proven Some corners are straight seen along the normal's largest axis but step off the face's plane: a
+triangulation that drops every cut with no area in the projection plane loses their triangles (208 in Sekiro, 3,826 in
+Elden Ring) and leaves gaps in the surface. :proven
 
 The `aabb` contains every vertex of every mesh with faces and is never tight. Its fourth lanes hold a margin, minus on the
 minimum and plus on the maximum (1.1 in every Sekiro mesh; 2, 2.4 or 8 in Elden Ring's). In Sekiro the box is the

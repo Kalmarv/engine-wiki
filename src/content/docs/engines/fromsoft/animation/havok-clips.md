@@ -101,14 +101,18 @@ weight of ten of them bound to a float variable (`AddBlend00` to `AddBlend09`, i
 :observed{games="elden-ring"} Two of those layers play `a000_098120` (`Jaw` up to 0.12 rad, `Lips_Lower` 0.351 rad) and `a000_098130`
 (both `eyeA` bones 0.620 rad), stored with `blendHint` 1. Above them, the speaking layer (off by default, switched by events, bone weights
 `Jaw` and `Lips_Lower`) and the blinking layer (on by default, weight variable 1.0, bone weights the four eye bones) set those bones, so the
-`eyeA` rotations of the final pose say nothing about the clips below. :observed{games="elden-ring"} With the two layers' initial weight variables set to 1.0, or with the
-variable bindings removed so that the weight is a constant 1.0, a buffer that holds the clip's own sampled values on `Lips_Lower` and `Jaw`
-exists in the process and does not exist in the stock run, while the player's final pose has `Jaw` and `Lips_Lower` within 0.001 rad of their
-reference rotation in 1,214 and 1,234 snapshots: a `blendHint` 1 clip that the layer samples does not change those two bones of the
-final pose. :observed{games="elden-ring"} Whether the layer was blended into the final pose at weight 1 is not shown (no positive control with a
-`blendHint` 0 clip in a layer that has bone weights has a valid capture yet). :unknown
-(Rotations of the live model-space pose converted to the parent's space, compared with the stock pose and the clip's values; one capture of
-20 s of idle each.)
+`eyeA` rotations of the final pose say nothing about the clips below. :observed{games="elden-ring"} With the two layers' variable bindings removed so that each weight is a constant 1.0, a buffer that holds the clip's own sampled values
+on `Lips_Lower` and `Jaw` exists in the process and does not exist in the stock run. In captures whose pose array is tied to the player
+(the player's `ChrIns` found from the module that moved under a held key, the array reached by pointers from it), the final pose has `Jaw` and
+`Lips_Lower` within 0.001 rad of their reference rotation, though the clip's `Lips_Lower` value is 0.351 rad: in 1,528 snapshots with the stored
+`blendHint` 1 and in 1,615 with every clip's hint set to 2. A hint 1 or 2 clip that the layer samples at weight 1 changes neither bone in the final
+pose, in either composition space. :observed{games="elden-ring"} With the hint set to 0, the same array holds the clip's
+values on 112 of the 130 bones the clip drives (within 0.01 rad over 1,579 snapshots; the median over those bones is 0.996 rad from the stock
+pose): a hint 0 clip in that layer replaces the pose. The 18 other bones are the four eye bones, which the blinking layer above sets, and 14 leg bones, whose
+difference from the clip (0.019 to 1.571 rad) is not explained. :observed{games="elden-ring"} (Rotations of the live model-space
+pose converted to the parent's space, compared with the stock pose and the clip's values; one capture of 20 s of idle each. The hint 0 capture
+started at another place of the map than the two others (the player's spawn position), the same pointers reaching the array; why a hint 0
+edit of every clip moves the spawn is not known.) :unknown
 
 The one interleaved clip of each game stores `duration` as `(samples - 1)` frames of 1/30 s: Sekiro's `c1050`
 `a000_400600` has 166 samples of 101 tracks and lasts 5.5 s; Elden Ring's `c4751` `a000_030000` has 2 samples of 185

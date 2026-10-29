@@ -75,6 +75,16 @@ values differently: HKLib's Havok 2018.1 registry names 1 `ADDITIVE_PARENT_SPACE
 1 `ADDITIVE_DEPRECATED` and 2 `ADDITIVE`. :sourced[Smithbox] Both agree that 1 and 2 are additive; neither is checked
 against Sekiro's 2016.2 runtime.
 
+In Elden Ring, setting `blendHint` to 1 or to 2 on every clip of the player's 11 animation binders changes the player's
+final pose in the same way for both values: idling and walking, the 150 bones that a clip drives come out as the clip's value
+for 126 (hint 1) and 127 (hint 2) bones, as with the stored hint, and 7 bones that no clip drives (the foot, hand and pelvis
+dummies, `Jaw`, `Lips_Lower`) hold the identity rotation instead of their reference-pose rotation. :observed{games="elden-ring"}
+(Rotations of the live model-space pose compared with the stock pose frame by frame, over 20 s of idle and 10 s of walking
+in each of the three runs; 17 helper bones the graph derives from others differ otherwise and are not explained.) The
+clip's value is therefore a delta that starts from the identity, with absent components neutral, when the hint is 1 or 2;
+whether the engine composes it onto a base pose in the parent's or the child's space is not shown, since no
+additive blend sits above the clip in the idle and walking states. :observed{games="elden-ring"}
+
 The one interleaved clip of each game stores `duration` as `(samples - 1)` frames of 1/30 s: Sekiro's `c1050`
 `a000_400600` has 166 samples of 101 tracks and lasts 5.5 s; Elden Ring's `c4751` `a000_030000` has 2 samples of 185
 tracks and lasts 1/30 s. :observed

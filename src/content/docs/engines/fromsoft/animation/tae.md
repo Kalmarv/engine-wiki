@@ -9,6 +9,9 @@ sources:
   - title: Smithbox TAE event templates
     url: https://github.com/vawser/Smithbox
     note: Per-game event parameter templates (field order, types, asserted values)
+  - title: soulstruct
+    url: https://github.com/Grimrukh/soulstruct
+    note: Event type names and data layouts of the Dark Souls Remastered and III era
   - title: SekiroAnimationBridge
     url: https://github.com/Beertraps/SekiroAnimationBridge
     note: The four weapon slots of event 715
@@ -138,6 +141,43 @@ Where the template and the data disagree:
 | An event stored shorter than the template's fields (above) | 4,627 events | 268 | :proven[every event of both installs] |
 
 So the named values are the common ones, not a closed set, and a field's type is the editor's reading.
+
+### A second source
+
+A second community source lists 113 event types of the Dark Souls Remastered and III era, 108 of them with a class that gives the
+fields of the data in order, and names 49 of the types it shares with Sekiro's template and 40 of those it shares with Elden Ring's
+(the others are numbered only). :sourced[soulstruct] It shares 106 types with Sekiro's template and 96 with Elden Ring's; of its
+other 7 and 17 types none occurs in the files of either game, and the templates define 84 and 60 types it does not list. :observed[the
+113 types against every event of every distinct event file of both installs] It lists the type of 319,835 of Sekiro's 337,924 events
+and of 1,274,243 of Elden Ring's 1,313,057. Event 198 is in neither its list nor Sekiro's template, and Sekiro's files store none.
+:observed[the same census]
+
+The two sources agree on where the fields lie. Of the 103 and 94 shared types it has a class for, no field of one straddles the edge
+of a field of the other (a field the other splits, such as a 32-byte array that the template lists as 32 bytes, is no disagreement),
+with one exception, Sekiro's event 112: the template has a 16-bit field at byte 4 and a word at byte 6, the class words at bytes 4
+and 8, and Elden Ring's template has 16-bit fields at bytes 4 and 6 and a word at 8. Four of Sekiro's 29,350 events of this type
+store 110 at byte 8, which the Sekiro template's word reads as 7,208,960. :observed[the shared types of both games, every stored
+event] They place 234 fields of Sekiro's types and 224 of Elden Ring's at the same offset and width, and type 33 and 31 of them
+differently: 26 and 25 are bytes the class types as integers and the template as booleans, 2 and 2 the reverse, and 5 and 4 are
+4-byte words one source types as a float and the other as an integer. :observed[the same types] Those words are decided by the
+stored values:
+
+| Word | Template | Class | Stored | Confidence |
+|---|---|---|---|---|
+| Event 0 (jump table), byte 4 | float (`Arg A`) | integer | zero on 76,495 of Sekiro's 76,629 events and 304,824 of Elden Ring's 309,876; on the rest a finite float (0.09 on 133 and 5,050 events): a float | :observed[every event of the type in both installs] |
+| Event 130, bytes 8 and 12 (Sekiro) | 32-bit integer (`Dummy Poly ID`, `Slot ID`) | float | 185 events: -1 and 7 at byte 8, -1 at byte 12: integers | :observed[all 185 events] |
+| Event 730, bytes 0 and 4 | float | integer | 860 and 873 non-zero words in Sekiro's 1,086 events, 115 and 115 in Elden Ring's 116 (180): none reads as a finite float of magnitude 1e-20 to 1e12; they are the integers -45, 75, -90 and 180 | :observed[every event of the type in both installs] |
+| Event 194, byte 8 (Elden Ring) | 32-bit integer | float | zero in all 4 events: undecided | :observed[all 4 events] |
+
+Its classes are the older games' layouts, so they end where later games added fields: for 7 Sekiro types (events 96, 120, 130, 151,
+601, 715 and 720) and 9 Elden Ring types (2, 64, 96, 120, 129, 145, 193, 601 and 700) some events hold a nonzero byte outside the
+fields it lists (3,024 Sekiro events and 464,868 Elden Ring events, 408,390 of them of event 129, whose Wwise fields lie past the
+class's 20 bytes), and none outside the template's. :observed[the shared types it has a class for, every stored event] Where both
+name a type they mostly describe the same action (type 96 `PlayFFX` and `Spawn One Shot FFX`, 233 `ChangeDrawMask` and `Change
+Character Draw Mask`, 711 `HideModelMask` and `Hide Model Mask`, 713 `ModelMask` and `Show Model Mask`, 66 and 67 `CreateSpEffect1`
+and `2` and `Add SpEffect - Multiplayer` and `Add SpEffect`); a few differ (712 `DamageLevelModule` and `Override Weapon Model
+Locations`, 760 `IFrameState` and `Set Root Motion Multiplier`, 522 `KingOfTheStorm` and `Set Special Lock-on Parameter`), which
+the field layouts alone do not settle. :inferred
 
 ## Event 715
 

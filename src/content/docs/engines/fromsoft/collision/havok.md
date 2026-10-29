@@ -24,6 +24,8 @@ implementations:
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/mesh_write.rs
   - name: havok-formats interior flags
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/interior.rs
+  - name: havok-formats quad pairing
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/quads.rs
   - name: havok-formats bounding-volume tree encoder
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/bvtree_write.rs
   - name: havok-formats simd tree writer
@@ -161,6 +163,46 @@ source mesh, its key left-aligned in 32 bits with the `32 − numShapeKeyBits` l
 Sekiro and 22,778 Elden Ring meshes that have the member is that, names a primitive that exists (a quad's second half
 included), and no key appears twice. Its length equals the number of triangles the mesh decodes to in 2,414 Sekiro and
 19,330 Elden Ring meshes and differs in the others. :proven[every named collision binder]
+
+### Which triangles are joined into quads
+
+Of the triangles of the source mesh the games join pairs into quad primitives: 3,507,426 quads in Sekiro and 7,568,285 in
+Elden Ring, so about 28% and 23% of the triangles are quad halves. A quad's two source triangles are the entries of the
+`triangleDataArray` whose `triangleIndexToShapeKey` words give keys that differ in the half bit only; both are in one
+section. :proven[every named collision binder]
+
+A rule that picks most of the same pairs from the source triangles of a section alone, in `pParam` row order:
+
+1. A vertex is its position (the bits of the three floats); the vertices are numbered in the order the rows first use
+   them. Each triangle's edges `n` (from corner `n` to the next) are records of the two vertex numbers, lower first,
+   sorted by them with the unstable quicksort of the interior pass. :observed[every named collision binder]
+2. For each record in that order, the first later record on the same two vertices that runs the edge the other way, has
+   another vertex opposite it, belongs to a triangle of the same `primitiveDataIndex`, and is the third edge of one
+   triangle and the first edge of the other, makes a candidate pair. The triangle with the third edge is the quad's first
+   half (`a b c`), the other the second (`a c d`). :observed[every named collision binder]
+3. A candidate costs `(U − B) + (U − A)` where `A` and `B` are the surface measures (`ez·ey + ey·ex + ex·ez` of the
+   extents, single precision) of the two triangles' boxes and `U` that of the box of both. The candidates are sorted by
+   cost with the same quicksort and taken in that order, a candidate whose triangle is already taken being skipped.
+   :observed[every named collision binder]
+
+The pairs it makes are stock quads for 3,485,775 of the 3,507,426 stock quads of Sekiro (99.4%; 99.5% of the 3,502,109 it
+makes) and 7,505,319 of the 7,568,285 of Elden Ring (99.2%; 99.4% of the 7,549,658). In every pair that is a stock quad,
+the triangle with the third edge is the stock first half. 1,710 of the 3,333 Sekiro meshes and 18,114 of the 22,778 Elden
+Ring meshes come out with exactly their stock quads. :observed[every named collision binder] Sekiro's object meshes come
+out lowest, 28,801 of 32,485. In a sketch of the same rule over those, 3,549 of the 3,678 pairs it missed lie on an edge
+that at least three triangles share, 107 on an edge of two, and 22 have different primitive data. :observed{games="sekiro"}
+
+Pairing the whole mesh before the sections are cut, rather than inside each section, finds 86.0% of the Sekiro object
+quads against 88.7% inside the sections. :observed{games="sekiro"} Simpler rules were tried first and agreed with the stock quads less well (the counts were not kept): pairing in row
+order, by the longest shared edge, by coplanarity, and by cost alone over all adjacent pairs rather than third edge with
+first edge. :observed{games="sekiro"}
+
+:::open[Which pair does the stock tool take where many triangles share an edge?]
+The rule above takes the first later record in an order that is not stable and depends on the row order of the section,
+and misses 12% of the Sekiro object quads, most of them on edges three or more triangles share. Whether the stock
+tool numbers vertices otherwise there (by index rather than position, merging vertices within a tolerance) or orders the
+triangles of a section differently is not known.
+:::
 
 Every section names exactly one data run, and it is `{0xFFFF, 0, the section's primitive count}`; every run of the
 tree's `primitiveDataRuns` is named by some section. In Sekiro the section's `dataRuns.data` word is the first run

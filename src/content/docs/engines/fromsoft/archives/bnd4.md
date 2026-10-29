@@ -186,7 +186,7 @@ fields:
   - {at: 9, size: 1, type: u8, name: big endian, level: sourced}
   - {at: 10, size: 1, type: u8, name: bit ordering flag, level: sourced}
   - {at: 11, size: 5, type: "u8[5]", name: padding, value: 0, level: observed}
-  - {at: 16, size: 8, type: u64, name: declared header size, level: proven, note: 48 in all 2,072 pairs}
+  - {at: 16, size: 8, type: u64, name: declared header size, level: proven, note: "48 in all 2,072 pairs"}
   - {at: 24, size: 8, type: "u8[8]", name: version bytes, level: proven, note: "a copy of the index's version bytes (`07D7R6` in all 2,072 pairs)"}
   - {at: 32, size: 16, type: "u8[16]", name: padding, value: 0, level: observed}
 ```

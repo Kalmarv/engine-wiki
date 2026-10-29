@@ -59,10 +59,21 @@ above, with the sprite's texture coordinates and a 3 by 4 matrix holding its axe
 position. :observed{games="sekiro"} The record of the particle is therefore turned into the vertex by the draw methods, which
 keep the colour as it is and fold size, rotation and position into the matrix rows. :inferred
 
-:::open[Which expressions does the draw method use to fill the vertex?]
-The two draw methods of the appearance (the seventh and eighth table entries) build the vertices and select the program. Their
-decompilation is large (the second is about 4,000 lines of vector arithmetic); the field-by-field derivation of the second
-colour, the texture coordinates and the 16-bit fractions from the effect's properties is not read, and the values of the
-constant buffers are recorded but not tied to the effect properties that set them.
-:unknown{games="sekiro"}
+:::open[Which expressions fill the second colour, the texture coordinates and the constant buffers?]
+The eighth table entry (about 4,000 lines of vector arithmetic) fills the vertex array of a draw: it writes one 112-byte vertex for each
+particle in the order the capture shows: the position words are 0, the dword at byte 12 is the packed colour (the particle record's
+colour times a per-channel factor, clamped and repacked), the four floats at byte 16 are a vec4 property of the appearance, evaluated
+through its list of modifiers, times four stored floats of the appearance's draw configuration, byte 56 holds another evaluated
+property divided by a constant and byte 60 the mean of the particle's two scale factors times a constant, bytes 32 to 47 are built
+from integer cell coordinates (a floor) scaled by a step, which reads as a flipbook cell, and the last 48 bytes are the three matrix
+rows. :observed{games="sekiro"} The draw configuration the method reads (a structure of about 0x340 bytes, copied by a separate function
+into a larger draw-parameter structure) holds the integers and floats that go to the effect programs, among them values at configuration
+bytes 0x4c, 0x74, 0x90 and 0x224, and a second function builds, from a configuration object of about 0x270 bytes, a parameter
+structure of about 0x3b0 bytes whose float and integer fields are copies and products of the configuration's (for example its
+byte 0x170 times a factor is the field at structure byte 0x1e8, the offset where the pixel programs' common buffer keeps the soft-sprite
+scale), but whose fields do not follow the order of the common buffers' variables, so it is not their image. :observed[the two
+functions' loads and stores, compared with the buffers' variable offsets] Which field of the effect file's actions each
+configuration byte comes from, and which draw-parameter field becomes which variable of the pixel and domain programs' common buffers,
+is not read: the function that writes the common buffers was not identified, and the values captured from a running game carry no
+record of which effect drew them. :unknown{games="sekiro"}
 :::

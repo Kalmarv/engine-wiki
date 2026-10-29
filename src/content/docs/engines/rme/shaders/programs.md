@@ -115,6 +115,40 @@ sense is inferred, not shown by a table or a header field. The fields of word 2 
 patterns, one of them on `NRM` alone.
 :::
 
+### Control-flow words
+
+A branch instruction sets bit 31 of word 2, and its opcode is that bit as bit 6 over the six bits of the others: `BRK`, `CAL`, `IFE`, `LOOP`, `REP` and `RET` are
+`0x40` to `0x45`, the codes 0 to 5 of Mesa's branch opcodes. :sourced[Mesa nouveau, RPCS3]
+The remaining bits of words 2 and 3 are counts of 32-bit words from the start of the program or small counters, as the two describe them:
+
+| Opcode | Word 2, bits 0 to 30 | Word 3, bits 0 to 30 |
+|---|---|---|
+| `IFE` | the else offset | the end offset |
+| `CAL` | the offset of the called subroutine | not used |
+| `LOOP` | three byte fields: the iteration count (bits 2 to 9), the initial counter value (10 to 17), the increment (19 to 26) | the end offset |
+| `REP` | the same three byte fields, which Mesa found always filled with one repeat count | the end offset |
+
+:sourced[Mesa nouveau, RPCS3]
+The `IFE` offsets of all 536 instructions on the disc are instruction boundaries (or the end of the program), the else offset at or after the instruction that follows the `IFE` and the end offset at or after the else offset. :proven[all 3,267 distinct programs]
+No `CAL`, `LOOP`, `REP` or `BRK` occurs, so the fields of those are as the two sources describe them and nothing more. :proven[all 3,267 distinct programs]
+
+### Opcode names
+
+RPCS3's names for the 62 opcode numbers a reader of these programs has an entry for are the ones this page uses. Mesa's nouveau driver defines 55 of the numbers and names 11 of them
+differently, and has no name for the other seven:
+
+| Number | RPCS3 | Mesa nouveau | | Number | RPCS3 | Mesa nouveau |
+|---|---|---|---|---|---|---|
+| `0x13` | `PK4` | `PK4B` | | `0x29` | `PK16` | `PK2US` |
+| `0x14` | `UP4` | `UP4B` | | `0x2A` | `UP16` | `UP2US` |
+| `0x24` | `PK2` | `PK2H` | | `0x36` | `REFL` | `RFL` |
+| `0x25` | `UP2` | `UP2H` | | `0x3C` | `LIF` | `LITEX2` |
+| `0x27` | `PKB` | `PK4UB` | | `0x42` | `IFE` | `IF` |
+| `0x28` | `UPB` | `UP4UB` | | | | |
+
+:sourced[Mesa nouveau, RPCS3]
+The numbers Mesa does not define are `0x2C` (`PKG`), `0x2D` (`UPG`), `0x38` (`DP2`), `0x39` (`NRM`), `0x3B` (`DIVSQ`), `0x3D` and `0x3E` (`FENCT` and `FENCB`). `NRM` is the most used of them: 14,533 instructions on the disc. :sourced[Mesa nouveau, RPCS3]
+
 ## Vertex microcode
 
 A `.vsp` program's microcode is 16-byte slots of four big-endian 32-bit words, as many as the vertex descriptor's instruction count says, with bit 0 of the last word set in the final slot and in no other. :proven[all 170 distinct vertex programs]

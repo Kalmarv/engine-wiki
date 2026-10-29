@@ -172,6 +172,32 @@ Microsoft's reference, which gives them two destinations and two sources. :obser
 vkd3d's disassembler, run as a program over 600 sampled containers of the three games, prints the same instruction sequence as a decode of the token stream (182,560 instructions), the same
 signature elements (4,730) and the same part directory. :observed
 
+The version tokens of the 7,729 programs are pixel 4.0 (3,316) and 5.0 (3,084), vertex 5.0 (568), compute 5.0 (736),
+domain 5.0 (9), geometry 5.0 (7) and hull 5.0 (9). :proven[7,729 containers]
+
+The opcode token's bits 11 to 23 are control bits whose meaning depends on the opcode. These are the ones with a meaning that
+the programs use beyond the saturate bit, a conditional's test and a declaration's dimension, interpolation or sampler mode:
+
+| Opcode | Token bits | Meaning | In the programs | Confidence |
+|---|---|---|---|---|
+| an arithmetic instruction | 19 to 22 | the `precise` mask: bit 0 for x to bit 3 for w, the lanes the instruction is marked `precise` for | 4,960 instructions of Riders Republic's programs; none in Sekiro or Sledding Game | :proven[7,729 containers] |
+| `sync` | 11 to 14 | what it waits for: threads in the group (`_t`), group shared memory (`_g`), unordered-access views within the group (`_ugroup`), across all groups (`_uglobal`) | 27 `sync_g` and 218 `sync_g_t`, all in Riders Republic's compute programs | :proven[7,729 containers] |
+| `resinfo`, `sample_info` | 11 and 12 | the return type: 0 float, 1 reciprocal float (`resinfo`), 2 unsigned integer (`resinfo`); 1 is unsigned integer for `sample_info` | `resinfo_uint` 14 times in Riders Republic and once in Sledding Game, `sampleinfo_uint` once in Sledding Game; never the reciprocal | :proven[7,729 containers] |
+| `dcl_globalFlags` | 11 to 16 | bit 0 `refactoringAllowed`, 1 `enableDoublePrecisionFloatOps`, 2 `forceEarlyDepthStencil`, 3 `enableRawAndStructuredBuffers`, 4 `skipOptimization`, 5 `enableMinimumPrecision` | Sekiro: `refactoringAllowed` alone in all 432. Riders Republic: alone in 2,419, with `forceEarlyDepthStencil` in 24. Sledding Game: alone in 1,538, with raw and structured buffers in 1 and with minimum precision in 20 (1,559 of its programs state flags) | :proven[7,729 containers] |
+
+The geometry and tessellation declarations keep their value in the control bits or in the word after the token. Riders Republic's
+7 geometry programs declare a triangle input (`dcl_inputprimitive` bits 11 to 16, the value 3), a triangle-strip output
+(`dcl_outputtopology`, 5) and a vertex count in the word after `dcl_maxout`, 3 in six programs and 12 in one. Its 9 hull and 9
+domain programs declare 4 input control points (bits 11 to 16 of `dcl_input_control_point_count`, in both stages) and the hull
+programs 4 output control points, the quad domain (bits 11 to 13, the value 3), fractional-odd partitioning (3) and clockwise
+triangle output (3), a largest tessellation factor in a float word after `dcl_hs_max_tessfactor` (15.0 in eight programs,
+64.0 in one) and a fork phase with an instance count of 2 in one program and 4 in another. No program declares a join phase
+instance count. :proven[the 7 geometry, 9 hull and 9 domain programs]{games="riders-republic"} The values are Direct3D's own
+numbers as the token stores them: `D3D_PRIMITIVE` (1 point, 2 line, 3 triangle), `D3D_PRIMITIVE_TOPOLOGY` (1 point list, 3 line
+strip, 5 triangle strip), `D3D11_TESSELLATOR_DOMAIN` (1 isoline, 2 triangle, 3 quad), `D3D11_TESSELLATOR_PARTITIONING` (1
+integer, 2 power of two, 3 fractional odd, 4 fractional even) and `D3D11_TESSELLATOR_OUTPUT_PRIMITIVE` (1 point, 2 line, 3
+triangle clockwise, 4 triangle counter-clockwise). :observed[test compilations and the names fxc's disassembler prints for the values]
+
 ## Shader Model 6: pipeline-state record (`PSV0`)
 
 Every program (not library) container of skate. and Elden Ring has a `PSV0` part: the runtime-info structure, the resource
@@ -270,9 +296,22 @@ libraries `[0]`, `[5, 8]`, `[5, 6, 8]` or `[5, 6, 7, 8]`. The flags value is `16
 the great majority of programs (skate. 6,684 pixel, 3,206 vertex, 3,001 compute; Elden Ring 10,899 pixel, 18,642 vertex); other values
 occur in compute programs and libraries. :observed{games="skate elden-ring"}
 
+The properties `5` to `8` of the libraries hold these. Tag `5` is a node with one integer, the register space that automatic
+bindings take: `0` on the function entry of all 205 skate. and 4,281 Elden Ring libraries; compiled with `-auto-binding-space 3`
+the library's own record, the one with no function, states `3` and the function's stays `0`. :observed[all libraries; a test compilation] Tag `6` is the ray payload size in bytes and tag `7` the hit-attribute size, both plain
+integers (payloads of 4, 20 or 32 bytes in skate. and 4 or 12 in Elden Ring; attributes of 4 or 8 bytes in skate. and 8 in Elden
+Ring), and tag `8` the shader kind: 7 ray generation, 8 intersection, 9 any hit, 10 closest hit, 11 miss, 12 callable. Of skate.'s
+205 libraries 172 are ray generation, 6 intersection, 3 any hit, 16 closest hit and 8 miss. :observed{games="skate elden-ring"}
+Two tags come from test compilations only: tag `10`, an amplification shader's state, is a node of the thread group and the
+payload size in bytes (`[[8, 1, 1], 20]`), and tag `11`, a required wave size, a node with one integer (`[WaveSize(32)]` states
+`[32]`). :observed[dxc 1.7.2308, one program each, equal to the `PSV0` part]
+
 A signature element's metadata record has 11 operands; the last is a tail list of tag and value pairs, null in 7,418 of skate.'s
 145,462 elements and 86,015 of Elden Ring's 545,303, and otherwise only tag `3`, the usage mask. Tags `0` (stream) and
-`2` (dynamic-index mask) never occur. The usage mask counts from the element's first component: dxc prints the signature table's
+`2` (dynamic-index mask) never occur in the programs. Test compilations show what they hold: tag `0` the stream number of a
+geometry shader's output element written to a stream other than 0 (`[0, 1, 3, 15]` for stream 1), tag `2` the components of an
+input array element indexed with a run-time value (`float4 a[3]` states `[2, 15, 3, 15]`: dynamic-index mask 15 beside usage mask
+15). :observed[dxc 1.7.2308, one program each] The usage mask counts from the element's first component: dxc prints the signature table's
 "Used" column in absolute components, and a scalar packed into component `w` states `1` in the mask where the column
 shows `w`, a `float3` of which the program reads `y` states `2`. :observed[test compilations against the listing] The semantic-index list of an element runs `first`, `first + 1`, … and is as long as the
 element's row count in every element. :observed{games="skate elden-ring"}
@@ -280,16 +319,38 @@ element's row count in every element. :observed{games="skate elden-ring"}
 A resource record has 8 operands (constant buffer, sampler), 9 (SRV) or 11 (UAV) in every record; the trailing tag list holds
 tag `0` (element type) or tag `1` (structure stride) only. :observed{games="skate elden-ring"}
 
+After the shape, an SRV's operand 7 is its sample count (a `Texture2DMS<float4, 4>` states 4, any other view 0), and a UAV's operand 7
+is the globally-coherent flag, operand 8 the flag for a hidden counter (an append, consume or `IncrementCounter` buffer) and operand 9
+the rasterizer-ordered flag; a tag list that holds tag `3` marks a view that is the target of a 64-bit atomic. :observed[dxc 1.7.2308, one
+program with each kind of view] In the programs one skate. SRV states a sample count of 2, three Elden Ring SRVs state 2 and four state 4, 147
+skate. UAVs have a counter and none of Elden Ring's, and no record is globally coherent, rasterizer ordered or a 64-bit atomic target.
+:observed{games="skate elden-ring"}
+
+The module's attribute groups (the `PARAMATTR_GROUP` block) number 60,793 in skate. and 160,520 in Elden Ring. A group is a slot
+(`0xFFFFFFFF` for the function itself, `0` for its result, `1` and up for its parameters) and attributes of three forms: a flag
+(an LLVM kind number), an integer (a kind number and a value) and a string (a key and a value, or a key alone). The programs use
+flags (101,896 and 268,620), strings in Elden Ring only (38,529) and no integer attribute. A function names its attribute list,
+a list of group ids, by a 1-based index in operand 4 of its record. LLVM 3.7's kind numbers 9 `noalias`, 11 `nocapture`,
+12 `noduplicate`, 17 `noreturn`, 18 `nounwind`, 20 `readnone`, 21 `readonly` and 39 `nonnull` are the ones dxc's listings
+print for these groups. :observed{games="skate elden-ring"}
+
 No program has a string function attribute: the libraries of skate. have none, and those of Elden Ring only the standard attributes
 (`disable-tail-calls`, `less-precise-fpmad`, `no-frame-pointer-elim`, `no-infs-fp-math`, `no-nans-fp-math`, `no-realign-stack`,
-`stack-protector-buffer-size`, `unsafe-fp-math`, `use-soft-float`), so no module sets a float-denormal mode. :observed{games="skate elden-ring"}
+`stack-protector-buffer-size`, `unsafe-fp-math`, `use-soft-float`), so no module sets a float-denormal mode. :observed{games="skate elden-ring"} The compiler writes the one string attribute
+`"fp32-denorm-mode"` on the entry function when it is given `-denorm any`, `preserve` or `ftz`, with the option's word as the value;
+compiled without the option the function has no attribute list. :observed[dxc 1.7.2308 on one pixel program with each option and without]
 
 Instruction attachments name `dx.controlflow.hints`, `tbaa`, `noalias`, `alias.scope`, `llvm.loop`, `range` and `dx.precise`.
 `dx.precise` occurs only in skate.: 107,109 times in 3,185 of 3,341 vertex programs and 360 times in 12 of 5,780 compute programs, never in pixel programs, and
 never in Elden Ring (18.0 million floating-point add, subtract, multiply, divide and remainder instructions in its modules). `dx.nonuniform` does not occur in
 either. :observed{games="skate elden-ring"} The attachment sits on `dx.op` calls: 88,541 `tertiary` (mad), 13,005 `loadInput`,
 3,546 `unary`, 1,421 `dot3`, 331 `legacyF16ToF32`, 307 `binary`, 213 `dot4` and 105 `dot2`, and on no plain floating-point
-instruction. :observed{games="skate"} dxc 1.7.2308 puts it on the `loadInput` calls that feed a `precise` value and not on the
+instruction. :observed{games="skate"} The attachments of all instructions by kind: skate. `dx.controlflow.hints` 121,111, `dx.precise`
+107,469, `tbaa` 42,568, `noalias` 13,060, `alias.scope` 3,683, `llvm.loop` 1,651 and `range` 7; Elden Ring `dx.controlflow.hints` 88,988,
+`noalias` 15,817, `tbaa` 4,449, `range` 2,137 and `llvm.loop` 48. They are the 274,642 and 105,029 records of the function bodies'
+attachment blocks, each an instruction index within the body and then pairs of a kind and a metadata node (a record with an even
+count would attach to the function itself, and none does); every index lies inside its body and every node inside the module's
+metadata. :observed{games="skate elden-ring"} dxc 1.7.2308 puts it on the `loadInput` calls that feed a `precise` value and not on the
 arithmetic, in a test program. :observed[one test compilation]
 
 The address spaces of the modules are `0` and `3` only: 431,441 skate. pointer types and 1,114,031 Elden Ring ones are in space

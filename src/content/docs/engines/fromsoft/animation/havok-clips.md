@@ -85,6 +85,11 @@ clip's value is therefore a delta that starts from the identity, with absent com
 whether the engine composes it onto a base pose in the parent's or the child's space is not shown, since no
 additive blend sits above the clip in the idle and walking states. :observed{games="elden-ring"}
 
+Every animation stores the `type` of its class, so the class and the value say the same thing: 1 for
+`hkaInterleavedUncompressedAnimation`, 3 for `hkaSplineCompressedAnimation` and, in Sekiro's 431
+`hkaQuantizedAnimation` objects, 4 (HKLib's names are in [Enumerated members](/engines/fromsoft/data-model/havok-tagfiles/#enumerated-members)).
+:observed[every distinct tagfile read]
+
 The one interleaved clip of each game stores `duration` as `(samples - 1)` frames of 1/30 s: Sekiro's `c1050`
 `a000_400600` has 166 samples of 101 tracks and lasts 5.5 s; Elden Ring's `c4751` `a000_030000` has 2 samples of 185
 tracks and lasts 1/30 s. :observed

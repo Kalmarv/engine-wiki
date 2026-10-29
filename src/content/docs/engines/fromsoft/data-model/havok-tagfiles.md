@@ -164,8 +164,38 @@ Every field record of both installs has flags `0x20` set; the values are `0x20` 
 | `0x24` | 11,365; 43,158 | `hkRootLevelContainer::NamedVariant.name` |
 | `0x25` | 1,938; 5,683 | `hkReferencedObject.memSizeAndFlags` |
 
-Bit 0 marks a field not serialised. :sourced[soulstruct-havok] Bits 1 and 2 are never set together. The community
-sources disagree on which of them is "protected" and which "private". :unknown
+The bits are named as the 2018 SDK's declaration-flag enumeration names them in HKLib (`DECL_NOT_SERIALIZABLE`,
+`DECL_PROTECTED`, `DECL_PRIVATE`, `DECL_DATA_FIELD`). :sourced[HKLib]
+
+| Bit | Name | What the files show | Confidence |
+|---|---|---|---|
+| `0x01` | not serialisable | The member keeps its offset in the type table, but its bytes read zero every time they are read: 183 such members in Sekiro's tables (1,737,907 reads) and 205 in Elden Ring's (13,901,700 reads), a run of structs read by its first 16 elements. | :observed[every distinct tagfile read of both installs] |
+| `0x02` | protected | Of the 196 combinations of class, member and flags that both a type table of either game and the Havok 6.6 SDK's public headers declare, the 3 the headers put under `protected:` all store `0x22`. | :observed[the 196 combinations] |
+| `0x04` | private | Of the 17 combinations the headers put under `private:`, 16 store `0x24`; the 17th, `hkFlags.storage`, is stored `0x24` by most instances of the template and `0x22` by one. Reading the two bits the other way round fails on 19 of these 20 non-public combinations. | :observed[the 196 combinations] |
+| `0x20` | data field | Set on every field record. | :proven{games="sekiro elden-ring"} |
+
+A member the headers put under `public:` stores neither access bit in 174 of 176 combinations; the two others are
+`hkxVertexFloatDataChannel.perVertexFloats` (stored `0x22`) and `hkReferencedObject.memSizeAndFlags` (stored `0x25`).
+:observed[the 196 combinations] Bits 1 and 2 are never set together, and the bits `0x08` (hidden), `0x10` (property
+field) and `0x40` (custom setter) are set on no record of either install. :proven{games="sekiro elden-ring"}
+
+### Enumerated members
+
+The type tables name the enumeration of an enumerated member (`hkaAnimationBinding::BlendHint`,
+`hclClothData::Platform`) but list none of its items, so the values below are what the tagfiles store and the names
+are HKLib's, from its 2018.1 classes. :sourced[HKLib] Counts are over every distinct tagfile read (Sekiro 19,127, of
+which 11 more cannot be read: ten name a compendium that lies in another binder and one archive entry is a truncated
+envelope; Elden Ring 68,722).
+
+| Member | Stored values | Confidence |
+|---|---|---|
+| `hkaAnimation.type` (`AnimationType`, a 32-bit enum) | Each class stores one value in all its animations: `hkaInterleavedUncompressedAnimation` 1 `HK_INTERLEAVED_ANIMATION` (Sekiro 2,443; Elden Ring 153), `hkaSplineCompressedAnimation` 3 `HK_SPLINE_COMPRESSED_ANIMATION` (11,571; 48,628), `hkaQuantizedAnimation` 4 `HK_QUANTIZED_COMPRESSED_ANIMATION` (Sekiro 431). The values 0, 2, 5 and 6 occur in no tagfile. | :observed[every distinct tagfile read] |
+| `hkaAnimationBinding.blendHint` (`BlendHint`, 32 bits) | 0 `NORMAL` (Sekiro 14,121; Elden Ring 44,645), 1 (321; 4,136), 2 (Sekiro 3, all in `c9520`). The names of 1 and 2 are `ADDITIVE_PARENT_SPACE` and `ADDITIVE_CHILD_SPACE` in the 2018.1 SDK and `ADDITIVE_DEPRECATED` and `ADDITIVE` in the 2014 one; Sekiro's 2016.2 lies between, and the files do not say. See [Havok clips](/engines/fromsoft/animation/havok-clips/). | :observed[every distinct tagfile read] |
+| `hkaAnimatedReferenceFrame.frameType` (`hkaReferenceFrameTypeEnum`) | Not stored: declared with flags `0x21` and 0 in all 6,865 reference frames of Sekiro and 20,609 of Elden Ring. HKLib names 0 `REFERENCE_FRAME_UNKNOWN`, 1 `REFERENCE_FRAME_DEFAULT`, 2 `REFERENCE_FRAME_PARAMETRIC`. | :observed[every distinct tagfile read] |
+| `hknpBodyCinfo.motionType` (`hknpMotionType::Enum`, a byte) | 0 `STATIC` (Sekiro 16,644 bodies; Elden Ring 286,180), 1 `KEYFRAMED` (642; 404), 2 `DYNAMIC` (7,225; 26,490). Only motion type 2 has a positive mass (5,334 and 24,257 bodies); type 1 has mass 0 or −1. See [bodies](/engines/fromsoft/collision/materials-and-bodies/). | :observed[every distinct tagfile read] |
+| `hknpShape.type` (`hknpShapeType::Enum`) | Each shape class stores one value: `hknpConvexShape` 0 `CONVEX` (Sekiro 2; Elden Ring 9), `hknpConvexPolytopeShape` 1 `CONVEX_POLYTOPE` (1,446; 3,326), `hknpSphereShape` 2 `SPHERE` (5; 8), `hknpCapsuleShape` 3 `CAPSULE` (1,924; 7,107), `hknpCylinderShape` 4 `CYLINDER` (Elden Ring 97), `hknpTriangleShape` 5 `TRIANGLE` (3; 3), `hknpBoxShape` 6 `BOX` (5,210; 16,798), `hknpCompressedMeshShape` and the games' `fsnpCustomParamCompressedMeshShape` 9 `COMPRESSED_MESH` (3,426; 21,406), `hknpExternMeshShape` 10 `EXTERN_MESH` (12,498; 264,840). | :observed[every distinct tagfile read] |
+| `hclClothData.targetPlatform` (`Platform`, 32 bits) | 2 `HCL_PLATFORM_X64` in all 610 cloth datas of Sekiro and 2,692 of Elden Ring. The enumeration has one bit per platform. | :observed[every distinct tagfile read] |
+| `hclShape.type` (`hclShapeType`) | Not stored: 0 in every shape (Sekiro 268, Elden Ring 3,460); the class names the shape type: `hclSphereShape` 0 `HCL_SHAPE_TYPE_SPHERE`, `hclPlaneShape` 1, `hclCapsuleShape` 2, `hclTaperedCapsuleShape` 3, `hclConvexGeometryShape` 9 `HCL_SHAPE_TYPE_CONVEX_GEOMETRY`. | :observed[every distinct tagfile read] |
 
 ## Type hash (`THSH`)
 
@@ -381,7 +411,3 @@ tables, whose `hknp` classes carry the 2016.2 versions given in parentheses in t
 `parts/fg_a_0000_m.partsbnd.dcx` and three version 9 (`hk_2013.1.0-r1`) in `facegen/facegen.fgbnd.dcx`. It has no
 binary `.hkt` tagfiles. :proven{games="elden-ring"}
 
-:::open[What do field-flag bits 1 and 2 mean?]
-Both games store field flags `0x20`–`0x25`. Bit 0 marks a field not serialised; bits 1 and 2 are access levels in the
-community readers, which disagree on which is protected and which private. The data cannot tell them apart.
-:::

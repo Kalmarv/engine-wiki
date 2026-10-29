@@ -2,6 +2,9 @@
 title: Havok cloth data
 description: The hcl cloth classes characters and armour parts ship, their member lists, particle index widths and the values of their enums.
 sources:
+  - title: HKLib
+    url: https://github.com/The12thAvenger/HKLib
+    note: the 2018.1 names of the platform and shape type enumerations
   - title: HKX2Library
     url: https://git.kroner.dev/HKX2/HKX2Library
     note: names of the hclClothData platform bits and the local-range shape types, from a 2014.2 class dump
@@ -107,7 +110,9 @@ Most cloth datas have five states (606 of 610 in Sekiro, 2,632 of 2,692 in Elden
 to. :observed[state names over both installs]
 
 The `type` member that `hclConstraintSet`, `hclOperator` and `hclShape` declare is 0 in every stored object of both
-installs; the object's class says what it is. :proven[every distinct tagfile with cloth of both installs]
+installs; the object's class says what it is: `hclSphereShape` is shape type 0, `hclPlaneShape` 1, `hclCapsuleShape` 2,
+`hclTaperedCapsuleShape` 3 and `hclConvexGeometryShape` 9 in HKLib's `hclShapeType`. :sourced[HKLib]
+:proven[every distinct tagfile with cloth of both installs]
 `hclConstraintSet` stores a `constraintId` (an `hkHandle`) :only[elden-ring], in all 14,262 Elden Ring constraint sets.
 :proven[every distinct tagfile with cloth of both installs]
 
@@ -125,6 +130,6 @@ offset for each collidable. :proven[every distinct tagfile with cloth of both in
 |---|---|---|
 | `hclClothData.targetPlatform` | 2 in all 650 Sekiro and 4,357 Elden Ring cloth datas | :proven[every named character and parts binder] |
 | same, counted over every distinct tagfile of the install | 2 in all 610 Sekiro (149 tagfiles) and 2,692 Elden Ring (814 tagfiles) cloth datas | :proven[every tagfile of both installs] |
-| Platform value 2 | x64 | :sourced[HKX2Library] |
+| Platform value 2 | x64 (`HCL_PLATFORM_X64`, in the 2018.1 registry as well) | :sourced[HKX2Library, HKLib] |
 | `hclLocalRangeConstraintSet.shapeType` (32-bit) | Sekiro: 0 in all 656 sets; Elden Ring: 0 in 4,527 sets, 1 in 117 | :proven[every named character and parts binder] |
 | Shape type 0, 1 | Sphere, cylinder | :sourced[HKX2Library] |

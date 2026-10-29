@@ -9,6 +9,9 @@ sources:
     url: https://github.com/The12thAvenger/HKLib
   - title: Havoc (SoulsAssetPipeline)
     url: https://github.com/Meowmaritus/SoulsAssetPipeline/tree/master/Havoc
+  - title: HKX2Library
+    url: https://git.kroner.dev/HKX2/HKX2Library
+    note: the name of the section flags bit
 implementations:
   - name: havok-formats Havok tagfile reader
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/tagfile.rs
@@ -496,6 +499,8 @@ nodes or fewer: 278,433 Elden Ring trees (the compressed meshes and the version 
 | `leafIndex` | The node index of the section's leaf in the mesh-level tree, in all 273,228 Sekiro and 722,405 Elden Ring sections. | :proven[every named collision binder] |
 | `page` | Shared-vertex page, above. | :proven[every named collision binder] |
 | `flags` | 1 in exactly the sections that hold a custom primitive or an extern reference (10 Sekiro, 65 Elden Ring), 0 in all others. | :proven[every named collision binder] |
+| `flags` bit 0 | Named `SF_REQUIRE_TREE` in HKX2Library's class dump of the section. | :sourced[HKX2Library] |
+| `flags`, counted over every distinct tagfile | Of 273,409 Sekiro and 705,798 Elden Ring sections, 10 (all in object binders) and 157 (64 in asset binders, 93 in character binders) have `flags` 1; each of them holds a custom primitive and none of the others does. | :observed[every distinct tagfile read] |
 | `layerData` | 0 in every section; Sekiro's `unusedData` likewise. | :proven[every named collision binder] |
 | Data runs | Every section of both games has one data run, covering primitives `0` to its count, with value `0xFFFF`. The run value is 16 bits in both games (Sekiro wraps it in `hknpCompressedMeshShapeTreeDataRunData`). | :proven[every named collision binder] |
 

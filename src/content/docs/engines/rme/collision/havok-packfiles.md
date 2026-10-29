@@ -476,6 +476,37 @@ The radius at `+0x190` is not a strict bound: for 2,051 of the 10,758 dynamic bo
 The 2,021 fixed bodies are 1,758 meshes, 180 cylinders, 42 boxes and 41 convex shapes; the dynamic ones are props and fragments, mostly convex shapes and boxes. :observed
 The rotation is orthonormal (to 0.002) with determinant +1 in all bodies, and a vertex `v` goes to `v.x × col0 + v.y × col1 + v.z × col2 + t`: for MIKE's fixed bodies with a non-identity rotation (1,408 samples) this puts them within 0.5 m of the render geometry in every case, the transposed rule in 30%. :proven[all 12,789 bodies]
 
+## Enumerated members
+
+The class metadata of the eight ragdoll files lists the items of three enumerations the level files use, and the lists
+are identical in all eight: :proven[the eight files]
+
+| Enumeration (class) | Items |
+|---|---|
+| `MotionType` (`hkpMotion`) | `MOTION_INVALID` 0, `MOTION_DYNAMIC` 1, `MOTION_SPHERE_INERTIA` 2, `MOTION_BOX_INERTIA` 3, `MOTION_KEYFRAMED` 4, `MOTION_FIXED` 5, `MOTION_THIN_BOX_INERTIA` 6, `MOTION_CHARACTER` 7, `MOTION_MAX_ID` 8 |
+| `ResponseType` (`hkpMaterial`) | `RESPONSE_INVALID` 0, `RESPONSE_SIMPLE_CONTACT` 1, `RESPONSE_REPORTING` 2, `RESPONSE_NONE` 3, `RESPONSE_MAX_ID` 4 |
+| `BroadPhaseType` (`hkpWorldObject`) | `BROAD_PHASE_INVALID` 0, `BROAD_PHASE_ENTITY` 1, `BROAD_PHASE_PHANTOM` 2, `BROAD_PHASE_BORDER` 3, `BROAD_PHASE_MAX_ID` 4 |
+
+The metadata has no items for the enumerations of the mesh and MOPP classes, which the ragdoll files do not use; their
+names are those of the Havok 6.6 SDK's public headers, whose numbering the stored values follow. The values the 490
+files store:
+
+| Offset | Member | Value | Count | Confidence |
+|---|---|---|---|---|
+| `+0xE8` | rigid body motion type | `MOTION_SPHERE_INERTIA` 2, `MOTION_BOX_INERTIA` 3, `MOTION_FIXED` 5 | 396, 10,372 and 2,021 bodies | :proven[all 12,789 bodies] |
+| `+0x8C` | material response type | `RESPONSE_SIMPLE_CONTACT` 1 | 12,789 bodies | :proven[all 12,789 bodies] |
+| `+0x28` | the collidable's broad-phase handle type | `BROAD_PHASE_ENTITY` 1 | 12,789 bodies | :proven[all 12,789 bodies] |
+| `+0x2C` | filter word | split by `hkpGroupFilter` into layer (bits 0 to 4), subsystem id (5 to 9), the subsystem it does not collide with (10 to 14) and system group (16 to 31): only the layer is set, 0, 2, 7, 11, 15 or 18 | as the table above | :proven[all 12,789 bodies] |
+| `+0xD8` | extended mesh welding type | `WELDING_TYPE_ANTICLOCKWISE` 0 | 1,758 meshes | :proven[all 1,758 meshes] |
+| `+0x00` | subpart type | `SUBPART_TRIANGLES` 0 | 6,445 subparts | :proven[all 6,445 subparts] |
+| `+0x01` | subpart material index striding type | `MATERIAL_INDICES_INT16` 2 | 6,445 subparts | :proven[all 6,445 subparts] |
+| `+0x48` | subpart index striding type | `INDICES_INT32` 3 | 6,445 subparts | :proven[all 6,445 subparts] |
+| `+0x2C` | MOPP code build type | `BUILT_WITH_CHUNK_SUBDIVISION` 0 | 1,705 codes | :proven[all 1,705 codes] |
+
+The offsets of the three subpart members are inside a subpart's 96 bytes. The shape type word at `+0x0C` of every shape
+is not an enumeration here: the metadata marks the `hkpShape` member `SERIALIZE_IGNORED`, and the word is 0 in all
+15,935 shapes. :proven[all 15,935 shapes]
+
 ## Systems and constraints
 
 An `hkpPhysicsSystem` is 0x44 bytes: arrays of bodies (`+0x08`), constraints (`+0x14`), actions and phantoms (`+0x20`, `+0x2C`, empty everywhere), a name (`+0x38`, set only in the ragdoll files), a zero word (`+0x3C`) and a byte at `+0x40` that is 0 or 1, followed by three zero bytes. :proven[all 972]

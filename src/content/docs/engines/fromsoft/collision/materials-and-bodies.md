@@ -8,6 +8,9 @@ sources:
     url: https://github.com/vawser/Smithbox
   - title: Havoc (SoulsAssetPipeline)
     url: https://github.com/Meowmaritus/SoulsAssetPipeline/tree/master/Havoc
+  - title: HKLib
+    url: https://github.com/The12thAvenger/HKLib
+    note: the name of the motion type enumeration
 implementations:
   - name: fromsoft-formats collision reader
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/collision.rs
@@ -112,10 +115,13 @@ Every map body has motion type 0. Among object and asset bodies, only motion typ
 in Sekiro, 17,867 in Elden Ring); otherwise it stores −1 (2,407 and 2,404) or, in 9 Elden Ring bodies, another
 negative mass, never 0. Motion type 1 has mass 0 or −1 (706 and 414 bodies), and motion type 0 likewise.
 :proven[every named collision binder] So 2 is the dynamic motion and 1 the keyframed one, whose mass is infinite.
-:inferred
+:inferred HKLib names the byte's enumeration `hknpMotionType::Enum`: 0 `STATIC`, 1 `KEYFRAMED`, 2 `DYNAMIC`.
+:sourced[HKLib] Counted over every distinct tagfile of each install, the bodies are 16,644 static, 642 keyframed and
+7,225 dynamic in Sekiro and 286,180, 404 and 26,490 in Elden Ring; every positive mass is on a dynamic body (5,334 and
+24,257 bodies) and no keyframed body has one. :observed[every distinct tagfile read]
 
 :::open[What do motion-type values mean at runtime?]
-The mass pattern makes 0 static, 1 keyframed and 2 dynamic; a runtime comparison would establish it.
+The names fit the mass pattern; a runtime comparison would establish what the engine does with each motion type.
 :::
 
 ## Sekiro

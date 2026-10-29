@@ -492,6 +492,33 @@ The constraint data are chains of atoms, each starting with a `u16` type. The ty
 
 The first atom (type 2) holds two transforms at `+0x20` and `+0x60`; their rotations are orthonormal in all 161 ragdoll and limited-hinge data. :proven[all 161]
 
+### Physics data, instances and atoms
+
+The root container holds one named variant, of class `hkpPhysicsData`, named `hkpPhysicsData` in 482 files and `Physics Data` in the 8 ragdoll files. :proven[all 490 files] The `hkpPhysicsData` (0x18 bytes) has a null world pointer at `+0x08` in all 490, so no world object, collision filter object or layer table exists in any file, and an array of systems at `+0x0C`: two systems (482 files) or one (the ragdolls). :proven[all 490 files]
+Every rigid body of a file is in exactly one system's body list (12,789 bodies in 100 systems), in data order. The 144 constraints of the ragdoll files sit in the system that holds their two bodies; the 17 of FOXTROT's base file and JULIET's sit in the second system, which has no bodies, and join bodies of the first. :proven[all 490 files]
+
+The members of an `hkpConstraintInstance` are, at their offsets: the owner island (`+0x08`, null), `data` (`+0x0C`), `constraintModifiers` (`+0x10`, null in all 161), `entities` (`+0x14`, `+0x18`: two different rigid bodies), `priority` (`+0x1C`, 1 = `PRIORITY_PSI`), `wantRuntime` (`+0x1D`, 1), `destructionRemapInfo` (`+0x1E`, 0), a small array of listeners (`+0x20`, eight zero bytes), `name` (`+0x28`), `userData` (`+0x2C`, 0) and two zero words (`+0x30`, `+0x34`). :proven[all 161 instances] Each offset equals the one the class metadata of the eight ragdoll files stores. :proven[8 ragdoll files]
+
+The atom type numbers are the ones the ragdoll files' metadata lists as `AtomType`: 1 bridge, 2 set local transforms, 5 ball socket, 12 2d angle, 14 angle limit, 15 twist limit, 16 cone limit, 17 angular friction, 18 angular motor and 19 ragdoll motor. :proven[8 ragdoll files] They are not the numbers of the Sekiro and Elden Ring tagfiles, where 23 is a setup-stabilization atom and the atoms that share a name have more members. :observed[class tables of the two generations]
+Each atom is its `u16` type and its members, and the next atom starts where the previous one's class ends. Every other byte of the objects is zero (padding) except the two transforms' fourth lanes. :proven[all 161 data objects] The atoms' members:
+
+| Atom | Members at their offsets (from the atom) | Values in the data |
+|---|---|---|
+| set local transforms (0x90) | transform A `+0x10`, transform B `+0x50` (each three 16-byte columns and a translation) | the fourth lane of every column of transform A is zero in the 17 hinges of FOXTROT and JULIET and non-zero in the 144 data of the ragdoll files; orthonormal in all 322 |
+| ragdoll motor (0x50) | `isEnabled` `+0x02`, `initializedOffset` `+0x04`, `previousTargetAnglesOffset` `+0x06`, `target_bRca` `+0x10` (three columns), three motor pointers `+0x40` | disabled; 96 and 100; equal to transform B's rotation (fourth lanes too); null |
+| angular friction (0xC) | `isEnabled` `+0x02`, `firstFrictionAxis` `+0x03`, `numFrictionAxes` `+0x04`, `maxFrictionTorque` `+0x08` | enabled, axis 0; 3 axes with torque 0.7 (56), 2.0 (8) or 3.0 (8) in a ragdoll, 1 axis with 0 (80) or 5.0 (9) in a hinge |
+| twist limit (0x14) | `isEnabled` `+0x02`, `twistAxis` `+0x03`, `refAxis` `+0x04`, `minAngle` `+0x08`, `maxAngle` `+0x0C`, `angularLimitsTauFactor` `+0x10` | enabled, axes 0 and 1, tau 0.8; 6 distinct angle pairs, the minimum at most 0 |
+| cone limit (0x14) | `isEnabled` `+0x02`, `twistAxisInA` `+0x03`, `refAxisInB` `+0x04`, `angleMeasurementMode` `+0x05`, `memOffsetToAngleOffset` `+0x06`, `minAngle` `+0x08`, `maxAngle` `+0x0C`, tau `+0x10` | the cone: axes 0 and 0, mode 0, offset 0x38, minimum -100.0 in all 72; the planes limit: axes 0 and 1, mode 1, offset 0; tau 0.8 in both |
+| angle limit (0x10) | `isEnabled` `+0x02`, `limitAxis` `+0x03`, `minAngle` `+0x04`, `maxAngle` `+0x08`, tau `+0x0C` | enabled, axis 0, tau 1.0; 14 distinct angle pairs, from (-0.0174, 0.0174) to (-4.188, 0.8725) radians |
+| angular motor (0x14) | `isEnabled` `+0x02`, `motorAxis` `+0x03`, `initializedOffset` `+0x04`, `previousTargetAngleOffset` `+0x06`, `correspondingAngLimitSolverResultOffset` `+0x08`, `targetAngle` `+0x0C`, motor pointer `+0x10` | disabled, axis 0; 64, 68 and 16; angle 0; null |
+| 2d angle (4) | `freeRotationAxis` `+0x02` | 0 |
+| ball socket (8) | `bodiesToNotify` `+0x02`, `stabilizationFactor` `+0x03`, `maxImpulse` `+0x04` | 0; 48; the largest `f32` |
+
+:proven[all 161 data objects] No data object holds a motor object, an action or a phantom.
+The breakable constraint data (48 bytes to the next object) is, after the 12-byte `hkpConstraintData` header: a bridge atom (type 1 at `+0x0C`, a null function pointer at `+0x10`, a pointer back to the object itself at `+0x14`), the wrapped data (`+0x18`, a limited hinge in all 16), `childRuntimeSize` (`+0x1C`, 80), `childNumSolverResults` (`+0x1E`, 8), `solverResultLimit` (`+0x20`, 25.0 in 12 and 30.0 in 4), and two flags (`+0x24`, `+0x25`, 0), then zero. :proven[all 16] These objects carry no class metadata; their member names are the SDK's. :sourced[Havok SDK headers]
+
+A body's collision filter word at `+0x2C` splits as Havok's group filter splits it (layer in bits 0 to 4, sub-system id in 5 to 9, the sub-system not to collide with in 10 to 14, system group in 16 to 31): in all 12,789 bodies only the layer is set, to 0, 2, 7, 11, 15 or 18. :proven[all 12,789 bodies] No file holds a filter object to say which layers collide. The per-triangle word of a mesh's materials is not such a word (its surface id spans the layer and sub-system fields).
+
 ## Frame
 
 Collision is in the same space as the render placements: no offset, flip or scale. For MIKE's base level, collision and render samples agree with a median distance of 5 mm and 96% within one unit; the best of the eight axis flips and swaps by correlation is the identity. For CHARLIE's `trainingsession1`, 96% are within one unit. :observed

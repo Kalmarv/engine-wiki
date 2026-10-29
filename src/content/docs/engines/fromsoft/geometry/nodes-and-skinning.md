@@ -179,6 +179,13 @@ dummy points, and the other three are 255 (white) on all but 34 Sekiro and 3,239
 or a colour with the red and green bytes zero and the blue 208. :proven[every dummy point of both installs] The unknown
 flag at 46 is 1 when the attach bone is set and 0 when it is -1 on 86,081 of Elden Ring's 88,340 dummy points and 20,232 of
 Sekiro's 20,268 (it is 0 with an attach bone on 2,157 and 8, and 1 without one on 102 and 28). :proven[every dummy point of both installs]
+In a model of more than one bone the flag is 1 exactly when the attach bone is set, on 86,033 of Elden Ring's 86,135 dummy
+points of such models and 20,108 of Sekiro's 20,136; the exceptions are all 1 with no attach bone (102 in 30 Elden Ring
+models, 28 in 7 Sekiro models), and their parent bones are named for dummies (`dmy_poly`, `dummy`, `Dmy_...`).
+:proven[every dummy point of both installs] Every dummy point that is 0 with an attach bone is in a model of a single bone,
+where the attach bone is bone 0 and so is the parent bone: there the flag is 1 on 34 and 0 on 8 of Sekiro's 42 dummy points
+with an attach bone, 1 on 29 and 0 on 2,157 of Elden Ring's 2,186, and 0 on all 90 and 19 without one.
+:proven[every dummy point of both installs]
 The use-upward flag at 47 is 1 on all of them. :proven[every dummy point of both installs]
 
 ### Placing and orienting a dummy point

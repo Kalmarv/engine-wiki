@@ -42,8 +42,20 @@ marks, a space inside a mark or an empty mark (`##`). :proven[every FLVER of bot
 
 Rules that read only a mark at the start with one or two digits, and rules that scan for any `#digits#`, therefore give
 the same groups for all but 82 materials in 7 models (the non-leading and the three-digit marks); a rule that takes
-exactly two digits after a leading `#` reads `#100#` as group 10 and ignores the one-digit marks. Which of these the game
-applies is not established. :unknown
+exactly two digits after a leading `#` reads `#100#` as group 10 and ignores the one-digit marks.
+
+:only[sekiro] The game's own rule is a substring match on the text `#kk#`. The model's display-mask routine takes a
+group index, formats the text `#%02d#` (a `#`, the index as two zero-padded decimal digits, a `#`), searches each
+material name of the model for it and registers the materials that contain it; the format string has this one use in
+the executable. :observed[the routine read from the decrypted executable of build 1.06]{games="sekiro"} A mark may
+therefore sit anywhere in a name (`c1200_Mukade#00#`), two marks may share the `#` between them (`#05#06#` contains
+`#05#` and `#06#`), and a one-digit (`#7#`) or three-digit (`#100#`) mark matches no group. :observed{games="sekiro"} Over
+every FLVER of Sekiro this rule finds a group in 1,699 of the 7,926 names with a `#`, a scan for any `#digits#` in 1,705;
+the six materials only the scan assigns are the one-digit marks of `c1210` (`#0#`), `c1400` (`#1#`, `#2#`) and `c1550`
+(`#7#`, `#8#`, `#9#`), which no group controls. :proven[every FLVER of Sekiro]{games="sekiro"}
+
+:only[elden-ring] The executable of build 1.17.2 has no `#%02d#` or `#%d#` text, so Sekiro's routine has no counterpart
+found by that string; which rule the game applies is not established. :unknown{games="elden-ring"}
 
 The NPC row comes from each enemy or dummy-enemy placement; it is not necessarily a property shared by every
 occurrence of a character model. Every map enemy's model/NPC-row link in the independent comparison matches the MSB

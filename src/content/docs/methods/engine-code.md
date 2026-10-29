@@ -27,6 +27,15 @@ program.
 The same check works for vertex programs: running a mesh's own vertex program shows which stored member feeds the
 position, the normal or a texture coordinate, and how it is scaled.
 
+## Comparing a whole draw with WARP
+
+When a reimplemented rasterizer is compared with WARP word for word, WARP's clipping and snapping decide the edge
+pixels. Drawing under Direct3D 12, WARP clips x and y at the viewport (`-w ≤ x, y ≤ w`) with no guard band, and snaps the vertices a clip
+creates to 16.8 fixed point, rounding ties to even. At such a vertex, `noperspective` outputs are blended by the
+screen-space parameter (each endpoint weighted by `c·w`, normalised), perspective-corrected outputs by the clip-space
+parameter `t`. :observed[a double-precision model fitted to WARP's raw output words to about 1.7e-7, on near-plane
+and tie cases] A model with a guard band of even 16.25 pixels already disagrees with it. :observed
+
 ## What it proves and what it doesn't
 
 - It proves what the program computes from its inputs, which is the meaning of the stored values it reads.

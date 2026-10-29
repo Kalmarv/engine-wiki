@@ -48,6 +48,11 @@ In Sekiro's programs `SAT_MtdParam` is a structure of named members. The metapar
 zero there and do not locate them; the members' offsets come from the program's reflection, with nested members
 flattened. :observed{games="sekiro"}
 
+The `_cloth` families (`Character_AMSN_[DetailBlend]_cloth`, `Character_AN_Blend_AMSN_[Fresnel]_cloth`,
+`Fur_NTC_cloth`) name their material parameters, and their programs' `cbMtdParam` members, with the base family's
+prefix (`Character_AMSN__DetailBlend__snp_0_*`), not one built from their own shader name. A lookup by the
+`_cloth` shader's name matches no member. :observed[the cloth materials of the Wolf's default outfit]{games="sekiro"}
+
 Sekiro's non-unit intensity evidence comes from five independently attributed material-buffer blobs matched by
 live texture-tiling rows. Examples include colour `(1,1,0.86274517)` at intensity 10 uploading
 `(10,10,7.22672558)`, and `(0.78039223,0.64705884,0.56862748)` at intensity 0.5 uploading approximately

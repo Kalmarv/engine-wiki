@@ -94,6 +94,12 @@ four-lane input directly. :sourced[SoulsFormatsNEXT]
 Repeated UV attributes follow stream order; tangent semantic indices can be sparse, so their index is not necessarily
 their position in an array. :observed
 
+A UV set the vertex program reads is not necessarily one the draw uses. :only[sekiro] In the Wolf's default head and
+the twelve Sekiro material variants (three distinct pixel programs) whose vertex programs compute outputs from the
+third UV set, no pixel output lane (240 in all) and no discard depends on it: the pixel programs do not read the
+two lanes that carry it. The Fur program reads only the third lane of that input register, which carries `COLOR1`.
+:observed[a dependency trace of the outputs of those twelve variants]{games="sekiro"}
+
 In Elden Ring the number of UV attributes a mesh stores (a Float4 or Short4 member counts as two, a Half4 pivot as one)
 mostly follows its shader. Of the 76,822 meshes whose material has a MATBIN, the meshes of 443 of the 481 shader stems all
 store the same count; the other 38 stems, mostly `M[AMSN_V]` variants, have meshes with one, two and three.

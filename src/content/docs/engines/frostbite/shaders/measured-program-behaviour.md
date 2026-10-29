@@ -1,6 +1,6 @@
 ---
 title: Measured program behaviour
-description: Scoped G-buffer encodings and the instance/matrix-table accesses of character hat vertex programs.
+description: Scoped G-buffer encodings, the instance and matrix tables of instanced vertex programs, and those of character hat vertex programs.
 games: [skate]
 implementations:
   - name: primase worlds/frostbite (passes/buffer_tables.rs)
@@ -19,6 +19,21 @@ normalization step. :observed
 
 The sampled large lighting compute programs read their t4–t8 lanes directly. The hashed binding names do not
 identify the semantic role of those textures. :observed
+
+## Instanced vertex programs
+
+Instanced vertex programs find an instance's world transform in two structured buffers. An instance table holds
+records of one to three words, one of which names a header element of a matrix table. The matrix table has a
+16-byte stride: a header element followed by three matrix rows; when the header is zero, the rows follow it
+directly. :observed[programs executed with every buffer read logged]
+
+The instance number is added to a constant word before it indexes the instance table: setting that word to 3
+moves the first record read by three records. :observed[programs executed with every buffer read logged]
+
+The word at byte 4252 of the pass constant buffer at b4, the `w` beside the camera position in words 1060–1062,
+is read by none of the inspected programs. A text scan of the programs' lifted code reports it read, because the
+DXIL loads whole four-word registers; only a trace of which words reach an output tells the two apart.
+:observed
 
 ## Character hat vertex tables
 

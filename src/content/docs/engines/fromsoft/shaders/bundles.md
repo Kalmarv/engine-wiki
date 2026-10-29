@@ -35,6 +35,28 @@ bundles without a stage mismatch; Elden Ring's cited check is limited to one are
 | `.hpo` | Hull | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
 | `.dpo` | Domain | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
 
+## Samplers
+
+Over 9,371 Sekiro DXBC programs and 13,423 Elden Ring DXIL programs, a texture register is sampled through exactly one
+sampler register in all but 26 of the 192,998 program and texture-register pairs: 22 of those use both
+`SS_ClampPoint` and `SS_ClampLinear`, 4 both `SS_ClampPoint` and `SS_Shadow`. Every comparison sample uses the
+comparison sampler at `s12`, and every resource is in register space 0. The pairs read from the programs equal the
+disassembly of Microsoft's compilers (`fxc`, `dxc`) on every program. :observed[the programs read]
+
+| Registers | Samplers | Confidence |
+|---|---|---|
+| `s0`–`s4` | the material's samplers; ambient-occlusion, depth-of-field and bilateral-filter programs reuse these registers for their own | :observed |
+| `s6` | `SS_WrapPoint` | :observed |
+| `s7` | `SS_ClampPoint` | :observed |
+| `s8` | `SS_WrapLinear` | :observed |
+| `s9` | `SS_ClampLinear` | :observed |
+| `s6`–`s12` | also an anisotropic sampler: `SS_WrapAniso` :only[sekiro], `SS_ClampAniso` :only[elden-ring] | :observed |
+| `s12` | `SS_Shadow`, the comparison sampler | :observed |
+
+The sampler states recorded in frame captures of both games match these names. `s12` has filter `0x94` (comparison,
+linear minification and magnification, point mip), comparison `GREATER`, border colour 0 and LOD range 0 to 0.
+:observed[frame captures]
+
 The binding metadata is described in [METAPARAM](/engines/fromsoft/materials/metaparam/); material upload rules in
 [constant binding](/engines/fromsoft/materials/constant-binding/).
 
@@ -52,6 +74,14 @@ forward programs with `_Fwd`, and shadowed forward variants `_FwdSdw` and `_FwdS
 The forward pass's target 0 is finished colour, unlike the deferred pass's
 [G-buffer targets](/engines/fromsoft/shaders/gbuffer/). Forward programs can read scene depth, SSAO, irradiance
 volumes, IBL cubemaps and fog in addition to material textures. :observed{games="sekiro"}
+
+The Wolf's default outfit (`fc_m_0200`, `bd_m_9040`, `am_m_9000`, `lg_m_9000`) has four material variants that
+output colour from a forward program and have no albedo output, and the Ashina costume two. They use three pixel
+programs, `MeshDecal_Fwd`, `AMSN_Fwd` and `AMSN_Fwd_[A]`, and every RGB output of each depends on the lighting, IBL,
+irradiance, SSAO, fog and camera or frame constants as well as the material, so a forward variant's colour is not
+its albedo. :observed[a dependency trace of those programs' outputs]{games="sekiro"}
+
+The `Character_AMSN_[AO_SSS]` pixel programs sample 17 textures in one stage. :observed{games="sekiro"}
 
 Sekiro's `GXFlver_*` material programs instead live together in `/shader/gxflvershader.shaderbnd.dcx`.
 Their instance-dependent effect variants include Bloody, Burn, Cm, Df, Cloth, Phantom, ZFeather and Decal;

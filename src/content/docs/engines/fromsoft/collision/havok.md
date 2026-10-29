@@ -116,8 +116,18 @@ mesh of both installs. :proven[every named collision binder]
 
 `triangleIsInterior` is a bit field of `maxKeyValue + 1` bits in `ceil(bits ⁄ 32)` words. Its bits are set only on the keys
 of triangles, never on a key no primitive has nor on a custom primitive's: between 32% and 48% of the triangle keys,
-depending on the binder set, and in 362 Sekiro and 5,557 Elden Ring meshes none at all. What decides a triangle's bit is
-not established. :proven[every named collision binder]
+depending on the binder set, and in 362 Sekiro and 5,557 Elden Ring meshes none at all. :proven[every named collision binder]
+
+A set bit is on a triangle each of whose three edges meets another triangle (edges compared by the exact bits of their
+decoded vertices): 8,080,707 of the 8,080,712 set bits of Sekiro and 25,136,048 of the 25,136,262 of Elden Ring, the others
+having two or fewer such edges. Of the triangles with three such edges in the meshes that have any bit, 41% (Sekiro) and
+44% (Elden Ring) have it set. :observed[every named collision binder] Which of them is not established: against the
+angles to the neighbours, the vertex valences, the key and its parity, the half of a quad, the area and edge lengths,
+the normal's direction, whether the neighbours' source vertex indices match, the triangle's `primitiveDataIndex`, and
+whether a ray from the triangle along its normal meets the mesh, none separates the set from the clear ones.
+:observed{games="sekiro"} (The source vertex indices are in the `triangleDataArray` of the shape's `pParam`
+(`fsnpCustomMeshParameter`), one entry per source triangle with `vertexIndexA`, `B`, `C`, `primitiveDataIndex` and
+`triangleDataIndex`.) :observed{games="sekiro"}
 
 The shape's `triangleIndexToShapeKey` (the games' own `fsnpCustomParamCompressedMeshShape`) holds, for each triangle of the
 source mesh, its key left-aligned in 32 bits with the `32 − numShapeKeyBits` low bits all ones. Every word of the 3,333
@@ -196,11 +206,35 @@ four cases of five. :observed[every section tree with a box for each primitive] 
 them lies within half a codec step of the boundary between the two nibbles: the files' trees look to have been built
 from the vertices before they were quantised, the rule being applied here to the vertices after. :observed{games="sekiro"}
 
-The topology is not a rule that is known. In the 2,610 section trees of Sekiro's objects that have three or more nodes,
-none has its leaves' primitive indices in increasing order along the pre-order; of 203,099 splits, 94,168 give the two
-children the same number of leaves, 105,811 of 203,011 split along the longest axis of their node's tight box, and the
-children's boxes overlap on the split axis in 191,620 of 203,011. In the mesh trees of two or more sections the section
-indices run in increasing order along the pre-order in 68 of 155. :observed{games="sekiro"}
+The topology is partly a rule. A mesh's trees are the pieces of one tree over all its primitives: a section is a subtree
+cut where it has 127 primitives or fewer, and of the pairs of sibling sections in the mesh trees 99,158 of 99,164 (Sekiro)
+and 274,861 of 274,943 (Elden Ring) hold more than 127 primitives together. :observed[every section and mesh tree with a box
+for each primitive]
+
+A subtree of 16 leaves or fewer is built from the bottom: joining always the two nodes whose union has the least surface
+area (the sum of the products of the extents; the leaf boxes are the primitives' decoded vertices grown by the convex
+radius) gives the stock subtree exactly in 1,591,211 of the 2,043,084 maximal subtrees of 3 to 16 leaves of Sekiro (78%) and
+4,101,023 of 5,454,605 of Elden Ring (75%), and 18,624,635 of the 19,692,840 inner nodes inside the Sekiro ones (94.6%)
+and 49,443,727 of 52,922,096 of Elden Ring's (93.4%). The rate falls with the size, from 98% of the subtrees of 3 leaves
+to 67% of 16 leaves (Sekiro; Elden Ring 98% to 66%), and drops to 8.9% (8.6%) at 17 leaves and under 1% by 33. Another
+metric (volume, perimeter, squared diagonal, or the increase over the children's surfaces) reproduces fewer of
+the nodes (51% to 81% in a Sekiro sample against 91% for the surface). :observed[every section tree with a box for each primitive]
+
+Above 16 leaves the splits are not that, and not a rule that is known. They cost within a few percent of the best
+surface-area split along an axis of the centres (half of the 7,597 top-level splits of one Sekiro map cost 2% or less over
+the best; 91% within 10%) and 82% to 93% of the stock splits are separable by the centres along one axis, but the stock
+split is the best one in 329 of 7,940 splits of 40 meshes, and a binned surface-area split (8 to 64 bins over the centres or
+the boxes, either of two costs) is the stock split in 0.5% to 7% of 2,851. :observed{games="sekiro"} The median split along
+the longest axis that earlier tools use costs 1.34 times the stock trees' inner-node surface in Sekiro and 1.32 in Elden
+Ring; a surface-area split down to 16 leaves with the bottom-up merge below costs 0.92 of the stock's. :observed[every
+section tree with a box for each primitive]
+
+A node's first child is the one with the larger union box: in 20,184,136 nodes of Sekiro against 417,276 with the smaller
+(913,005 have two boxes of one surface, 834,964 of them two leaves, and of the rest with unequal leaf counts the first child
+has more leaves in 37,033 and fewer in 7,311); Elden Ring 53,597,280, 1,699,537, 2,465,256 and 2,279,779 (119,836 and
+21,641). :observed[every section tree with a box for each primitive] The leaf payloads, the primitive indices of a section,
+do not increase along the pre-order in any of the 2,610 section trees of Sekiro's objects that have three or more nodes: a
+leaf's payload is its primitive's index in the section, whose order is not the tree's. :observed{games="sekiro"}
 
 ### Simd tree
 

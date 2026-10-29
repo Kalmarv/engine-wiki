@@ -420,7 +420,7 @@ three meshes are left out although they are not under it: thin triangles with a 
 list shape has 5 terminals, the keys of its child shapes. :proven[all 1,705 codes]
 
 :::open[Why does a MOPP code leave out five thin triangles?]
-They are in three meshes (one each in two, three in a third), with squared cross products between 6.3 × 10⁻⁷ and 0.031 and edges up to 39 m long; the degenerate test above keeps them.
+They are in three meshes (one each in two, three in a third), with squared cross products between 6.3 × 10⁻⁷ and 0.031 and edges up to 39 m long; the degenerate test above keeps them. No threshold separates them from the triangles that have terminals: not on the squared cross product, on it divided by the longest edge, by the product of the two longest edges or by the shortest edge, on the shortest edge, the perimeter, or the cross product of the vertices quantised to the code's grid (all five are far from degenerate there), and thinner triangles keep their terminals in the same meshes. In one mesh a mirror pair of slivers (squared cross products 0.00428 and 0.00429, edges 14.29, 14.30 and 0.013 m against 14.27, 14.29 and 0.013 m) has one left out and one kept. None of the five has a twin at the same positions, a repeated vertex index, or a mesh scaling other than 1. :observed[all 1,705 codes]
 :::
 
 ## Rigid bodies

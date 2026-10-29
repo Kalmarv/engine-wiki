@@ -384,8 +384,19 @@ effect itself or an effect it spawns holds a light):
 | WindSFX regions (6): effect id first | 72, none reach a light | 106, none |
 | placed asset or object: ER asset part type data +0x1c (i16 relative id) selects [`AssetModelSfxParam`](/engines/fromsoft/data-model/params/#modelsfxparam-and-assetmodelsfxparam) row `(nnn x 1000 + mmm) x 1000 + relative id` for the model `AEGnnn_mmm`; Sekiro `ModelSfxParam` row `object model number x 1000` | 409,246 of 421,253 asset parts have -1; 9,396 parts on 352 models reach a light | 1,418 of 10,538 object parts on 80 models |
 | TAE events 96 and 118 (and 110, 112, 114 to 116, 119, 120 by the community templates): the effect id is the first word | 2,788 ids; all that reach a light are in character animation binders | 762 ids; likewise |
+| `HitEffectSfxParam`: 15 fields named by the kind of hit (`Slash_S` to `Thrust_Specific2` in Elden Ring, `Slash_S` to `Thrust_LLL` in Sekiro) | 193 rows, 585 distinct ids that exist | 69 rows, 101 ids |
+| EMEVD instructions 2006[3] (effect id in argument 3) and 2006[4] (argument 2) | 35 and 78 ids | 10 and 11 ids |
 
 :observed[hit-rate and reference census over both installs]
+A scan of every field of every param, every payload word of every TAE event kind and every argument of every EMEVD instruction
+in both installs (a location is a route when at least three distinct values of 1,000 or more in it are effect ids that exist
+and they are at least half of its distinct values of 1,000 or more) finds, besides the routes above, only locations naming at
+most 20 effects each, which read as numeric coincidences (for example `CharaInitParam` `equip_Helm` in Sekiro, `ObjActParam`
+`actionFailedMsgId` in Elden Ring). With the two added rows, 1,991 of Sekiro's 2,669
+effect files (74.6%) and 8,958 of Elden Ring's 11,912 (75.2%) are named by a route or spawned by an effect that is, against
+1,869 (70.0%) and 8,298 (69.7%) by the routes before. :observed
+That the EMEVD pair starts and stops a map effect is read from the instruction's neighbours and the counts of its two members, not
+from the instruction's definition. :inferred
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed
 An asset's effect attaches to the dummy polygon the row names (`dmypolyId_n`, 200 in the light rows). :observed

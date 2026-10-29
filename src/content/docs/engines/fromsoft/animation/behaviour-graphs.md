@@ -195,6 +195,39 @@ properties it reads. Over all 147 and 461 graphs: :proven{games="sekiro elden-ri
 A character file declares its own character properties (1,614 in Sekiro's 79 files, 6,123 in Elden Ring's 280), with the
 same layout of values.
 
+## Layers
+
+A layer generator (`hkbLayerGenerator`) plays a stack of layers (`hkbLayer`). A layer has a generator, a blending control
+(`hkbEventDrivenBlendingObject`: a weight, whether the layer is on at the start, the events that turn it on and off, the
+fade durations) and, optionally, a per-bone weight array (`hkbBoneWeightArray`). The weight can be bound to a variable
+(`blendingControlData/weight` in the layer's binding set).
+
+Searching a graph from its root generator through the objects' pointers, breadth first and not descending into a layer generator,
+finds no layer generator or exactly one: over the 157 behaviour members of Sekiro's binders 79 have one, and over the 559 of
+Elden Ring's 280 do. :proven{games="sekiro elden-ring"} The player's graph (`c0000`) has it under a script generator that sits under a blender
+generator's child; the other 279 members of Elden Ring's have it as a blender generator's child, and Sekiro's other 78 under a
+modifier and a script generator that sit in a state of the root state machine. :observed{games="sekiro elden-ring"}
+
+Every `hkbBoneWeightArray` of both installs (86 in Sekiro's behaviour members, 310 in Elden Ring's) holds only finite values from 0
+to 1: 0, 0.1, 0.6 and 1 in Sekiro's, and 0, 0.2, 0.3, 0.4, 0.5, 0.6 and 1 in Elden Ring's. :proven{games="sekiro elden-ring"} The arrays' lengths
+differ between graphs, and 31 of Sekiro's and 264 of Elden Ring's are empty; a layer that has one is a layer with bone weights, 32 of
+the 145 layers in Sekiro's and 32 of the 383 in Elden Ring's. :proven{games="sekiro elden-ring"}
+
+:only[elden-ring] The player's `Master LayerGenerator` has 14 layers. Layer 0 plays `BasisAnim_CMSG`, a `CustomManualSelectorGenerator` of
+nine clips (`a000_000009`, `a002_000009`, `a003_000009`, `a010_000009`, `a012_000009`, `a013_000009`, `a014_000009`, `a015_000009`,
+`a016_000009`) at weight 1 with no bone weights; the file stores no selected index (the selector's `generatorIndexAtActivate` is
+zero), so which clip plays is the game's choice. Layer 1 plays the state machine `Master_SM`; layers 2 to 11 play one clip each at a
+weight bound to the variables `AddBlend09` to `AddBlend00` (initial value 0); layer 12 (`AddBlendSpeak_SM`, bone weights `Jaw` and
+`Lips_Lower`) is off at the start; layer 13 (`EyeBlink_CMSG`, bone weights the four eye bones) is on, its weight bound to
+`EyeBlinkBlend` (initial 1). :observed{games="elden-ring"}
+
+:only[elden-ring] Each of the nine clips of layer 0 has two frames and drives all 30 finger bones (the largest rotation from the
+reference pose 1.76 to 1.88 rad); of the player's 9,350 animations 2,306 drive any finger bone, and none of the 340 `a*_020xxx`
+locomotion clips does. :observed{games="elden-ring"} In the running game the player's 30 finger bones, idle and walking, hold the
+rotations of `a010_000009` within 0.0014 rad, which the state machine's clips there do not drive: a joint the clip of an upper layer
+does not drive keeps the pose of the layers below it. :observed{games="elden-ring"} How layers are mixed (a weight below 1, or a bone
+weight below 1) is not shown by that capture. :unknown
+
 ## Corroboration by an independent reader
 
 HKLib reads Elden Ring's tagfiles (`20180100`) and writes them as `hktagfile` version 3 XML. For all 1,021 distinct

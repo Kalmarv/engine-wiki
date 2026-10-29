@@ -1,6 +1,6 @@
 ---
 title: Unreal Engine
-description: "Unreal Engine 5 as MECCHA CHAMELEON ships it: IoStore containers beside a pak file, and the content-only plugin that makes a custom map."
+description: "Unreal Engine 5 as MECCHA CHAMELEON and Phantom Blade Zero ship it: IoStore containers beside pak files, encryption, and the content-only plugin that makes a custom map."
 sources:
   - title: Unreal Engine
     url: https://github.com/EpicGames/UnrealEngine
@@ -11,14 +11,17 @@ sources:
 ---
 
 Unreal Engine 5 keeps a game's cooked content in **packages** (`.uasset`, `.uexp`, `.ubulk`), which a shipped game stores inside
-containers rather than as loose files. The game documented here is **MECCHA CHAMELEON** (Steam app 4704690, Unreal Engine 5.6.1,
-executable `PenguinHotel`, project `Chameleon`). :sourced[Unreal Engine source]
+containers rather than as loose files. The games documented here are **MECCHA CHAMELEON** (Steam app 4704690, Unreal Engine 5.6.1,
+executable `PenguinHotel`, project `Chameleon`) :sourced[Unreal Engine source] and
+**[Phantom Blade Zero](/games/phantom-blade-zero/)** (Steam app 4115450, project `ProjectPBZ`), whose containers are
+encrypted. :observed{games="phantom-blade-zero"}
 
-| Area | MECCHA CHAMELEON | Page | Confidence |
+| Area | What the games ship | Page | Confidence |
 |---|---|---|---|
 | content container | IoStore: a `.utoc` table of contents (version 8, flags 0x09: compressed, indexed, unencrypted, unsigned) with a `.ucas` data file, Oodle-compressed in 64 KiB blocks | [IoStore containers](/engines/unreal/archives/iostore-containers/) | :proven{games="meccha-chameleon"} |
 | global data | a second container, `global`, with one script-objects chunk | [IoStore containers](/engines/unreal/archives/iostore-containers/#chunks-and-blocks) | :proven{games="meccha-chameleon"} |
 | other files | a version 11 pak | [IoStore containers](/engines/unreal/archives/iostore-containers/#the-pak-file) | :observed{games="meccha-chameleon"} |
+| encrypted containers | Phantom Blade Zero: IoStore container flags 0x0b (encrypted, 66 partitions of 2 GiB) and version 12 paks with encrypted indexes | [IoStore containers](/engines/unreal/archives/iostore-containers/#phantom-blade-zero) | :proven{games="phantom-blade-zero"} |
 | user maps | a content-only plugin with one World Partition level, cooked as a DLC and shipped as a Steam Workshop item | [custom maps](/engines/unreal/mod-loading/custom-maps/) | :observed{games="meccha-chameleon"} |
 
 The game ships plugins for Steam Workshop maps and for mod.io user content, with its Epic Online Services integration and

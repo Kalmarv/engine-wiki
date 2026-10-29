@@ -1,7 +1,7 @@
 ---
 title: IoStore containers (.utoc and .ucas) and pak files
-description: "Unreal Engine 5's container format as MECCHA CHAMELEON ships it: the .utoc table-of-contents header (version 8), its arrays, chunk ids and types, compression blocks, flags, and the accompanying pak file."
-games: [meccha-chameleon]
+description: "Unreal Engine 5's container format as MECCHA CHAMELEON and Phantom Blade Zero ship it: the .utoc table-of-contents header (version 8), its arrays, chunk ids and types, compression blocks, flags, partitions, encryption, and the accompanying pak files."
+games: [meccha-chameleon, phantom-blade-zero]
 sources:
   - title: Unreal Engine source (IoStore.h, IoStore.cpp)
     url: https://github.com/EpicGames/UnrealEngine
@@ -15,6 +15,7 @@ Unreal Engine 5 packs cooked content into **IoStore** containers: a **`.ucas`** 
 **`.utoc`** file is its table of contents (which chunks exist, where, how they are compressed). The older **`.pak`** format
 still ships beside them. MECCHA CHAMELEON (Steam app 4704690, Unreal Engine 5.6.1, executable `PenguinHotel`, project `Chameleon`)
 has two IoStore containers and one pak in `Chameleon/Content/Paks/`. :sourced[Unreal Engine source]
+Phantom Blade Zero's containers, which are encrypted, differ as described [in its section](#phantom-blade-zero).
 
 | File | Size (bytes) | Holds | Confidence |
 |---|---|---|---|
@@ -114,4 +115,40 @@ manifest (`Manifest_UFSFiles_Win64.txt`: 6,549 `uexp`, 6,527 `uasset`, 3,438 `re
 :::open[What the pak holds]
 The pak is 88 MB; the cooked assets are in the IoStore container. Which of the manifest's files (the `.res` and `.png` files,
 the config) the pak carries is not established.
+:::
+
+## Phantom Blade Zero
+
+Phantom Blade Zero keeps its content in `ProjectPBZ/Content/Paks/`: the IoStore container `ProjectPBZ-Windows`, the
+global container `global`, the pak `ProjectPBZ-Windows.pak` and nine movie paks `pakchunkMovies*-Windows.pak`.
+:observed{games="phantom-blade-zero"}
+
+Its game container's TOC has the same version and header as above, with these values. The header and the arrays
+after it add up to the 47,488,040 bytes of the file exactly. :proven{games="phantom-blade-zero"}
+
+| Header field | `ProjectPBZ-Windows.utoc` | Confidence |
+|---|---|---|
+| version | 8 | :proven{games="phantom-blade-zero"} |
+| container flags | `0x0b`: compressed, encrypted and indexed, not signed | :proven{games="phantom-blade-zero"} |
+| entry count (chunks) | 328,220 | :proven{games="phantom-blade-zero"} |
+| compressed block count | 1,360,326 | :proven{games="phantom-blade-zero"} |
+| compression block size | 262,144 | :proven{games="phantom-blade-zero"} |
+| compression method | `Oodle` | :proven{games="phantom-blade-zero"} |
+| directory index size | 15,409,392 | :proven{games="phantom-blade-zero"} |
+| partition count | 66 | :proven{games="phantom-blade-zero"} |
+| partition size | 2 GiB | :proven{games="phantom-blade-zero"} |
+| encryption key guid | all zero | :proven{games="phantom-blade-zero"} |
+
+The 66 partitions are the data files `ProjectPBZ-Windows.ucas` and `ProjectPBZ-Windows_s1.ucas` to `_s65.ucas`.
+:observed{games="phantom-blade-zero"} The zero key GUID selects the game's one default key. :sourced[Unreal Engine source]
+`global.utoc` is not encrypted. :observed{games="phantom-blade-zero"}
+
+The pak files are version 12, with version 11's footer layout (221 bytes), an encrypted index, the zero key GUID and
+Oodle compression. :observed{games="phantom-blade-zero"} Version 12 adds a UTF-8 path directory
+(`Utf8PakDirectory`); CUE4Parse reads it as an Unreal Engine 5.7 pak. :sourced[CUE4Parse] Each movie pak comes with
+an empty IoStore pair: no files, mount point `/`. :observed{games="phantom-blade-zero"}
+
+:::open[What the encrypted containers hold]
+Without the key, nothing past the headers and footers (the directory index, the packages, the pak indexes) is
+described here.
 :::

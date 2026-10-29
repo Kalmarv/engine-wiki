@@ -400,7 +400,7 @@ from the instruction's definition. :inferred
 Of the animation events whose community template has an effect field, three types hold effect numbers in the stock files. Of the
 events with a positive number in the first word, type 96 (a one-shot effect at a dummy polygon: the id, the dummy polygon's reference
 id, a slot, and flags that include "follow dummy polygon") names an effect that exists in 7,583 of 7,586 in Sekiro and 16,885 of
-20,078 in Elden Ring (the rest are not in the base game's binders), type 118 (a blade: the id, a dummy-polygon source of body, left
+20,078 in Elden Ring (the rest name numbers that no effect binder of the install holds), type 118 (a blade: the id, a dummy-polygon source of body, left
 or right weapon, and the base and tip dummy polygons) in 182 of 182 and 2,692 of 2,723, and type 120 (one effect for each kind of
 player: the first of twelve ids) in 1,472 of 1,473 in Elden Ring. :observed[every event of every character animation binder of both
 installs, 336,787 events in Sekiro and 1,310,023 in Elden Ring] Type 112 (the effect determined by the floor) holds one of 6 (Sekiro,

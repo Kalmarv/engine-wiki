@@ -471,7 +471,10 @@ a held weapon's own `100`, `120` and `130` meet. :observed[the model's dummy tab
 of the 496 weapon models of the 507 the weapon param names that the install holds (their FLVER dummy tables), reference ids 100,
 120 and 130 are on 471, 110 on 466, 122 on 341, 300 and 301 on 337, 400 on 325, 401 on 286, 302 on 145 and 303 on 94, and 310,
 330 and 10300 on none. :observed In weapon model 0100 the blade's polygons 300 and 301 lie along the
-model's -y axis at -0.08 and -0.40, the grip polygons 100 to 130 between -0.36 and 0.12. :observed It does not show which
+model's -y axis at -0.08 and -0.40, the grip polygons 100 to 130 between -0.36 and 0.12. :observed The weapon param holds
+the same pairs for each weapon: `traceDmyIdHead0` to `traceDmyIdHead7` with `traceDmyIdTail0` to `traceDmyIdTail7`, whose first pair
+is (300, -1) in 1,888 of 3,636 rows, (300, 301) in 702, (-1, -1) in 584, (10300, -1) in 201, (300, 302) in 96 and (300, 303) in 61, and
+whose second pair is (310, -1) or (310, 311) in most rows that have one. :observed[every row of the weapon param] It does not show which
 weapon (the one in the hand, by hand and slot) the game takes. :inferred
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed

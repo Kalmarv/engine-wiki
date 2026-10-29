@@ -130,10 +130,10 @@ belong to the `GXFlver_*` shaders. :proven[all samplers of the install]
 
 A community table of 176 shader stems names the texture coordinate sets each reads (`UVTexture0`, `UVTexture1`, `UVDetail`,
 `UVFurAlpha`, `UVSubNormals`, `UVBlend`) and, for 168 of them, the set each sampler group reads; it marks the entries by how sure
-its author is. :sourced[soulstruct] Held to the models that use the shaders, its tuple lengths fit: of the 451 stems on the 75,826
-meshes of the map, character, part, asset and object models that have a material binary (SpeedTree models excluded), 180 are in the
-table, and for every one of them the length of its tuple is the number of texture coordinate attributes of some mesh using it; 55,811 of
-the 56,770 meshes of those stems have exactly that many. :observed[the models of the map, character, part, asset and object binders]
+its author is. :sourced[soulstruct] Held to the models that use the shaders, its tuple lengths fit: of the 452 stems on the 76,319
+meshes of the map, character, part, asset and object models that have a material binary (SpeedTree models excluded), 181 are in the
+table, and for every one of them the length of its tuple is the number of texture coordinate attributes of some mesh using it; 56,256 of
+the 57,215 meshes of those stems have exactly that many. :observed[the models of the map, character, part, asset and object binders]
 
 ### What the pixel programs read
 

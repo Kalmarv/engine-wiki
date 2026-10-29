@@ -214,6 +214,11 @@ for the map's stem. :inferred
 At the Stormveil spawn the tone map's colour scale reaches the screen from `m10_00_0000` alone. Replacing the `ColorScale`
 value of seven of the map's draw-parameter files by seven different tints turns the whole picture red, the tint of
 `m10_00_0000`; none of the other six slots' tints shows, as a blend or product of them with it would. :observed{games="elden-ring"}
+Changing only the collision under the spawn (`h001300`) from the slot 0 to the slot 1, two bytes of the layout, with the same
+tints, turns the whole picture green, the tint of `m10_00_0100`, where the stock layout gives red. :observed{games="elden-ring"}
+So at the spawn the slot that reaches the screen is the one the collision under the player names, not a constant of the map
+(one launch, one collision, one place). Whether the slot is read again when the player walks onto a collision of another slot
+was not observed. :unknown{games="elden-ring"}
 Which slot another weather, time or event state selects, and whether a slot that lacks a group falls back to slot 0, was not
 observed. :unknown{games="elden-ring"}
 

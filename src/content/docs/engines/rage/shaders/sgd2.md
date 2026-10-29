@@ -61,6 +61,7 @@ A census of the main database's programs finds the following. :observed[census o
   458 domain programs, and 411 vertex programs, none of which writes `SV_Position`.
 - 5,697 pixel programs index an unbounded sampler array (register `s0`, space 2) with a dynamic index.
 - 30 programs use ray queries; three use quad operations.
+- 35 programs read the wave lane index (`WaveGetLaneIndex`) in a thread group of more than one dimension.
 
 The game's effect list `common/shaders/preload.list`, also in `update/update2.rpf`, names every effect that the
 install's drawables use. :observed

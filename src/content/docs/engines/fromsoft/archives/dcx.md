@@ -130,6 +130,14 @@ The game's Oodle library and oozextract decode the Kraken payloads to the same b
 and all 117,121 Elden Ring ones, so a reader does not need the game's library where oozextract is available.
 :proven[both archive sets, Elden Ring without the `DLC` pair]
 
+A Kraken quantum can code a run of bytes as a Huffman chunk with a one-symbol alphabet: the eight bytes
+`40 0A 68 00 03 00 40 80` decode to 667 bytes of `0x02`, and one quantum of a Sekiro payload holds such a chunk.
+:observed{games="sekiro"} The released oozextract 0.5.6 refuses that chunk, because its one-symbol path returns the
+number of input bytes it read where the chunk's decoded size is expected, as the C decoder ooz it follows does. With
+only that return value corrected, it decodes a sample of 256 Sekiro `KRAK` envelopes to the same bytes as
+`oo2core_6`. :observed[256 Sekiro envelopes]{games="sekiro"} A reader that relies on oozextract instead of the game's
+library has to handle that case.
+
 A writer that compresses `KRAK` payloads with the games' `oo2core_6` must size its output buffer with that version's
 `OodleLZ_GetCompressedBufferSizeNeeded`, which takes the raw size alone: 65,536 bytes gives 65,810. Oodle 2.9
 (`oo2core_9`) takes the compressor and the raw size (Kraken, 65,536 gives 65,560). :observed Called with the two-argument

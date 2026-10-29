@@ -24,6 +24,15 @@ The observed Sekiro renderer submits draws on deferred D3D11 contexts. Capturing
 those draws. Constant-buffer observations must therefore follow the context and the bound constant range.
 :observed{games="sekiro"}
 
+Each deferred context has its own function table, so a capture layer has to hook every context the device creates,
+not only the immediate one. Constants written into a deferred context cannot be read back from the GPU; a capture
+keeps its own copy of what each `Map`/`Unmap` and `UpdateSubresource` writes. :observed{games="sekiro"}
+
+Launched under RenderDoc, Sekiro 1.06 exits silently about five seconds after RenderDoc's library loads, so the
+executable's protection stops a standard capture tool. :observed[launch attempts]{games="sekiro"} A proxy of
+`dinput8.dll`, which the game loads before its code is unpacked, can wait for `d3d11.dll` and hook the device and its
+contexts from there; that capture runs. :observed{games="sekiro"}
+
 The castle-interior capture records 222,552 draws using 180 pixel programs. :observed{games="sekiro"}
 
 In a castle-interior capture of layered G-buffer draws, vertex slot 11 supplies a 64-byte `cbTexScroll`: four

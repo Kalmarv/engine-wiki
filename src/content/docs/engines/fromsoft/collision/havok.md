@@ -171,7 +171,7 @@ Elden Ring, so about 28% and 23% of the triangles are quad halves. A quad's two 
 `triangleDataArray` whose `triangleIndexToShapeKey` words give keys that differ in the half bit only; both are in one
 section. :proven[every named collision binder]
 
-A rule that picks most of the same pairs from the source triangles of a section alone, in `pParam` row order:
+A rule that picks most of the same pairs from the source triangles of a mesh, in `pParam` row order:
 
 1. A vertex is its position (the bits of the three floats); the vertices are numbered in the order the rows first use
    them. Each triangle's edges `n` (from corner `n` to the next) are records of the two vertex numbers, lower first,
@@ -185,21 +185,23 @@ A rule that picks most of the same pairs from the source triangles of a section 
    cost with the same quicksort and taken in that order, a candidate whose triangle is already taken being skipped.
    :observed[every named collision binder]
 
-The pairs it makes are stock quads for 3,485,775 of the 3,507,426 stock quads of Sekiro (99.4%; 99.5% of the 3,502,109 it
-makes) and 7,505,319 of the 7,568,285 of Elden Ring (99.2%; 99.4% of the 7,549,658). In every pair that is a stock quad,
-the triangle with the third edge is the stock first half. 1,710 of the 3,333 Sekiro meshes and 18,114 of the 22,778 Elden
-Ring meshes come out with exactly their stock quads. :observed[every named collision binder] Sekiro's object meshes come
-out lowest, 28,801 of 32,485. In a sketch of the same rule over those, 3,549 of the 3,678 pairs it missed lie on an edge
-that at least three triangles share, 107 on an edge of two, and 22 have different primitive data. :observed{games="sekiro"}
+Run on all the rows of a mesh at once, the pairs it makes include 3,484,191 of the 3,507,426 stock quads of Sekiro
+(99.3%; 99.5% of the 3,502,384 it makes are stock quads) and 7,501,872 of the 7,568,285 of Elden Ring (99.1%; 99.3% of
+the 7,550,979 it makes). In every pair that is a stock quad, the triangle with the third edge is the stock first half.
+1,690 of the 3,333 Sekiro meshes and 18,022 of the 22,778 Elden Ring meshes come out with exactly their stock quads.
+:observed[every named collision binder] Sekiro's object meshes come out lowest, 27,928 of 32,485 (86.0%). Pairing each
+section's rows on their own, with the stock sections as given, finds a little more (99.4% and 99.2%; 88.7% of the Sekiro
+objects); in a sketch of that, 3,549 of the 3,678 Sekiro object pairs missed lie on an edge that at least three
+triangles share, 107 on an edge of two, and 22 have different primitive data. :observed{games="sekiro"}
 
-Pairing the whole mesh before the sections are cut, rather than inside each section, finds 86.0% of the Sekiro object
-quads against 88.7% inside the sections. :observed{games="sekiro"} Simpler rules were tried first and agreed with the stock quads less well (the counts were not kept): pairing in row
-order, by the longest shared edge, by coplanarity, and by cost alone over all adjacent pairs rather than third edge with
-first edge. :observed{games="sekiro"}
+Vertices named by the source indices of the rows (rather than by position) find 38% of the Sekiro object quads, so the
+source mesh repeats vertices that the pairing treats as one. :observed{games="sekiro"} Simpler rules were tried first and
+agreed with the stock quads less well (the counts were not kept): pairing in row order, by the longest shared edge, by
+coplanarity, and by cost alone over all adjacent pairs rather than third edge with first edge. :observed{games="sekiro"}
 
 :::open[Which pair does the stock tool take where many triangles share an edge?]
-The rule above takes the first later record in an order that is not stable and depends on the row order of the section,
-and misses 12% of the Sekiro object quads, most of them on edges three or more triangles share. Whether the stock
+The rule above takes the first later record in an order that is not stable and depends on the row order of the mesh,
+and misses 14% of the Sekiro object quads, most of them on edges three or more triangles share. Whether the stock
 tool numbers vertices otherwise there (by index rather than position, merging vertices within a tolerance) or orders the
 triangles of a section differently is not known.
 :::

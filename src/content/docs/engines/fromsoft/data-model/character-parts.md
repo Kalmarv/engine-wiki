@@ -54,8 +54,16 @@ every FLVER of Sekiro this rule finds a group in 1,699 of the 7,926 names with a
 the six materials only the scan assigns are the one-digit marks of `c1210` (`#0#`), `c1400` (`#1#`, `#2#`) and `c1550`
 (`#7#`, `#8#`, `#9#`), which no group controls. :proven[every FLVER of Sekiro]{games="sekiro"}
 
-:only[elden-ring] The executable of build 1.17.2 has no `#%02d#` or `#%d#` text, so Sekiro's routine has no counterpart
-found by that string; which rule the game applies is not established. :unknown{games="elden-ring"}
+:only[elden-ring] The executable of build 1.17.2 has no `#%02d#` or `#%d#` text; it parses the mark by hand, in the routine
+that sets up a model instance. For each name in the model's list (a wide string) it requires the first character to be `#`,
+then reads the characters at positions 1 to 4: a decimal digit adds to a running number (`n = 10n + digit`), any other
+character is skipped, and the first `#` ends the scan. If no `#` closes the mark within position 4, or the number is 127 or
+more, the name has no group; otherwise the group is bit n of a 128-bit mask stored on the entry. A mark that does not start
+the name is not read, and the number of digits is free up to three (`#1#`, `#01#` and `#100#` are groups 1, 1 and 100).
+:observed[the routine read from the decrypted executable of build 1.17.2; the entries being FLVER material names is inferred
+from the names that carry marks]{games="elden-ring"} Over every FLVER of Elden Ring this rule finds a group in 13,650 of the
+15,543 names with a `#`, a scan for any `#digits#` in 13,652; the two materials only the scan assigns are the trailing
+`#1#` of `AET652_007#1#` and `AET652_012#1#`, which no group controls. :proven[every FLVER of Elden Ring]{games="elden-ring"}
 
 The NPC row comes from each enemy or dummy-enemy placement; it is not necessarily a property shared by every
 occurrence of a character model. Every map enemy's model/NPC-row link in the independent comparison matches the MSB

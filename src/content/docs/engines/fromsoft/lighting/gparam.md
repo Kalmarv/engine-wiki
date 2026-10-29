@@ -220,6 +220,18 @@ observed. :unknown{games="elden-ring"}
 :only[elden-ring] Additional files use `_weatherbase`, `_weatheroutdoor`, `_commonevent` and `_capturemap` layer
 names. Their presence does not establish how the layers combine. :observed{games="elden-ring"}
 
+:only[elden-ring] One routine builds these names from an area, a block and a 16-bit id: `m%02u_%02u_%04u` for a map's own
+set and `m%02u_%02u_%04u_WeatherBase`, `_WeatherOutdoor`, `_CommonEvent` and `_CommonEventMapUnique` for four further
+layers, which the draw-parameter manager numbers 6, 7, 8 and 9. The weather layers are requested with area 0 and block 0,
+so they always name `m00_00` files whichever map is loaded. :observed[the routine and its callers read from the decrypted
+executable of build 1.17.2]{games="elden-ring"} When a weather starts, the weather system passes the 32-bit field at offset 20 of its weather row
+(`WeatherParam.GparamId`) to the manager's weather setter, which tells every map's controller to drop its previous and
+current weather ids and load `m00_00_<id>_WeatherOutdoor`; the manager also keeps a pending id with a blend time that a
+per-frame step hands to the controllers, which keep a current and a previous id with two blend timers. :observed[the two
+callers of the setter and the controller functions, read from the decrypted executable of build 1.17.2]{games="elden-ring"}
+The weather, not the map, therefore selects the `weatheroutdoor` file. The id of the
+`weatherbase` layer and the event that sets `commonevent` ids are not traced. :unknown{games="elden-ring"}
+
 Volumetric-fog groups include `GameScale`, near and far depth, fixed density, height density, scattering and light
 colour fields. :observed The density unit and its relationship to `GameScale` are unresolved. :unknown
 

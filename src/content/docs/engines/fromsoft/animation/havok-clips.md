@@ -72,8 +72,14 @@ but list no members, so the files do not say what 1 and 2 mean (whether an addit
 or the child's space). :proven[over every table of both installs]{games="sekiro elden-ring"} Other sources name the
 values differently: HKLib's Havok 2018.1 registry names 1 `ADDITIVE_PARENT_SPACE` and 2 `ADDITIVE_CHILD_SPACE`
 :sourced[HKLib], while the Havok 2014 class dumps Smithbox carries for Dark Souls III name 0 `NORMAL`,
-1 `ADDITIVE_DEPRECATED` and 2 `ADDITIVE`. :sourced[Smithbox] Both agree that 1 and 2 are additive; neither is checked
-against Sekiro's 2016.2 runtime.
+1 `ADDITIVE_DEPRECATED` and 2 `ADDITIVE`. :sourced[Smithbox] Both agree that 1 and 2 are additive. In the running Sekiro 1.06 game, one clip (the same clip with blend hint 0, 1 and 2, in a
+character's behaviour layer that plays at weight 1 over the idle pose) gives three different poses on the 47 bones where the layer
+reaches the pose: with 0 the bone rotation is the clip's own; with 1 it is the clip's rotation times the idle rotation (clip on the left,
+the parent-space reading, quaternion product with the right operand acting first); with 2 it is the idle rotation times the clip's (the
+child-space reading). Every one of the 30 pose snapshots of each run matches its own reading to 0.002 rad on all 47 bones and the other
+two readings fit fewer (the nearest one 83 percent of the bones). :observed[one clip, one layer, one run per hint value]{games="sekiro"}
+This matches HKLib's names (1 parent space, 2 child space); the Smithbox names say nothing about the space.
+Elden Ring's runtime is not checked.
 
 In Elden Ring, setting `blendHint` to 1 or to 2 on every clip of the player's 11 animation binders changes the player's
 final pose in the same way for both values: idling and walking, 126 (hint 1) and 127 (hint 2) of the 150 bones come out as with the stored hint, which for a bone

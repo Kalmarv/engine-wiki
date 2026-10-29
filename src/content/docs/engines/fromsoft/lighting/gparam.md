@@ -234,6 +234,9 @@ executable of build 1.17.2]{games="elden-ring"} When a weather starts, the weath
 current weather ids and load `m00_00_<id>_WeatherOutdoor`; the manager also keeps a pending id with a blend time that a
 per-frame step hands to the controllers, which keep a current and a previous id with two blend timers. :observed[the two
 callers of the setter and the controller functions, read from the decrypted executable of build 1.17.2]{games="elden-ring"}
+With every weather row's `GparamId` set to 130 in a loaded regulation, the two map controllers of a running build 1.17.2 read 130 as
+both current id (offset 0x108) and previous id (offset 0x10c) at the starting site, three times 25 s apart, where the stock
+regulation reads 0 in the same places; the manager's pending id stays 0. :observed[one start, one loaded regulation edit, build 1.17.2]{games="elden-ring"}
 The weather, not the map, therefore selects the `weatheroutdoor` file. The id of the
 `weatherbase` layer and the event that sets `commonevent` ids are not traced. :unknown{games="elden-ring"}
 

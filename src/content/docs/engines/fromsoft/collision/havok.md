@@ -26,6 +26,8 @@ implementations:
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/interior.rs
   - name: havok-formats quad pairing
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/quads.rs
+  - name: havok-formats primitive tree and cut
+    url: https://github.com/Kalmarv/havok-formats/blob/main/src/stock_tree.rs
   - name: havok-formats bounding-volume tree encoder
     url: https://github.com/Kalmarv/havok-formats/blob/main/src/bvtree_write.rs
   - name: havok-formats simd tree writer
@@ -291,14 +293,61 @@ to 67% of 16 leaves (Sekiro; Elden Ring 98% to 66%), and drops to 8.9% (8.6%) at
 metric (volume, perimeter, squared diagonal, or the increase over the children's surfaces) reproduces fewer of
 the nodes (51% to 81% in a Sekiro sample against 91% for the surface). :observed[every section tree with a box for each primitive]
 
-Above 16 leaves the splits are not that, and not a rule that is known. They cost within a few percent of the best
-surface-area split along an axis of the centres (half of the 7,597 top-level splits of one Sekiro map cost 2% or less over
-the best; 91% within 10%) and 82% to 93% of the stock splits are separable by the centres along one axis, but the stock
-split is the best one in 329 of 7,940 splits of 40 meshes, and a binned surface-area split (8 to 64 bins over the centres or
-the boxes, either of two costs) is the stock split in 0.5% to 7% of 2,851. :observed{games="sekiro"} The median split along
-the longest axis that earlier tools use costs 1.34 times the stock trees' inner-node surface in Sekiro and 1.32 in Elden
-Ring; a surface-area split down to 16 leaves with the bottom-up merge below costs 0.92 of the stock's. :observed[every
-section tree with a box for each primitive]
+Above 16 leaves the splits are not a surface-area split along one axis, though they cost within a few percent of one
+(half of the 7,597 top-level splits of one Sekiro map cost 2% or less over the best; 91% within 10%, and 82% to 93% of the
+stock splits are separable by the centres along one axis; the stock split is the best one in 329 of 7,940 splits of 40
+meshes, and a binned surface-area split of 8 to 64 bins over the centres or the boxes, either of two costs, is the stock
+split in 0.5% to 7% of 2,851). :observed{games="sekiro"} The median split along the longest axis that earlier tools use costs
+1.34 times the stock trees' inner-node surface in Sekiro and 1.32 in Elden Ring; a surface-area split down to 16 leaves with
+the bottom-up merge below costs 0.92 of the stock's. :observed[every section tree with a box for each primitive]
+
+A rule that reproduces most of the stock trees from the leaves' boxes is the following, each step in single precision and
+in the order written. The leaves are the quads in the order the pairing takes them, then the other source triangles in row
+order, a leaf's box being its vertices' box grown by the shape's `convexRadius`. :observed[every named collision binder]
+
+1. *Insertion.* The leaves are put one at a time into a binary tree. A leaf descends from the root, growing every box it
+   passes to hold it, into the child for which the product of two numbers is smaller (the first child on a tie): the
+   squared distance between the centres of that child's box and the leaf's box, and the sum of the extents along the three
+   axes of both boxes. Where it stops at a leaf, the two become the children of a new node.
+2. *Rebuild.* With three leaves or more, the leaves are listed left to right and the tree is built again from the list. A
+   list of more than 16, and the whole list whatever its length, is split: its leaves go into 32 bins on each axis by the place
+   of their box's centre in the list's box (times 32, plus one half, truncated, kept within 0 to 31), each bin holding the union
+   of its boxes and its count. A bin costs, on its axis, the surface of the union of the bins up to it times their count, plus
+   the surface of the union from it on times theirs; the split is the occupied bin of least cost (the first on a tie, axes
+   in order, bins from the lowest). The bins before it make the first list and the bins after it the second, each in the order
+   of the list; the bin itself goes whole to the side that is empty if exactly one is, and otherwise is sorted by the centres
+   of its leaves on the axis (with the quicksort of the interior pass) and divided at half, the lower half to the first list. A
+   list of 16 or fewer is joined from the bottom: the two entries whose union has the least surface (the first pair in list
+   order on a tie) become the children of a new node that takes the first one's place, the last entry fills the second one's,
+   until one is left.
+3. *Refinement.* Every node below the root whose two children both have children is looked at in pre-order: the two ways of
+   exchanging a grandchild between the children (the first child keeps its first grandchild and takes the other child's first,
+   or second, grandchild) are costed by the sum of the surfaces of the two new children, and the cheaper (the second on a tie)
+   is made if it costs less than the present sum; passes repeat until none changes anything. Then every node below the root
+   has its larger child, by surface, first.
+4. *The cut.* A queue starts with the root. An entry with 127 leaves or fewer and at most 255 distinct vertices is a section;
+   any other is replaced by its first child, and its second child goes to the end of the queue. The sections are numbered in
+   queue order, a section's tree is its subtree, and the mesh tree is the part above the sections.
+
+It is not the stock tool in every detail. The files hold the vertices after they were quantised and the stock tool worked from
+the ones before, and a box rounded the other way can send a leaf to another bin or another child. :inferred On the 2,613
+Sekiro and 14,218 Elden Ring meshes with two sections or more, the cut gives exactly the stock sections in their stock order
+in 592 (23%) and 4,577 (32%), and the mesh tree above them is the stock mesh tree in all of those; 202,885 of the 264,453 stock
+sections of those Sekiro meshes (77%) and 441,322 of the 713,169 of Elden Ring (62%) are among the sections it finds. :observed[every named collision binder]
+Among the sections the cut finds, take the stock inner nodes whose leaves also make a node of the cut tree: the same ordered shape
+is there for this share of Sekiro (Elden Ring) nodes by their number of leaves: 2 leaves 95.6% (94.1%), 3 to 4 94.7% (92.9%), 5 to 8 90.6% (88.5%), 9 to 16
+84.8% (81.0%), 17 to 32 75.1% (70.1%), 33 to 64 62.4% (55.7%), 65 or more 45.4% (38.3%); the cut tree lacks a stock node's leaf set in 2% to 8% (2% to 11%) of them. :observed[every named collision binder] Of the two-leaf nodes that the cut tree shares with the stock tree, the larger child comes first, as the stock tool has it, in
+4,752,371 of the 4,758,134 of Sekiro whose boxes differ by 1% or more in surface (99.9%), and in 10,146,348 of
+10,151,611 of Elden Ring's; where the surfaces are equal in single precision the cut tree has the stock order in 78%
+(77%). :observed[every named collision binder] Moving every decoded vertex of a section by a random amount of up to half a codec step
+(the same for equal positions) before the same steps lowers the sections found among the Sekiro object meshes from 1,457
+to 1,138 of 2,384, and the meshes in exact stock order from 119 to 86 of 155, so a rounding of that size matters at that
+scale. :observed{games="sekiro"}
+
+The numbering of a section's primitives is neither the tree's pre-order nor the order of the source rows: in all 2,592
+section trees of Sekiro's objects with two primitives or more (that have a source row for every primitive), the payloads do not
+increase along the pre-order, and in 2,591 of them the first source rows of the primitives do not increase with the primitive
+index. :observed{games="sekiro"}
 
 A node's first child is the one with the larger union box: in 20,184,136 nodes of Sekiro against 417,276 with the smaller
 (913,005 have two boxes of one surface, 834,964 of them two leaves, and of the rest with unequal leaf counts the first child

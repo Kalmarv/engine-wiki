@@ -146,6 +146,10 @@ Of all 330,760 document and resource names of the install, exactly those 195 has
 of the 1,216,438 distinct strings of the stock documents only one other does, by coincidence (`riff 1`): the names of the
 other 1,441 depot key hashes are stored nowhere as a document name or a string value. :proven[every manifest name and EBX string]
 The seed is a measured constant; how the game arrives at it is not known. :unknown
+It is not the djb2-XOR hash, started from 5381, of any string of up to six characters from `a-z`, `0-9` and `_/. -`, of the
+157,722 strings of the executable and its reflection tables, or of the 330,760 document and resource names with their
+directory prefixes and path components, and it is not written in either of the two authoring executables.
+:observed[the strings and executables named]
 FrostyToolsuite's profile describes the top 16 bits as the low half of this hash of the lower-cased name :sourced[FrostyToolsuite];
 for skate. the census confirms it, with the identity word as the high half and this seed.
 
@@ -180,6 +184,15 @@ The name hash of `Param_Composite_*` Lua names back-solves to the directory `com
 has these names, yet their keys carry the name hashes of those paths; the three `_w` variants do not back-solve to it.
 :observed[11 names]
 
+**Name groups.** Of the 1,441 depot key hashes whose names are unknown, 319 fall into 94 groups that share the upper 24 bits of
+the 32-bit name hash, which is what names differing only in their last character give; random 32-bit values would give 0.06 such
+pairs, and the 207 known names have 20 such groups of 2 members. :observed[1,441 unnamed and 207 named keys]
+Four of the groups are the stems of existing `…/character/hair/regions/param_hair_*main` assets with a final `0` or `1`
+(`param_hair_breakupwarp`, `param_hair_breakupweights`, `param_hair_breakupflattargetnoise`, `param_hair_translucency`): the
+name hash of each such name is the name hash of a group member. :inferred[8 name hashes; the low 48 bits of these keys are
+unchecked] The same match names `param_region_breakupenum_2a`, the sibling of the existing `…2` and `…2b` assets.
+:inferred[1 name hash; 15,318 candidates tested against 1,441 hashes]
+
 **Parameter collections.** Nine resources of type `0xf434940d` (three in the globals TOC, six in the `dingolevel_root` TOC; for
 example `common/shadercomponents/configuration/collections/characterglobal_collection` and `worldsurfacing_collection`) list
 the keys of a parameter group, 16 bytes each in the layout of the prefix above, followed by pairs of (byte width, offset) that
@@ -205,7 +218,12 @@ The 48 bits of a key hash below the name hash's low half are not the CityHash64,
 (64-bit and 128-bit forms, several seeds) of a parameter asset's name, its lower-cased, upper-cased or UTF-16 form, its last
 path component, or any of several million buffers that join the name with its type id, name hash, length (1, 2, 4 or 8
 bytes), a NUL, or the layout FrostyToolsuite's profile describes (a 1, three lengths, name, type, module) with any of 21,621
-reflection names as the type and 4,080 directory strings as the module. The engine holds a CityHash64 equal to the
+reflection names as the type and 4,080 directory strings as the module, or 1.24 billion CityHash64 buffers of that layout
+with 35 type names and 246,482 executable, reflection and directory strings as the module. The 48 bits are not bytes of
+the parameter asset's file GUID or of its instance GUID (any six-byte window, either byte order), and over the 207 keys they
+look uniformly random (bit balance chi-square 47.7 on 48 degrees of freedom, mean pairwise Hamming distance 24.0 of 48).
+:observed[207 keys] A stored random value rather than a function of the name would fit this. :inferred
+The engine holds a CityHash64 equal to the
 reference implementation on inputs of 0 to 1,000 bytes, and none of its 264,603 functions of up to 2,560 bytes returns the
 key hash, its low 48 bits or its high 48 bits from a parameter asset's name (exact case, lower case or last component) in
 nine argument layouts under emulation; the same sweep finds the engine's CityHash64 when asked for CityHash64 of the name.

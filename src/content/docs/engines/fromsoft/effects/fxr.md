@@ -383,7 +383,7 @@ effect itself or an effect it spawns holds a light):
 | map regions of type SFX (5): effect id in the first word of the type data, a start-disabled flag after it ([layout](/engines/fromsoft/world/msb/#effect-regions-type-5)) | 1,523 regions in 104 maps; 109 name an effect that reaches a light | 1,872 regions in 9 maps; 96 |
 | WindSFX regions (6): effect id first | 72, none reach a light | 106, none |
 | placed asset or object: ER asset part type data +0x1c (i16 relative id) selects [`AssetModelSfxParam`](/engines/fromsoft/data-model/params/#modelsfxparam-and-assetmodelsfxparam) row `(nnn x 1000 + mmm) x 1000 + relative id` for the model `AEGnnn_mmm`; Sekiro `ModelSfxParam` row `object model number x 1000` | 409,246 of 421,253 asset parts have -1; 9,396 parts on 352 models reach a light | 1,418 of 10,538 object parts on 80 models |
-| TAE events 96 and 118 (and 110, 112, 114 to 116, 119, 120 by the community templates): the effect id is the first word | 2,788 ids; all that reach a light are in character animation binders | 762 ids; likewise |
+| TAE events 96 and 118 (and 120 in Elden Ring): the effect id is the first word (the other events the community templates give an effect field are below) | 2,788 ids; all that reach a light are in character animation binders | 762 ids; likewise |
 | `HitEffectSfxParam`: 15 fields named by the kind of hit (`Slash_S` to `Thrust_Specific2` in Elden Ring, `Slash_S` to `Thrust_LLL` in Sekiro) | 193 rows, 585 distinct ids that exist | 69 rows, 101 ids |
 | EMEVD instructions 2006[3] (effect id in argument 3) and 2006[4] (argument 2) | 35 and 78 ids | 10 and 11 ids |
 
@@ -397,6 +397,20 @@ effect files (74.6%) and 8,958 of Elden Ring's 11,912 (75.2%) are named by a rou
 1,869 (70.0%) and 8,298 (69.7%) by the routes before. :observed
 That the EMEVD pair starts and stops a map effect is read from the instruction's neighbours and the counts of its two members, not
 from the instruction's definition. :inferred
+Of the animation events whose community template has an effect field, three types hold effect numbers in the stock files. Of the
+events with a positive number in the first word, type 96 (a one-shot effect at a dummy polygon: the id, the dummy polygon's reference
+id, a slot, and flags that include "follow dummy polygon") names an effect that exists in 7,583 of 7,586 in Sekiro and 16,885 of
+20,078 in Elden Ring (the rest are not in the base game's binders), type 118 (a blade: the id, a dummy-polygon source of body, left
+or right weapon, and the base and tip dummy polygons) in 182 of 182 and 2,692 of 2,723, and type 120 (one effect for each kind of
+player: the first of twelve ids) in 1,472 of 1,473 in Elden Ring. :observed[every event of every character animation binder of both
+installs, 336,787 events in Sekiro and 1,310,023 in Elden Ring] Type 112 (the effect determined by the floor) holds one of 6 (Sekiro,
+2,941 events) or 15 (Elden Ring, 1,410) small numbers, type 110 one of 3 (8 events) or 5 (89), and type 119 (Elden Ring) an id that no
+binder holds in 247 of its 249 events; types 95, 99 to 101, 104, 108, 109, 121, 122 and 961 hold no positive number in either game.
+:observed[the same events] The first word of these is therefore not shown to be an effect number. :inferred The goods and magic
+events (114, 115) name their effect through a param row by the template's "param type" and "SFX index" fields, and the throw
+(117) and foot (792) events through an index. :sourced[community templates] Dummy polygon reference ids in type 96 are one of 166
+(Sekiro) or 270 (Elden Ring) values; 6,907 of Sekiro's 7,589 and 18,448 of Elden Ring's 20,082 type 96 events set the follow flag.
+:observed
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed
 An asset's effect attaches to the dummy polygon the row names (`dmypolyId_n`, 200 in the light rows). :observed

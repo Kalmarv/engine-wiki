@@ -187,11 +187,18 @@ has these names, yet their keys carry the name hashes of those paths; the three 
 **Name groups.** Of the 1,441 depot key hashes whose names are unknown, 319 fall into 94 groups that share the upper 24 bits of
 the 32-bit name hash, which is what names differing only in their last character give; random 32-bit values would give 0.06 such
 pairs, and the 207 known names have 20 such groups of 2 members. :observed[1,441 unnamed and 207 named keys]
-Four of the groups are the stems of existing `…/character/hair/regions/param_hair_*main` assets with a final `0` or `1`
-(`param_hair_breakupwarp`, `param_hair_breakupweights`, `param_hair_breakupflattargetnoise`, `param_hair_translucency`): the
-name hash of each such name is the name hash of a group member. :inferred[8 name hashes; the low 48 bits of these keys are
-unchecked] The same match names `param_region_breakupenum_2a`, the sibling of the existing `…2` and `…2b` assets.
-:inferred[1 name hash; 15,318 candidates tested against 1,441 hashes]
+Candidate names for nine of these name hashes, each found by a 32-bit match only (the low 48 bits of the keys cannot confirm
+them): the stems `param_hair_breakupwarp`, `param_hair_breakupweights`, `param_hair_breakupflattargetnoise` and
+`param_hair_translucency`, each with a final `0` and `1` (eight hashes, four of the groups), under
+`common/shadercomponents/parameters/character/hair/regions/`, where assets `param_hair_breakupwarpmain` and three more with the
+same stems exist; and `common/shadercomponents/parameters/regions/region2/param_region_breakupenum_2a`, the sibling of the
+existing `…_2` and `…_2b`. :inferred[9 name hashes]
+The chance odds: the search for the four stems compared about 10.7 million candidate names (directory, word and prefix
+combinations) with the 2,290 prefix states of the 94 groups, which gives about 6 chance matches; it found 9, five of them
+meaningless names (for example `…/skin/param_debug_haircap`), so a match alone proves nothing, and these four are credible
+only because each is a real word of the right directory next to assets with the same stem and each match explains a pair
+of hashes that differ in the last character. The `…_2a` match came from 283,383 candidates (two characters of a known name
+replaced) against 1,441 hashes, which gives 0.1 chance matches in all. :inferred[9 name hashes]
 
 **Parameter collections.** Nine resources of type `0xf434940d` (three in the globals TOC, six in the `dingolevel_root` TOC; for
 example `common/shadercomponents/configuration/collections/characterglobal_collection` and `worldsurfacing_collection`) list
@@ -223,6 +230,9 @@ with 35 type names and 246,482 executable, reflection and directory strings as t
 the parameter asset's file GUID or of its instance GUID (any six-byte window, either byte order), and over the 207 keys they
 look uniformly random (bit balance chi-square 47.7 on 48 degrees of freedom, mean pairwise Hamming distance 24.0 of 48).
 :observed[207 keys] A stored random value rather than a function of the name would fit this. :inferred
+In practice a writer never needs the function: a stock parameter's key is copied from the stock material or depot, never
+recomputed, and a new parameter's key is its name hash plus any 48 bits, provided the material and the depot written beside
+it carry the same key. :inferred[the engine does not hash names while a level loads; not tried in the game]
 The engine holds a CityHash64 equal to the
 reference implementation on inputs of 0 to 1,000 bytes, and none of its 264,603 functions of up to 2,560 bytes returns the
 key hash, its low 48 bits or its high 48 bits from a parameter asset's name (exact case, lower case or last component) in

@@ -83,9 +83,18 @@ In the running game (1.17.2, offline, the layout `m10_00_00_00` replaced by a te
 all zero is not drawn: setting the draw groups of every map piece and asset to zero (7,773 of the 8,065 stored a non-zero
 array; display groups left as stored) removes the walls, floor and props around the Stormveil spawn, as moving all of them
 300 m up does. What stays on screen is not made of this layout's parts: lifting the 292 parts that store zero draw groups
-and zeroing the rest gives the same picture. :observed{games="elden-ring"} Whether parts that already store zero draw groups
-(27 map pieces, all at the origin, and 265 assets in this layout) are drawn by another rule was not seen: none of them is in
-view at the spawn. :unknown{games="elden-ring"}
+and zeroing the rest gives the same picture. :observed{games="elden-ring"} Zero draw groups alone do not hide a part: with
+the draw groups of every map piece and asset zero and their display groups all set to the single bit 9 of word 0 (a bit that
+is set in both group arrays of the floor collision under the spawn, `h001300`), the gate, pillars, walls and rubble around
+the spawn are drawn again (the floor stays absent), where the same zeroing with the display groups left as stored (zero
+on nearly all of the parts in view) removes them. :observed{games="elden-ring"} So a part is drawn when either its draw groups
+or its display groups share a bit with those of the collision under the player, as far as these two pictures show. One view
+each; one bit tried; the rule for a single part, and which collision's arrays count, are not tested. :inferred The parts
+that store zero draw groups in this layout (27 map pieces, all at the origin, and 265 assets, 144 of them with non-zero
+display groups) were not seen themselves: none of them is in view at the spawn, and moving them in front of the camera
+showed nothing (parts of models with no instance near the spawn were not seen after being moved there, with stored or forced groups).
+The pattern "draw groups zero, display groups set" that those 144 assets store is drawn when the display groups match.
+:observed{games="elden-ring"}
 
 The same test with a shared group tells that a bit in common with the display groups of the collisions does not draw a part.
 With the draw groups of every map piece and asset set to group 200 alone, the near scenery (gate, walls, floor, rubble) is

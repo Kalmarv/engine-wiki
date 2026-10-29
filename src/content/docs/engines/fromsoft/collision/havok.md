@@ -190,13 +190,16 @@ kept triangles of Sekiro have them within 1 cm, against 2 of the 276, so merging
 separate the two. Their sums of squared cross-product components run from 10⁻⁷ to 1, like those of the thin kept
 triangles. :observed[the object meshes of both games]
 :::open[Why else does the stock tool leave a source row out?]
-The test above accounts for most of the left-out rows of Sekiro's objects but for 12% of them, for about three quarters of
-the left-out rows of Elden Ring's objects, and for 85% (Sekiro) and 51% (Elden Ring) of those of the map meshes whose
-vertices are known; 27,874 and 538,167 more use a vertex no kept row uses. Neither duplicates, repeated vertex indices nor
-merging vertices within a distance explains the object rows. A reading of the stock tool suggests that it tests every
-primitive again after cutting the sections, on the vertices as they are stored, and starts over without the ones that fail
-(so a triangle can fall to the test only after quantising); the stored vertices of a left-out row are not known, which
-makes that untestable from the files. :inferred
+The test above leaves unexplained 73,755 of the 87,100 left-out rows of Sekiro whose vertices a kept row shows (85%) and
+281,642 of 549,405 in Elden Ring (51%); 27,874 and 538,167 more use a vertex no kept row uses. Neither duplicates,
+repeated vertex indices nor merging vertices within a distance explains the object rows. A reading of the stock tool
+suggests that it tests every primitive again after cutting the sections, on the vertices as the section stores them, and
+starts over without the ones that fail. :inferred Tried on the unexplained rows: take the section that holds most of a
+row's corners, and test the corners as that section stores them (a corner it holds as stored, another to the nearest
+code of its grid), and the test flags 8,801 of the 73,755 in Sekiro (12%) and 32,306 of the 281,642 in Elden Ring (11%);
+allowing any section that holds one of the corners flags 37,758 (51%) and 140,172 (50%), which is too loose to tell.
+:observed[every named collision binder] The section a left-out row would have been in is not known, and the rest, 88%,
+stays unexplained.
 :::
 
 ### Which triangles are joined into quads
@@ -406,22 +409,17 @@ corresponding subtree of the cut tree in 1,093 of 1,597 such sections of Sekiro'
 The numbering of a section's primitives is neither the tree's pre-order nor the order of the source rows: in all 2,592
 section trees of Sekiro's objects with two primitives or more (that have a source row for every primitive), the payloads do not
 increase along the pre-order, and in 2,591 of them the first source rows of the primitives do not increase with the primitive
-index. :observed{games="sekiro"} Nor does a simple key give it. In the 2,593 Sekiro object sections with six primitives or
-more, no more than 10 have their primitives increasing, or decreasing, in the minimum, the maximum or the centre of their boxes
-on any axis, none in the first source row, and 3 of the 2,201 sections that hold both quads and triangles put the quads
-before the triangles. A pre-order of the stored tree, with the second child first, or a breadth-first order, forwards or
-backwards, gives it in 10 or fewer of 2,610 section trees. Of the 1,597 stock sections of three leaves or more that the cut above finds (and whose numbers run from 0), 1 has the
-order of its leaves in the cut tree, forwards or backwards, at any of four stages of the build (after the insertion, after
-the rebuild, after the refinement, at the end) as its numbering, and sorting the primitives, taken in row order, with the stock quicksort by
-one of those keys gives it in no more than 1 of 699 sections of 4 to 64 primitives. The children of every node cover
-consecutive ranges of numbers in 13 of 2,610 section trees (in 51% of the two-leaf nodes, 22% of the three-leaf and 5% of
-the four-leaf nodes), as in small regular sections whose leaves read `5, 4, 7, 6, 1, 0, 3, 2` in pre-order. :observed{games="sekiro"}
-
-:::open[How does the stock tool number a section's primitives?]
-No order tried gives the numbering, and it does not follow the stored tree. A reading of the stock tool suggests that a
-leaf gets its number when it is put into the section's tree, so the numbering comes from the order in which the section's
-primitives are handed to that build, which the files do not show. :inferred
-:::
+index. :observed{games="sekiro"} It is the result of a sort. The stock tool numbers a section's primitives in the pre-order of its tree and then sorts them by
+the index of their data run with its quicksort (the one of the interior pass: middle pivot, strict comparisons, not
+stable). A section names one data run, so every key is equal and the sort only permutes: the primitive stored at index
+`p` is the one of pre-order rank `ranks(n)[p]`, where `ranks(n)` is what that quicksort makes of `0..n`, and the leaf
+of pre-order rank `r` carries the payload `p` with `ranks(n)[p] == r`. For `n` = 4 the payloads in pre-order are
+`2, 3, 0, 1`, for 6 `3, 4, 5, 0, 1, 2`, for 8 `5, 4, 7, 6, 1, 0, 3, 2`, for 10 `6, 5, 7, 9, 8, 1, 0, 2, 4, 3`. Every
+section tree of both games with two leaves or more has exactly these leaf payloads in file order: 273,148 in Sekiro and
+721,282 in Elden Ring (all of them; 80 and 1,123 trees have a single leaf). :proven[every named collision binder] A key of
+the section's primitives, the box coordinates, the first source row, quads before triangles, a traversal of the stored
+tree, or the leaf order of the cut tree at any stage of its build, is not the numbering (at most 10 of 2,610 Sekiro
+object sections for any of the simple ones). :observed{games="sekiro"}
 
 A node's first child is the one with the larger union box: in 20,184,136 nodes of Sekiro against 417,276 with the smaller
 (913,005 have two boxes of one surface, 834,964 of them two leaves, and of the rest with unequal leaf counts the first child

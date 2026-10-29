@@ -543,7 +543,7 @@ Each atom is its `u16` type and its members, and the next atom starts where the 
 | angle limit (0x10) | `isEnabled` `+0x02`, `limitAxis` `+0x03`, `minAngle` `+0x04`, `maxAngle` `+0x08`, tau `+0x0C` | enabled, axis 0, tau 1.0; 14 distinct angle pairs, from (-0.0174, 0.0174) to (-4.188, 0.8725) radians |
 | angular motor (0x14) | `isEnabled` `+0x02`, `motorAxis` `+0x03`, `initializedOffset` `+0x04`, `previousTargetAngleOffset` `+0x06`, `correspondingAngLimitSolverResultOffset` `+0x08`, `targetAngle` `+0x0C`, motor pointer `+0x10` | disabled, axis 0; 64, 68 and 16; angle 0; null |
 | 2d angle (4) | `freeRotationAxis` `+0x02` | 0 |
-| ball socket (8) | `bodiesToNotify` `+0x02`, `stabilizationFactor` `+0x03`, `maxImpulse` `+0x04` | 0; 48; the largest `f32` |
+| ball socket (8) | `bodiesToNotify` `+0x02`, `stabilizationFactor` `+0x03`, `maxImpulse` `+0x04` | 0; 48; `0x7F7FFFEE` (3.40282 × 10^38, the value of the fixed bodies' `+0x5C`, not the largest `f32`) |
 
 :proven[all 161 data objects] No data object holds a motor object, an action or a phantom.
 The breakable constraint data (48 bytes to the next object) is, after the 12-byte `hkpConstraintData` header: a bridge atom (type 1 at `+0x0C`, a null function pointer at `+0x10`, a pointer back to the object itself at `+0x14`), the wrapped data (`+0x18`, a limited hinge in all 16), `childRuntimeSize` (`+0x1C`, 80), `childNumSolverResults` (`+0x1E`, 8), `solverResultLimit` (`+0x20`, 25.0 in 12 and 30.0 in 4), and two flags (`+0x24`, `+0x25`, 0), then zero. :proven[all 16] These objects carry no class metadata; their member names are the SDK's. :sourced[Havok SDK headers]

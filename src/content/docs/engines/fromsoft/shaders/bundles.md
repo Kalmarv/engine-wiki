@@ -87,6 +87,10 @@ Sekiro's `GXFlver_*` material programs instead live together in `/shader/gxflver
 Their instance-dependent effect variants include Bloody, Burn, Cm, Df, Cloth, Phantom, ZFeather and Decal;
 a material definition alone does not identify which effect an instance uses. :observed{games="sekiro"}
 
+The programs that draw [effects](/engines/fromsoft/effects/fxr/) (billboards, tracers, distortion, the particles on the GPU)
+are in a bundle of their own, `/shader/gxffxshader.shaderbnd.dcx`, described on
+[effect shader programs](/engines/fromsoft/shaders/effects/). :observed{games="sekiro"}
+
 In a castle-interior capture, Sekiro uses reversed depth with `GreaterEqual`, and disables depth writes on matched
 materials carrying `g_GX_bDisableDepthWrite`. Matched `g_BlendMode = 2` forward draws use additive
 `SrcAlpha / InvSrcAlpha` colour blending and `One / Zero` alpha blending; G-buffer draws do not blend.

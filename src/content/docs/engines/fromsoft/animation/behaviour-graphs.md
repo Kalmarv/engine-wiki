@@ -213,6 +213,11 @@ to 1: 0, 0.1, 0.6 and 1 in Sekiro's, and 0, 0.2, 0.3, 0.4, 0.5, 0.6 and 1 in Eld
 differ between graphs, and 31 of Sekiro's and 264 of Elden Ring's are empty; a layer that has one is a layer with bone weights, 32 of
 the 145 layers in Sekiro's and 32 of the 383 in Elden Ring's. :proven{games="sekiro elden-ring"}
 
+:only[elden-ring] Giving one of the player graph's `AddBlend` layers a bone weight array (the `Jaw` and `Lips_Lower` array, moved
+from the speak layer so that it has one owner) makes the game exit without a message when the character loads, in 4 launches of
+build 1.17.2; the same graph with only the layers' variable binding sets cleared loads. :observed[one edit of the player's graph]
+Why the game refuses it is not established.
+
 :only[elden-ring] The player's `Master LayerGenerator` has 14 layers. Layer 0 plays `BasisAnim_CMSG`, a `CustomManualSelectorGenerator` of
 nine clips (`a000_000009`, `a002_000009`, `a003_000009`, `a010_000009`, `a012_000009`, `a013_000009`, `a014_000009`, `a015_000009`,
 `a016_000009`) at weight 1 with no bone weights; the file stores no selected index (the selector's `generatorIndexAtActivate` is

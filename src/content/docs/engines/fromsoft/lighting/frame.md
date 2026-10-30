@@ -124,6 +124,13 @@ the decrypted code of the running game. :inferred{games="sekiro"} The part's ena
 enable-entity call, by entity id, in the same code. :inferred{games="sekiro"} The layout puts every dome, ring and the
 moon in draw group 0, so draw groups do not pick the state. :observed{games="sekiro"}
 
+In the running game the sky map's 27 parts are one block of map parts, and one dome and one ring are enabled among them. At an
+Ashina Castle scene, read twice 40 s apart, two of the 27 have bit `0x200` set in the 32-bit word at part `+0x14C` (`0x04043E00`
+against `0x04043C00` on the other 25): the dome `m900020_0000` (entity 8904020) and the ring `m900120_0000` (entity 8904021), the
+ring's number being the dome's plus 100. :observed[one scene, two readings]{games="sekiro"} So the game shows a sky by enabling one
+dome and its ring, not by choosing among drawn domes when it renders. :inferred{games="sekiro"} Which sky state `m900020` holds
+was not read.
+
 The moon `o005900` is a 10 by 10 quad with the material `M[Moon]` (masked by the texture `m99_Moon_3m`), skinned whole to
 the second of its two bones, with a skeleton and animations of its own; the recorded moon draw's vertex and index data are
 byte for byte its model's. :observed{games="sekiro"}
@@ -147,9 +154,9 @@ direction, whose y axis is the world's up made perpendicular to it, and whose x 
 :observed{games="sekiro"} So the moon moves with the light set's `Angle0` over the day. :inferred{games="sekiro"}
 
 :::open[What chooses the dome?]
-Which of `m89_00_00_99`'s domes and far-mountain rings is enabled, and by what (the event scripts' `Set Lighting` time of
-day, 1 to 5, is the likely input), is not established: no event instruction names their entity ids, and no code constant
-names them.
+Which of `m89_00_00_99`'s domes and rings is enabled can be read from the part's flag word, but what enables it (the event
+scripts' `Set Lighting` time period, 1 to 5, is the likely input) is not established: no event instruction names their entity
+ids, and no code constant names them.
 :::
 
 ## Elden Ring

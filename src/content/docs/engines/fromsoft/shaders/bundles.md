@@ -74,6 +74,32 @@ Every forward colour draw of the recorded Elden Ring frames matches an `_FwdSdw`
 :observed{games="elden-ring"} A family's forward variants can be the same bytes, though (below), so a program matched by its
 bytes does not always tell its pass.
 
+### What forward programs read from the frame
+
+A forward program finishes its colour itself, so it reads frame inputs that a G-buffer program leaves to later passes. In
+disassembly (`cb8` is the scene buffer, `cb5` `cbLight`, `cb9` `cbPerFrame`):
+
+| Input | Use | Confidence |
+|---|---|---|
+| Shadow map `g_ShadowTexture` (`t32`, 2-D) | Sekiro's shadowed forward programs compare against it with `sample_c_lz` through the comparison sampler `SS_Shadow` (`s12`): four reads in `MetallicValue_MeshDecal_FwdSdw`, and the seven `FwdSdw` materials of `m11_01` bind the same pair | :observed[one program read; seven bound]{games="sekiro"} |
+| Volumetric fog `g_VolumeFog0` (`t47`, 3-D) | `colour * exp2(log2(fog.w) * k) + fog.xyz`, then times `SC_PreExposure` (`cb8[72].z`): `w` is the transmittance and `xyz` the in-scattered light, so no fog is (0, 0, 0, 1) and a fog of zeros turns the colour black; in Sekiro's `MetallicValue_MeshDecal_FwdSdw` and Elden Ring's `M[Sky9]`, `M[Clouds5]` and `M[DistantClouds]` `FwdSdw` programs | :observed[those programs] |
+| `FC_VolumeFogParam[4]` (`cb8[67]` to `cb8[70]`) | read by the sky dome and far-mountain programs of `m11_01`, whose height-fog branch divides by `FC_VolumeFogParam[1].xyz`, so zeros there give NaN; the same programs read `FC_ScreenSize` at `cb8[1]` and `FC_DirLightVec_0` at `cb5[0]` | :observed[two programs]{games="sekiro"} |
+| `FC_TimeOfDay` (`cb9`, register 27 `y`) | Elden Ring's sky programs (`M[DistantClouds]_001_FwdSdw`, `M[Atmosphere][Clouds]_001_FwdSdw` and others) read it in hours: `frem(t, 24)`, then saturated ramps blend the material's colour keys by the hour, so an hour of 0 gives the night keys | :observed{games="elden-ring"} |
+| | Sekiro's programs declare it and never read it: the resource definitions mark it unused in `M[Sky]_SkyDome_Ver2_0_Fwd`, `CloudFog`, `FarMountain` and `AMSN` | :observed{games="sekiro"} |
+| Scene registers `cb8[77]` to `cb8[88]` | read by Elden Ring's sky programs besides the above; by their neighbours, fog, atmosphere and sun values | :observed{games="elden-ring"} :inferred[their meaning]{games="elden-ring"} |
+
+Sekiro's `M[LandScape]_FarMountain` dithers its fade: it keeps a fragment where `(noise - 0.5) * 0.999 + ditherFadeAlpha >= 0.5`,
+so a fade of 0 discards every fragment and a fully shown mountain has a fade of 1. :observed[the program]{games="sekiro"}
+
+Elden Ring's `M[DistantClouds]_001_Fwd.vpo` (the `Field_Skysphere_Clouds_410`, `_411`, `_420` and `_421` materials of `AEG096_410`
+and `_420`) writes a cull distance (the length of the vertex's offset from a point, minus a constant) and two clip distances,
+and its `POSITION1` output is the clip position again, which `M[DistantClouds]_001_FwdSdw.ppo` divides by its `w`. Run with the
+material's own constants and textures, the pixel program gives (0, 4, 0, 0) for any `POSITION1` with `w` 0 (a NaN through its
+HSV step) and a dark grey of about 0.05 for a real position. :observed[the programs lifted and run, tile `m60_42_36_00`]{games="elden-ring"}
+Eight other sky vertex programs (`M[Clouds5]`, `M[Atmosphere][Clouds]` and others) declare `TEXCOORD0` as a `float4` holding UV
+set 0 in `xy` and set 1 in `zw`; the sky models `AEG096_*` carry up to five UV sets stored as floats (`AEG096_010`'s first set
+ranges from −15.9 to 15.3). :observed{games="elden-ring"}
+
 The binding metadata is described in [METAPARAM](/engines/fromsoft/materials/metaparam/); material upload rules in
 [constant binding](/engines/fromsoft/materials/constant-binding/).
 
@@ -104,6 +130,18 @@ At the Ashina Castle gate at night, the sky dome, the far mountains and the clou
 characters and `GXFlver_ColDif` draws in pass 4 (`FwdSdw`). :observed[a read-only breakpoint on the draw's pass id in the
 running game]{games="sekiro"} `M[Sky]_SkyDome_Ver2`, `M[Moon]` and `M[LandScape]_FarMountain` have byte-identical `_Fwd`,
 `_FwdSdw` and `_FwdSSdw` pixel programs. :proven[every forward program of the main bundle compared by its bytes]{games="sekiro"}
+
+The forward pass is chosen per draw job, when the job is set up. For a job of draw phase 0 or 15 the pass becomes 4 (`FwdSdw`),
+or 5 (`FwdSSdw`) when the renderer's shadow setting is 3, if shadows are on and bit 0 of a flag byte of the job's descriptor
+is clear; otherwise it stays 0 (`Fwd`). That bit is copied from a byte of the job's input, and the program is then entry
+`(pass + 1) * 3 + alpha` of the set. :inferred[read from the decrypted executable of Sekiro 1.06]{games="sekiro"} In the
+breakpoint record above, the pass-0 draws are the cloud fog and ground fog, whose layout parts have the shadow-receive flag
+(byte `+0x11` of the part's entity data) clear, and the sky dome and far mountains, which no layout places; the pass-4 draws
+are of parts with the flag set. Both passes run with the same draw-list filter and the same material mask.
+:observed{games="sekiro"} Over the layouts of the nine maps, of the 527 forward models a layout places, 22 are placed with the
+flag clear (21 fog and smoke models and one mesh decal) and 505 with it set, and no model is placed both ways.
+:observed[the layouts of nine maps]{games="sekiro"} So a forward material draws with `FwdSdw` where its placements receive
+shadows and with `Fwd` where they do not. :inferred{games="sekiro"}
 
 The forward pass's target 0 is finished colour, unlike the deferred pass's
 [G-buffer targets](/engines/fromsoft/shaders/gbuffer/). Forward programs can read scene depth, SSAO, irradiance

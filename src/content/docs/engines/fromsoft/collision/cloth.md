@@ -166,6 +166,14 @@ The triangles wind the other way: normals computed as the vertex-frame operator 
 with the cloth's stored triangle flips applied, agree with the model's normals at 95% of the vertices, and at almost none without
 the flips. :observed So the flips turn the model's winding into the operator's. :inferred
 
+Where a cloth state redirects a buffer, it is always a display buffer shadowed by an `hclShadowBufferDefinition` (type 7) of the
+same vertex count, and neither definition states triangle indices: 2,886 redirections in Sekiro and 15,984 in Elden Ring.
+Operators name the display buffer, never the shadow (an operator's used-buffer entry gives itself as its shadow); only the
+state's own used buffers map it to the shadow. 4,876 and 26,090 operator uses name a redirected buffer, 501 and 3,131 of them an
+`hclUpdateAllVertexFramesOperator` (484 and 2,533 with `trianglesRead` set). :observed[a census of both installs' cloth tagfiles]
+So the triangles of a shadowed display buffer can only be those of the drawn mesh, which the game supplies at run time, and the
+vertex frames are computed with the named buffer's triangles. :inferred
+
 In the first state of 249 of Sekiro's 586 display buffers (397 of Elden Ring's 2,325) the operators write only part of the
 buffer, the rest passing through the input conversion. :proven[every cloth tagfile of both installs] That fits the game handing
 the cloth the mesh it has already skinned. :inferred
@@ -186,6 +194,21 @@ The objects as the running games lay them out, read from the memory of Sekiro 1.
 | | last substep length, damping | `+0x50`, `+0x54` | the same |
 | | actions, collidables (`hkArray`) | `+0xE8`, `+0x178` | the same |
 | `hclCollidable` | transform, linear velocity, angular velocity | `+0x20`, `+0x60`, `+0x70` | |
+| buffer (one per buffer definition, in order, in the instance's array at `+0x40`) | world-from-mesh and mesh-from-world matrices | `+0x90`, `+0xD0` | |
+
+The game sets each buffer's two matrices. The display buffer and its shadow buffer are in the character's space: world-from-mesh
+is the character's root, at its feet, and mesh-from-world is a stored inverse, not one recomputed from it. The simulation,
+previous-position and scratch buffers hold the identity. :observed{games="sekiro"} For the muffler's neck cloth
+(`BD_M_9040_muffler_neck`), which skins into its display buffer, the pinned particles moved through these matrices match the game
+bit for bit in all 299 steps; through the identity they differ by 1 to 5 ulp in nearly every step. :observed[one capture]{games="sekiro"}
+The identity on the scratch buffers reproduces the game bit for bit on the scarf, the `c1010` hakama and kusazuri, the `c7200`
+sleeve and Elden Ring's rear rope. :observed
+
+A bone deformer (`hclSimpleMeshBoneDeformOperator`) normalises the bones it writes with the processor's approximate reciprocal
+square root and no refinement, so their axes are not unit to 1e-4: over the `c1010` hakama and kusazuri and the `c7200` sleeve
+(Sekiro) and the rear rope (Elden Ring), the game's driven bones are up to 4.9e-4 from unit squared length and orthogonal within
+4.3e-7. :observed The driven bones sit 0.015 to 0.164 m from the cloth's particles, while the bones of the set that the instance
+does not fill keep stale values hundreds of metres away. :observed
 
 The w lane of every live particle position reads NaN (`0xFFC00000`). :observed{games="sekiro"} All seven of the player's cloth
 instances share one transform set object. :observed{games="sekiro"}
@@ -223,6 +246,26 @@ These stages reproduce the recording on all 299 steps: :observed{games="sekiro"}
 The collidables are driven to their bones without normalising the quaternions, then stepped forward each substep: that gives the
 recorded collidables exactly on 198 of the 299 steps, and normalising them on 14. :observed{games="sekiro"} Without the game's
 action forces the simulate step differs from the recording by about 1 cm. :observed{games="sekiro"}
+
+The simulation step follows these rules: :inferred[read from the decrypted code of Sekiro 1.06]{games="sekiro"}
+
+- The constraint stiffness model is the sim cloth instance's (`hclSimClothInstance` `+0x140`, an index into the table of
+  `hclConstraintStiffnessDispatcher`: models 0 and 1 give 1.0; model 2 is adaptive, `powf(n * slowMotion * worldStepping, -1.725)`
+  with the last substep's local range and ramped transitions). The instance's constructor sets model 1 and no cloth code changes
+  it, so `adaptConstraintStiffness` does not soften the constraint sets; it only feeds their keep-velocity flag, which is set when
+  `(model != 1 || adapt) && (subSteps != 1 || slowMotion != 1 || worldStepping != 1)`.
+- The substep is `(1 / subSteps) * timeStep`, the reciprocal rounded first, with `timeStep = dt / slowMotion`.
+- The sim cloth instance lists its constraint sets' instance data by set index at `+0x158`, in 16-byte entries.
+- A volume constraint's instance data (`hclVolumeConstraintMxInstanceData`: a frame at `+0x20`, eigenvectors at `+0x60`)
+  warm-starts its Jacobi eigen-solve from the last step's eigenvectors; a batch's target is `((c0 * x + t) + c1 * y) + c2 * z`.
+- A transition constraint's instance data (`hclTransitionConstraintInstanceData`) holds its state at `+0x28` (0 simulated, 2
+  blending to the animation, 3 blending to the simulation), its blend time at `+0x2C` (advanced before the notify) and the
+  particles' start distances at `+0x18`. The blend multiplies by reciprocals rather than dividing: the bound is
+  `((1 - (1 / period) * t) * start) * (1 / s)` towards the animation and `(((1 / period) * t) * toSimMaxDistance) * (1 / s)`
+  towards the simulation, `s` being a further divisor of the code.
+
+With these rules a reimplementation reproduces the recorded steps bit for bit: both of the scarf's cloths (the muffler and the
+neck) in 299 of 299 steps, and both cloths of an NPC in 16 of 16. :observed[the recorded steps]{games="sekiro"}
 
 The code's arithmetic fixes the order of every sum (Havok's SSE2 build; the executable has no `dpps` or `haddps`):
 :inferred[read from the decrypted code of Sekiro 1.06]{games="sekiro"}

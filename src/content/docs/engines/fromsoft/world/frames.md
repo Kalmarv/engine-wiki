@@ -68,3 +68,35 @@ the game spawned at (`c0000_0009` of `m11_01`, (−128.550, 40.900, 223.580)). :
 
 Walking forward from a spawn moves the player in x and z along `(−sin yaw, −cos yaw)` of that Player part's MSB yaw, at about
 5 m/s: (0.809, 0.588) for the yaw of −126° at `c0000_0009`. :observed[one spawn measured; a second agrees to about 10°]{games="sekiro"}
+
+## Elden Ring
+
+### The player's position
+
+The running game keeps a character's position in its physics module, a `CSChrPhysicsModule`, found by the vtable its RTTI
+names. In one run there are 283, and every one passes the check that the pointer at `+0x08` is its owner (a `ChrIns`), the
+owner's `+0x190` points at a module container and the container's `+0x68` is the module again. Eight of them belong to an owner
+of class `PlayerIns`, which human NPCs share with the player; the local player's is the one that moves with a held forward key,
+and its flag bytes `+0x90` to `+0x93` read 0, 0, 1, 1 against 0, 1, 0, 0 on the seven others. The `float4` at `+0x70` is the
+position. :observed[one run]{games="elden-ring"} Writing the player's `+0x70` and `+0x80` with another standing point of the same
+frame moves the character there: the value reads back unchanged 0.5 s and 12 s later and the character does not fall.
+:observed[one run, two points]{games="elden-ring"} The owner's `+0x398` points at an object whose `+0x50` and `+0x60` point at two
+arrays of 150 `hkQsTransform` records, the pose, in both `PlayerIns` objects checked. :observed{games="elden-ring"}
+
+### The physics and render frames
+
+The physics position is not in the map's MSB frame but in one whose origin is a whole-metre offset from it: map-local = physics +
+offset. Starting at the stock spawn of Stormveil (`m10_00_00_00`) the offset is (−88, 16, 16): the eight other `PlayerIns`
+characters land exactly (to 0.000 m) on MSB Enemy parts of the map (`c0000_9035`, `c0000_9030`, `c0000_9028`, `c0000_9036`,
+`c0000_9037`, `c0000_9027`, `c0000_9026`, `c1000_9008`), and the player's spawn, (−93.811, 21.536, 19.723) in the map's frame, is
+0.16 m from the Player part `c0000_9017`. :observed[every run started in that state]{games="elden-ring"} A run that started
+elsewhere, with the player at about (−216, 45.7, 17.6) in the map's frame, has every module shifted by (+128, −24, 0): an offset
+of (−216, 40, 16). :observed[one run]{games="elden-ring"} Both offsets are the player's starting position truncated toward zero to
+multiples of 8 m. :inferred[two runs]{games="elden-ring"} A map-local point written as a physics position, unconverted, puts the
+character outside the scene and it falls out of the map. :observed{games="elden-ring"}
+
+The renderer draws in such a frame too. In a frame captured at the Stormveil gate the light records' positions (see
+[BTL](/engines/fromsoft/lighting/btl/#how-the-renderer-takes-a-light)) are the bank's moved by the whole-metre translation
+(−216, 40, 16) from render to map, and the scene constants' `SC_CameraPos` equals `SC_RenderCameraPos`, so the frame's constants
+state no offset. :observed[one capture]{games="elden-ring"} That the render frame and the physics frame share their origin is
+:inferred{games="elden-ring"} from the same offset in both.

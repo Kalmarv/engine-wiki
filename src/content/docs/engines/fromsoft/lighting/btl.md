@@ -150,7 +150,9 @@ the frames held (matched by position, within 0.01 m, over two frames):
 | specular fourth value | `0.2989 r + 0.5866 g + 0.1145 b` of the record's specular colour (0 where the power is 0) | 2e-8 |
 
 The colour transfer is therefore the square of the byte over 255, not the sRGB curve: for a byte of 158 the record holds
-0.3839 of the power where sRGB would give 0.3416. :observed{games="sekiro"}[5 lights, 2 frames, one area]
+0.3839 of the power where sRGB would give 0.3416. :observed{games="sekiro"}[5 lights, 2 frames, one area] Over more lights the
+specular colour is exactly `(specular byte / 255)^2 * specular power`: 55 of 55 point lights and 1 of 1 spot light. The engine's
+distance fade scales the diffuse colour only. :observed{games="sekiro"}
 
 In the lighting shaders' disassembly the radius enters a point light's contribution only as the window `saturate(1 -
 distance^2 / radius^2)`, which multiplies a wrapped Lambert term whose wrap depends on `distance * (the diffuse fourth
@@ -158,6 +160,43 @@ value)`; the colour is the record's diffuse colour times that. The same expressi
 per-light pixel program. A spot light's record has a range instead of `1 / radius^2` (the shader squares it), the same window,
 and a second factor `saturate(1 - x^2 - y^2)` on its position in the cone's projection space, which is zero at the edge of the
 base. :observed{games="sekiro"}[disassembly of the programs, read not run]
+
+### Tile lists
+
+`GXLightOrganize16` sorts the lights into screen tiles of 32 pixels: the tile of a pixel is the pixel divided by
+`FC_LightTile_Width` (`cbSceneParam` `+896`), with `FC_LightTile_NumCellX` (`+900`) tiles to a row, so 60 x 34 = 2,040 tiles at
+1920x1080 with room for 130,560 index entries. It writes the index entries at `u0`, the per-tile lookup at `u1`, an entry counter
+at `u2` (zeroed before the dispatch) and 40-byte per-tile records at `u3`. Its `g_ViewMatrix` (`+64` of its constants) is marked
+unused: the light records already hold view-space positions. :observed{games="sekiro"}
+
+```layout
+title: Tile lookup record (g_LightLookupBuffer, t60)
+size: 12
+games: [sekiro]
+note: One record per tile.
+fields:
+  - {at: 0, size: 4, type: u32, name: first entry, level: observed, note: "index of the tile's first entry in g_LightIndices"}
+  - {at: 4, size: 2, type: u16, name: point count, level: observed}
+  - {at: 6, size: 2, type: u16, name: spot count, level: observed, note: "the tile's spot entries follow its point entries"}
+  - {at: 8, size: 2, type: u16, name: points in opaque range, level: observed, note: "how many of the point entries have bit 31 set; read only by the tile pass's debug view"}
+  - {at: 10, size: 2, type: u16, name: spots in opaque range, level: observed, note: "the same for the spot entries"}
+```
+
+```layout
+title: Tile index entry (g_LightIndices, t59)
+size: 4
+games: [sekiro]
+fields:
+  - {at: 0, size: 2, type: u16, name: light record, level: observed, note: "index of the point or spot record"}
+  - {at: 2, size: 2, type: u16, name: slices and range bit, level: observed, note: "bits 0-14: depth-slice mask, slice k at bit k; bit 15 (bit 31 of the entry): the light reaches the tile's opaque depth range"}
+```
+
+The depth slice of a pixel comes from `FC_FrustumNear`, `FC_SliceScale` and `FC_SliceBias` (`cbSceneParam` `+880`, `+884`,
+`+888`). A forward material skips an entry unless its pixel's slice bit is set, and the tile-lighting pass visits only the
+entries with bit 31 set. :observed[disassembly of the forward `GXFlver_*_Fwd` programs, `GXRend_TileBasedLighting` and
+`GXLightOrganize16`]{games="sekiro"} In 7 captured frames with the organise program's outputs read back, the per-tile counts sum
+to the counter (4,106, 5,069 and 6,481 among them), every entry's light index is below the frame's light count, and no entry has
+every slice bit set; on average the game culls 3.99 of 6, 16.52 of 19 and 28.82 of 32 lights per tile. :observed[7 frames]{games="sekiro"}
 
 ### Spot lights
 
@@ -192,6 +231,18 @@ point-light packer is the Sekiro packer's: the same squaring of the colour (thro
 the fourth), the same `1 / radius^2`, `1 / word` and exposure term (its scene value one field further on). :observed{games="elden-ring"}[code read] One
 light of a bank was read back (`m10_00_00_00_0000` light 32: bytes 240, 180, 120, power 0.5, radius 8, fourth word 2): the record's diffuse
 colour is `(byte / 255)^2 * power` per channel, 0.4429066, 0.2491350 and 0.1107266, to 2e-6. :observed{games="elden-ring"}[1 light]
+
+:only[elden-ring] At the Stormveil main gate four consecutive dispatches of `GXLightOrganize8` held 16 point records and no spot
+record each, and 20 of the records are five lights of bank `m10_00_00_00_0000`, matched by position within 0.01 m. Their fields are
+Sekiro's: the diffuse colour `(byte / 255)^2 * power`; its fourth value 1 divided by the word at `+164` (8, 1.5 and 0.5 seen); the
+specular colour `(specular byte / 255)^2 * specular power`, separate from the diffuse (it differs on all 20); its fourth value the
+Rec. 601 luma (0.2989, 0.5866, 0.1145) of the specular colour, which no Elden Ring program reads; the translucency parameters'
+first two values 1 and 1; and light type 0 (all 64 records). The shadow fields of an unshadowed light keep stale bytes of the buffer:
+the game writes none. :observed[one capture, one area]{games="elden-ring"} In the program's DXIL, `g_lightCount` (`cbLightAccParam`
+`+272`) bounds the loop over the point records and `g_spotLightCount` (`+280`) the loop over the spot records.
+:observed{games="elden-ring"} The positions are in the renderer's frame, whose origin moves (see
+[coordinate frames](/engines/fromsoft/world/frames/#elden-ring)). Elden Ring's spot-light record is known only from the program's
+declaration. :unknown{games="elden-ring"}
 
 :::open[How do bank powers map to physical light units?]
 The renderer's unit is the record's `colour^2 * power`; stored values still do not establish watts, lumens or lux. The lights of

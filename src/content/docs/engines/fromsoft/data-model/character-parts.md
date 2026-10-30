@@ -90,6 +90,34 @@ No examined character needs that combination. Neither the community description 
 establishes whether multiple marks mean any enabled bit or all enabled bits.
 :::
 
+## Where weapons are held
+
+The player's hand, weapon and effect dummy polygons (20, 21, 24, 80, 85, 147 and others) are in the meshless `c0000.flver` of
+`chr/c0000.chrbnd`. Sekiro's face parts (`fc_*`) carry the same 307 ids; Elden Ring's parts carry none of them, their dummies
+being 45 ids of their own (storage 30 to 35 on `bd_*`, for example). No dummy id is carried by two kinds of worn part in either
+install. :observed[every non-weapon part binder of both installs] Sekiro's `c0000.flver` and the face part repeat joint names
+(`Ctrl_Spine` twice in `fc_m_0200_l`), so they cannot be joined into one skeleton by joint name. :observed{games="sekiro"}
+
+A weapon row's `absorpParamId` names a `WepAbsorpPosParam` row whose `right_n`, `left_n`, `both_n`, `leftHang_n`, `rightHang_n`
+and `leftBoth_n` give, for weapon model `n` (the form suffix `_n` of the `wp_a` part), the character dummy polygon the model is
+held at. :sourced[Paramdex] Every stock row fits that reading: in Sekiro all 66 weapon models have binders and hold rows and all
+38 hold dummies exist on `c0000.flver`; in Elden Ring 3,519 of 3,533 models have binders, 3,464 rows' hold rows exist, and 581
+of 776 hold dummies are on `c0000.flver` (the hang dummies 2069 and 2070 are not). :observed[every stock row] The Kusabimaru
+(row 8000000) holds model 0 at 20 (`R_Weapon`) and model 1, the sheath, at 147; the Uchigatana (row 9000000) its blade at 20 and
+its scabbard at 2069. :observed
+
+| Field | Sekiro | Elden Ring | Confidence |
+|---|---|---|---|
+| `EquipParamWeapon` row size | 632 | 664 | :sourced[Paramdex] |
+| `equipModelId` (u16) | 184 | 188 | :sourced[Paramdex] |
+| `wepmotionCategory` | 227 | 231 | :sourced[Paramdex] |
+| `traceSfxId0` (then the head and tail dummy, three s32 per slot, 8 slots) | 268 | 272 | :sourced[Paramdex] |
+| `absorpParamId` | 368 | 372 | :sourced[Paramdex] |
+| `WepAbsorpPosParam` row size; models of five s16 from | 128; 6 models from 4 | 96; 4 models from 8 | :sourced[Paramdex] |
+| `leftBoth_n` | 70 | 52 | :sourced[Paramdex] |
+
+How a weapon draws its trail from these dummies is on [FXR](/engines/fromsoft/effects/fxr/#weapon-trails).
+
 ## Sekiro
 
 ### Character binders

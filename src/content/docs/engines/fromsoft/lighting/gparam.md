@@ -136,6 +136,25 @@ evening, night), and a time in seconds: 42 calls in 15 scripts. Whether the time
 the slot `time of day - 1` in all 42 calls, and the slot `time of day` in 41) is not decided by that join.
 :observed{games="sekiro"}
 
+### Time of day
+
+Sekiro's scripts set a time period, never an hour: `2003:81` (Set Lighting: the period as a byte, then a float) and `2002:13`
+(Play Cutscene and Warp Player With Lighting: a period and a state). :proven[every event script of the install, each instruction
+decoded against the community schema]{games="sekiro"} The community schema names the periods 1 morning, 2 noon, 3 afternoon, 4
+evening and 5 night. :sourced[Smithbox]{games="sekiro"} The calls belong to story events: `m10_00`'s events 11005610, 11005640 and
+11005800, `m11_01`'s 11110100 (night or morning), the opening event 11120110 of `m11_02` (night), and more in `m15`, `m20` and
+`m25`. `2002:6` (Change Time Period) is in the schema, but no script of the install calls it. :proven[every event script of the
+install]{games="sekiro"} No param definition maps a period to an hour, so that mapping is in the executable. :inferred{games="sekiro"}
+The light sets of `m11_01_0000` key their values at the hours 0, 2, 4, 6, 12, 18 and 22, and set 0's `DiffColor0` at hour 0 is
+(0, 0, 0, 1): no sun at midnight. :observed{games="sekiro"}
+
+Elden Ring's scripts call `2001:4` (Set Current Time) 9 times in the 544 event scripts, each inside a story or NPC event and none
+a clock the game starts with: `common.emevd` events 703 (23:45) and 910 (22:30), `m10_01` event 50 (23:45), `m18_00` events
+18000021 and 18000022 (10:30), `m60_42_36_00` event 1042360710 (22:30), `m60_51_36_00` event 1051362220 and `m60_52_38_00` event
+1252382860 (3:30), and `m61_46_40_00` event 2046402500 (8:00). :proven[every event script of the install]{games="elden-ring"} So no
+data of the game states the hour a map is entered at. :inferred{games="elden-ring"} The hour reaches Elden Ring's sky programs as
+`FC_TimeOfDay`, which Sekiro's programs do not read (see [what forward programs read](/engines/fromsoft/shaders/bundles/#what-forward-programs-read-from-the-frame)).
+
 The game keeps this state in `CSWorldSceneDrawParamManager`: per area block an object holding two weather ids, an
 override ID, a flag that an override is being transitioned to and its duration, and the manager holds sixteen
 interpolators (`CSGparamIdLerper`: a destination ID, a begin ID and a timer) beside them. :sourced[fromsoftware-rs]{games="elden-ring"}

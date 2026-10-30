@@ -485,6 +485,31 @@ the same pairs for each weapon: `traceDmyIdHead0` to `traceDmyIdHead7` with `tra
 is (300, -1) in 1,888 of 3,636 rows, (300, 301) in 702, (-1, -1) in 584, (10300, -1) in 201, (300, 302) in 96 and (300, 303) in 61, and
 whose second pair is (310, -1) or (310, 311) in most rows that have one. :observed[every row of the weapon param] It does not show which
 weapon (the one in the hand, by hand and slot) the game takes. :inferred
+
+### Weapon trails
+
+A light attack's trail is not an animation event's effect. In mod-free recordings of Sekiro's `a050_300000` (the Kusabimaru)
+and Elden Ring's `a029_030000` (the Uchigatana) the trail shows exactly while the clip's attack event (type 1, the one with State
+Info 0) is active, and it is the weapon's trace slot 0: `traceSfxId0` 401000 with `traceDmyIdHead0` 300 (tail 301 in Sekiro, −1 in
+Elden Ring). :observed[two recordings] Effect 401000 is a Tracer (action 10012) of orientation 1 (LocalZ), 1.3 m wide in Sekiro and
+1 m in Elden Ring, with 0.2 s segments, colour times 0.75 and alpha times 0.375. :observed Its fade endpoints (80 and 20, 90 and
+10) are percentages of the trail's length. :sourced[fxr]
+
+A trace slot's points are a run of the weapon model's dummy polygons. The code compares the head and tail as unsigned 32-bit
+numbers: head and tail both −1 give no run; a tail of −1 walks up from the head while the model has each id, with no bound; a tail
+above the head gives head to tail; anything else (a tail of 0, a tail at or below the head, a head of −1) gives none. The walk stops
+at the first id the model lacks, the tail is rewritten to head + count − 1, and no trail is made from fewer than 2 points.
+:inferred[read from the decompiled executable of build 1.07.3]{games="elden-ring"} The trace instance (`CSFD4TraceSfxIns`) hands
+the effect one 3x4 matrix per point, at most 9 (the count at `+0x1F4` of its parameter block, the matrices from `+0x200`). A Tracer
+appearance with a OneTimeEmitter (399) and more than one matrix keeps a sub-trail per point, with `v` the fraction of the
+cumulative length along the points, and draws the band between neighbouring sub-trails' histories; with one matrix it draws the
+point plus and minus the width times the scales along the emitter's local z, centred. The Tracer multiplies its fade endpoints by
+0.01. :inferred[the same code]{games="elden-ring"}
+
+Over every Elden Ring weapon trace slot whose model the archives hold (model 0's dummies), the Uchigatana's `wp_a_0550` (300, −1)
+runs 300 to 303, guard to tip, and the slots with a tail of −1 have runs of 0 (539 slots), 1 (1), 2 (931), 3 (309), 4 (391), 5
+(75), 6 (113), 8 (13) and 9 (13). Treating a tail of 0 or below as −1 gives the same counts, so no stock row tests that case. The
+same rule gives Sekiro's (300, 301) slots runs of 2 in 33 of 38. :observed[every weapon trace slot with a model]
 Of the lights a placed object reaches, the effects named by the placed routes and the effects they spawn are 322 files holding
 172 point and 4 spot lights in Elden Ring and 164 files holding 54 point and 5 spot lights in Sekiro. :observed
 An asset's effect attaches to the dummy polygon the row names (`dmypolyId_n`, 200 in the light rows). :observed

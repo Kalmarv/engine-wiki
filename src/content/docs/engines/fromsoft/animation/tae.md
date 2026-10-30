@@ -197,6 +197,16 @@ and `2` and `Add SpEffect - Multiplayer` and `Add SpEffect`); a few differ (712 
 Locations`, 760 `IFrameState` and `Set Root Motion Multiplier`, 522 `KingOfTheStorm` and `Set Special Lock-on Parameter`), which
 the field layouts alone do not settle. :inferred
 
+## Conditioned events
+
+An effect event (type 96) whose `Additional Spawn Condition` or `State Info` is not 0 starts its effect only under a run-time
+condition: Sekiro has 60 events with the first set and 2,016 with the second, Elden Ring 154 and 1,622. :observed[every type-96
+event of both installs] Sekiro's `a050_300020`, for instance, starts 404000, 404010 and 404020 at one dummy polygon over one
+window under the states 153, 152 and 357, and in a mod-free recording of a plain swing the game does not draw the conditioned
+effect 600030 (at polygon 10301) of `a050_300000`. :observed{games="sekiro"} Attack events (type 1) carry `State Info` as well:
+`a050_300000` has three, two of them with the states 358 and 940. :observed{games="sekiro"} The trail of a light attack comes from
+the weapon, not from an effect event (see [weapon trails](/engines/fromsoft/effects/fxr/#weapon-trails)).
+
 ## Event 715
 
 Event 715 stores a u8 selector, three zero bytes, four s32 dummy-polygon ids and a further s32. Community templates name

@@ -175,8 +175,10 @@ meshes that share one material, so a mesh's sidedness comes from its own face se
 
 The total face count (offset 68) equals the number of triangles in all of a model's face sets, degenerate and motion-blur
 ones included, in all 14,459 Sekiro models and in 22,048 of Elden Ring's 22,169. :proven{games="sekiro"} The other 121
-Elden Ring models, all version `0x20014` (SpeedTree), count only face sets with no LOD bit (`0x7F000000`) set in 120
-of them. :observed{games="elden-ring"} The count at offset 64 equals the number of non-degenerate triangles in the face
+Elden Ring models, all version `0x20014` (the 119 SpeedTree models, `FC_M_0000_M` and `FG_A_0000_M`), count only face sets
+with no LOD bit (`0x7F000000`) set in 120 of them. :observed{games="elden-ring"} The version does not mark a SpeedTree model:
+`FC_M_0000_M` and `FG_A_0000_M` have it without the header word `0x8000` at `0x6A`, which is what the 119 SpeedTree models
+share. :observed{games="elden-ring"} The count at offset 64 equals the number of non-degenerate triangles in the face
 sets without the motion-blur bit in 14,358 Sekiro models and 21,771 of the 22,048 Elden Ring models that count all
 sets; in the rest, which include `_S.flver` models, it differs and can exceed the triangles present.
 :observed

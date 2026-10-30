@@ -39,6 +39,10 @@ Each group begins with a little-endian u32 program count. Programs have length-p
 a tag byte, a sized DXIL container with `DXBC` magic, a fixed 152-byte table and another sized table.
 :proven
 
+A program's name does not identify it: programs of different effects share a name, such as
+`PS_DeferredTextured_0174add1_Wrapped`; the programs drawn around one downtown street area are 36 programs under 10 names.
+The bytecode, not the name, tells programs apart. :observed[programs drawn in one street area, compared by bytecode hash]
+
 ```layout
 title: SGD2 program record
 size: variable

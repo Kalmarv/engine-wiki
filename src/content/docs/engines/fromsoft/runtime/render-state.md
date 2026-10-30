@@ -28,6 +28,13 @@ Each deferred context has its own function table, so a capture layer has to hook
 not only the immediate one. Constants written into a deferred context cannot be read back from the GPU; a capture
 keeps its own copy of what each `Map`/`Unmap` and `UpdateSubresource` writes. :observed{games="sekiro"}
 
+A context's function table is a copy inside the context object, one per context, and `d3d11.dll` rewrites its entries
+while the game changes state. A `Draw` entry replaced once on the immediate context is put back to the runtime's own
+function within a few frames, so immediate-context draws then go unseen while deferred-context draws are still caught.
+A capture layer has to hook the state setters as well and, after each hooked call returns, restore any entry the
+runtime rewrote, calling the runtime's new function from then on; a Sekiro run needs this about 159,000 times.
+:observed[hooked runs of the game]{games="sekiro"}
+
 Launched under RenderDoc, Sekiro 1.06 exits silently about five seconds after RenderDoc's library loads, so the
 executable's protection stops a standard capture tool. :observed[launch attempts]{games="sekiro"} A proxy of
 `dinput8.dll`, which the game loads before its code is unpacked, can wait for `d3d11.dll` and hook the device and its

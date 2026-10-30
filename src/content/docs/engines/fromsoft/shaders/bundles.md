@@ -96,6 +96,18 @@ materials carrying `g_GX_bDisableDepthWrite`. Matched `g_BlendMode = 2` forward 
 `SrcAlpha / InvSrcAlpha` colour blending and `One / Zero` alpha blending; G-buffer draws do not blend.
 The captured cull state follows the face set rather than a single material-wide value. :observed{games="sekiro"}
 
+## Elden Ring
+
+An `_[A]` program does not always test a surface alpha. The G-buffer programs
+`M[AMSN_V][Mb4][3Mask][Ov_N2][beach]_Gbuf_[A]` and `M[AMSN_V][Mb2]_Gbuf_[A]` discard, besides two fade tests, when
+`1.0 + FC_AlphaRef.y * (g_DitherTexture.w - 0.5) < FC_AlphaRef.x`: the tested value is the constant 1.0 moved only by
+the dither, with no texture alpha in it. At the neutral dither of 0.5 it is 1.0 over the whole surface, so with a
+reference of 1.0 (`g_AlphaRef` 255) or below the program keeps every pixel, and such a material draws as opaque
+whatever its albedo alpha holds. :observed[DXIL disassembly of the two programs, and running them at their materials'
+references over the Limgrave tile `m60_42_36_00`]{games="elden-ring"} Other alpha-tested materials of the same tile
+(`aet801_270_a`, `aet030_075_a` and four more) compare a sampled texture alpha with the reference, and their programs'
+discards match `alpha < reference` at every texel. :observed[same tile]{games="elden-ring"}
+
 :::open[What selects every runtime permutation and render state?]
 The material switch does not explain every instance-dependent pass choice. The cited capture does not establish
 blend modes 3–5 or a material field predicting every depth-bias change. :unknown{games="sekiro"}

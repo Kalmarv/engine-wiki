@@ -60,6 +60,12 @@ The same inspected light path scales diffuse by `1 - I*F(N·V)`. Dry `default` h
 writes zero intensity and falloff; a parameter-free material is not evidence for a nonzero default specular term.
 :observed[DXIL disassembly]
 
+Road markings with `normal_spec_decal` draw in the `deferred_draw` pass over the G-buffer. Their pixel program writes the alpha
+`diffuse.w * COLOR0.w * globalScalars.x` (the diffuse sample's alpha, the vertex colour's alpha and the
+[visibility factor](/engines/rage/shaders/engine-inputs/#globalscalarsx)) into the alpha of targets 0, 1 and 2, which
+blend `SrcAlpha / InvSrcAlpha`; with `globalScalars.x` at 0 a crosswalk's markings leave nothing, at 1 they
+appear. :observed[DXIL disassembly, and drawing the program with both values]
+
 ## Sampling and scope
 
 Inspected lighting passes sample the G-buffer using `TEXCOORD0.xy / TEXCOORD0.w`, a projected interpolant, rather

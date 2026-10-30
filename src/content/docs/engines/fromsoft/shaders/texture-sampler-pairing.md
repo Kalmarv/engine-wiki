@@ -66,7 +66,19 @@ and `SS_WhiteBorderPoint` is `s4`. For these the name carries the meaning and th
 The texture register a given sampler register pairs with differs from program to program: the two numbers are equal in 8,955 of
 Sekiro's 89,688 single-sampler pairs and 10,003 of Elden Ring's 103,284. :observed
 The filter and addressing behind each name are set by the engine when it binds the state and are not stored in the programs.
-:unknown
+In frame recordings the engine's registers hold one fixed state each, the same in both games: :observed[every screen-space and
+compute step of 9 Sekiro and 7 Elden Ring recorded frames]
+
+| Register | State |
+|---|---|
+| `s6` | point filter, wrap |
+| `s7` | point filter, clamp |
+| `s8` | linear filter (`0x15`), wrap |
+| `s9` | linear filter, clamp |
+| `s12` | comparison filter `0x94` (linear minification and magnification, point mip), comparison `GREATER` (the depth is reversed), border addressing with border colour 0, 0, 0, 0, LOD range 0 to 0 |
+
+No step binds two different states at one of these registers, over all its runs in the recorded frames. :observed The material
+registers `s0` to `s4` vary from program to program. :observed
 
 ## Textures read through two samplers
 
@@ -90,8 +102,7 @@ point-sampled read is at the interpolated texture coordinate and the linear read
 `GXScreenSpaceCascadedShadow_Soft` programs the shadow map is read four times as plain depth and sixteen times by comparison.
 :observed
 
-:::open[Which sampler state does each register bind?]
-The programs state the sampler's name and whether it compares, not its filter or addressing; those are set by the draw code.
-Whether `SS_WrapAniso` (Sekiro, `s10`) and `SS_ClampAniso` (Elden Ring, `s11`) are two registers of one table, each seen in only
+:::open[What do the anisotropic registers bind?]
+The recorded frames give the states of `s6` to `s9` and `s12`, not those of the anisotropic samplers. Whether `SS_WrapAniso` (Sekiro, `s10`) and `SS_ClampAniso` (Elden Ring, `s11`) are two registers of one table, each seen in only
 one game's programs, is not established.
 :::

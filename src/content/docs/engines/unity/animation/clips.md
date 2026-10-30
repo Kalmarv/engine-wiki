@@ -1,7 +1,7 @@
 ---
 title: Animation clips
 description: "How an AnimationClip stores its curves: the streamed, dense and constant blocks, the bindings that name what each curve drives, and the cubic form of a streamed key."
-games: [skatebird, sledding]
+games: [skatebird, sledding, peak]
 sources:
   - title: AssetStudio
     url: https://github.com/Perfare/AssetStudio
@@ -48,8 +48,20 @@ end. The first frame is at time `−f32::MAX` and gives every curve's initial va
 segment whose coefficients are not finite is a **step**. :observed{games="skatebird sledding"} The slopes are per second:
 scaling a slope by the segment length again would count the length twice. :observed{games="skatebird"}
 
-A curve with only its initial entry is constant. Frames that do not end at +∞, a key of a curve beyond the count, and times that
-go backwards are not valid streamed data. :observed
+A curve with only its initial entry is constant. Frames that do not end at +∞ and times that go backwards are not valid streamed
+data. :observed
+
+A key's curve index can reach past the clip's curve count. In PEAK (Unity 6000.3.15f1), 98 of the 740 clips of two level bundles
+(`levels0-31` and `levels192-207`) have keys whose index is at or past the streamed block's `curveCount`, in the first frame and
+in later ones, most with coefficients that are not zero; the other 642 keep every key below it. All 98 end at the +∞ frame.
+:observed{games="peak"} `RespawnChest_Open` (also in the loose `sharedassets4.assets`, so not an effect of the bundle) has a
+`curveCount` of 17, no dense curves and 17 generic bindings; its first frame keys indices 0 to 17, index 17 with all-zero
+coefficients, and its later frames 0 to 16. :observed{games="peak"}
+
+:::open[What does a curve index past the count address?]
+Whether the extra indices of those 98 PEAK clips drive bindings past the streamed block or are a placeholder curve is not
+established.
+:::
 
 A clip's length is `m_StopTime − m_StartTime` seconds. Its animation events (`m_Events`) are a separate list.
 :sourced[Unity scripting reference]

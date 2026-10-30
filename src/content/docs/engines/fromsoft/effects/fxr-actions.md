@@ -378,6 +378,9 @@ A random delta varies the value by up to `max` either way, a random range adds a
 maximum, and a random fraction varies it by up to the fraction `max` of itself either way, each component from the stream
 of its seed. An external-value modifier multiplies the value by the factor, a function of the external value's own argument;
 the second kind is fixed when the effect is created. :sourced[fxr]
+In Sekiro's executable the random number is uniform on [−1, 1): the hash's low 23 bits become the mantissa of a float in [1, 2)
+(`hash & 0x7FFFFF | 0x3F800000`), which is doubled and less 3. A random delta adds that number times `max`, a random fraction
+the value times it times `max`. :inferred[Sekiro 1.06 code read, not run]
 Modifiers sit mostly on particle properties. Counted over the distinct effects, the properties with a modifier are, in Sekiro, 14,156
 of the 220,410 of billboards (603), 13,612 of the particle modifier (131) and 7,151 of the multi-texture billboard (604), and in
 Elden Ring 75,046 of the 673,113 of the multi-texture billboard, 57,540 of the particle modifier and 35,513 of the billboard.

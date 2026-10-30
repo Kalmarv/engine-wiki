@@ -1,6 +1,10 @@
 ---
 title: The rendered frame
 description: "The renderer's passes in GPU order, from shadow maps through deferred light, fog, sky, effects, exposure and tone mapping, with their targets."
+sources:
+  - title: Paramdex
+    url: https://github.com/soulsmods/Paramdex
+    note: the field names and types of WEATHER_ASSET_CREATE_PARAM_ST
 ---
 
 Both games draw a frame the same way: shadow maps, a G-buffer of the scene's opaque surfaces, screen-space passes over
@@ -40,6 +44,36 @@ Ring 1.17.2 at 2560x1440 at night at the Stormveil gate. Programs are named by m
 | 19 | `ToneMap_TabledToneMapLUTPS` into RGB10A2 | | then `ToneMap_PostOETFPS` | :observed |
 | 20 | Interface, `GXSimple_BlendUI_SDR2SDR_F` to the back buffer | | Scaleform draws | :observed |
 
+## Across recorded frames
+
+Over more recorded frames (Sekiro: 9 frames of 4 sessions at 1920x1080; Elden Ring: 7 frames of 2 sessions at 2560x1440): :observed
+
+- Every full-screen draw of Sekiro binds one 3-vertex buffer, a triangle over the screen: positions (−1, 1, 1, 1), (3, 1, 1, 1),
+  (−1, −3, 1, 1) with texture coordinates (0, 0), (2, 0), (0, 2). :observed{games="sekiro"}
+- Targets sized from the view round up: 1080 / 16 gives 68 rows in Sekiro, and Elden Ring's bloom chain is 80x45, 40x23, 20x12,
+  10x6. :observed
+- The tiled light lists: Elden Ring's `GXLightOrganize8` writes 1,382,400 bytes at `u0` (345,600 words) and 43,264 at `u1`
+  (3,600 records of 12 bytes); Sekiro's `GXLightOrganize16` writes 522,240 bytes at `u0`. :observed
+- Elden Ring draws the shadows of local lights into a 4096x4096 R16 atlas in 64x64 regions (26 in one frame), which
+  `GXLightAcc_DPointLightShadowed1` reads at `t7`. It is there in the 2 of 7 frames that have shadowed point lights.
+  :observed{games="elden-ring"}
+- Elden Ring runs the screen-space reflection chain and `DeferredAOWithSsr` only in the frames that draw `M[Water]` (5 of 7).
+  :observed{games="elden-ring"}
+- Elden Ring's `GXEnvMapRegion_CopyCubeToCubeLerp` writes an 8-mip 128x128 R11G11B10F cube through `u0` to `u7`, and the
+  region variant `[LerpDiff]` reads it at `t25`. :observed{games="elden-ring"} Its program writes `u`*k* only inside size >> *k*,
+  from the source cubes at level *k*, so `u`*k* is mip *k*. :inferred[from the program]{games="elden-ring"}
+- Elden Ring's `ToneMap_AdaptedLuminancePS` writes one RG32F 1x1 target and reads another at `t4` that no recorded frame
+  writes. :observed{games="elden-ring"}
+- The order of fog and sky differs: Sekiro composites the volumetric fog (`GXVolumetricFog_SceneComposite`) before its sky
+  draws, while Elden Ring draws its sky's cloud shell (`M[Clouds9]` with an `_FwdSdw` program) before its fog composite.
+  :observed
+
+The [forward or G-buffer rule](/engines/fromsoft/shaders/bundles/#forward-or-g-buffer) decides which sky materials are drawn
+forward. In both games the sky's colour comes from forward programs: Elden Ring's G-buffer variants of its skysphere and cloud
+materials (`M[Sky9]_Gbuf`, `M[DistantClouds]_001_Gbuf`, `M[Clouds5]_Gbuf`, `M[Atmosphere][Clouds]_001_Gbuf`) write no colour,
+only a normal (`normal * 0.5 + 0.5` in target 0) and alpha words, every colour lane being the constant 0 (`M[Sky9]` samples no
+texture). :observed[the programs translated and read, for the tile `m60_42_36_00`]{games="elden-ring"}
+
 ## Pre-exposure
 
 The scene constants `cbSceneParam` carry `SC_PreExposure` and `SC_InvPreExposure`. Both are 1 in every program of the
@@ -64,7 +98,9 @@ dome, the moon, the far mountains and the cloud layer draw with the same states:
 (`SRC_ALPHA`, `INV_SRC_ALPHA`), the depth tested with `GREATER_EQUAL` (the depth is reversed) and written, back faces
 culled. :observed{games="sekiro"} The dome's pixel program reads the sun's direction from `cbLight`, `FC_GlobalTime`, the
 camera, the volumetric fog and 37 material values of its own, per its resource definitions; no separate sun-disc draw is
-in the frame. :observed{games="sekiro"} None of the map pieces the layouts of the nine maps place draws a material whose
+in the frame. :observed{games="sekiro"} These draws are in pass 0 (`Fwd`), not the shadowed forward pass, by a breakpoint on
+the running game's pass id (see [bundles](/engines/fromsoft/shaders/bundles/#passes-and-switches)). :observed{games="sekiro"}
+None of the map pieces the layouts of the nine maps place draws a material whose
 name or definition names the sky or the moon (every map piece model of each layout read, a positive control finding
 1,590 pieces with `AMSN` materials). :observed{games="sekiro"} The sky is a map of its own, `m89_00_00_99`, whose layout
 places at the origin one dome per sky state (map pieces `m900000` to `m900095`, materials `M[Sky]_SkyDome_<state>`:
@@ -98,9 +134,9 @@ A map's `_farmodel` param (`FAR_MODEL_PARAM_ST`) names placed parts by parts gro
 The dome and the far mountains follow the camera across the ground and keep their height: their object matrices are
 the identity rotation at the camera's horizontal position and height 0. :observed{games="sekiro"}
 
-:::open[Where is Elden Ring's sky drawn in the frame?]
-Forward draws into the light targets come before the volumetric fog in the Elden Ring frame; the recorded frame lost the
-names of the material programs, so which draws are the sky is not established.
+:::open[Where is the rest of Elden Ring's sky drawn in the frame?]
+Forward draws into the light targets come before the volumetric fog in the Elden Ring frame, among them the cloud shell
+`M[Clouds9]`; where the skysphere itself and the other cloud layers are drawn is not established.
 :::
 
 The moon follows the light: in both frames its quad's object matrix places it 25.0 units from the camera exactly along the
@@ -127,8 +163,54 @@ open world's `m60_00_00_99` places 38 of them. :observed{games="elden-ring"}
 Which show depends on the weather: `WeatherAssetReplaceParam` (1,007 rows) lists, for a `_99` map and a weather id, the
 assets drawn; every one of `m60_00_00_99`'s 38 sky assets is listed for some weather, and its 18 weathers list 1 to 27 of
 them (weather 0: the clear skysphere `aeg096_010` with its clouds and the Erdtree; weather 99: `aeg096_102` alone).
-:observed{games="elden-ring"} `WeatherAssetCreateParam` (8 rows) spawns the rainbow between 7 and 16 h and the aurora
-between 21 and 3 h, by weather. :observed{games="elden-ring"} `AssetGeometryParam`'s `isSkydomeFlag` ("treated as a
+:observed{games="elden-ring"} A row (64 bytes, data version 2) is keyed by the sky map, the weather (a `WeatherParam` id), `isFireAsh` and
+four `CreateAssetLimitId`s, and lists up to 8 asset ids, `AEGnnn_mmm` being the number `nnn * 1000 + mmm`; no key repeats, and
+every asset a row names is placed by its sky map's layout, over all 18 sky maps of the base game.
+:observed[every row, and the 935 layouts of the base game]{games="elden-ring"} `isFireAsh` is 0 or 1 in the base game's rows
+and 2 only on the expansion's maps (`m20`, `m21`, `m28`, `m61`). :observed{games="elden-ring"} A row with limits applies only on
+maps whose `MapDefaultInfoParam` row (its id the map's 8-digit number) has a `WeatherCreateAssetLimitId` among them: the open
+world's tiles hold 0 to 4, 21, 31, 41 and 42 in the base game and 50 to 75 in the expansion, the legacy dungeons −1; every row of
+`m60` has limits and no row of a legacy map has. :observed{games="elden-ring"}
+
+The sky maps place more than the rows name: far-view land pieces (`m90XXZZ`), `AEG004` and `AEG299` props and the Erdtree
+`AEG094`, 594 parts in `m60_00_00_99`. :observed{games="elden-ring"} `m60_00_00_99`'s origin is the centre of the level-2 tile
+cell (10, 8): a piece `m90XXZZ` stands at ((XX − 10) × 1024, 0, (ZZ − 8) × 1024) and its model is centred on its cell (±512),
+as the terrain of `m60_10_08_02` is centred on its own; a level-0 tile (x, z) has its centre at ((x − 42) × 256 + 128,
+(z − 34) × 256 + 128) in that frame. :observed{games="elden-ring"} A legacy dungeon's sky map `mAA_BB_00_99` shares its
+dungeon's frame. :observed{games="elden-ring"} `WeatherAssetCreateParam` (8 rows) spawns the rainbow between 7 and 16 h and the aurora
+between 21 and 3 h, by weather. :observed{games="elden-ring"} Its rows: 0 and 1 the rainbow `AEG096_200` (condition 0, on the
+change from weather 21 to 0 or to 1, 7 to 16 h), 1000 and 1001 the aurora `AEG096_201` (condition 1, after an elapsed time,
+21 to 3 h), and 7000 to 7003 `AEG050_448` and `_449` (condition 0, −2 to 82, a life time of 99,999). Rows of condition 0 set a
+transition and rows of condition 1 an elapsed time, so 0 is the transition condition and 1 the elapsed-time one. :inferred{games="elden-ring"}
+Every row sets exactly one creation point and one limit (2, 4 or 70). :proven[the 8 rows]{games="elden-ring"}
+
+```layout
+title: WeatherAssetCreateParam row (WEATHER_ASSET_CREATE_PARAM_ST)
+size: 64
+games: [elden-ring]
+note: Data version 1. The names are the community param definition's; the bytes it leaves as padding are zero in every row.
+fields:
+  - {at: 0, size: 4, type: u32, name: AssetId, level: proven}
+  - {at: 4, size: 4, type: u32, name: SlotNo, level: unknown}
+  - {at: 8, size: 1, type: u8, name: CreateConditionType, level: inferred, note: "0 on a weather transition, 1 after an elapsed time"}
+  - {at: 9, size: 3, type: "u8[3]", name: padding, level: proven, value: 0}
+  - {at: 12, size: 2, type: s16, name: TransitionSrcWeather, level: sourced}
+  - {at: 14, size: 2, type: s16, name: TransitionDstWeather, level: sourced}
+  - {at: 16, size: 2, type: s16, name: ElapsedTimeCheckWeather, level: sourced}
+  - {at: 18, size: 2, type: "u8[2]", name: padding, level: proven, value: 0}
+  - {at: 20, size: 4, type: f32, name: ElapsedTime, level: sourced}
+  - {at: 24, size: 4, type: f32, name: CreateDelayTime, level: sourced}
+  - {at: 28, size: 4, type: u32, name: CreateProbability, level: sourced}
+  - {at: 32, size: 4, type: f32, name: LifeTime, level: sourced}
+  - {at: 36, size: 4, type: f32, name: FadeTime, level: sourced}
+  - {at: 40, size: 4, type: f32, name: EnableCreateTimeMin, level: sourced, note: "hours: 7 for the rainbow, 21 for the aurora"}
+  - {at: 44, size: 4, type: f32, name: EnableCreateTimeMax, level: sourced, note: "hours: 16, 3"}
+  - {at: 48, size: 8, type: "s16[4]", name: CreatePoint0..3, level: sourced, note: one set per row}
+  - {at: 56, size: 4, type: "s8[4]", name: CreateAssetLimitId0..3, level: sourced, note: "one set per row: 2, 4 or 70"}
+  - {at: 60, size: 4, type: "u8[4]", name: padding, level: proven, value: 0}
+```
+
+The layout reads the base game's 8 rows with every padding byte zero. :proven[the 8 rows of the base game's regulation]{games="elden-ring"} `AssetGeometryParam`'s `isSkydomeFlag` ("treated as a
 celestial sphere: follows the player", by its definition) is set on one asset only, `AEG620_002`, and no layout part names
 one of the 17 `PartsDrawParam` rows that set `isSkydomeDrawPhase` (935 layouts read). :observed{games="elden-ring"}
 

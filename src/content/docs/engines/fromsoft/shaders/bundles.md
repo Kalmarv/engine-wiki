@@ -57,6 +57,23 @@ The sampler states recorded in frame captures of both games match these names. `
 linear minification and magnification, point mip), comparison `GREATER`, border colour 0 and LOD range 0 to 0.
 :observed[frame captures]
 
+## Forward or G-buffer
+
+Every shader family of both games ships its `_Gbuf`, `_Fwd`, `_FwdSdw` and `_FwdSSdw` pixel programs and a `_Fwd.vpo`. :observed
+Which of them a material is drawn with follows its definition: a material is drawn forward (a `_Fwd…` pixel program, target 0
+its finished colour) when its MTD or MATBIN states `g_GX_ForwardRendering` true or `g_BlendMode` 2, and through the G-buffer
+otherwise. Every family the recorded frames draw only forward has all its definitions forward by that rule, and no family they
+draw only through the G-buffer has a definition stating `g_GX_ForwardRendering`. :observed[9 Sekiro frames of 4 sessions and 7
+Elden Ring frames, programs matched by their bytes] Sekiro's sky dome and far mountains state `g_BlendMode` 0 with
+`g_GX_ForwardRendering`, and Elden Ring's `M[Sky9]`, `M[Clouds9]`, `M[Clouds5]` and `M[DistantClouds]_001` state the flag.
+:observed The one exception is Elden Ring's character-creator hair planes `P[ChrCustomize]` (blend mode 0), drawn forward in
+several passes. :observed{games="elden-ring"} No recorded frame draws a material of blend mode 3, 4 or 5 without the flag.
+:observed
+
+Every forward colour draw of the recorded Elden Ring frames matches an `_FwdSdw` program by its bytes (86 of 86).
+:observed{games="elden-ring"} A family's forward variants can be the same bytes, though (below), so a program matched by its
+bytes does not always tell its pass.
+
 The binding metadata is described in [METAPARAM](/engines/fromsoft/materials/metaparam/); material upload rules in
 [constant binding](/engines/fromsoft/materials/constant-binding/).
 
@@ -70,6 +87,23 @@ program is `<family>_Gbuf.vpo`, and the skinned variant is `<family>_Gbuf_Skin.v
 Alpha-tested pixel permutations carry `_[A]` and discard against `FC_AlphaRef`. The same family can contain
 forward programs with `_Fwd`, and shadowed forward variants `_FwdSdw` and `_FwdSSdw`.
 :observed{games="sekiro"}
+
+The renderer numbers its passes, and a program's pass suffix is the name of its pass id: 0 `Fwd`, 1 `Velo`, 2 `Dpt`,
+3 `DptA`, 4 `FwdSdw`, 5 `FwdSSdw`, 6 `FwdSsr`, 7 `FwdDpt`, 8 `Gbuf`, 9 `GBufDpt`, 10 `Pnt`, 11 `Pnt[M]`, 12 `PntCol`,
+13 `PntWetH`, 14 `SO`, 15 `WatDpt`, 16 `Spec`, 17 `Aof`, 18 `Rsm`, 19 `Voxelization`, 20 `FwdDbg`, 21 `FwdSdwDbg`, 22 `GBufDbg`.
+Beside that table the executable keeps the geometry suffixes `_Skin`, `_MorphSkin`, `_Morph`, `@[cl]`, `_FT`, `_FT_D`, `_PN` and
+`_PN_D`, and the alpha-tested form `%s_[A]`. :inferred[read from the decrypted executable of Sekiro 1.06]{games="sekiro"}
+The loaders of the material shader banks and of `GXFlver` load every pass's program, `<shader>_<pass>`, into a set per shader
+indexed by pass, with each pass's `_[A]` program beside it. A draw then takes its program from the set by the pass id of the
+pass drawing it (for a `GXFlver` material, entry `(pass + 1) * 3 + alpha`), so the material does not pick its forward variant.
+Which passes draw a material is a mask test: a category word the material computes from its definition when it is set up
+(`g_GX_ForwardRendering` gives category 2), with the model's flags, against each pass's own mask.
+:inferred[read from the decrypted executable of Sekiro 1.06]{games="sekiro"}
+
+At the Ashina Castle gate at night, the sky dome, the far mountains and the cloud and ground fog draw in pass 0 (`Fwd`), and the
+characters and `GXFlver_ColDif` draws in pass 4 (`FwdSdw`). :observed[a read-only breakpoint on the draw's pass id in the
+running game]{games="sekiro"} `M[Sky]_SkyDome_Ver2`, `M[Moon]` and `M[LandScape]_FarMountain` have byte-identical `_Fwd`,
+`_FwdSdw` and `_FwdSSdw` pixel programs. :proven[every forward program of the main bundle compared by its bytes]{games="sekiro"}
 
 The forward pass's target 0 is finished colour, unlike the deferred pass's
 [G-buffer targets](/engines/fromsoft/shaders/gbuffer/). Forward programs can read scene depth, SSAO, irradiance

@@ -1,6 +1,6 @@
 ---
 title: Havok cloth data
-description: The hcl cloth classes characters and armour parts ship, their member lists, particle index widths and the values of their enums.
+description: "The hcl cloth classes characters and armour parts ship, their member lists, particle index widths and enum values, how their transform sets and display buffers bind to the model, and how the running games step them."
 sources:
   - title: HKLib
     url: https://github.com/The12thAvenger/HKLib
@@ -133,3 +133,106 @@ offset for each collidable. :proven[every distinct tagfile with cloth of both in
 | Platform value 2 | x64 (`HCL_PLATFORM_X64`, in the 2018.1 registry as well) | :sourced[HKX2Library, HKLib] |
 | `hclLocalRangeConstraintSet.shapeType` (32-bit) | Sekiro: 0 in all 656 sets; Elden Ring: 0 in 4,527 sets, 1 in 117 | :proven[every named character and parts binder] |
 | Shape type 0, 1 | Sphere, cylinder | :sourced[HKX2Library] |
+
+## Transform sets and their skeleton
+
+Every `hclTransformSetDefinition` of a cloth tagfile has the name and the `numTransforms` of the one `hkaSkeleton` the same
+file holds (in its root `hkaAnimationContainer`): 610 of 610 sets in the 149 Sekiro cloth files, and 2,692 of 2,692 in the 745
+Elden Ring cloth files that hold a skeleton (the other 69 hold no transform set). :proven[every distinct tagfile with cloth of
+both installs] Transform *i* of the set is bone *i* of that skeleton. :observed[one capture of each game, below]
+
+That skeleton is the cloth's own, not the character's animation skeleton. For the Wolf's muffler and coat (`bd_m_9040`) it has
+146 bones; 104 of their 146 parents differ from those of the player's Havok skeleton in `c0000.anibnd`, and the part's model
+has 173 bones in another order, but every one of the 146 names is a bone of that model. :observed{games="sekiro"} A transform
+is therefore matched to the model's bone by name. :inferred
+
+## Display buffers
+
+A cloth's display buffers (`hclBufferDefinition` of type 4) are meshes of the model beside it, vertex for vertex. A buffer is
+the [FLVER](/engines/fromsoft/geometry/flver/) mesh whose default node is named as the buffer, whose vertex count is the
+buffer's `numVertices` and whose first face set has `numTriangles` triangles. That picks exactly one mesh for all 586 distinct
+display buffers of Sekiro and 2,313 of Elden Ring's 2,325; the other 12 are pairs of meshes with the same name and counts. Where
+several meshes share a name, their order is the order of the buffers' `subType` (474 of 474 such groups in Sekiro, 1,931 of 1,931
+in Elden Ring). :proven[every cloth tagfile of both installs against its binder's model] Two characters bind one mesh from two
+cloth datas (`c7201` :only[sekiro], `c4570` :only[elden-ring]). :proven
+
+The vertices are in the mesh's order: in every object-space skin operator that writes a display buffer (729 operators and 336,495
+vertices in Sekiro, 3,512 and about 1.2 million in Elden Ring), the bind position of display vertex *i* is the mesh's vertex *i*
+to within 4.9e-5 of the mesh's size, the precision of the packed vectors the operator stores.
+:proven[every such operator of both installs] The meshes the buffers bind also hold a second position, normal and tangent
+(semantic index 1), equal to the first in the files. :observed[342 Sekiro and 1,320 Elden Ring meshes]
+
+The triangles wind the other way: normals computed as the vertex-frame operator does, over the model's positions and first face set
+with the cloth's stored triangle flips applied, agree with the model's normals at 95% of the vertices, and at almost none without
+the flips. :observed So the flips turn the model's winding into the operator's. :inferred
+
+In the first state of 249 of Sekiro's 586 display buffers (397 of Elden Ring's 2,325) the operators write only part of the
+buffer, the rest passing through the input conversion. :proven[every cloth tagfile of both installs] That fits the game handing
+the cloth the mesh it has already skinned. :inferred
+
+## At run time
+
+The objects as the running games lay them out, read from the memory of Sekiro 1.06 (the player's seven cloth instances of
+`bd_m_9040` over 300 steps, one save in one area) and of Elden Ring 1.17.2 (the player's rear rope, 299 steps):
+:observed
+
+| Object | Member | Sekiro | Elden Ring |
+|---|---|---|---|
+| `hclClothData` | `name`, `simClothDatas`, `bufferDefinitions`, `transformSetDefinitions`, `operators` | `+0x18`, `+0x20`, `+0x30`, `+0x40`, `+0x50` | |
+| `hclClothInstance` | its cloth data | `+0x18` | |
+| | sim cloth instances, buffers, transform sets | `+0x30`, `+0x40`, `+0x50` | sim cloth instances `+0x40`, transform set `+0x30` |
+| transform set (no run-time type information) | the matrices (`hkArray`), their inverse transposes | `+0x18`, `+0x28` | the matrices `+0x18` |
+| `hclSimClothInstance` | positions, previous positions, normals | `+0x20`, `+0x30`, `+0x40` | the same |
+| | last substep length, damping | `+0x50`, `+0x54` | the same |
+| | actions, collidables (`hkArray`) | `+0xE8`, `+0x178` | the same |
+| `hclCollidable` | transform, linear velocity, angular velocity | `+0x20`, `+0x60`, `+0x70` | |
+
+The w lane of every live particle position reads NaN (`0xFFC00000`). :observed{games="sekiro"} All seven of the player's cloth
+instances share one transform set object. :observed{games="sekiro"}
+
+The transform set holds world-space bone matrices: with the muffler's 146 entries, 110 of 138 bones sit at their reference
+length from their parent in the cloth skeleton (5 to 7 with shuffled parents), and in the rear rope's capture 123 of 124 (4 to 8
+shuffled). :observed The game fills only the entries some cloth reads. In Sekiro 25 of the 146 are rewritten every step, 23 of
+them moving (the pelvis, spine, collar, neck, head, clavicle, shoulder and upper-arm bones), while the other 121 keep
+model-space values that never change. :observed{games="sekiro"} Elden Ring's cloth skeletons include the bones the cloth drives
+(`[cloth]BD_M_1360_BD_RearRope_001` and on), which the game moves. :observed{games="elden-ring"}
+
+No file holds a cloth action, but both games add one each step. The game attaches one action object to each of the player's
+sim cloth instances, of a class without run-time type information whose first virtual function is `hclAction`'s.
+:observed{games="sekiro"} Elden Ring calls one action per cloth step (299 calls in the rear rope's 299 single-substep steps).
+:observed{games="elden-ring"} Sekiro's action forwards to an object of the game's own, whose update walks a registry of world
+objects, sums vectors from them and writes forces, so the force depends on the state of the world.
+:inferred[read from the decrypted code]{games="sekiro"}
+
+## Sekiro
+
+The cloth steps at about 30 Hz: notifications come about 33.5 ms apart while frames take 16.7 to 40.7 ms. The muffler's simulate
+config has 2 substeps, and its last substep length is the frame step divided by 2. :observed{games="sekiro"}
+
+Each operator's `notifyPreExecution` (slot 3 of its virtual table) is called through the operator's virtual table, but `execute`
+(slot 4) is not: with the tables replaced it is never called though the cloth simulates, and the executable has no direct call
+to it. :observed{games="sekiro"} Elden Ring calls the simulate operator's `execute` through its virtual table.
+:observed{games="elden-ring"}
+
+These stages reproduce the recording on all 299 steps: :observed{games="sekiro"}
+
+- the notify step: the substep length, the previous positions rescaled when the step length changes, and the damping
+  `powf(1 - globalDampingPerSecond, dt)`;
+- the object-space skin followed by the move-particles operator: the 28 pinned particles land bit for bit.
+
+The collidables are driven to their bones without normalising the quaternions, then stepped forward each substep: that gives the
+recorded collidables exactly on 198 of the 299 steps, and normalising them on 14. :observed{games="sekiro"} Without the game's
+action forces the simulate step differs from the recording by about 1 cm. :observed{games="sekiro"}
+
+The code's arithmetic fixes the order of every sum (Havok's SSE2 build; the executable has no `dpps` or `haddps`):
+:inferred[read from the decrypted code of Sekiro 1.06]{games="sekiro"}
+
+- A four-lane dot product adds the squares (or products) to themselves with the lanes swapped in pairs (`zwxy`), then adds that
+  to itself with neighbours swapped (`yxwz`): `(x + z) + (y + w)`. A three-lane one is `(x + y) + z`.
+- Driving a collidable to its bone takes the real part of `goal * conj(current)`, the angle `2 * acos` of it (through an `asin`
+  polynomial), the axis by `rsqrt` and one Newton step, the angular velocity `axis * angle / dt` and the linear velocity
+  `(target - current) * (1 / dt)`.
+- Each substep turns the rotation by a half-angle quaternion whose w is `((1 - 0.822948 u) - 0.130529 u^2) - (0.044408 u) u^2`,
+  with `u = |ω dt / 2|^2 * 4 / pi^2`, multiplies the current rotation by it and normalises the result.
+- A plane query (`hclPlaneShape`, `hclPointContactPlanesShape` and the per-particle landscape contact planes) sums
+  `((x * px + y * py) + z * pz) + w`, four particles at a time; the landscape test then adds the particle's radius.

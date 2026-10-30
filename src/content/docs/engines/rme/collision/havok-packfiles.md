@@ -267,7 +267,7 @@ These rules hold in every one of the 490 files; each was counted over all of the
 
 ### Classes on the disc
 
-The 490 files hold these objects, and no others: `hkRootLevelContainer` 490, `hkpPhysicsData` 490, `hkpPhysicsSystem` 972, `hkpRigidBody` 12,789, `hkpStorageExtendedMeshShape` 1,758 with 6,445 `MeshSubpartStorage`, `hkpMoppBvTreeShape` 1,705 with as many `hkpMoppCode`, `hkpConvexVerticesShape` 8,780 (and 8,751 connectivity objects), `hkpBoxShape` 1,971, `hkpConvexTranslateShape` 1,400, `hkpCylinderShape` 199, `hkpCapsuleShape` 96, `hkpSphereShape` 16, `hkpListShape` 10, and `hkpConstraintInstance` 161 (144 in the ragdolls, 1 in FOXTROT's base file, 16 in JULIET's) with 72 ragdoll, 89 limited-hinge and 16 breakable constraint data. :proven[all 490 files]
+The 490 files hold these objects, and no others: `hkRootLevelContainer` 490, `hkpPhysicsData` 490, `hkpPhysicsSystem` 972, `hkpRigidBody` 12,789, `hkpStorageExtendedMeshShape` 1,758 with 6,445 `MeshSubpartStorage`, `hkpMoppBvTreeShape` 1,705 with as many `hkpMoppCode`, `hkpConvexVerticesShape` 8,780 (and 8,751 connectivity objects), `hkpBoxShape` 1,971, `hkpConvexTranslateShape` 1,400, `hkpCylinderShape` 199, `hkpCapsuleShape` 96, `hkpSphereShape` 16, `hkpListShape` 10, and `hkpConstraintInstance` 161 (144 in the ragdolls, 1 in FOXTROT's base file, 16 in JULIET's) with 72 ragdoll, 89 limited-hinge and 16 breakable constraint data. :proven[all 490 files] Every `hkpPhysicsData`'s `worldCinfo` is null, so no file carries world settings or a collision group filter. :proven[all 490 files]
 
 ## Triangle meshes
 

@@ -63,13 +63,17 @@ Three rows (Bravo, Golf, Hotel) are placeholders: they have tables and scripts b
 | `<Level>_dropspots` | 26 | `NAME`, `SPOT_NAME` (the name of a `Teleport` chunk), `NAV_SET_START`, `NAV_INDEX_START`, `START_SPEED`, `START_STATE`, `IMAGE_PATH` |
 | `<Level>_sessions` | 106 | `NAME`, `TYPE`, `GOALS`, `DROP_SPOTS`, `FLYTHROUGH_RAIL`, `BOUNDARIES`, `NAVIGATION`, and the text and video columns |
 | `<Level>_goals` | 155 | a session's goals, with the tasks they require, time and score limits |
-| `<Level>_tasks` | 575 | `TRICK`, `OBJ_SPOT`, `SURFACE`, counts and limits |
+| `<Level>_tasks` | 575 | `TRICK`, `OBJ_SPOT`, `SURFACE`, `IDENTIFIERS`, counts and limits |
 | `<Level>_scores` | 9 | score thresholds of a session |
 
 The links to the scene files are by name hash: a drop spot's `SPOT_NAME`, a task's `OBJ_SPOT` and a session's `BOUNDARIES` are names of [spot chunks](/engines/rme/world/spot-chunks/) (as written, or in lower case), a session's `FLYTHROUGH_RAIL` is the name of a camera [spline](/engines/rme/world/splines/), and `NAV_SET_START` is the set letter of the `NavGuide_` splines. :observed
 An `id` is not unique within its table: `Papa_tasks` has two rows with id 203. A reader keeps both rows in their stored order rather than indexing by id. :proven[all 142 tables]
 The columns that list a session's goals or a goal's tasks hold small expressions, not plain lists: bracketed ranges, `|` alternatives and parentheses occur. :observed
-One reference in DELTA's tables names task 393, which `Delta_tasks` does not have. :observed
+One reference in DELTA's tables names task 393, which `Delta_tasks` does not have; the executable's task lookup goes by task id and returns nothing for an id with no row. :observed[the tables; static reading of the executable]
+
+A task's `IDENTIFIERS` names the scene objects that stand for it, such as its floating icon. The loader splits the value at `&` and hashes each name with sdbm, case-sensitively, and the hash is the name word of a [placement](/engines/rme/geometry/placements/). :observed[static reading of the executable]
+Of the 227 placements of CHARLIE's `challengesession` quartet, 202 carry the hash of a task identifier of `Charlie_tasks` and 19 more that of a session identifier. The five floating challenge icons among them join tasks of session 71 (`IconIntro`), not the navigation sessions 103 to 105. :observed[CHARLIE's placements against every row of its tables]
+The layer PAKs of the first free-skate session of the eight levels that have one hold no placement with a task identifier. :observed
 In the executable a task is looked up by its logical id, and a missing id gives no task. :observed[static reading of the executable]
 
 The ten playable levels, with their base and layer PAKs, the placements in those PAKs and the rows of their tables: :observed

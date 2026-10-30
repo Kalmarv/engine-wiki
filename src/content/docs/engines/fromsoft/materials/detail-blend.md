@@ -71,3 +71,17 @@ Some terms depend on the base mask plus a bias, and some use a constant bias alo
 Elden Ring's inspected `C[DetailBlend]` family uses a different slot assignment: slot 7 is base albedo, slot 0
 is the base normal whose alpha supplies blend masks, and slots 1, 10 and 4 provide shared detail albedos.
 :observed{games="elden-ring"}
+
+### Alpha test
+
+The alpha-tested `C[DetailBlend]_0_Gbuf_[A].ppo` tests a scalar that no target receives. It forms
+`S = Texture2D_7.a * Texture2D_1.a` (base albedo alpha times the first shared detail's alpha) and discards when
+`S + (ditherAlpha - 0.5) * scale < reference`, the reference and scale being words 4 and 5 of its third constant
+buffer. `S` has no data path to an output: the target alphas hold instance words or constants, chosen by
+`FC_AlphaRef.z`. The written alpha of this program is therefore not its coverage, which comes from the tested
+product. :observed[static reading of the program]{games="elden-ring"}
+
+Three `c3000` materials use it: two `C[c3000]_WP_Sword_Leather` variants, with reference 8/255, and `C[c3000]_Thorn`,
+with 50/255. In 64 captured draws of them (26 leather, 38 thorn), all 60 stated words of the first and third
+constant buffers equal the material's values, all eight target blends are disabled and alpha-to-coverage is off.
+:observed[64 captured draws]{games="elden-ring"}

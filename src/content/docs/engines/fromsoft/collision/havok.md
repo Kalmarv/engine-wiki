@@ -647,6 +647,32 @@ geometry in a way that was not decoded: the keys read in lane order are 0 to `n 
 `numShapeKeyBits` is `bitlen(n)` for the version 2 form and `bitlen(n) + 1` for version 3 (`n` the triangle count), in
 all 12,728 and 264,816 bodies with a triangle. :proven[every `f` binder of both installs]
 
+## In the running game
+
+A compressed mesh rewritten from its own decoded triangles collides in the game as the stock file does, and the same
+file with its mesh replaced by one triangle 1000 m away lets the character pass where it stood, so the game takes the
+part's collision from that mesh. :observed[one object in each game, one run per variant]
+In Sekiro the object was `o114903` (an armour stand, one `fsnpCustomParamCompressedMeshShape` of 78 triangles) moved
+onto the player's path in Ashina Castle. The stock mesh deflects the player 0.494 m from the path walked without it,
+sliding round it at a constant 0.47 m, which puts the player's collision radius at about 0.47 m. The rewritten mesh ends
+1.8 mm from the stock run, and the one-triangle mesh 11 mm from the run without the stand at the first sample.
+:observed[one run per variant; hold timing varies positions by 3 to 9 cm]{games="sekiro"}
+A moved object collides only where it is drawn: placed at the new spot with the display condition of its old area, it
+is neither drawn nor collided with ([Visibility](/engines/fromsoft/world/visibility/#moved-parts)). :observed[three runs]{games="sekiro"}
+
+In Elden Ring the character's stop at asset part `AEG217_036_2007` of `m10_00_00_00` is on the asset's `l` mesh, whose
+face is the nearest head-on. Replacing the `l` mesh by one far triangle moves the stop (the character's physics x) from 3.364 to 3.369 (six
+stock runs) to 3.4629, as lifting the whole part does (3.4644), and the `l` mesh rewritten from its own triangles stops
+the character at 3.3686, as stock. :observed[one asset, one approach direction]{games="elden-ring"}
+The asset's `h` mesh lies 0.327 m further on, so an edit of it cannot move this stop. :inferred{games="elden-ring"}
+The body's stored position in an asset's collision file is the identity, and the game places the mesh by the part
+alone. :observed{games="elden-ring"}
+
+:::open[What stops the character when the asset's mesh is gone?]
+Without the `l` mesh the stop is at 3.463, but no collider of the part or of any `m10` map or asset lies
+within 9 m of that point; a navigation or movement limit is one possibility. :unknown
+:::
+
 ## Sekiro
 
 ### Map collision binders

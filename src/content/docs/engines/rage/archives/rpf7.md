@@ -6,6 +6,9 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: RpfFile and GTACrypto describe the archive and cipher layouts.
+  - title: ragekit
+    url: https://github.com/RatPrez/ragekit
+    note: a second RPF7 reader; its encryption values
 implementations:
   - name: rage-engine-formats (archive/rpf.rs)
     url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/archive/rpf.rs
@@ -88,10 +91,13 @@ selection. :proven
 
 | Header value | Interpretation | Confidence |
 |---|---|---|
-| `0x4E45504F` | Clear table | :sourced[CodeWalker] |
-| `0x4F50454E` | Alternative clear-table marker used by editing tools | :sourced[CodeWalker] |
+| `0` | No encryption | :sourced[CodeWalker, ragekit] |
+| `0x4E45504F` | Clear table (`OPEN`) | :sourced[CodeWalker, ragekit] |
 | `0x0FFFFFF9` | AES-256 ECB | :sourced[CodeWalker] |
 | `0x0FEFFFFF` | NG | :sourced[CodeWalker] |
+
+The byte-swapped word `0x4F50454E` is not a cipher value in either reader's source; both read `0` as none and
+`0x4E45504F` as open. :sourced[CodeWalker, ragekit]
 
 Both cipher routines process complete 16-byte blocks and leave a trailing partial block unchanged. NG is a
 17-round table cipher: rounds 1, 2 and 17 mix consecutive input bytes; rounds 3–16 take a diagonal byte spread.

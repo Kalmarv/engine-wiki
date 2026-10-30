@@ -37,13 +37,16 @@ fields:
   - {at: 0, size: 4, type: u32, name: matrix_offset, level: proven, note: "absolute offset in the SCP of a 64-byte matrix"}
   - {at: 4, size: 4, type: u32, name: unknown, level: unknown}
   - {at: 8, size: 4, type: u32, name: mesh_id, level: proven, note: "joins the MLP resource table and the mesh's own id"}
-  - {at: 12, size: 28, type: "u8[28]", name: opaque, level: unknown, note: "ids, flags and sentinels"}
+  - {at: 12, size: 4, type: u32, name: name_hash, level: observed, note: "case-sensitive sdbm of the object's name; task icons carry a task identifier from MAIN.DB"}
+  - {at: 16, size: 24, type: "u8[24]", name: opaque, level: unknown, note: "ids, flags and sentinels"}
   - {at: 40, size: 4, type: u32, name: pointer, level: observed, note: "relocated by the loader; target not decoded here"}
   - {at: 44, size: 4, type: u32, name: pointer, level: observed, note: "relocated by the loader; target not decoded here"}
 ```
 
 All 168,887 placements of the 657 quartets, those with skinned meshes included, name an id that exists in the MLP of their own quartet. The join is by id, not by position. :proven[all 657 quartets]
 Repeated ids are instancing: nothing in the SCP merges them or gives a placement a parent. :observed
+The word at `0x0C` names the placed object: for the task objects of a level it is the sdbm of one of the `IDENTIFIERS` of a task or session in [MAIN.DB](/engines/rme/data-model/main-db/). :observed[CHARLIE's 227 challenge-session placements]
+That the game activates a task's icon through this join is read from the names, not followed in the running game. :inferred
 
 ## Matrix
 

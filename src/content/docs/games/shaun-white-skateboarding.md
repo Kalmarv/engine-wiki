@@ -55,6 +55,15 @@ beside the executable. None of the 40 forges of that copy has a Bink entry, by t
 :observed[the patched copy] Five are top-level clips, three play at start-up and 69 are trick-book clips. Five carry
 audio: four clips with four tracks each at 48 kHz, and `head_tv.bik` in stereo at 44.1 kHz. :observed[the patched copy]
 
+The four-track clips (`dreamsequence`, `q16_sq13`, `startup/short_intro`, `startup/ubilogo_1280x720`) carry, as track ids
+0 to 3, a stereo, two mono and a stereo track, all DCT-coded; `head_tv.bik` has a single stereo DCT track. :observed[all 77 files]
+The game plays all four tracks together at one volume: a loop calls `BinkSetVolume` for the four track ids with the same
+computed value. :observed[static reading of the executable] The tracks are each mastered to full scale, so their sum
+reaches the 16-bit limits in 11,016 of the 10,471,680 mixed samples (9,560 in `dreamsequence`, 1,456 in `short_intro`);
+the clipping is in the material. :observed[every audio clip decoded and mixed]
+Each frame is decoded into separate Y, U, V and alpha planes of one byte per sample, with sizes rounded up to multiples
+of 8 (chroma at half size); the game uploads the Y plane and the two chroma planes as separate textures. :observed[static reading of the executable and of `binkw32.dll`]
+
 ## Levels
 
 The six numbered forges are the game's main levels, named by the game's district table and the strings of the English text ([localization](/engines/anvil/gameplay/localization/)). Each name below carries the id of its string. :observed
@@ -84,12 +93,16 @@ The station of level 04 is named Restricted Area Station (11266), but the world 
 
 Strings 12635 to 12638 (Conformity Square Rooftops, Rising Island Park, Restricted Area Complex, SkateLab) are four string references in the same block, each followed by a world id of a multiplayer world: `02_Multi`, `03_multi`, `04_Multi` and `05_MULTI`. They name those worlds, not levels 04 and 05. :observed
 
+Each of the four multiplayer worlds (`02_Multi` `0x84798472`, `03_multi` `0x8CC64B8E`, `04_Multi` `0x8F9A90C4`, `05_MULTI` `0x89FC9A5A`) holds exactly one entity of class `0x5D54B379`, `MultiPointPlayerSpawner`, named `MULTI_Spawner_Player_001` (`04_MULTI_Spawner_Player_001` in 04); the single-player worlds use `PlayerSpawner`, class `0xE74CB43D`. :observed[all four multiplayer forges]
+The other `Spawner_Scatter`, `TeamA`, `TeamB` and `Together_` entities of these worlds are further spawn groups of the multiplayer modes. :inferred[from their names]
+Arriving in 02, 04 or 05, the skater's feet are at that spawner's position. :observed[one arrival in each]
+
 ## Data systems
 
 The container is a [forge](/engines/anvil/archives/forge/) of version 26 whose entries are framed as [data blocks](/engines/anvil/archives/data-blocks/) compressed with LZO2A. :proven[all 33 forges]
 
 - Objects and classes: [object streams](/engines/anvil/data-model/resources/), [class ids](/engines/anvil/data-model/class-registry/), [entities](/engines/anvil/data-model/entities/) and [visuals with LOD selectors](/engines/anvil/data-model/visual-instances/).
-- World: [world roots](/engines/anvil/world/world-resource/), [cells](/engines/anvil/world/grids/), [placement](/engines/anvil/world/placement/) and [world travel](/engines/anvil/runtime/world-travel/).
+- World: [world roots](/engines/anvil/world/world-resource/), [cells](/engines/anvil/world/grids/), [placement](/engines/anvil/world/placement/), [start-up](/engines/anvil/runtime/startup/) and [world travel](/engines/anvil/runtime/world-travel/).
 - Geometry: [meshes](/engines/anvil/geometry/mesh/) and [vertex layout](/engines/anvil/geometry/vertex-formats/).
 - Materials and textures: [material body](/engines/anvil/materials/material/), [UV rotation](/engines/anvil/materials/uv-transforms/), [render state](/engines/anvil/materials/render-state/), [influence](/engines/anvil/materials/influence/), [texture maps](/engines/anvil/textures/texture-map/) and [format codes](/engines/anvil/textures/format-codes/).
 - Shaders and light: [SDB2 bundles](/engines/anvil/shaders/sdb2/), [baked lighting](/engines/anvil/lighting/global-illumination/), [lights](/engines/anvil/lighting/lights-and-emission/) and [the sky light](/engines/anvil/lighting/sky-and-atmosphere/).

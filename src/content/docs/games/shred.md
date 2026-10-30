@@ -13,6 +13,10 @@ PlayStation 3 and checks for a skateboard-shaped controller peripheral at start-
 The check reads the capability word the controller reports and refuses a controller that declares an analog stick
 (bit 8, `HP_ANALOG_STICK`). With that single test skipped in the executable, an emulated controller that reports the bit moves on from the "no board connected" screen to the board's
 calibration screen. :observed[the executable's check, read; one run under RPCS3 with the test skipped]
+The executable has a second route past the board, a QA switch: the `u32` `qa_build` at `0x172B10C`, which only a `qa_build` entry of `boot.ini` (true or nonzero) sets at start-up. It gates the native cheat `CTRL`, which sets the globals `board_build` 0, `controller_build` 1 and `keyboard_build` 0, and the board-connect routine ignores the scripts' `controller_build` unless the switch is set. :observed[static reading of the executable]
+With the switch and those three globals written into memory at start-up, an ordinary controller reaches the main menu and plays CHARLIE's training, the board test left as shipped and no disc bytes changed. :observed[runs under RPCS3]
+`CTRL` is typed on the game's own cheat screen (`Universal/Initials/Initials.gfx`) and is not a row of `MAIN.DB`'s `cheat_codes`, whose one row is `RICE`. :observed
+On a controller, the skating scripts push on R1, turn with the left stick's X axis and push while idle with its Y axis. :observed[static reading of the skating scripts]
 Every observation in the wiki's SHRED pages comes from one dump of that disc: 1,124 files, 5,875,743,333 bytes, decrypted. :observed
 
 ## Where the data lives

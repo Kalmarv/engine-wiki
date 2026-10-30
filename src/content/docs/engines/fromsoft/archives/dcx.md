@@ -110,6 +110,9 @@ and no payload uses another decoder type. Of the quantum kinds beyond a compress
 quanta in Sekiro, 115 in Elden Ring); there is no whole-match quantum and no stored small quantum. Walking the headers this
 way consumes every payload exactly: no payload has bytes left after its last quantum. :proven[both archive sets]
 
+Sekiro depends on that bit. A rewritten object file of eight Kraken blocks in which only the first block restarts makes
+the game exit while loading it, and the same file with every block restarting loads and plays. :observed[two loads of each]{games="sekiro"}
+
 A stored block (header `CC 06`: 1,180 first and 1,292 later blocks in Sekiro, 4,420 and 3,339 in Elden Ring) is the
 block's decoded bytes raw, with no quantum header: a walk steps over as many bytes as the block decodes to (what is left,
 for the last block). The walk needs only the payload and the envelope's decoded size, never decoding, and ends at the

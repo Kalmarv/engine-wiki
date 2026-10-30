@@ -57,3 +57,14 @@ fields:
 Collision placement has a measured render-alignment comparison. Applying MapOffset to BTL, EDGE and navigation
 data is an inference until each family has an equivalent comparison.
 :::
+
+### The player's position
+
+:only[sekiro] The running game keeps the player's position in its character physics module, an
+`NS_SPRJ::SprjChrPhysicsModule` (found by the vtable its RTTI names; of the 237 instances in one run, the one whose
+owner, the pointer at `+0x08`, is a `PlayerIns`). The `float4` at `+0x80` is the position `(x, y, z, 1)`, with a copy at
+`+0x90`, in the MSB frame of the map: right after a load it equals, to three decimals, the position of the Player part
+the game spawned at (`c0000_0009` of `m11_01`, (−128.550, 40.900, 223.580)). :observed[one run, three snapshots]{games="sekiro"}
+
+Walking forward from a spawn moves the player in x and z along `(−sin yaw, −cos yaw)` of that Player part's MSB yaw, at about
+5 m/s: (0.809, 0.588) for the yaw of −126° at `c0000_0009`. :observed[one spawn measured; a second agrees to about 10°]{games="sekiro"}

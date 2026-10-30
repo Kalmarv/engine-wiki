@@ -213,6 +213,20 @@ controls appear contradictory. These bytes must not be collapsed into a single u
 near-black boxes with the texture `m11_black_a` and the program `GXFlver_ColDif`. :observed{games="sekiro"} That they are
 blocker or occluder cards rather than scenery is a guess. :inferred{games="sekiro"}
 
+### Moved parts
+
+:only[sekiro] A part moved in the MSB keeps the display condition of the area it came from: its draw block (eight
+display-group words, eight draw-group words and 32 collision-mask words). The armour stand `o114903`, moved onto the
+path from the Ashina Castle start idol, is not drawn there and the player walks through its place; with the display
+groups, draw groups and mask copied from an object drawn at that spot (`o114710_3800`) it is drawn and its collision
+deflects the player ([Havok collision](/engines/fromsoft/collision/havok/#in-the-running-game)). :observed[three runs without the copy, one with it]{games="sekiro"}
+A part that is not drawn is therefore not collided with either. :observed{games="sekiro"}
+
+:::open[Which of the three arrays makes a moved part drawn?]
+Copying all three draws it; whether the collision mask alone, or the display and draw groups alone, would do is not
+established.
+:::
+
 ## Elden Ring
 
 ### Part visibility-related structure

@@ -6,6 +6,9 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: Meta, MetaTypes, Rbf and JenkHash are reference descriptions.
+  - title: ragekit
+    url: https://github.com/RatPrez/ragekit
+    note: structure-description alignment codes, measured in its docs/unknowns.md
 implementations:
   - name: rage-engine-formats (meta.rs)
     url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/meta.rs
@@ -61,6 +64,10 @@ fields:
   - {at: 76, size: 2, type: u16, name: block count, level: proven}
   - {at: 78, size: 34, type: bytes, name: unknown tail, level: unknown, note: "zero in accepted resources"}
 ```
+
+A structure description's word at offset 8 is an alignment code, `n << 8` with `n` from 0 to 4 (0, 256, 512, 768,
+1024), `n` being the base-2 logarithm of the alignment. In ragekit's count over Legacy files it equals the alignment
+of the widest field in 38,377 of 39,225 descriptions. :sourced[ragekit]
 
 ```layout
 title: META field description

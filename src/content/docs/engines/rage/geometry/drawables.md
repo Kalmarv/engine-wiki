@@ -6,6 +6,9 @@ sources:
   - title: CodeWalker
     url: https://github.com/dexyfex/CodeWalker
     note: Drawable, DrawableModel, DrawableGeometry and Gen9 vertex-buffer descriptions.
+  - title: FiveM rage-formats-x
+    url: https://github.com/citizenfx/fivem
+    note: rmcDrawable.h, the RDR3 sgaInputLayout bitfield and the model draw-bucket test
 implementations:
   - name: rage-engine-formats (drawable.rs)
     url: https://github.com/Kalmarv/rage-engine-formats/blob/main/src/drawable.rs
@@ -19,6 +22,9 @@ The structural census reads every copy with these versions: 84,592 YDRs, 23,108 
 structural failures. Fifteen YDR copies use other layouts (12 version 154 and three version 165) and are excluded
 from these layout claims. Stored-field proofs below cover the accepted versions; they do not establish the
 excluded layouts or every runtime use of a field. :proven[version-filtered full-install census]
+
+CodeWalker reads version 154 and 159 YDR and YDD files with the Gen9 layout and version 165 with the Legacy layout,
+whatever the install. :sourced[CodeWalker]
 
 ## Drawable and models
 
@@ -66,6 +72,11 @@ Each geometry has its own vertex and index buffers and selects a shader through 
 
 The sampled normal drawing path uses model render-mask bit 0. Models without that bit are other-pass proxies; the
 complete meaning of every mask bit is not established. :observed
+CodeWalker builds byte 1 of each LOD's render mask as the OR of the low bytes of its models' masks, and hides a model
+whose mask bit 0 is clear unless proxies are asked for; the FiveM headers say the model's byte is tested against the
+upper byte of the shader's draw-bucket mask. :sourced[CodeWalker, FiveM rage-formats-x]
+CodeWalker draws a fragment as its main drawable, its cloth drawable and both drawables of every child of physics
+LOD 1. :sourced[CodeWalker]
 
 ## Enhanced vertices
 
@@ -186,4 +197,7 @@ does not establish that every auxiliary stream is finite. :observed
 :::open[What do the remaining render masks and packed declaration bits mean?]
 Their stored locations are known; the interpretation above covers only the fields consumed by the inspected layout.
 :unknown
+CodeWalker's Gen9 declaration and the FiveM RDR3 `sgaInputLayout` declare the packed word's low 32 bits as `hasSOA`
+(bit 0), a flag (bit 1), the vertex size (bits 2–9) and the vertex count (bits 10–31). Whether the stock Enhanced
+files fill the count bits has not been checked against the data. :sourced[CodeWalker, FiveM rage-formats-x]
 :::

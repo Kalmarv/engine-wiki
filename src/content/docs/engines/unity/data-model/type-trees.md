@@ -38,7 +38,7 @@ be re-packed before a reader that only does LZ4 can use them. :observed
 
 UnityPy 1.25.4's package gives the 6000.3.11f1 `PlayerSettings` layout 936 bytes. Sledding Game's
 `globalgamemanagers` `PlayerSettings` object is 940 bytes, so the layout is 4 bytes short of the data, and UnityPy's own
-read check reports the mismatch. :observed{games="sledding"} PEAK's 6000.3.15f1 `PlayerSettings` is 896 bytes against a layout of 892: the same 4-byte shortfall. :observed{games="peak"} A decoder
+read check reports the mismatch. :observed{games="sledding"} PEAK's 6000.3.15f1 `PlayerSettings` is 896 bytes against a layout of 892: the same 4-byte shortfall. :observed{games="peak"} Big Walk's 6000.3.17f1 `PlayerSettings` has it too. :observed{games="big-walk"} A decoder
 that requires a tree to cover an object exactly refuses that one object and decodes the rest. :observed{games="sledding peak"}
 
 ## Common strings in embedded trees

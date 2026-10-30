@@ -96,6 +96,12 @@ The vertex programs address the float constants relative to the address register
 This is the form of a matrix-palette skinning loop, a `mova` of a scaled index vector followed by reads of the bone matrices from the constant file; that these programs skin is concluded from the form. :inferred
 Pixel source operands carry no modifier besides negate (68,301), absolute value (4,171) and negated absolute value (6); vertex operands only negate (4,603). Saturation is on 27,515 pixel results and 656 vertex results; no result is partial precision. :observed[the three uncompressed bundles]
 Microsoft's `D3DDisassemble` lists the same instructions, in the same order, with the same registers, swizzles and modifiers, as a reader of the tokens: all 1,099 vertex programs and all 6,207 pixel programs, line for line. :observed[the three uncompressed bundles]
+That reading depends on four details of the token format that these programs use. A register's type is five bits, the low three at
+bits 28 to 30 of the operand token and the high two at bits 11 and 12, so the colour outputs `oC0` and `oD0` and the samplers
+(types 8 to 10) decode only with both parts; bit 31 of an operand token is a marker set on every operand, not part of the type.
+Relative addressing is bit 13, and the address-register token follows the operand. Every `sincos` has a destination and one
+source. A `dcl` token's second word is a usage and an index (usage in bits 0 to 3, index in bits 16 to 19), or for a pixel
+sampler the texture type in bits 27 to 30. :observed[the three uncompressed bundles]
 
 On the reference rasterizer (`D3DDEVTYPE_REF`, software vertex processing) `mova` rounds to the nearest integer with a half going away from zero (`-2.5` gives `-3`, `0.5` gives `1`), a relative constant read at an index from 256 up to 4096 returns zero, and `slt` and `sge` are the IEEE comparisons (a NaN operand gives 0). :observed[a vertex program run on the reference rasterizer]
 

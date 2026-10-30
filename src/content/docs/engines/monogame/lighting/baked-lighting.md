@@ -37,6 +37,11 @@ with `k = clamp((DIRECT.r − 0.07) × 1.075, 0, 1) × dynamic shadow`. `DIRECT`
 shadows (the board's) to texels that were lit directly. There is no N·L term, no specular, and the roughness and metallic factors
 are not used. `LevelShadingDefault` sets `ShadowColor` to 0 and `AmbientLightInShadow` to 0.5. :observed{games="stuntboost"}
 
+The baked branch also turns off the shadow depth bias (`EnableShadowDepthBias` false) and sets `ShadowsEnabled` to whether
+dynamic shadows are drawn that frame. A room's models are built as baked models (`DrawableModel(..., bakedModel: true)`), and a
+model draws only in the pass whose baked flag matches its own, so a room's materials are drawn with the baked branch whether
+or not their names begin `bake_mat`. :observed[the managed code of build 26237614]{games="stuntboost"}
+
 In the compiled pixel shader, `ps_uniforms_vec4[39]` is `DynamicObject`, `[50]` is `DiffuseLightingEnabled`, `[36]` and `[37]` are
 the metallic and roughness factors, and `ps_s0` is `AlbedoTex`, `ps_s5` is `DiffuseTex`; the constant `1.075269` (= 1 / 0.93)
 and `−0.07` sit among its defined constants. :proven{games="stuntboost"}
@@ -48,6 +53,21 @@ sampled from `LightDepthTex`), ambient light, distance fog (`FogStart`, `FogLeng
 with blue noise, SSAO and depth of field in separate effects. :observed{games="stuntboost"}
 
 The output is `color ^ (1 / Gamma)` with `Gamma` defaulting to 1.0. The shader applies **no colour grading** of its own. :observed{games="stuntboost"}
+
+Colours of the level tables are read as bytes before the shader sees them. A colour written in parentheses has each float
+multiplied by 255 and truncated to a byte, a missing component being 255, and `Level.ReloadShading` turns the bytes back into
+float vectors, so a table's colour reaches the shader quantised to 1/255; a hex colour is read by `ColorExtension.FromHex`.
+:observed[the managed code of builds 25832744 and 26237614]{games="stuntboost"}
+
+A model's vertex colour is on whenever its glTF has an attribute whose name begins `_COLOR`: BytingLib maps every such attribute
+to the colour usage, `_COLOR_SHIFT` (the [outline shift](/engines/monogame/effects/outlines/)) included, which sets
+`VertexColorEnabled` though the attribute is not a glTF `COLOR_0`. A glTF material without metallic or roughness factors keeps
+the shader's constructor values of 0.5, not glTF's default of 1. :observed[the managed code of build 26237614]{games="stuntboost"}
+
+The world matrices reach the shader in two more forms: `WorldInverseTranspose` is the inverse transpose of the world matrix's
+3x3 part, and `WorldRotate` the rotation of its decomposed quaternion (the identity when the matrix is not finite). A render with
+`UseDepthOutputTechnique` set, which the scene sets from its depth render target, uses the `RenderWithDepthOutput` technique (or
+its instanced form) instead of `Render`. :observed[the managed code of build 26237614]{games="stuntboost"}
 
 The sun's direction is defined in Blender by the world's sky texture (and also drives the skybox); a level can place regions with
 another sun (`CustomSunRegion`). :sourced[StuntboostTools documentation]

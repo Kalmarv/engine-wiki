@@ -61,6 +61,15 @@ The flat VT producer writes detail colour, packed detail normal, displacement an
 
 Flat, mixed and unclassified non-VT programs give identical outputs on three sampled crops at three distance states. Vertical programs instead sample two vertical world-space planes with azimuth-dependent weights and transform detail normals in the plane frame. Vertical triangles retain live splatting even in the VT family. :observed[interpreted comparisons and VT disassembly]
 
+The `MAD_Raw_TerrainBlend` pixel program reads the virtual terrain cache from engine-bound registers the material does not
+store: integer 3-D page tables at `t50` and `t51`, the `t51` lookup validating a page before the atlas samples, and detail colour
+and normal caches at `t45` and `t46`. `t48` and `t49` are further atlases sampled at the same page coordinates and derivatives as
+`t45` and `t46`, giving two and three channels, so they belong to the terrain cache and not to lighting; what those channels
+hold is not established. :observed[disassembly of one compiled
+program]{games="riders-republic"} The lower registers hold the terrain's tile data: page addresses (`t13`), page levels (`t14`),
+the height atlas (`t15`), integer sediment metadata (`t16`), the colour atlas (`t17`), material properties (`t18`), occlusion
+(`t19`) and a sediment array (`t20`). :inferred{games="riders-republic"}
+
 The CPU's geometric split into flat/mixed/vertical triangle lists is unresolved. The vertex varying sometimes called flatness instead blends material flag bit 4, and is not a slope measurement. :observed[vertex arithmetic] :unknown[triangle classifier]
 
 :::open[Which constants and thresholds complete terrain rendering?]

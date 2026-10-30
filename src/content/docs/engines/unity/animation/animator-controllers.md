@@ -19,6 +19,15 @@ An **Animator** (class 95) component binds an **AnimatorController** (class 91) 
 controller is stored compiled, as a `ControllerConstant`; names (states, parameters, layers, paths) survive only as CRC-32
 hashes with a name table (`m_TOS`) beside them. :observed{games="skatebird sledding"}
 
+Animators can be nested in the hierarchy. In PEAK's level 207 (`BuildPlayer-Level_207` in `levels192-207.assetbundle`), 45 of the
+600 Animators have other Animators below them: `GAME/PassportManager/PassportUI` (controller `Passport`) above
+`PortraitRenderer/PassportDummy/Scout` (`Scout`), and `Helicopter_End` above the seated and hanging scouts, for instance.
+Comparing the CRC-32 of every Transform path under each nested Animator, relative to the outer one, with the tracks of the outer
+controller's clips, no outer clip animates a Transform under a nested Animator, except one interface button
+(`BadgePopupScaler/UI_PauseMenuButton`, which the three unlock pop-ups' `CosmeticUnlock` clip drives). :observed{games="peak"} So a
+rig belongs to the nearest Animator above it that has a controller. :inferred{games="peak"} The four Animators of the `Ambience`
+controller sit on sound objects with no skinned skeleton. :observed{games="peak"}
+
 ## Avatar
 
 An Avatar stores the skeleton Mecanim animates and, for a humanoid, the compiled muscle data:

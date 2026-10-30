@@ -25,6 +25,13 @@ nine movie paks ([IoStore containers](/engines/unreal/archives/iostore-container
 :observed{games="phantom-blade-zero"} Blocks are Oodle-compressed in 256 KiB blocks, and no Oodle library ships beside
 the executable; the audio is Wwise. :observed{games="phantom-blade-zero"}
 
+The executable `platform/steam/PBZ.exe` (signed by S-GAME) is protected by Denuvo anti-tamper, and the install ships no
+anti-cheat: no EasyAntiCheat, BattlEye or ACE folder and no kernel driver (no `.sys` file at all); `EOSSDK-Win64-Shipping.dll` is
+there without an EasyAntiCheat folder. The other SDKs are Steam, WeGame (`rail_api64`), TapTap and Migu (`MiguGameSDK64` 2.1.4.4
+with `CheckEnv.exe`, `MRTCEngine` and `viumsgsdk`), for cloud play, anti-addiction and store features, and
+`ProjectPBZ/Binaries/Win64/8za_v2.exe` is an archiver console program signed by S-GAME. :observed[a listing of every executable, library and driver of the
+install]{games="phantom-blade-zero"}
+
 ## What is special
 
 - **Encrypted containers.** The game container's flags are `0x0b` (compressed, encrypted, indexed) and every pak has an

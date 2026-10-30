@@ -48,6 +48,10 @@ Two layouts exist, told apart by their fields:
 SkateBIRD's 2019.4 player keeps per-variant parameters in `progFragment.m_SubPrograms` and not in `m_PlayerSubPrograms`; a
 reader has to read both. :observed{games="skatebird"}
 
+Each player holds the programs of one hardware tier: every variant of SkateBIRD's has `m_ShaderHardwareTier` 3, and the
+`m_PlayerSubPrograms` of Sledding Game and PEAK have four groups, only the fourth of which (tier 3) holds variants.
+:observed[every Shader object of the three players]{games="skatebird sledding peak"}
+
 ## The program blob
 
 Each platform has one compressed blob. The blob is split into segments (`offsets`, `compressedLengths` and

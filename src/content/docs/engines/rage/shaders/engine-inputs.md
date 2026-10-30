@@ -25,6 +25,13 @@ actually read and the arithmetic using them constrain its role more precisely. :
 | `gLightArtificialIntAmbient0.w` | Added to a vertex-colour term in G-buffer target 3 X | :observed |
 | `globalScalars.x` | The factor an instance's visibility is faded by, 1 where fully shown; see below | :observed |
 | `globalScalars2.z` | Enters both a `1-z` wetness term and a `floor(128*z)` state-byte expression | :observed |
+| `globalScalars2.z` | In `VS_TransformD_749c0f99`, with `f = saturate(distance² * 0.000004)`, scales `COLOR0.x` by `1 + (gDirectionalAmbientColour.w - 1) * saturate(f - z)` and `COLOR0.y` by `1 + (w - 1) * saturate(1 - f - z)` | :observed |
+| `globalScalars2.y` | `VS_Transform_SeeThrough_5c7539b4` draws its geometry only where `y > 0` and outputs `saturate(clip.w / y)` | :observed |
+| `globalScalars2.x` | The phase of a sine vertex motion: `sin(position-derived phase + 2.5 * x)` in `VS_Transform_SeeThrough_5c7539b4`, and in `VS_PedTransformD_bddf08c5` | :observed |
+
+`globalScalars2` is row 13 of the miscellaneous globals buffer (offset 208). Its lanes do different jobs in different programs, so
+it is not one wetness scalar, and a program that loads all four lanes need not use all four (one sample loads `w` and never uses
+it). :observed[compiled-program inspection] What writes it on the CPU, and its values, are not known. :unknown
 
 The natural interpretation of `globalScreenSize.zw` is reciprocal width and height, but the sampled usage does not
 itself show the CPU writing `1/x` and `1/y`. :inferred
@@ -50,6 +57,24 @@ Every use is multiplicative or monotone and leaves the value unchanged where the
 No program uses the word in any other way. :observed[same walk]
 
 The shader source CodeWalker ships keeps a commented legacy bytecode line `mul o0.w, r0.y, globalScalars.x` for the alpha of its basic pixel program, and its own port omits the factor. It gives the lane no name. :sourced[CodeWalker]
+
+## Engine textures
+
+Programs also sample textures the engine binds, named in each program's own [SGD2](/engines/rage/shaders/sgd2/) table (28-byte
+texture records, the names checked against their stored joaat hashes). In the programs the Legion Square materials bind:
+
+| Register (space 0) | Name | Programs | Confidence |
+|---|---|---|---|
+| `t1` | `gReflectionTex` | glass programs | :observed |
+| `t2` | `gFogRayTex` | `PS_Textured_Zero_7903a05e_Wrapped` and others | :observed |
+| `t3` | `g_BlueNoise` | `PS_DeferredTextured_AlphaClipC` | :observed |
+| `t4`, `t5`, `t6` | `g_ReflectionAlphaDepthTex`, `g_ReflectionAlphaResult`, `gReflectionTexClipped` | glass programs | :observed |
+| `t7` | `gCSMShadowTexture` | `PS_Textured_Zero_7903a05e_Wrapped` and others | :observed |
+| `t14`, `t15`, `t17`, `t19`, `t22` | `g_BlendTexture`, `g_ReflectionTex2`, `g_WaterBumpTexture`, `g_RefractionTexture`, `g_LightingTexture` | `PS_WaterFountain_7903a05e_Wrapped` | :observed |
+
+:observed[each bound program's table read and its name, hash and register checked against the material's binding]
+These are the engine's names for the slots. No material stores a texture for them, so what the engine puts there at run time is
+not in the data. :inferred
 
 :::open[How does the CPU populate each global?]
 Program reads establish a constant-to-output dependency. They do not establish every writer, update cadence,

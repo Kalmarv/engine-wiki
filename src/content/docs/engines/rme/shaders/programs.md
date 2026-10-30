@@ -25,6 +25,40 @@ The 765 `.psp` entries are in 274 of the 336 PAKs and hold 181,851 programs, of 
 
 The parameter tables of the programs carry no texture-unit records for the samplers, so a program does not say which material slot feeds which texture unit; see [the sampler slots](/engines/rme/materials/material-banks/#samplers-and-textures). The vertex programs' tables also have no names ([vertex formats](/engines/rme/geometry/vertex-formats/)). :observed
 
+## Permutation index (.shp)
+
+A `.shp` entry is a table of 16-byte entries, one per permutation, followed by a tail of metadata records. The tail is not
+padding: the 1,508 `.shp` files hold 263,175,408 bytes after their tables, and every one of their 312,708 entries points into it.
+:proven[all 336 PAKs]
+
+```layout
+title: SHP permutation entry
+size: 16
+note: Big-endian 32-bit words.
+fields:
+  - {at: 0, size: 4, type: u32, name: key, level: inferred, note: "the permutation key; the load callbacks take the first entry whose key equals the one requested"}
+  - {at: 4, size: 4, type: u32, name: metadata offset, level: proven, note: "into the tail, relative to the end of the table"}
+  - {at: 8, size: 4, type: u32, name: programs, level: proven, note: "locates the one or two adjacent programs of the permutation"}
+  - {at: 12, size: 4, type: u32, name: sizes, level: proven, note: "upper 16 bits: the metadata record's size; lower 16 bits: the sizes of its programs, each padded to 64 bytes, summed"}
+```
+
+:proven[all 312,708 entries] The key's role is read from the executable's vertex and fragment load callbacks.
+:inferred[read from the executable]
+
+A metadata record starts with a 44-byte header: the magic `0xAEBE000B` for a vertex program or `0xDEDE0007` for a fragment
+program, the variant count in byte 20, the descriptor count as 16 bits at 22, and at 24 the 32-bit offset of the descriptors,
+20 bytes each (a hash, an encoding and three offsets). The records tile the whole tail, with zero padding to 16-byte alignment
+between them. There are 160,617 vertex records (122,217 for one program and 38,400 for two) and 152,091 fragment records (122,331
+and 29,760). :proven[all 336 PAKs] The hashed descriptors number 114,407 in the vertex records, of 19 distinct hashes, and
+4,048,334 in the fragment records, of 208, among them the hashes of the sampler names `Color_Map`, `Normal_Map`, `Spec_Map` and
+`Effect_Map`. :proven[all 336 PAKs] The descriptors cover material constants (the vertex constant `c467` among them) but not
+the shared transform `c32` to `c35` below, which the sky's Cg program marks as shared. :observed Whether each variant's 16-bit
+values are texture units has not been checked against the units the game binds. :unknown
+
+Once a program is loaded, the parent resource keeps its relocated metadata and the requested key; a material's shader handle
+resolves to that same resource, and the vertex stage takes its program from a run-time array by an explicit variant index.
+:inferred[read from the executable] How the key's suffix is built from the material and the draw is not established.
+
 ## Fragment microcode
 
 The pixel programs are RSX fragment microcode: 16-byte instructions, an instruction that reads an inline constant followed by that constant's 16 bytes, and an end flag on the last instruction. :sourced[RPCS3]
@@ -185,6 +219,8 @@ Its names for the output destinations are indexed by the destination number as i
 Vertex constants `c32` to `c35` hold the draw's model-view-projection matrix: the placement's world transform from the [SCP](/engines/rme/geometry/placements/), times the camera's view, times its projection. :observed[one frame of the CHARLIE training lesson]
 A capture of the RSX commands of that frame (under RPCS3, at a fixed camera) has 2,105 geometry ranges in 1,516 draw scopes. The 991 ranges drawn with a vertex program of the classes that hold `env_base_vs` write all sixteen lanes of the four registers in the frame. For 781 of them a placement of the level gives a compatible matrix and for 210 none does. For two rotated placements whose captured vertex bytes equal the stored MMP bytes, and whose captured triangles all belong to that submesh, the four registers equal model × view × projection within 1.2 × 10⁻⁶. :observed[one frame]
 Those two draws use only part of the submesh's triangles in their index buffers. :observed[one frame]
+Of the 991 ranges, 987 use vertex programs whose bytes are also those of programs of other shader families, so a draw's program
+bytes do not identify its material or its permutation key. :observed[one frame]
 
 :::open[What do the 210 unmatched ranges draw?]
 In the captured frame, 210 ranges of the `env_base` program classes have no placement whose matrix fits the four registers. Whether they are objects placed by something other than the SCP, or the registers mean something else for them, is not established. :unknown

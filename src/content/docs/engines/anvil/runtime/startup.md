@@ -23,14 +23,31 @@ running game; addresses are virtual addresses of the build recorded on the [game
 The first world is therefore the menu world `Main_Menu`, the world of `DataPC_Main_Menu.forge`
 ([world roots](/engines/anvil/world/world-resource/)). :inferred[from the boot command line]
 
+### Imports
+
+The executable imports 368 Win32 functions from 18 DLLs, all `stdcall`, and its code sections call or jump through the import
+table at 6,075 places (`call` or `jmp dword ptr` with the operand an import slot); every one of the 368 slots is used. `kernel32`
+accounts for 211 imports and 5,291 of the places. The most called are `TlsGetValue` (2,186 places), `LeaveCriticalSection` (785),
+`EnterCriticalSection` (567), `GetCurrentThreadId` (218) and `GetLastError` (109). :observed[a scan of the executable's code
+sections for indirect calls through the import table]
+
 ## Graphics
 
 Graphics start from a registered boot task, not from the main function. The task checks for Shader Model 3, picks the
 display mode, creates the window (class `ScimitarEngineWindowClass`), initialises the graphics hardware and creates
 the engine's view surface. :observed
 
-The renderer is Direct3D 9: the task calls `Direct3DCreate9`, then `IDirect3D9::CreateDevice` from one of two call
-sites, one for a window and one for full screen, and keeps the device in a global (`0x1C555F0`). :observed
+The renderer is Direct3D 9. The `IDirect3D9` object is made on first use (`Direct3DCreate9(0x20)`) and kept in a global
+(`0x1C9B764`). `IDirect3D9::CreateDevice` is called from two sites: `0xBA90C8` makes a hardware (HAL) device with behaviour
+flags `0x46`, and `0xBA902C` a reference-rasterizer (REF) device with `0x42`. :observed The device is not in one global: a
+wrapper's constructor (`0xCAE9B0`) stores it at the wrapper's `+0`, the wrapper is at `+0` of a renderer, and the renderers are
+held in arrays at `0x1C9B750` and `0x1C9B768`, so the device is `[[0x1C9B768]]`. A second global, `0x1C555F0`, also holds a
+device, identified by how it is used. :observed The game calls Direct3D through the COM interface form (the interface pointer
+pushed last, the callee cleaning the stack), not `thiscall`. :observed
+
+Shader constants go through six uploaders, `0xC06CC0`, `0xC06D10`, `0xC06D60`, `0xC06DB0`, `0xC06E00` and `0xC06E50`, which are
+`SetVertexShaderConstantF`, `I` and `B` and `SetPixelShaderConstantF`, `I` and `B`; each works on a constant bank holding the
+device at `+0x10` and a cache flag at `+0xC`. :observed
 
 The frame is drawn by a function the graphics manager reaches through its vtable (`0xBDB260`): it brackets the scene
 with `BeginScene` and `EndScene`, presents through the device or a swap chain, and pumps the window messages

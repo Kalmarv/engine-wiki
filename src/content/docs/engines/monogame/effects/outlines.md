@@ -16,7 +16,8 @@ shell is pushed outwards by the thickness in the vertex shader, so the back face
 
 `DrawLevel.DrawWithOutline` redraws the level meshes with `CullCounterClockwise` and `ShaderRender.InverseHullOutlines = true`.
 The shader's vertex constants include `OutlineThicknessOn0Meters` and `OutlineThicknessOn3Meters`, `InverseHullOutlines` and
-`VertexShiftEnabled`; the thickness comes from settings that give 0.05 at 0 m and 2 at 3 m from the camera, so the outline grows
+`VertexShiftEnabled`; the thickness comes from settings that give 0.05 at 0 m and 2 at 3 m from the camera (the game multiplies both by a run-time
+scale each frame), so the outline grows
 with distance. :observed{games="stuntboost"}
 
 The outline colour is the surface colour times (0.30, 0.18, 0.15); the constant is in the compiled pixel shader.

@@ -74,12 +74,24 @@ system masks differ it returns without probing, and when they are equal it walks
 processor at a time with `SetProcessAffinityMask`, probes it, and restores the mask. :observed[static reading, and a boot under
 emulation with one processor]
 
-The engine uses fibers. A wrapper's constructor (`0xA1D1B0`) converts the calling thread with
-`ConvertThreadToFiber(NULL)` (`0xA1D1D7`) when its first argument is 0 and otherwise creates a fiber on the given function with
-`CreateFiber` (`0xA1D1F1`). The executable imports all five fiber functions, and `SwitchToFiber` is called from eight places
-(`0x9F29E3`, `0x9F3A45`, `0x9F3A98`, `0x9FBC83`, `0xA00D1F`, `0xA00E4B`, `0xA1D2BC` and `0x16B429C`). The boot reaches
-`ConvertThreadToFiber` right after the processor probe. :observed[static reading of the import references, and one boot under
-emulation]
+The engine uses fibers. A wrapper's constructor (`0xA1D1B0`) converts the calling thread with `ConvertThreadToFiber`
+(`0xA1D1D7`) when its first argument is 0 and otherwise creates a fiber with `CreateFiber` (`0xA1D1F1`); in both cases, and in a
+second, inlined constructor at `0xA1D24D`, the fiber's data is the wrapper object itself, not null. `CreateFiber` is given the
+start `0xA1C130` and a stack size read from the global `0x1B07838` (65,536 in the file; the code reads it in two places and
+writes it nowhere). The start loads its parameter, the wrapper, into `ECX` and jumps to `0xA1BF60`, a loop that calls
+`SwitchToFiber` through a cached pointer (`0xA1BFBB`). :observed[static reading of the executable and of its whole translated
+code]
+
+The executable imports all five fiber functions. `SwitchToFiber`'s import is referenced from eight places (`0x9F29E3`,
+`0x9F3A45`, `0x9F3A98`, `0x9FBC83`, `0xA00D1F`, `0xA00E4B`, `0xA1D2BC` and `0x16B429C`), the last of them an import jump thunk
+rather than a call. The boot reaches `ConvertThreadToFiber` right after the processor probe. :observed[static reading of the
+import references, and one boot under emulation] No instruction of the code sections addresses `fs:[0x10]`, the thread's fiber
+data, by a constant operand; an address computed at run time is not excluded. :observed[a byte-by-byte decode of every
+executable section]
+
+The executable's thread-local storage is small and has no callbacks: its TLS directory (RVA `0x161AD70`, 24 bytes) gives a
+136-byte template at `0x1CD3000` to `0x1CD3088`, all zero, no zero-fill, the index variable at `0x1CC3CC8` and a callback list at
+`0x18C583C` whose first entry is null. :observed[the executable's headers]
 
 The boot raises a software exception on purpose: `RaiseException` is called at `0x9FC145` inside a frame of the C runtime's
 `__except_handler3` (`0x1422D58`), whose scope table (`0x1A84558`) has a filter at `0x9FC14D` that returns −1
@@ -93,6 +105,30 @@ The executable is a GUI program (PE subsystem 2) with no console: the C runtime'
 `EnumSystemLocalesA` and compares their English and abbreviated language and country names (`LOCALE_SENGLANGUAGE`,
 `LOCALE_SENGCOUNTRY`, `LOCALE_SABBREVLANGNAME`, `LOCALE_SABBREVCTRYNAME`) with the one requested. :observed[static reading; these
 sites were not run]
+
+## Saves and background requests
+
+Saves are read and written by six synchronous functions: list the saves `0x9166F0`, read a save `0x9167D0`, write one
+`0x9168E0`, remove one `0x9169E0`, read the options `0x916AC0` and write them `0x916BC0`. Seven direct calls reach them, and
+no stored pointer names them. :observed[static reading: every `call` of the code sections and every absolute reference of every
+section]
+
+Requests to them run on a worker thread. A constructor (`0x11CC370`) creates the thread at `0x11CC3E1`, its entry `0x11CBAD0`
+and its parameter the request object. The worker (`0x11CAEB0`) carries out a request of type 4, the game options' listing of the
+saves, through `0x11CA450`, and then writes the state 3 into the request at `0x11CAFCE`. The waiting side (`0x11B8A00`) reads
+that state (the request's `+0x68`, at `0x11B8A12`) under the request's critical section (`+0x44`) and, once it is 3 and the
+result is a success, calls its listener's second virtual function (`0x11B8A7C`). The start-up listener (`0x11AFEB0`) clears
+its byte at `+0xC`. The start-up loop at `0x11CCADB` polls the byte at `+0x10` of an object whose `+4` it passes as that
+listener, the same byte, so start-up waits until the saves are listed. :observed[static reading]
+
+The listing goes `0x11CA450` → `0x9166F0` → `0x914CE0`, which queues it on a request manager read from the global `0x1C567CC`
+(its `+0xA0`). That manager is not the launcher-services (Ubisoft Orbit) object; the constructor `0x919400` assigns it.
+:observed[static reading] It is assigned in the launcher services' start-up, so a start-up without the launcher leaves the global
+null and the listing has no manager to queue on. :inferred[static reading]
+When the listing function returns false, its caller's list stays empty, the handler skips reading saves, sets the request's
+flag at `+0x6D` and returns 1, which completes the request as an empty listing. :observed[static reading] The options'
+listeners (`0x11B2A40`, `0x11B2A70`) report their own failures, `WriteOptionsFailed` (9) and `ReadOptionsFailed` (10), in place of
+the general mapping. :observed[static reading]
 
 ## Graphics
 

@@ -172,6 +172,19 @@ carries an animation id (`animId`) and an `offsetType` that says what the id is 
 | `SwordArtsCategory` | 0 | 413 |
 | `AnimIdOffset` | 10,965 | 69,138 |
 
+:only[elden-ring] The player's attack clips are chosen through the offset type. The clip's id is the offset plus `animId`, and the
+generator plays its child named `a%03d_%06d` from it; `AttackRightLight1_CMSG` is type 13 with id 30000 and `AttackBothLight1_CMSG`
+type 16 with 32000 in `c0000.hkb`. Type 13 takes the right hand's weapon, type 14 the left's, and type 16 the left's when the arm
+style is 2 (left weapon in both hands) and the right's otherwise. The offset is the weapon's `EquipParamWeapon` `wepmotionCategory`
+(byte `+0xE7` of the 664-byte row): if the row's `spAtk` (`u16` at `+0xEE`) is non-zero and `a{spAtk}_{animId}` exists, that clip
+plays; otherwise the category's, and if that does not exist `a023_` (right hand) or `a048_` (left). :observed[read from the code of
+2.7.2.0 and the graph file]{games="elden-ring"} The arm style is the first word of the character's equipment state, and the next
+words the active slot of each hand and of the arrows and bolts; the equipped item ids are interleaved, the right weapon at
+`2 × slot + 1` and the left at `2 × slot`. The save slot stores the same seven words (arm style, left, right, two arrows, two bolts).
+:observed[read from the code and one save]{games="elden-ring"} The behaviour script takes the style from `env(207)`, and R1 with a
+style of 2 or more goes to `W_AttackBothLight1`. :observed{games="elden-ring"} With the Uchigatana (category 29, `spAtk` 0) held in
+both hands (style 3), the game plays `a029_032000`, by joint positions matched to 0.0 cm. :observed[one run]{games="elden-ring"}
+
 A clip generator (`hkbClipGenerator`) names its animation by the stem of an animation file (`a000_003000`) in
 `animationName`, and plays it single (`MODE_SINGLE_PLAY`: 12,864 in Sekiro, 129,951 in Elden Ring) or looping
 (`MODE_LOOPING`: 3,688 and 40,023); no other mode occurs. :proven{games="sekiro elden-ring"}
@@ -288,6 +301,31 @@ none). The standing forward jump's transitions are `W_NewJump` (0.5 s, from `Mas
 fraction, self-transition mode and event mode 0, alignment bone −1 and no variable bindings. The jump and landing clips are
 chosen by weapon style, as the idle is: `Jump_F_Direction_Front_CMSG` holds `a000`, `a002`, `a003`, `a010` and `a012` to `a016`
 `_202020`, and `Jump_Land_N_NormalHeight` the same styles' `_202100`. :observed{games="elden-ring"}
+
+:only[elden-ring] Those stored durations are not what the game blends with when the walk reaches a clip. Activating a
+`CustomTransitionEffect` walks from the generator transitioned to through its active child (not its first) down to a clip, and looks
+up that clip's [TimeAct](/engines/fromsoft/animation/tae/) event of type 16: the duration becomes that event's end time. The
+loader replaces the event's stored offsets with its start and end as `f32` at the header's `+0` and `+8`, equal to the file's in all
+222 events of 7 clips. When the walk reaches no clip the authored duration is used, floored at 0.05 s; when it reaches a clip without
+the event, the authored value from before the floor. :observed[read from the code of 1.17.3, and 18 activations in a running game]{games="elden-ring"}
+The durations in those 18 activations: :observed[18 activations]{games="elden-ring"}
+
+| Transition | Clip reached | Duration (s) |
+|---|---|---|
+| `W_Jump_N` (a standing jump; not `W_NewJump`) | `Jump_NN_CMSG`, `a010_202000` | 0.2 |
+| `W_Jump_Land_N` | `a010_202100` | 0.1333 |
+| `W_Jump_F` (a running jump) | `Jump_F_Direction_Front_CMSG`, `a010_202020` | 0.2 |
+| `W_Jump_Loop` | `a010_202040` | 0.2667 |
+| `DefaultTransition`, landing into a run | `a010_202115` | 0.1333 |
+| `DefaultTransition_Continue_IgnoreFrom`, back to idle | `a010_000000` | 0.3333 (authored 0) |
+
+A clip whose event starts before 0 (`a000_004020`: −1/30 to 0.3) takes its end, 0.3, not its length. :observed{games="elden-ring"}
+The duration found is not written back to the effect's stored duration (`+0xB8`), which reads 0.5 at every `W_Jump_N` activation.
+The effects that run are per-activation instances, not the graph's template effects: in the 18 activations the effect passed to the
+lookup sat at 17 heap addresses, none of them among the 84 effects (57 names) found by their virtual table, and one address held
+`W_Jump_N` in one activation and `DefaultTransition_Continue_IgnoreFrom` in a later one, so the memory is reused.
+:observed[18 activations of the player's graph]{games="elden-ring"} Whether some activation reaches no clip was not observed.
+:unknown{games="elden-ring"}
 
 ## Corroboration by an independent reader
 

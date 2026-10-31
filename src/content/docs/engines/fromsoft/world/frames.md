@@ -81,7 +81,22 @@ and its flag bytes `+0x90` to `+0x93` read 0, 0, 1, 1 against 0, 1, 0, 0 on the 
 position. :observed[one run]{games="elden-ring"} Writing the player's `+0x70` and `+0x80` with another standing point of the same
 frame moves the character there: the value reads back unchanged 0.5 s and 12 s later and the character does not fall.
 :observed[one run, two points]{games="elden-ring"} The owner's `+0x398` points at an object whose `+0x50` and `+0x60` point at two
-arrays of 150 `hkQsTransform` records, the pose, in both `PlayerIns` objects checked. :observed{games="elden-ring"}
+arrays of 150 `hkQsTransform` records, the pose, in both `PlayerIns` objects checked. :observed{games="elden-ring"} The records at
+`+0x60` (translation, rotation and scale, 16 bytes each) are in the Havok skeleton's bone order and in model space, not local: for
+the `c0000` skeleton's parents, `t_child − t_parent = q_parent (s_parent × rest offset)` to 0.0000 m on the legs, spine and fingers,
+the root's rotation is the identity, and the translation's fourth word is not a coordinate. :observed[one idle sample]{games="elden-ring"}
+Their rotations differ from the skeleton's bone frames by a twist about each bone's own axis, which no position shows: local
+rotations derived from them as `conj(q_parent) q_child` match none of the 7,953 `c0000` clips (43° mean at best) and turn the knee
+and elbow bends over, while the distances between joints match the clip `a029_032000` to 0.0 cm. :observed[one sample against
+every `c0000` clip]{games="elden-ring"} So this pose is compared with clips by its joint positions. :inferred{games="elden-ring"}
+
+The game also keeps the collision the player stands on. The local player (`WorldChrMan`'s `+0x1E508`) holds a floor handle at
+`+0x2C8`; the hit instance with that handle at its `+8` holds a layout reader at `+0x70` and a part index at `+0x80` (a signed
+short), and the reader's table of parts of kind 5 (collision parts, 16-byte entries at `+0x698 + 5 × 16`) gives the part with that
+index, whose name pointer is first. At the Stormveil main gate the handle read `0x0A00000000000004` and the chain gave index 4,
+`h001300`, the collision under the spawn. :observed[read from the code, one live reading of 1.17.3]{games="elden-ring"} This is
+the floor under the character, not a part chosen by distance or by the camera. :inferred{games="elden-ring"} The overworld's
+floor lookup goes through a separate tree, read in the code but not checked live. :unknown{games="elden-ring"}
 
 ### The physics and render frames
 
@@ -105,7 +120,28 @@ In the scene constants (`cbSceneParam`, `b8`) the camera position is at byte 48,
 projection at 256 and the camera-to-world rows at 320; the asset and map-piece G-buffer programs take a draw's instance
 matrices from `b5`, 3 × 4 row-major with a stride of 48 bytes, as many as the draw's instance count. With the stock offset, the
 instance matrices of 40 G-buffer draws at the Stormveil gate put every resolved placement on its layout part to under 1 cm.
-:observed[40 draws of one recording]{games="elden-ring"}
+:observed[40 draws of one recording]{games="elden-ring"} The camera-to-world rows (bytes 320 to 367) are three rows of four,
+row-major, their translation the camera's position, and the view's forward is their third column (view +z): a render from that
+eye along that axis at the projection's 48° frames the scene as the game's picture does. :observed[two recordings at the Stormveil
+gate]{games="elden-ring"}
+
+### World block offsets
+
+Each world block holds its offset as a vector at `+0x70` (the setter writes x, y, z and a w of 0; a shift adds to it), and the
+spawn matrix of the block's effects is the region's matrix times a translation by it ([wind regions](/engines/fromsoft/world/msb/#wind-regions-type-6)).
+In a recording at the Stormveil gate the block's offset was (88, −16, −16), the negation of the start offset above.
+:observed[read from the code of 1.17.3, one recording]{games="elden-ring"}
+
+The offsets are kept by `CS::WorldGridAreaInfo`, which holds the area number (`+0x0C`), the current grid cell x and z (`+0x44`,
+`+0x48`), a base cell (`+0x50`), a base offset (`+0x5C`), the cell size (`+0x64`), the accumulated shift (`+0x6C` to `+0x74`), a
+distance threshold (`+0x78`, also read at 0.9 and 0.99 times), a block placed by the grid (`+0x80`) and trees of the world
+blocks (`+0x90`) and of other entries that shift with them (`+0xC8`). Its set-up takes cells from a packed map id (area = id >> 24,
+x = byte 2, z = byte 1, and a level from the low byte's high nibble for areas 50 to 88) and gives the placed block
+`(cells − base) × size + base offset + shift`. Its shift (virtual slot 10) adds a delta to every block's offset, every entry and
+the accumulated shift, then wraps the shift's x and z into `[−size / 2, size / 2]`, stepping the cell counters.
+A block that registers takes its offset from a table of 16-byte entries `{id, vec3}` keyed by its id: the entry's vector minus an
+object's position. :observed[read from the code of 1.17.3]{games="elden-ring"} Who calls the shift, and where that table comes
+from, are not found in the code; so the 8 m truncation above is not yet seen in it. :unknown{games="elden-ring"}
 
 Since the offset belongs to the run, a recorded frame's camera and lights need that run's offset before they can be compared
 with the map. Three things in a run's own data give it: physics modules standing on at least three distinct layout Player or

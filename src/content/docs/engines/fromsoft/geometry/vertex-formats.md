@@ -94,6 +94,16 @@ four-lane input directly. :sourced[SoulsFormatsNEXT]
 Repeated UV attributes follow stream order; tangent semantic indices can be sparse, so their index is not necessarily
 their position in an array. :observed
 
+A colour member is `COLOR0` or `COLOR1` by its semantic index (the member's word at `+16`), not by its position among the
+colours. :observed{games="elden-ring"} Most of Stormveil's map meshes store a single colour member and give it index 1: in
+`m10_00_00_00`'s map piece `m002002`, 18 of 19 meshes do, with the value (1, 0, 0, 1) at every vertex, and `m10_00_046` is the one
+that stores both 0 and 1. :observed[every mesh of that map piece]{games="elden-ring"} `M[AMSN_V]_Gbuf`'s vertex program reads
+`COLOR1` and no `COLOR0`. :observed{games="elden-ring"} A reader that takes the first stored colour as `COLOR0` leaves that
+program's `COLOR1` unset; with a zero colour there, the courtyard's floor slabs (`m002002` and `m002012`) draw black.
+:observed[a reimplementation of the program, the Stormveil gate]{games="elden-ring"} Over the meshes of a region of Stormveil the
+programs' colour reads find `COLOR1` stored 2,260 times and `COLOR0` 78 times, with none missing.
+:observed[one region of `m10_00_00_00`]{games="elden-ring"}
+
 A UV set the vertex program reads is not necessarily one the draw uses. :only[sekiro] In the Wolf's default head and
 the twelve Sekiro material variants (three distinct pixel programs) whose vertex programs compute outputs from the
 third UV set, no pixel output lane (240 in all) and no discard depends on it: the pixel programs do not read the

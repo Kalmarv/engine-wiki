@@ -264,6 +264,45 @@ and every tenth file; properties are compared by function, loop, keyframes, tang
 multipliers the project scales, are compared separately; the one Sekiro file the project refuses is left out).
 :observed[1,580 of the 15,068 files]
 
+### WindForce
+
+:only[elden-ring] A `WindForce` action (10300) becomes a force field in the running game, a `GXVfxDynamicForceField`, which
+pushes cloth ([wind on cloth](/engines/fromsoft/collision/cloth/#wind)). Every one of the 106 `WindForce` actions of the 12,155
+extracted effect files has 61 words in its first list. :observed{games="elden-ring"} The game's builder copies them into the
+field as follows; the meanings are the code's use of each, and the names in brackets are the field's members:
+:observed[read from the code of 1.17.3]{games="elden-ring"}
+
+| Words | Meaning |
+|---|---|
+| 0 | shape type (2 a box) |
+| 2 to 4 | the box's extents, kept as its minimum and maximum corners |
+| 26, 27 | fall-off on (non-zero), fall-off radius |
+| 30 | local (non-zero) |
+| 31 | the field's kind |
+| 38, 39 | the force multiplier's minimum and maximum (and their mean) |
+| 40, 41 | wave length, wave offset |
+| 46 | weight |
+| 53 | a frame count, converted to seconds |
+| 54 to 57 | gust, its length, scale and offset |
+| 58 to 60 | rise, fall and rest |
+
+Words 28, 32, 33, 42, 45, 47 to 52 are also copied, their use not read. :unknown{games="elden-ring"} Six of the 106 actions (in the
+files 800803, 808003, 808004 and 808007) equal the running field of one recording at every member the force reads; they differ
+only in the box's extents. :observed[one recording]{games="elden-ring"}
+
+Each frame the field's appearance sets the force's minimum, maximum and mean to words 38 and 39 times the action's `force` property
+times the effect's scale, and the field's own update advances a clock `c` by 10 × `dt` and, for field kinds 2 and 4, sets
+`s = 2 × fbm(0.01c, 0.06c + 400, 0.01c + 150)`, a four-octave improved Perlin noise (frequency × 0.7 and amplitude from 0.5, × 0.54
+per octave) over Ken Perlin's reference permutation (all 512 bytes compared). The force's amplitude is `mean + s × (max − min) / 2`.
+No random number is drawn for it: the field takes three draws of the effect system's generator at creation, which nothing of the
+force reads. :observed[read from the code of 1.17.3]{games="elden-ring"} The field's direction is the third row of its transform,
+`(sin r, 0, cos r)` with `r` the region's turn in radians, bit for bit the running field's. Its origin, set once when it is created,
+is the box's centre (the region's position plus the block offset plus half the box's height); the force uses only the origin's x and
+z, through `dir.x × dx + dir.z × dz`. :observed[one recording]{games="elden-ring"} A reimplementation of the force gives the game's
+in all 1,499 calls of one recording with the running field's origin, and in 690 with the box's centre computed from the layout,
+whose x differs from it by 2⁻¹⁹.
+:observed[one recording]{games="elden-ring"}
+
 ## Nodes, configs and slots
 
 Every node of both installs is one of five kinds and holds a fixed set of actions of its own; the ids and kind names are the

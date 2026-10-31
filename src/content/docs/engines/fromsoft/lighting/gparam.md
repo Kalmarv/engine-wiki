@@ -322,6 +322,35 @@ community file list]{games="sekiro"}
 Elden Ring's full `Tone Map[Yebis]` group is in 77 of the `m00_00_<id>_weatheroutdoor` files and 2 `commonevent` files;
 `weatherbase` holds only the wet group. :observed{games="elden-ring"}
 
+### Banks and layers
+
+The executable holds the loaded draw-parameter files in numbered banks, one per layer, and merges them per field.
+
+:only[sekiro] A table of 18 special names (16-byte entries) and a table of 18 bank keys beside it give `default` (name 1) bank 1,
+`MapBase` (6) bank 4, `m00_00_0000` (7) bank 5, `MapOverride_0000` (8) bank 10 and `MapOverride_forRemo` (9) bank 11; only for
+name 7 does the key take a sub-index 0 to 4 added to it. A file is loaded by formatting `gparam:/%s.gparam`, and the map loader
+requests name 6, `MapBase`. A tone-map lookup takes the record of the requested bank and value ID, else bank 1's value 0, else
+a record built into the editor. :observed[the name and key tables of the executable and the decrypted code]{games="sekiro"} That
+gives the banks' identities, not their precedence. :unknown{games="sekiro"}
+
+:only[elden-ring] The layer kinds have bank bases: kind 6 has base 5, so `WeatherBase` (kind 6, sub-kind 6) is bank 11 and
+`WeatherOutdoor` (sub-kind 7) bank 12. The controller holds 21 weights, one per bank, each checked to be in [0, 1] and stored in
+its bank's record. The merge walks the banks from 20 down to 0. For each field it finds the field's group and value ID in the
+bank, skips a value that is absent or inactive, and takes the bank's weight (the record's weight times this one, in `f32`),
+capped at what the field has left; what is left carries to the lower banks. A float is converted to `f64`, multiplied by its
+weight, converted back and added to an `f32` sum. :observed[read from the decrypted code of 2.7.2.0]{games="elden-ring"} So a
+higher bank at full weight hides the banks below it for the fields it holds. :inferred{games="elden-ring"} Which loader fills
+which bank, beyond the two weather layers, is not traced. :unknown{games="elden-ring"}
+
+:only[elden-ring] The `WeatherBase` layer's weight is a wetness that ramps. A weather row's `WetTime` (`f32` at `+0x10`), when
+positive, gives a rate `1 / WetTime`; each update adds the elapsed time times that rate to the wetness, up to 1, and with a
+`WetTime` of 0 or less the wetness falls at a separate rate, down to 0. An elapsed time of zero snaps to the end. That wetness is
+the weight of bank 11. :observed[read from the decrypted code of 2.7.2.0]{games="elden-ring"} So the wet group of `weatherbase`
+fades in over the weather's `WetTime` and out after it, rather than following the current weather at once. :inferred{games="elden-ring"}
+The weather object holds the current `WeatherParam` row as a reference at `+0x30`: the signed row ID, then a pointer to the row's
+68 bytes at `+0x38`. In one memory snapshot it read row 0 while the word at `+0x28` read 10, so `+0x28` is not the current row.
+:observed[the decrypted code and one snapshot]{games="elden-ring"}
+
 ## From the light set to the lighting constants
 
 The deferred sun program `GXLightAcc_DDirLightShadowed1` reads the light set from the constant buffer `cbLight`, field

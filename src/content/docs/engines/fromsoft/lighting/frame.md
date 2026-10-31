@@ -5,6 +5,9 @@ sources:
   - title: Paramdex
     url: https://github.com/soulsmods/Paramdex
     note: the field names and types of WEATHER_ASSET_CREATE_PARAM_ST
+  - title: SoulsFormats
+    url: https://github.com/JKAnderson/SoulsFormats
+    note: the names of the environment-map box's type-data words (UnkT08 and on)
 ---
 
 Both games draw a frame the same way: shadow maps, a G-buffer of the scene's opaque surfaces, screen-space passes over
@@ -175,6 +178,87 @@ the dot product of a coefficient row with `(n, 1)`, clamps it at 0 and multiplie
 diffuse colour scale (1) and does not read `g_envMapColorScale`, and it samples the volumes trilinearly at level 0, clamped,
 at a position offset along the normal. :observed[the program's disassembly]{games="sekiro"}
 
+### Environment-map regions
+
+Each `EnvironmentMapEffectBox` region of a layout is one box draw of a `GXEnvMapRegion` program, which adds the region's
+diffuse and specular light. In one recorded frame of `m11_01` at 18:00 (61 region draws, each matched to its box by
+`g_envMapDrawAreaExtents` and the translation of `g_envMapWorld`, the box's position plus half its height) the programs were
+`[Box][DiffSpc]` 42 times, `[Box][DiffSpcPcc]` 9, `[Stencil]` 5, `[Box][Diff]` 3 and `[Box][SpcPcc]` 2. :observed[one frame]{games="sekiro"}
+
+The box's type data chooses the program and supplies its constants. The names are SoulsFormats' for the type data's words.
+:observed[61 region draws of one frame]{games="sekiro"}
+
+| Type data | Use | Confidence |
+|---|---|---|
+| `UnkT08` | 1: parallax-corrected specular (the `Pcc` programs); 1 on all 11 `Pcc` draws, 0 on the other 50 | :observed{games="sekiro"} |
+| `UnkT09` | 90 on the reflection boxes below; the region's priority | :inferred{games="sekiro"} |
+| `UnkT24` (`i32` at `0x24`) | 0 diffuse and specular (`[DiffSpc]`, `[DiffSpcPcc]`, `[Stencil]`), 1 diffuse only (`[Diff]`), 2 specular only (`[SpcPcc]`): 56, 3 and 2 draws | :observed{games="sekiro"} |
+| `UnkT28` (`f32` at `0x28`) | `g_envMapDiffuseColorScale`, bit for bit on 61 of 61 draws | :observed{games="sekiro"} |
+| `UnkT2C` (`f32` at `0x2C`) | `g_envMapColorScale`, the specular cube's scale, bit for bit on the 58 draws whose program reads it | :observed{games="sekiro"} |
+
+The three diffuse-only draws are each map's whole-map box `Env_Box000`, and the two specular-only ones `m11_01`'s and `m11_00`'s
+`Env_Box900`. `m11_01`'s boxes 900 to 917, named `映りこみ用` ("for reflections"), have priority 90 and `UnkT08` 1, and
+`m11_00` and `m11_02` have one each. :observed{games="sekiro"} `m11_01`'s `Env_Box902` stores 258 (`0x102`) in `UnkT24`. :observed{games="sekiro"}
+For a parallax-corrected region, `g_envMapMatPccObb` is the box itself (`g_envMapWorld`) on all 11 draws, and
+`g_envMapRegionPccOrigin` (`cb3` byte 288) is the position of the environment point of the same number (`Env_Point<id>`) bit for
+bit on all 7 of `m11_01`'s. :observed[one frame]{games="sekiro"} `g_envMapInterpRatio` is 0 on every draw, and `g_envMapFadeRate`
+1.0 on 59 (0.468 and 0.324 on the others). :observed[one frame]{games="sekiro"}
+
+The region's specular cube (`t25`) is `<map>_GILM<id>_<package>` in the same environment package as its irradiance volumes: a
+BC6H_UF16 (DXGI 95) cube of 128 × 128 with 7 levels, one per coefficient group. Package `_03` of `m11_01` holds 116, their ids
+those of its 116 `GIIV` groups one for one; every package of `m11_00` (1 to 5) holds 55 and every one of `m11_02` 20.
+:observed[the packages listed with an independent reader]{games="sekiro"} All 61 draws bind such a cube at `t25`. :observed[one frame]{games="sekiro"}
+
+The program, by its disassembly: :observed[the programs' disassembly]{games="sekiro"}
+
+- It writes specular to `o0` and diffuse to `o1`, both with one alpha. With `local = g_envMapInvWorld × P` and
+  `edge = min((1 − |local|) × g_envMapDrawAreaExtents)`, a pixel with `edge < 0` writes 0 with alpha 0; otherwise
+  `alpha = smoothstep(saturate(edge × g_envMapInvFadeDistance)) × g_envMapFadeRate`.
+- The reflection is `r = 2(n·v)n − v`, `v` the unit vector to the eye and `n` the G-buffer normal (`× 2 − 1`, normalised).
+- A `Pcc` program moves the ray into the unit box (`q = g_envMapMatInvPccObb × P`, `d` its rotation of `r`), takes per axis
+  `|(1 − q) / d|` where `d > 0`, `|(1 + q) / d|` where `d < 0` and 5,000 otherwise, the least of these `t`, and the exit point
+  `q + t d`. If any coordinate of the exit lies outside `±(1 + 1e-4 t)` the specular is 0 (the alpha stays); otherwise the cube is
+  sampled along `g_envMapMatPccObb × exit − g_envMapRegionPccOrigin`. The other programs sample along `r`.
+- The cube is sampled (`SS_WrapLinear`) at level `min(6.5 − 6.5 × gloss, 6)`, `gloss` being `g_GBuffer1.x` (`t3`). `o0` is the
+  texel times `g_envMapColorScale` times the pre-exposure (`cb8[62].z`); `o1` is the volumes' irradiance times
+  `g_envMapDiffuseColorScale` times the pre-exposure.
+
+`GXLightDeferredAOWithSsr` then applies ambient occlusion and the ambient BRDF: :observed[the program's disassembly]{games="sekiro"}
+
+- `AO = t32.x × t32.y` (`g_ShadowTexture`), and the diffuse out is `AO` times the diffuse sum.
+- `(A, B)` is `g_AmbientBRDFTexture` (`t39`) `.rg`, sampled `SS_ClampLinear` at (`min(|n·v|, 1)`, `gloss`) with `n` in view space,
+  and `envBRDF = GBuffer3.rgb² × A + B` (`t5`).
+- The specular sum (`t7`) times `envBRDF` is blended with the screen-space reflections (`t44`, sampled at level
+  `5 × saturate((1 − gloss) × cb0[20].w + cb0[21].x)`) by `k = min(saturate(max(f0) × 10 − cb0[20].z), depth fade)`:
+  `AO × (spec × (1 − k × ssr.a) + envBRDF × ssr.rgb × k)`.
+
+`GXLightComposite` adds that to the diffuse light times the albedo. :observed[the program's disassembly]{games="sekiro"}
+
+The ambient BRDF table is data of the executable, not of a texture file. The renderer's setting `AmbientBRDF LUT` (`LUT Type`)
+names five tables, `R8G8_OLD_256`, `R8G8_UE4_128`, `R8G8_UE4_256`, `R8G8_UE4_512` and `R16G16_UE4_256`, and each has a loader that
+copies its table out of `.rdata` into a new texture. `R16G16_UE4_256` is 0x40000 bytes at VA `0x143114D30` of the 1.06 executable
+(SHA-256 `637aca52…8b856`; file offset `0x3114130`, the section being stored unencrypted), a 256 × 256 `R16G16_UNORM` texture
+with a row pitch of 1,024; the table's SHA-256 is `aebecda11cf0543a67b87c1585dff816226e33e46653983cbb46cc945ef532fb`. The
+renderer's set-up creates all five and makes `R16G16_UE4_256` the current one whenever it exists, and the setting is bound to that
+same pointer, so only the parameter editor changes it. :observed[read from the decrypted code and the executable file]{games="sekiro"}
+All three recorded frames bind a format-35 (`R16G16_UNORM`) texture at `t39`, the only R16G16 type. :observed[three frames]{games="sekiro"}
+That the bound texels are that table's bytes is not yet read back from the running game. :inferred{games="sekiro"}
+
+### Tone curve
+
+`ToneMap_WriteReinhardExToneMappingTablePS` writes the tone curve as a 1024 × 1 R16F table. At texel `i`, with
+`u = (i + 0.5) / 1024`, it computes `z = (0.2 × u / (1 − u) × g_ReinhardParam.y) ^ g_ReinhardParam.x` and writes
+`(z / (1 + z)) ^ (1 / g_ToneMapParam.y)`. :observed[the program's disassembly]{games="sekiro"} The same operations in the same
+order, rounded to `f16` where the program narrows, give all 1,024 stored half-words of a recorded frame's table bit for bit,
+with the frame's constants: contrast 1.45, white balance 1.7 and gamma 1. :observed[one frame at the Ashina Castle gate]{games="sekiro"}
+`ToneMap_TabledToneMapLUTPS` multiplies the scene by the scene exposure, adds the bloom, reads the curve at `x / (x + 0.2)`,
+then applies a colour matrix and the vignette and looks up the 16³ grading table. :observed[the program's disassembly]{games="sekiro"}
+
+Of the 253 draw-parameter files of the install, which hold 151 Reinhard fields, `mapbase.gparam.dcx` stores `ReinhardContrast`
+1.45 and `ReinhardWhiteBalance` 1.7, the recorded frame's values; `default.gparam` stores 1.6 and 1.7, and `m11_01_0000` neither.
+:observed[every installed draw-parameter file]{games="sekiro"} So the frame's curve takes the `MapBase` layer's values there.
+:inferred{games="sekiro"} How the [banks](/engines/fromsoft/lighting/gparam/#banks-and-layers) take precedence is not traced.
+
 ### Volumetric fog
 
 `GXVolumetricFog_SolveVolumetricFog` runs as 15 × 9 × 1 groups of 8 × 8 × 1 threads. It integrates the 16 slices of
@@ -226,7 +310,9 @@ them (weather 0: the clear skysphere `aeg096_010` with its clouds and the Erdtre
 four `CreateAssetLimitId`s, and lists up to 8 asset ids, `AEGnnn_mmm` being the number `nnn * 1000 + mmm`; no key repeats, and
 every asset a row names is placed by its sky map's layout, over all 18 sky maps of the base game.
 :observed[every row, and the 935 layouts of the base game]{games="elden-ring"} `isFireAsh` is 0 or 1 in the base game's rows
-and 2 only on the expansion's maps (`m20`, `m21`, `m28`, `m61`). :observed{games="elden-ring"} A row with limits applies only on
+and 2 only on the expansion's maps (`m20`, `m21`, `m28`, `m61`). :observed{games="elden-ring"} The code that applies the rows
+takes 2 as either: it skips a row whose `isFireAsh` (byte 8) is 0 or 1 and does not equal the game's current ash state, a byte of
+a world-state object (`+0xBCD`; 0 when the object is absent). :observed[read from the decrypted code of 2.7.2.0]{games="elden-ring"} A row with limits applies only on
 maps whose `MapDefaultInfoParam` row (its id the map's 8-digit number) has a `WeatherCreateAssetLimitId` among them: the open
 world's tiles hold 0 to 4, 21, 31, 41 and 42 in the base game and 50 to 75 in the expansion, the legacy dungeons −1; every row of
 `m60` has limits and no row of a legacy map has. :observed{games="elden-ring"}
@@ -299,6 +385,22 @@ The GPU measures the frame first: :observed[the DXIL of the four programs, with 
 4. `ToneMap_AdaptedLuminancePS` forms `target = s.x / s.y − g_AdaptParam.x` and `adapted = prev + (target − prev)(1 − 10^−rate)`,
    the rate `g_AdaptParam.y` when the target is above the previous value and `.z` otherwise, and writes
    `(adapted, 2^−(adapted − 20))`. A still frame converges to `adapted = target`.
+
+Read back from one frame (all six draws of the chain, the Stormveil gate, one GPU): the down-sample matches a 2 × 2 mean to
+within 0.97 of an R11G11B10F step, each scale level is the exact 4 × 4 mean (to 1e-7 relative) and the adapted value the rule
+above to 5e-7, with a rate times `T` of 0.005183 that frame. :observed[one frame]{games="elden-ring"} The shipped
+`ToneMap_ColorToLuminancePS`, run outside the game on Direct3D 12 on the same GPU and driver with the root signature of its own
+`RTS0` part and the frame's constants, vertex buffer and source texture, reproduces all 4,096 cells of the 64 × 64 target, both
+words, bit for bit. :proven[the shipped program run on one frame's inputs]{games="elden-ring"}
+
+The formula computed exactly does not: its cells are all above the game's, by 2.2e-4 in `log2` per sample on average, at every
+brightness, and the metered value differs by 2e-4 stops (−6.838357 in the game). The difference comes from the texture unit's
+bilinear filter, which on that GPU differs from the exact blend of the stored texels by up to 2⁻¹¹ relative per channel; the same
+operations with the hardware's sample reproduce the game's cells (`w` 4,096 of 4,096, `x` 3,949, the rest within 3 ulp). The
+GPU's `log2` is not correctly rounded (1 ulp off on 122,104 of 196,608 arguments), and the driver may reorder the per-sample
+dot product and the loop it compiles, which moves single cells by an ulp; the 4 × 4 means absorb these, so the 1 × 1 result is
+the game's in both words. :observed[one frame, one GPU]{games="elden-ring"} So the meter's last digits depend on the GPU, not
+only on the program. :inferred{games="elden-ring"}
 
 `g_AdaptParam` is (`AutoExposure Middle Gray`, the light adaptation speed × `T`, the dark adaptation speed × `T`, 0), `T` a
 per-frame value that is 0 while the game is paused and 1/30 by default; in recorded frames it ranges from 0.025 to 1.28 with

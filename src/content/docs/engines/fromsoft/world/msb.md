@@ -334,6 +334,23 @@ fields:
 
 Every SFX region of both installs has a flag byte of 0 or 1 and, in Elden Ring, zero bytes after it in its word. :proven[every region of type 5 of both installs]
 
+### Wind regions (type 6)
+
+A WindSFX region's type data also starts with an effect id, of an effect whose action is a `WindForce`
+([parameters](/engines/fromsoft/effects/fxr-actions/#windforce)); the Stormveil region `【GD_環境風_突風12-5m】_808003_1001`
+(a box 120.307 × 110.863 × 72.456, turned 36.404° about y) stores `[808003, 289, −1.0]`. :observed{games="elden-ring"}
+
+:only[elden-ring] The game builds the wind regions with the SFX regions when a world block is set up, and every frame spawns
+or removes their effects by a global flag, a 256-bit mask and two enable bits, with no test of the player's position.
+:observed[read from the code of 1.17.3]{games="elden-ring"} A loaded region keeps the file's record layout, with its offsets
+turned into pointers and its rotation into radians, `f32(degrees) × f32(π / 180)` (`0x3C8EFA35`). The region's matrix is the
+rotation (from the C runtime's `sinf` and `cosf` of those radians) times the translation to its position; the effect is spawned at
+that matrix times the world block's offset ([frames](/engines/fromsoft/world/frames/#world-block-offsets)). A box region's
+area has the same rows, scaled by half its width, height and depth (the box's third value being the height), and its centre is
+the spawn position plus half the height in y. :observed[the game's own code run from a memory image of 1.17.3, one region]{games="elden-ring"}
+With the block offset (88, −16, −16), the spawn matrix equals the running force field's transform bit for bit, and the box centre's
+y the field origin's y. :observed[one region, one recording]{games="elden-ring"}
+
 Shape variants include points, circles, spheres, cylinders, rectangles,
 boxes and composites; a shape and a region's purpose are different fields. :sourced[SoulsFormatsNEXT]
 

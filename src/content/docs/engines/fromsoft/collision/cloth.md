@@ -334,9 +334,56 @@ where the recorded angular velocity is 0, so it does not come from integrating t
 notify are already those of the next frame, and the notify itself leaves them unchanged (638 of 638). :observed[one recording of a
 standing jump]{games="elden-ring"} With these collidables a replay of the particle step gives the game's positions bit for bit in
 604 of the 639 steps; 24 of the 35 that differ fall while the rope touches the capsules, and the other 11 are small.
-:observed[one recording]{games="elden-ring"} What the replay still misses in contact is not established.
+:observed[one recording]{games="elden-ring"}
+
+The capsules act on the rope although every one of its particles has the mask 0. Their shapes run from (0, 0.75, 0) to
+(0, −0.45, 0) in their own frame, with radii 0.07 to 0.35 and 0.21 to 0.70 (the small end at y 0.75), and a capture stores their
+transforms row-major with the translation in the last row. Measured as the exact distance to each tapered hull (two end spheres and
+the cone tangent to them), the game's particles after a step are never inside a capsule, 0 of 14,990 particle-steps in a 1,499-step
+recording after a jump and none in the 639-step standing jump, and lie on a hull to ±2 µm in 41 and 49 particle-steps. A replay of
+each step from the game's state without collision, otherwise bit for bit, puts exactly those particles inside, up to 4.6 cm, and
+no other. :observed[two recordings]{games="elden-ring"} Against the capsules where they were before the step, 10 of the game's
+particles would be inside, so the collision uses the collidables after they are moved. :observed[one recording]{games="elden-ring"}
+How the game makes these run-time collidables apply to particles whose mask is 0 is not read from the code. :unknown{games="elden-ring"}
 
 :::open[Where is the spear's collidable origin?]
 The rotation of the spear's collidables is the storage dummy 40's turned about z, but their origin is 5.4 cm from dummy 38 and
 matches neither dummy.
+:::
+
+### Wind
+
+The cloth action pushes the cloth with the wind. On the player's rear rope at Stormveil it adds a horizontal force of about 5 to
+10 N to each particle (mass 0.625) every step, towards about (3, 0, 4) in the world. Without it a simulation of the standing
+character differs from the game by about 11 cm; with the forces the action recorded, a free run from the game's state, time steps
+and bones gives the game's positions bit for bit for 47 steps, and within 0.05 mm while the character stands.
+:observed[one recording]{games="elden-ring"}
+
+The forces come from the effect system's force fields ([WindForce](/engines/fromsoft/effects/fxr-actions/#windforce)), each the
+effect of a [wind region](/engines/fromsoft/world/msb/#wind-regions-type-6) of the map: at Stormveil the region
+`_808003_1001` of `m10_00_00_00`, whose effect `f000808003` runs a `WindForce`. :observed[one recording]{games="elden-ring"}
+The action finds them through handles, not by walking the fields: :observed[read from the code of 1.17.3]{games="elden-ring"}
+
+1. It looks the sim cloth up in a registry of cloth owners (a vector of lists, each a vector of members whose object holds sims at
+   `+0x40`, their count at `+0x48`); the first member that holds the sim gives its handle (`+0x68`, −1 none), and without one the
+   action does nothing.
+2. It queries the force fields for the sim's bounding box with that handle, and reads back a list of field handles, walked in order.
+3. Each field handle (only its low 32 bits index) gives a registry entry whose state (`+0x40`) is active when 2, and whose
+   `+0x48` is the `GXVfxDynamicForceField`; the force's weight and the rest are read through that field's virtual functions.
+
+### The skin operator
+
+`hclObjectSpaceSkinPNOperator` skins the pinned particles with this arithmetic, which equals Havok Cloth's: each bone's composite
+column is `(B.c0 × x + B.c1 × y) + B.c2 × z` and its translation `((B.c0 × x + B.c3) + B.c1 × y) + B.c2 × z`; a weight byte is
+multiplied by `0x3B808081` (1/255); a packed local position is `f32(word << 16) × f32bits(word3 << 16)`; the blend adds `M × w` in
+bone order; and a point is `((c0 × x + c3) + c1 × y) + c2 × z`. Its transform set is the instance's `+0x30` indexed by the
+operator's `+0x6C`. :observed[read from the code of 1.17.3]{games="elden-ring"} On the rear rope over 1,499 steps such a skin
+gives the game's pinned particles bit for bit except particles 8 and 9 in 6 steps, by 1 ulp in one lane; each of these is fixed by
+changing bone 132 by 1 ulp, a value the transform set never holds at any point of the frame. :observed[one recording]{games="elden-ring"}
+The buffer's two matrices are exactly the identity, and the transform set's `+0x28` holds a second array of 136 matrices that do not
+change. :observed[one recording]{games="elden-ring"}
+
+:::open[Where does the skin's last ulp come from?]
+In 6 of 1,499 steps two pinned particles of the rear rope differ by 1 ulp from a skin of the recorded bones, as if one bone were
+1 ulp off; no recorded state holds that value.
 :::

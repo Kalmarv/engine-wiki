@@ -294,6 +294,11 @@ which fits all 20 map-piece draws checked. `s` is the scale of row `100 + lodTyp
 turns on; while it is off, every instance stays at 1. The texture quality setting is not read on this path. When the level
 changes, an asset sets bit 1 of its `CSWorldGeomIns` word at `+0x264` (wants full) and a map piece the word at `+0x248`, and a
 refresh is queued; it applies once a readiness flag of the instance is set. :observed[read from the executable's code]{games="elden-ring"}
+The switching system is on when two setting bytes are both set. One of them is turned off by the map-move step
+`MoveMapStep::STEP_BeginInit`, when a map load begins, and on again by `STEP_HorseWait`; the character-creation menu turns it off
+and back on around its own screen. The other is set once at start-up. :observed[read from the executable's code, its type
+information and string references]{games="elden-ring"} So every instance holds its `_l` textures through a map load, and the 3 s
+ramp starts when the load is done. :inferred{games="elden-ring"}
 
 In the running game (texture quality at maximum, two camera positions at the Stormveil gate, the textures of each draw found
 by hashing the first 64 KiB of their top level against every `aet` texture of both forms): :observed[two recordings]{games="elden-ring"}

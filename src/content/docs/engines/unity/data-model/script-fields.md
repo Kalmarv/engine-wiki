@@ -1,7 +1,7 @@
 ---
 title: Script fields of MonoBehaviours
 description: "How a game's own script data is stored after a MonoBehaviour's base fields, the layouts measured for SkateBIRD's scripts and for the Universal Render Pipeline asset."
-games: [skatebird, sledding, peak]
+games: [skatebird, sledding, peak, big-walk]
 sources:
   - title: Universal Render Pipeline source (Unity-Technologies/Graphics)
     url: https://github.com/Unity-Technologies/Graphics
@@ -84,9 +84,36 @@ settings equal to the keywords of the shader variants the build keeps for them. 
 | soft shadows, enclosing sphere, soft quality, cookie resolution and format, SRP batcher, dynamic batching | 4 bytes each | :observed{games="sledding"} |
 | mixed lighting, light cookies, light layers | bool each | :observed{games="sledding"} |
 
-The later fields (batching, post-processing, the GPU resident drawer) follow; the layout past the first of them is not
-verified. :observed{games="sledding"} Another asset version has another layout and is refused.
-:inferred
+The later fields (batching, post-processing, the GPU resident drawer) follow in URP 17.3's declaration order: PEAK's asset and
+Sledding Game's read in that order to their last byte. :observed{games="sledding peak"} Another asset version has another layout
+and is refused. :inferred
+
+Big Walk's asset, of the same asset version, departs from that order: it holds the same fields through the reflection probe
+blending (offset 184), and then two integers (6, 6) and a float 100.0 where 17.3 has the box projection. :observed{games="big-walk"}
+Big Walk is an IL2CPP build, so the class it was built with is not traced. :unknown{games="big-walk"}
+
+A renderer's `m_RendererFeatureMap` need not match its `m_RendererFeatures`: Big Walk's renderer (`globalgamemanagers.assets`
+object 4550) stores no feature and a map of one entry. :observed{games="big-walk"} Only the editor maintains the map; PEAK's
+decompiled URP runtime has no reader of it. :observed{games="peak"} So a reader reads it as stored and does not check its length
+against the features. :inferred
+
+### Global settings
+
+`GraphicsSettings`' `m_CurrentRenderPipelineGlobalSettings` names a `UniversalRenderPipelineGlobalSettings` MonoBehaviour in
+`globalgamemanagers.assets`. It decodes in declaration order to its last byte, including its `[SerializeReference]` registry
+(version 2; each entry a 64-bit id, the class, namespace and assembly names, then the data): 16 graphics-settings entries in PEAK
+(3,448 bytes) and 16 in Sledding Game (3,452 bytes). :observed{games="peak sledding"} Sledding Game's include the screen-space
+ambient occlusion resources and no GPU resident drawer or STP resources; Big Walk's hold a class of the game's own,
+`MA.Flora.FloraRuntimeSettings`. :observed{games="sledding big-walk"} `UniversalRendererResources` holds `m_CopyDepthPS` and
+`m_DBufferClear`, shader references. :observed{games="peak sledding"}
+
+`RenderGraphSettings.m_EnableRenderCompatibilityMode` is false in PEAK and true in Sledding Game. :observed{games="peak sledding"}
+The pipeline reads it only when URP is built with `URP_COMPATIBILITY_MODE`, using the render graph when it is false and logging
+`RenderGraph is now enabled.` or `disabled.` in a player. :sourced[Universal Render Pipeline source (Unity-Technologies/Graphics)]
+PEAK's URP assembly is built without it (the getter returns false, `UniversalRenderer.Setup` is empty), so PEAK always draws through
+the render graph. :observed{games="peak"} Sledding Game's IL2CPP metadata holds the compatibility path's strings and its player log
+reads `RenderGraph is now disabled.`: Sledding Game draws URP in Compatibility Mode. :observed{games="sledding"} Big Walk's metadata
+does not hold that string. :observed{games="big-walk"}
 
 ### PEAK's pipeline
 
@@ -119,6 +146,25 @@ An opaque `UniversalForward` or `UniversalForwardOnly` program that samples `_Ca
 depth, which holds the opaque-queue renderers of the prepass layer mask drawn through their `DepthNormals` or
 `DepthNormalsOnly` pass. :inferred[from the game's URP code, decompiled]{games="peak"} PEAK's `W/Peak_*` shaders have
 `UniversalForwardOnly`, `ShadowCaster`, `DepthOnly`, `DepthNormalsOnly` and `MotionVectors` passes. :observed{games="peak"}
+
+The stored asset is not what PEAK draws with: its settings handler loads and applies every setting when it is constructed at
+start-up, before any level draws, and rewrites the asset. :inferred[from the game's scripts, decompiled]{games="peak"}
+
+| Setting | Default on a desktop | Default on the Steam Deck | Confidence |
+|---|---|---|---|
+| Render scale | Native: scale 1, upscaling filter Linear | Medium: 0.4, STP | :inferred[the scripts]{games="peak"} |
+| Shadow distance | Medium: 150, 2 cascades | Low: 75, 1 cascade | :inferred[the scripts]{games="peak"} |
+| Level of detail | Medium: `QualitySettings.lodBias` 0.85 | | :inferred[the scripts]{games="peak"} |
+| Texture quality | Native: `globalTextureMipmapLimit` 0 | | :inferred[the scripts]{games="peak"} |
+
+The stored render scale, 0.8 with STP, is neither default. :observed{games="peak"} The ambient occlusion setting toggles an HBAO
+volume component, while the HBAO renderer feature is stored inactive. :observed{games="peak"} `level4`'s gameplay cameras store
+anti-aliasing 3 (temporal) with post-processing on, so at scale 1 URP 17.3 jitters the projection by Halton(2, 3) − 0.5 at index
+`(frame & 1023) + 1` times the jitter scale and draws motion vectors after the prepass. :inferred[the stored cameras and URP's code]{games="peak"}
+The asset enables the GPU resident drawer (mode 1, small-mesh culling 0.5 %, occlusion culling off); URP supports it here because
+every renderer is Forward+ (`IsGPUResidentDrawerSupportedBySRP` checks the cluster light loop) and Direct3D 11 uses raw buffers.
+:inferred[the stored asset and URP's code]{games="peak"} `level4`'s skybox material uses the shader `GD/Lit Clouds Sky`, drawn by
+URP's skybox pass over Unity's built-in skybox mesh. :observed{games="peak"}
 
 :::open[Script field layouts of the other games]
 PEAK's and Big Walk's scripts are not decoded here. The IL2CPP games' script classes can be recovered from the generated

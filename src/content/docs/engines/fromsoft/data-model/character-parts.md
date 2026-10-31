@@ -128,6 +128,10 @@ and the base character model. It asks the selected part for the dummy `value mod
 (group 2 maps to body slot 3); when that part has no such dummy it asks the base character model for the same remainder.
 :observed[read from the code of 2.7.2.0]{games="elden-ring"} A body part without a weapon's dummy therefore does not leave the
 weapon unplaced. :inferred{games="elden-ring"}
+The game shows such a case: with a Longbow (row 41000000) stowed in the left hand, its model `wp_a_1410_l` hangs by
+`leftHang` 2040, the worn chest `bd_m_1361_l` has no dummy 40 while `c0000.flver` has, and the bow is drawn stowed on the
+character in a recorded attack. :observed[one saved character and one recording]{games="elden-ring"} So a missing dummy on the
+worn part does not hide the weapon. :inferred{games="elden-ring"}
 
 :only[elden-ring] Showing a weapon is a separate path from placing it. The assembly manager walks 27 model slots, gates each
 slot's visibility by hand and side bits (manager `+0x2D0`) against the weapon's `dispPosType` (`+0x2F1`), and the weapon model's

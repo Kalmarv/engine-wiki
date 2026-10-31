@@ -102,7 +102,9 @@ that stores both 0 and 1. :observed[every mesh of that map piece]{games="elden-r
 program's `COLOR1` unset; with a zero colour there, the courtyard's floor slabs (`m002002` and `m002012`) draw black.
 :observed[a reimplementation of the program, the Stormveil gate]{games="elden-ring"} Over the meshes of a region of Stormveil the
 programs' colour reads find `COLOR1` stored 2,260 times and `COLOR0` 78 times, with none missing.
-:observed[one region of `m10_00_00_00`]{games="elden-ring"}
+:observed[one region of `m10_00_00_00`]{games="elden-ring"} The cliff material `aet000_052_a` of the open world uses the
+`M[AMSN_V][Mb4][3Mask][Far_AN]_Gbuf` vertex program, whose inputs are `POSITION0`, `NORMAL0`, `TANGENT0`, `COLOR1`, `TEXCOORD0`
+and the instance id; it passes `COLOR1.x` on to its pixel program as `TEXCOORD4.z`. :observed[the program's code]{games="elden-ring"}
 
 A UV set the vertex program reads is not necessarily one the draw uses. :only[sekiro] In the Wolf's default head and
 the twelve Sekiro material variants (three distinct pixel programs) whose vertex programs compute outputs from the

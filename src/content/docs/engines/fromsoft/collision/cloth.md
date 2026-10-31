@@ -407,11 +407,25 @@ a packed three-influence block that stores all four lanes with aligned stores. :
 buffer's normal stream (the pointer at `+0x40`, the stride at `+0x4C`) with no normalisation. :observed[read from the code of
 1.17.3]{games="elden-ring"}
 
-:::open[Where does the skin's last ulp come from?]
-In 6 of 1,499 steps two pinned particles of the rear rope differ by 1 ulp from a skin of the recorded bones, as if one bone were
-1 ulp off; no recorded state holds that value. In the second recording the skin's own instructions, run natively on the recorded
-inputs, differ on 59 of 1,500 calls (198 lanes; 8 calls touch the pinned particles 8 and 9). No single rounding mode explains it
-(round down, up or toward zero differ on all 1,500 calls, with flush-to-zero and denormals-are-zero both off or both on), nor do
-fused multiply-adds in any of eight placements, nor the inverse matrices, nor the cloth file's values, which the replay reads
-straight from the installed file. The game thread's MXCSR, and a buffer pointer at `+0x110` the skin also reads, were not recorded.
+The last ulp comes from the operator's inverse bind matrices (`boneFromSkinMeshTransforms`), which differ in the running game
+from the installed file. In a recording of 1,500 skin calls of the rear rope (2.7.2.0), 12 of the 48 floats of those matrices
+differ from the installed tagfile's, the same in every call, while the operator's other arrays (`transformSubset`,
+`controlBytes`, `threeBlendEntries`, `localPNs`) equal the file's bytes. Running the executable's own skin code (the composite at
+RVA `0x15D9800` and the packed deformer it reaches, `0x15A7207` to `0x15A7606`) on each call's recorded inputs with the run-time
+matrices gives every output position and normal of all 1,500 calls bit for bit; with the installed matrices and nothing else
+changed, 77 calls differ in their positions and 110 in their normals. :observed[one recording, against the installed file read
+straight from its archive]{games="elden-ring"} The game thread's MXCSR is `0x8000` in every call (round to nearest,
+flush-to-zero on, denormals-are-zero off), and the same replay under `0x1F80` (both off) also matches all 1,500, so these inputs
+do not depend on flush-to-zero. :observed[one recording]{games="elden-ring"}
+
+The run-time operator and its five arrays lie at the same offsets from one base as in the installed tagfile's `DATA` section,
+so the game uses the loaded file image in place for this asset rather than a constructed copy. :inferred[from one
+recording]{games="elden-ring"} The registered copy of the operator (`0x153F110`) hands the inverse binds to `0x15517A0`, whose loop
+(`0x1551840` to `0x1551866`) moves each 64-byte matrix with four aligned loads and stores and no arithmetic, so a copy does not
+change their bits. :observed[read from the code of 2.7.2.0]{games="elden-ring"}
+
+:::open[What rewrites the rear rope's inverse binds?]
+The run-time inverse binds are not the installed values, and no reached stage computes them: the copy only moves bits. A hardware
+watch on the operator's constructor saw a different, default-constructed operator, not the rope's, so the writer is not found;
+that no writer exists does not follow. Whether other cloth assets differ the same way is not checked.
 :::

@@ -127,6 +127,13 @@ Both executables use the record when they load a file: :observed[read from the c
   value. The row starts inactive and is made active only when byte 12 is 0, so with byte 12 set a field the file lacks stays
   inactive and the [merge](#banks-and-layers) takes it from a lower bank.
 - Byte 13, when set, makes the group's field lookups use value ID 0.
+- A group the file stores with no fields is skipped before any of this: the loader reads the group's field count through the
+  reader's virtual function at `+0x28` and, on 0, moves on to the next stored group without initialising the group or handling
+  its extra record. So a wholly empty group creates no rows for the IDs the game asks for through this loop, whatever its byte 12.
+  The function is `0x1C1FB50`, called at `0x1C10599` in the loader `0x1C10460`, in Elden Ring, and `0x140340EE0`, called at
+  `0x140316E29` in `0x140316CD0` (the zero branch `0x140316E33` to `0x140316E7B`, past the group set-up `0x140317D60`), in Sekiro.
+  :observed[read from the code of Elden Ring 2.7.2.0 and Sekiro 1.06] Rows another path creates, or rows of a context used
+  before, are not covered by this. :unknown
 
 A field's reference value is a copy taken when the executable registers the field: the registration keeps a pointer to the
 live field and a copy of its initial value, and the loader's fallback returns the copy, not the live field's current value
@@ -361,6 +368,12 @@ community file list]{games="sekiro"}
 
 Elden Ring's full `Tone Map[Yebis]` group is in 77 of the `m00_00_<id>_weatheroutdoor` files and 2 `commonevent` files;
 `weatherbase` holds only the wet group. :observed{games="elden-ring"}
+Weather 0's file, `m00_00_0000_weatheroutdoor`, has 23 groups and stores no field in any, and its 23 extra records list no IDs
+and have flag bytes 0; `m00_00_0000_weatherbase` has 23 groups, of which only `Wet ParamEditor` stores fields (`OverrideAlbedo`,
+a four-float vector, and the floats `OverrideShininess`, `AlbedoRate` and `ShininessRate`, all at value ID 0). Beside them,
+`m60_00_0000` stores fields in 5 of its 24 groups, `default` in 15 of 26 and `mapbase` in 19 of 26.
+:observed[those five installed files]{games="elden-ring"} By the loader rule above, weather 0's outdoor file therefore adds no
+rows through the file loop. :inferred{games="elden-ring"}
 
 ### Banks and layers
 
@@ -386,7 +399,7 @@ ID 0, hour 0, `MapBase` 1.45 and 1.7, and `m11_01_0000` neither. All three list 
 byte 12 being 0, 0 and 1; `ColorGrading[Yebis]` (group 10) lists ID 0 with byte 12 0 in all three; `VolumetricFog` has no record in
 `default` and lists ID 0 (group 22) with byte 12 0 in `MapBase` and 1 in `m11_01_0000`. :observed[the three installed files]{games="sekiro"}
 Merging `default` (bank 1), `MapBase` (bank 4) and the map's file (bank 5) at full weight by these rules gives a contrast of 1.45,
-the value of the [recorded tone curve](/engines/fromsoft/lighting/frame/#tone-curve), and 1.6 without `MapBase`.
+the value of the [recorded tone curve](/engines/fromsoft/lighting/tone-mapping/#the-curve-table), and 1.6 without `MapBase`.
 :observed[the merge computed from the installed files, against one recorded frame]{games="sekiro"} The map's file lacks the
 field and its byte 12 leaves the created row inactive, so the field falls through to `MapBase`. :inferred{games="sekiro"}
 

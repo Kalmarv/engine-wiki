@@ -61,6 +61,16 @@ Each mesh has one face set, at LOD level 0, 1 or 2; billboard cards are level 3 
 selects an atlas image by view angle; their stored members do not directly give a fixed rest-space surface.
 :observed
 
+## Leaf colour
+
+The leaf pixel program `SpeedTree_50f1f_w346369a7_Gbuf_[A]` tints the diffuse texture twice. Its albedo is `t0.rgb ×
+FC_DynamicDiffuseColor.rgb² × aColor[ColourSlotNo].rgb`: `FC_DynamicDiffuseColor` is `cbMatDynParam` byte `0x40` (row 4), squared
+per channel, and `aColor` is a per-object palette of four colours in `cbInstanceData`, at byte 144 of each 208-byte instance
+record (row `13 × object + 9 + slot`). The palette's alpha also enters the program's discard test. :observed[the program's DXIL
+reflection and its translated data flow]
+
+So a leaf's colour depends on two run-time inputs besides its texture; which code fills either is not traced. :unknown
+
 :::open[How does the full wind state evolve?]
 The windless execution proves a neutral configuration only. The complete runtime meaning and update rules of
 the wind rows, and camera-dependent billboard reconstruction, remain outside that proof. :unknown

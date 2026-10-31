@@ -34,7 +34,7 @@ Ring 1.17.2 at 2560x1440 at night at the Stormveil gate. Programs are named by m
 | 6 | Screen-space reflections: `GXSsrConvertDepth`, `GXSsrNew`, then `GXSsrTexDownScale` / `GXSsrTexBlur2` | RGBA16F, half resolution, 6 mips | a prepass of programs not named in the recording, then the down-scale and blur chain, five levels | :observed |
 | 7 | Environment-map regions: one box draw per region, `GXEnvMapRegion[Box][DiffSpc]` and variants | 61 regions in the frame | 64 | :observed |
 | 8 | Sun: `GXLightAcc_DDirLightShadowed1` | with `GXLightDeferredAOWithSsr` | | :observed |
-| 9 | Point and spot lights: `GXLightOrganize<N>` (compute, tile lists) then a tiled light pass | `GXLightOrganize16`, `GXRend_TileBasedLighting` | `GXLightOrganize8`, and `GXLightAcc_DPointLightShadowed1` for a shadowed point light | :observed |
+| 9 | Point and spot lights: `GXLightOrganize<N>` (compute, tile lists) then a tiled light pass | `GXLightOrganize16`, `GXRend_TileBasedLighting` | `GXLightOrganize8` and `GXRend_TileBasedLighting`, and `GXLightAcc_DPointLightShadowed1` for a shadowed point light | :observed |
 | 10 | `GXLightCmbAlbedo`, `GXSssBlurX` / `Y`, `GXLightComposite` | into R11G11B10F | then `OutputColor` | :observed |
 | 11 | Volumetric fog: `GXVolumetricFog_DirLightShadowReproj`, `_WriteInScatteringPreShadowed`, a dispatch per local light, `_SolveVolumetricFog`, `_SceneComposite` | froxels 120x72x16 | 144x88x36, plus `_DirLightShadowPostFilter`; then `GXFogVolume_*` fog volumes at half resolution | :observed |
 | 12 | Sky and forward surfaces | the sky's materials (below), depth-only and blended material draws | | :observed |
@@ -249,28 +249,8 @@ That the bound texels are that table's bytes is not yet read back from the runni
 
 ### Tone curve
 
-`ToneMap_WriteReinhardExToneMappingTablePS` writes the tone curve as a 1024 × 1 R16F table. At texel `i`, with
-`u = (i + 0.5) / 1024`, it computes `z = (0.2 × u / (1 − u) × g_ReinhardParam.y) ^ g_ReinhardParam.x` and writes
-`(z / (1 + z)) ^ (1 / g_ToneMapParam.y)`. :observed[the program's disassembly]{games="sekiro"} The same operations in the same
-order, rounded to `f16` where the program narrows, give all 1,024 stored half-words of a recorded frame's table bit for bit,
-with the frame's constants: contrast 1.45, white balance 1.7 and gamma 1. :observed[one frame at the Ashina Castle gate]{games="sekiro"}
-The program narrows to `f16` toward zero. :observed[one frame]{games="sekiro"}
-`ToneMap_TabledToneMapLUTPS` multiplies the scene by the scene exposure, adds the bloom, reads the curve at `x / (x + 0.2)`,
-then applies a colour matrix and the vignette and looks up the 16³ grading table. :observed[the program's disassembly]{games="sekiro"}
-In its standard (SDR) branch: :observed[the program's disassembly and one recorded draw]{games="sekiro"}
-
-- the colour matrix is three rows of four, each dotted with (mapped r, g, b, 1), and negative results are clamped to 0;
-- the vignette takes `r = length((2 uv − 1) × xy)` and `t = 1 − saturate(r × z + w)` from its constant, and multiplies by
-  `(t² (3 − 2t))⁴`;
-- the grading cube is sampled at `pow(rgb, cbToneMap[2].z) × 15/16 + 1/32`, trilinearly between texel centres with the edges clamped.
-
-The HDR-output branch is a different path, not described here.
-
-Of the 253 draw-parameter files of the install, which hold 151 Reinhard fields, `mapbase.gparam.dcx` stores `ReinhardContrast`
-1.45 and `ReinhardWhiteBalance` 1.7, the recorded frame's values; `default.gparam` stores 1.6 and 1.7, and `m11_01_0000` neither.
-:observed[every installed draw-parameter file]{games="sekiro"} Merging the three by the game's
-[bank rules](/engines/fromsoft/lighting/gparam/#banks-and-layers) gives the frame's 1.45: the map's file leaves the field to
-`MapBase`. :observed[the merge computed from the installed files]{games="sekiro"}
+The tone curve, colour matrix, vignette and grading look-up, with Sekiro's recorded constants, are on
+[exposure, tone curve and colour grading](/engines/fromsoft/lighting/tone-mapping/).
 
 ### Volumetric fog
 
@@ -400,57 +380,34 @@ axis of the frame's orthographic shadow camera. :observed[one frame at the Storm
 (`b9`, 448 bytes, `FC_GlobalTime` at 432 and `FC_TimeOfDay` at 436) is bound from a buffer in GPU memory in every draw, not
 from an upload heap. :observed{games="elden-ring"}
 
+The deferred sun program's own buffer repeats two of the scene's matrices: `cbLightAccParam`'s `g_InvProjMatrix` (bytes 0 to
+64) is byte for byte `cbSceneParam`'s `FC_MatrixInvProj`, and its `g_CameraMatrix` (bytes 128 to 192) is `FC_MatrixInvView`, so
+these are the inverse projection and the camera's inverse view, not object matrices. :observed[one frame at the Stormveil gate]{games="elden-ring"}
+
+### Deferred light
+
+The name `g_ShadowTexture` at `t32` does not name one texture. `GXLightAcc_DDirLightShadowed1` reads it with an ordinary sample
+through `s8` at the pixel's screen position: it is the screen-space shadow mask of pass 5. `GXScreenSpaceCascadedShadow_PCF9`
+reads its `t32` with a depth comparison (`SampleCmpLevelZero`) through `s12` at shadow-atlas coordinates: there it is the
+cascade atlas. :observed[the two installed programs' DXIL, joined by their bytecode to three draws of the Stormveil frame]{games="elden-ring"}
+
+The tiled point and spot lights are drawn by `GXRend_TileBasedLighting` in Elden Ring too. Each tile's 12-byte record from
+`GXLightOrganize8` holds its light counts in the third word, point lights in the low 16 bits and spot lights in the high 16: the
+program adds the two and discards the pixel when the sum is 0, before it walks the tile's lights. :observed[the installed program's
+DXIL]{games="elden-ring"} Sekiro's tiled program reads that word only in a debug branch. :observed[the program's code]{games="sekiro"}
+
+Stencil bit `0x10` marks the pixels the scene's geometry covers. In the recorded Stormveil frame all 479 G-buffer draws (92
+pipeline states, recognised by their four targets' formats) set a stencil reference with bit `0x10`: 16, 18, 50, 80, 88, 144,
+210 or 242; 473 of them replace the stencil under write mask 255 and 6 keep it. `GXRend_TileBasedLighting` and
+`GXLightComposite` test the stencil with mask `0x10` against reference 16, and `GXLightCmbAlbedo` draws with reference 255.
+These three draws have independent blending off, so target 0's blend state applies to every target they write.
+:observed[one frame]{games="elden-ring"} Which material or draw data chooses a draw's reference is not established.
+:unknown{games="elden-ring"}
+
 ### Exposure
 
-The picture's exposure is a scale the CPU writes: `ToneMap_TabledToneMapLUTPS` multiplies the scene by `cbToneMap`'s
-(`b1`, 416 bytes) `g_ToneMapSceneLumScale` at byte 48, which equals `SC_SceneExposure`, and samples no luminance texture.
-:observed[the program's DXIL, three frames]{games="elden-ring"}
-
-The GPU measures the frame first: :observed[the DXIL of the four programs, with constants from recorded frames]{games="elden-ring"}
-
-1. `ToneMap_DownSample2x2PS` halves the R11G11B10F scene, one bilinear tap per half-size texel (2560 × 1440 to 1280 × 720).
-2. `ToneMap_ColorToLuminancePS` writes a 64 × 64 RG32F target. Each texel takes 16 bilinear taps of the half-size frame at its
-   centre plus `((k mod 4 − 1.5) / 256, (k / 4 − 1.5) / 256)`, the luma `dot(rgb, (0.299, 0.587, 0.114))` of each (NaN or
-   infinity read as 0) times `g_vScenePreExposure.z`, and `L = log2(Y + 1e-5) + 20`; it writes `(mean(L) × w, w)` with the centre
-   weight `w = 1 − (1 − 2^−r)³`, `r = length(2(uv − 0.5) × g_AdaptCenterWeight.xy)`. `g_AdaptCenterWeight` is the draw
-   parameters' `Center Weight` and that times 720 / 1280: (7, 3.9375) at Stormveil at noon.
-3. `ToneMap_ScaleLuminancePS` takes exact 4 × 4 means, 64 to 16 to 4 to 1.
-4. `ToneMap_AdaptedLuminancePS` forms `target = s.x / s.y − g_AdaptParam.x` and `adapted = prev + (target − prev)(1 − 10^−rate)`,
-   the rate `g_AdaptParam.y` when the target is above the previous value and `.z` otherwise, and writes
-   `(adapted, 2^−(adapted − 20))`. A still frame converges to `adapted = target`.
-
-Read back from one frame (all six draws of the chain, the Stormveil gate, one GPU): the down-sample matches a 2 × 2 mean to
-within 0.97 of an R11G11B10F step, each scale level is the exact 4 × 4 mean (to 1e-7 relative) and the adapted value the rule
-above to 5e-7, with a rate times `T` of 0.005183 that frame. :observed[one frame]{games="elden-ring"} The shipped
-`ToneMap_ColorToLuminancePS`, run outside the game on Direct3D 12 on the same GPU and driver with the root signature of its own
-`RTS0` part and the frame's constants, vertex buffer and source texture, reproduces all 4,096 cells of the 64 × 64 target, both
-words, bit for bit. :proven[the shipped program run on one frame's inputs]{games="elden-ring"}
-
-The formula computed exactly does not: its cells are all above the game's, by 2.2e-4 in `log2` per sample on average, at every
-brightness, and the metered value differs by 2e-4 stops (−6.838357 in the game). The difference comes from the texture unit's
-bilinear filter, which on that GPU differs from the exact blend of the stored texels by up to 2⁻¹¹ relative per channel; the same
-operations with the hardware's sample reproduce the game's cells (`w` 4,096 of 4,096, `x` 3,949, the rest within 3 ulp). The
-GPU's `log2` is not correctly rounded (1 ulp off on 122,104 of 196,608 arguments), and the driver may reorder the per-sample
-dot product and the loop it compiles, which moves single cells by an ulp; the 4 × 4 means absorb these, so the 1 × 1 result is
-the game's in both words. :observed[one frame, one GPU]{games="elden-ring"} So the meter's last digits depend on the GPU, not
-only on the program. :inferred{games="elden-ring"}
-
-`g_AdaptParam` is (`AutoExposure Middle Gray`, the light adaptation speed × `T`, the dark adaptation speed × `T`, 0), `T` a
-per-frame value that is 0 while the game is paused and 1/30 by default; in recorded frames it ranges from 0.025 to 1.28 with
-the recorder's stalls, so it reads as the frame time in seconds. `g_vScenePreExposure` is `(e, 2^e, 2^−e, 0)`; it is (0, 1, 1, 0)
-in all 26 frames read, so pre-exposure is off. :observed[read from the decrypted code, and 26 frames of two runs]{games="elden-ring"}
-
-The CPU then sets the scale `S`. With `x = adapted − 20`, `adapted` being the value the GPU wrote four frames earlier (the
-results come back through a ring of four read-backs), `log2 S = Exposure − L(1 − e^(−x / L))`, `L` being the Tone Map's
-`AutoExposure Adaption Max` when `x > 0` and `Adaption Min` when `x < 0`: a soft clamp, not a hard one. `Exposure`, `Max` and `Min`
-are the draw parameters at the current hour, blended by the clamped rule of [GPARAM](/engines/fromsoft/lighting/gparam/#looking-up-an-hour)
-(each is registered with interpolation); `FreezeAdaptionFade` forces `x = 0`. :observed[read from the decrypted code]{games="elden-ring"}
-Over 21 frames of two runs at Stormveil (`x` from −0.44 to −0.33) the rule gives `log2 S` within 0.00011; a lag of 0, 2 or 6
-frames, or base 2 for the exponential, misses by 0.002 to 0.09. Only the `Min` branch is checked on data. :observed[21 frames,
-two runs]{games="elden-ring"}
-
-The tone map's other constants: `g_ReinhardParam` is (`ReinhardContrast`, `ReinhardWhiteBalance`), `g_ToneMapParam`
-(`Contrast`, the table exponent 1, 1/2.2), and `g_bEnableFlags.z` the HDR flag. :observed{games="elden-ring"}
+Elden Ring's exposure meter and the scale the CPU derives from it are on
+[exposure, tone curve and colour grading](/engines/fromsoft/lighting/tone-mapping/#exposure).
 
 :::open[Do Elden Ring's skyspheres follow the camera?]
 How a weather's list combines with the `_99` map's own placements, and whether the skyspheres move with the camera as

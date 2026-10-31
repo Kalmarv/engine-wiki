@@ -89,6 +89,15 @@ RGB lanes at intensities 1, 2, 3, 3.5, 4, 5 and 20 match `pow(c, 2.2) × i` with
 A true Elden Ring SAT boolean uploads word `0x00000001`, not float 1.0's
 `0x3F800000`. Zero-valued booleans cannot distinguish these encodings. :observed{games="elden-ring"}
 
+Beside `SAT_MtdParam`, some programs read a `SAT_CAParam` block. The plain `M[AMSN_V]` G-buffer pixel program declares four float
+members of it at bytes 272, 276, 280 and 284 of `cbMatDynParam` and multiplies the sampled albedo's RGB by the first three. The
+bundle's metaparam lists the matching [CAParams](/engines/fromsoft/materials/metaparam/#material-parameters) as components 0 to 4
+of `color_0`, each with default 1; the program does not read the fifth, the intensity. The names differ by one character: the
+metaparam's has an extra underscore before `snp`. :observed[the installed program's reflection and IR, and its
+bundle]{games="elden-ring"} In the recorded Stormveil frame that program's 47 readable material buffers hold (1, 1, 1, 1) there,
+the defaults. :observed[one frame]{games="elden-ring"} The `M[AMSN_V][Mb3]` and `M[AMSN_V][Ov_N]` bundles have no CAParams.
+:observed{games="elden-ring"}
+
 ### Texture groups and tiling
 
 Over the 299,105 texture bindings of Elden Ring's asset and map FLVERs, 81,470 have FLVER scale 1 with a UV-group

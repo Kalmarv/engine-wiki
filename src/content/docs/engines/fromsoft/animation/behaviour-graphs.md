@@ -161,24 +161,32 @@ FromSoftware's `CustomManualSelectorGenerator` selects one of its child generato
 carries an animation id (`animId`) and an `offsetType` that says what the id is relative to. Its 13,074 (Sekiro) and
 73,502 (Elden Ring) objects hold these offset types, named by HKLib: :proven{games="sekiro elden-ring"}
 
-| `offsetType` | Sekiro | Elden Ring |
-|---|---:|---:|
-| `OffsetNone` | 114 | 396 |
-| `IdleCategory` | 1,220 | 2,883 |
-| `WeaponCategoryRight` | 340 | 183 |
-| `WeaponCategoryLeft` | 183 | 62 |
-| `WeaponCategoryHandStyle` | 0 | 233 |
-| `MagicCategory` | 252 | 194 |
-| `SwordArtsCategory` | 0 | 413 |
-| `AnimIdOffset` | 10,965 | 69,138 |
+| `offsetType` | Value | Sekiro | Elden Ring | Elden Ring `c0000` |
+|---|---:|---:|---:|---:|
+| `OffsetNone` | 0 | 114 | 396 | 34 |
+| `IdleCategory` | 11 | 1,220 | 2,883 | 2,874 |
+| `WeaponCategoryRight` | 13 | 340 | 183 | 183 |
+| `WeaponCategoryLeft` | 14 | 183 | 62 | 62 |
+| `AnimIdOffset` | 15 | 10,965 | 69,138 | 58 |
+| `WeaponCategoryHandStyle` | 16 | 0 | 233 | 233 |
+| `MagicCategory` | 17 | 252 | 194 | 194 |
+| `SwordArtsCategory` | 18 | 0 | 413 | 413 |
+
+The last column is the 4,051 objects of Elden Ring's player graph; the values are those its file stores.
+:observed[the installed `c0000` graph]{games="elden-ring"}
 
 :only[elden-ring] The player's attack clips are chosen through the offset type. The clip's id is the offset plus `animId`, and the
 generator plays its child named `a%03d_%06d` from it; `AttackRightLight1_CMSG` is type 13 with id 30000 and `AttackBothLight1_CMSG`
 type 16 with 32000 in `c0000.hkb`. Type 13 takes the right hand's weapon, type 14 the left's, and type 16 the left's when the arm
 style is 2 (left weapon in both hands) and the right's otherwise. The offset is the weapon's `EquipParamWeapon` `wepmotionCategory`
 (byte `+0xE7` of the 664-byte row): if the row's `spAtk` (`u16` at `+0xEE`) is non-zero and `a{spAtk}_{animId}` exists, that clip
-plays; otherwise the category's, and if that does not exist `a023_` (right hand) or `a048_` (left). :observed[read from the code of
-2.7.2.0 and the graph file]{games="elden-ring"} The arm style is the first word of the character's equipment state, and the next
+plays; otherwise the category's, and if that does not exist `a023_` (right hand) or `a048_` (left); when none exists the
+category's id is returned anyway. The generator then plays the child whose `animationName` is that id's `aGGG_NNNNNN`, else the
+child named `a000_NNNNNN`, else child 0. The weapon row is looked up with the upgrade level removed (`itemId / 100 × 100`: 9000025
+reads row 9000000). :observed[read from the code of 2.7.2.0 and the graph file]{games="elden-ring"} The selector itself reads the
+category from a per-hand array of the player (`*(PlayerIns + 0x630)` indexed by hand), and the equipment code writes the left and
+right weapons' `wepmotionCategory` into an array's first two entries (the third by arm style); that these are one array is not
+read through, the store being in obfuscated code. :inferred{games="elden-ring"} The arm style is the first word of the character's equipment state, and the next
 words the active slot of each hand and of the arrows and bolts; the equipped item ids are interleaved, the right weapon at
 `2 × slot + 1` and the left at `2 × slot`. The save slot stores the same seven words (arm style, left, right, two arrows, two bolts).
 :observed[read from the code and one save]{games="elden-ring"} The behaviour script takes the style from `env(207)`, and R1 with a

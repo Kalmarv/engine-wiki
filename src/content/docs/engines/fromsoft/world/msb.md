@@ -349,7 +349,11 @@ that matrix times the world block's offset ([frames](/engines/fromsoft/world/fra
 area has the same rows, scaled by half its width, height and depth (the box's third value being the height), and its centre is
 the spawn position plus half the height in y. :observed[the game's own code run from a memory image of 1.17.3, one region]{games="elden-ring"}
 With the block offset (88, −16, −16), the spawn matrix equals the running force field's transform bit for bit, and the box centre's
-y the field origin's y. :observed[one region, one recording]{games="elden-ring"}
+y the field origin's y. :observed[one region, one recording]{games="elden-ring"} For a turn about y alone the rotation's rows are (cos, 0, −sin),
+(0, 1, 0) and (sin, 0, cos), and the field blows along the third row. All twelve wind regions of Stormveil's layout resolve to a
+field this way, and the recorded cloth stood inside exactly one region's box. :observed[one recording]{games="elden-ring"} Whether
+the box containing the cloth is how the game picks the field in general is not established, and the x and z of the field's
+origin are not read from the code. :unknown{games="elden-ring"}
 
 Shape variants include points, circles, spheres, cylinders, rectangles,
 boxes and composites; a shape and a region's purpose are different fields. :sourced[SoulsFormatsNEXT]

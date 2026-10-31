@@ -143,6 +143,14 @@ A block that registers takes its offset from a table of 16-byte entries `{id, ve
 object's position. :observed[read from the code of 1.17.3]{games="elden-ring"} Who calls the shift, and where that table comes
 from, are not found in the code; so the 8 m truncation above is not yet seen in it. :unknown{games="elden-ring"}
 
+The grid's cells are 256 m in x and z, set by its constructor. A block of level `L` at cell `i` is placed, per axis x and z, at
+`offset + (f32(i × 2^L − cell) × 256 + ((2^L − 1) × 0.5) × 256)`, in that order of operations, `cell` and `offset` being the
+grid's current cell and floating offset; y is the grid's y plus 0. The shift adds the delta to every block's translation first,
+then to the grid's accumulated shift, and while x or z is beyond ±128 it moves it back by 256 and steps the cell; exactly ±128
+stays in its cell. :observed[read from the code of 1.17.3; six runs of those instructions, levels and multi-cell shifts among
+them, bit for bit; the tiles `m60_42_36_00` and `m60_21_18_01` placed the same]{games="elden-ring"} What triggers the shift and
+how a dungeon's frame joins the grid are not established. :unknown{games="elden-ring"}
+
 Since the offset belongs to the run, a recorded frame's camera and lights need that run's offset before they can be compared
 with the map. Three things in a run's own data give it: physics modules standing on at least three distinct layout Player or
 Enemy parts, to 0.01 m; the translation that puts the most point-light records on the bank's lights; or, from the camera

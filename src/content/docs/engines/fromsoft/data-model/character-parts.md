@@ -95,7 +95,10 @@ establishes whether multiple marks mean any enabled bit or all enabled bits.
 The player's hand, weapon and effect dummy polygons (20, 21, 24, 80, 85, 147 and others) are in the meshless `c0000.flver` of
 `chr/c0000.chrbnd`. Sekiro's face parts (`fc_*`) carry the same 307 ids; Elden Ring's parts carry none of them, their dummies
 being 45 ids of their own (storage 30 to 35 on `bd_*`, for example). No dummy id is carried by two kinds of worn part in either
-install. :observed[every non-weapon part binder of both installs] Sekiro's `c0000.flver` and the face part repeat joint names
+install. :observed[every non-weapon part binder of both installs] Not every dummy of Elden Ring's `c0000.flver` sits near
+its bone: dummies 196 and 197 (attached to bones 73 and 45, the right and left weapon bones) lie about 4.33 m from them and 858
+(bone 73) 5.14 m, at stored positions near (∓0.61, 1.02, −4.31) and (−0.29, 1.37, −5.09). :observed[the installed
+model]{games="elden-ring"} Sekiro's `c0000.flver` and the face part repeat joint names
 (`Ctrl_Spine` twice in `fc_m_0200_l`), so they cannot be joined into one skeleton by joint name. :observed{games="sekiro"}
 
 A weapon row's `absorpParamId` names a `WepAbsorpPosParam` row whose `right_n`, `left_n`, `both_n`, `leftHang_n`, `rightHang_n`
@@ -118,14 +121,28 @@ attached to the pelvis, and 20 of the 37 distinct 2xxx remainders are among them
 part's dummy `value − 2000`: the Uchigatana's scabbard (`wp_a_0550_1_l`) has `right_1`, `both_1` and `rightHang_1` 2069 and the left
 slots 2070, hanging at the body part's dummy 69 on the left hip while the sword is drawn in the right hand. :inferred{games="elden-ring"}
 The community definition describes `rightHang_n` as the dummy while the right-hand weapon is sheathed. :sourced[Smithbox]{games="elden-ring"}
+
+:only[elden-ring] The executable resolves a hold value that way, and falls back to the base character when the part lacks the
+dummy. The equipment update passes the chosen `WepAbsorpPosParam` value to the attachment, which is built with the weapon's model
+and the base character model. It asks the selected part for the dummy `value mod 1000`, the thousands group choosing the part
+(group 2 maps to body slot 3); when that part has no such dummy it asks the base character model for the same remainder.
+:observed[read from the code of 2.7.2.0]{games="elden-ring"} A body part without a weapon's dummy therefore does not leave the
+weapon unplaced. :inferred{games="elden-ring"}
+
+:only[elden-ring] Showing a weapon is a separate path from placing it. The assembly manager walks 27 model slots, gates each
+slot's visibility by hand and side bits (manager `+0x2D0`) against the weapon's `dispPosType` (`+0x2F1`), and the weapon model's
+own enable combines that with the negation of a flag at model `+0x1A8`; neither step asks whether the socket exists.
+:observed[read from the code of 2.7.2.0]{games="elden-ring"} One writer of that flag belongs to `ChrWepEnchantVfxSlot` and picks
+models by the upper four bits of `EquipParamWeapon` byte 236; the other writers are not traced. :observed[read from the code of
+2.7.2.0]{games="elden-ring"}
 The executable holds a table of dummy-polygon id bases filled by a static initialiser: 1000, 2000, 3000, 4000, 10000, 11000,
 12000, 13000, 20000, 21000, 22000 and 23000 (`int32`); its readers are in obfuscated code and are not decompiled.
 :observed[read from the executable]{games="elden-ring"}
 
-:::open[Where does a weapon hang when the body part lacks its dummy?]
-The values 2116 and 2117 (18 slots) name ids no body part carries (`c0000.flver` has 116 and 117, under
-`Model_Dmy_AttachWeapon` on `L_Weapon`), and one slot names 408, which nothing carries. Where the game puts such a model is not
-established.
+:::open[Where does a weapon hang when no model has its dummy?]
+The values 2116 and 2117 (18 slots) name ids no body part carries; by the fallback above they resolve to `c0000.flver`'s 116 and
+117, under `Model_Dmy_AttachWeapon` on `L_Weapon`. One slot names 408, which neither a body part nor `c0000.flver` carries; where
+the game puts that model is not established.
 :::
 
 | Field | Sekiro | Elden Ring | Confidence |

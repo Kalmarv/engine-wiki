@@ -252,6 +252,21 @@ number the file lacks) and 6,197 of Elden Ring's 10,716. :observed
 Parameter bytes can include zero alignment after the meaningful fields. Group tables index animations and tie
 events together; they are distinct from the per-event parameter payload. :sourced[SoulsFormatsNEXT]
 
+### Event times
+
+An event can start before its clip. Over every distinct event file of the character and object animation binders that the
+community file list names and the archives hold, each negative start is exactly `f32(−1/30)`, one frame early: 6 in Sekiro
+(type 16 once, type 112 five times) and 26 in Elden Ring (types 0, 1, 66, 118, 129, 700, 760 and 787 once each, 16 eight times,
+711 ten times). Some events also end before they start: 2 in Sekiro (types 128 and 224) and 13 in Elden Ring (type 0 once, 129
+eleven times, 601 once), such as event 9 of Elden Ring's `c4310` animation `a000_008046`, type 129 from 0 to −1/30 s. No start or
+end in those files is infinite or NaN. :observed[every distinct event file of those binders]{games="sekiro elden-ring"} What the
+game does with an event before the clip, or with a backwards interval, is not established. :unknown
+
+:only[elden-ring] Of the player's eight animations with a type 16 event at −1/30 s, `a000_004020` and `a044_036011` have motion of
+their own; `a000_004111` and `a000_004121` import `4020`'s, `a231_036011` and `a231_036511` are ImportOther of `a044_036011` and
+`a044_036511`, and `a014_000100` and `a016_000100` name `.hkt` motion files that none of the 14 `c0000` animation binders holds.
+:observed[the 14 `c0000` binders]{games="elden-ring"}
+
 SoulsFormatsNEXT represents an open-ended event with an end of 100 seconds when reading stored `f32::MAX`.
 That reader convention is not evidence that every authored 100-second event has identical runtime meaning.
 :sourced[SoulsFormatsNEXT]

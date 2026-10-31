@@ -371,6 +371,22 @@ The action finds them through handles, not by walking the fields: :observed[read
 3. Each field handle (only its low 32 bits index) gives a registry entry whose state (`+0x40`) is active when 2, and whose
    `+0x48` is the `GXVfxDynamicForceField`; the force's weight and the rest are read through that field's virtual functions.
 
+A global, non-local field of kind 0 is sampled once per step, at the centre of the minimum and maximum of the particles'
+positions at the start of the step. The action then adds to each particle the force
+
+`((−1 / dt) × (position − previous) + direction × speed) × c`
+
+with `c` the particle's share of the total mass times `|direction · normal| × stiffness` when the cloth has normals, and
+the mass share times `stiffness × 0.7` when it has none. Only some particles are computed: with a stride `s`, an interior
+particle `i` reuses the force of the particle before it when `modff(s × i) + s` is not below 1, and the first and last are
+always computed; at `s` = 0.6 a ten-particle call computes 0, 2, 5, 7 and 9. :observed[read from the code of 1.17.3; the forces of
+all 1,499 action calls of one recording, every lane bit for bit]{games="elden-ring"} The stiffness and stride are not in the cloth
+file: the action's constructor sets the stiffness to 10.0, and the cloth's set-up turns global wind on and sets the stride to
+0.6, a constant of the executable, through a setter that clamps it to [0, 1]. :observed[read from the code of 1.17.3; both values
+match all 1,499 recorded calls]{games="elden-ring"} Other field kinds and local fields go through a per-particle path that is not
+read. :unknown{games="elden-ring"} With several fields the samples are combined per lane through their positive and negative
+parts, `max(sample, 0)` and `min(sample, 0)`. :inferred[from the code; one field in the recording]{games="elden-ring"}
+
 ### The skin operator
 
 `hclObjectSpaceSkinPNOperator` skins the pinned particles with this arithmetic, which equals Havok Cloth's: each bone's composite
@@ -381,9 +397,21 @@ operator's `+0x6C`. :observed[read from the code of 1.17.3]{games="elden-ring"} 
 gives the game's pinned particles bit for bit except particles 8 and 9 in 6 steps, by 1 ulp in one lane; each of these is fixed by
 changing bone 132 by 1 ulp, a value the transform set never holds at any point of the frame. :observed[one recording]{games="elden-ring"}
 The buffer's two matrices are exactly the identity, and the transform set's `+0x28` holds a second array of 136 matrices that do not
-change. :observed[one recording]{games="elden-ring"}
+change. :observed[one recording]{games="elden-ring"} In a second recording that keeps the whole of each buffer, the inverse matrix
+at `+0xD0` is the identity, all 16 words, in all 1,500 skin calls. :observed[one recording]{games="elden-ring"}
+
+The skin's code path is chosen by data, not by the processor: the low bits of two output-buffer format flags (`+0x28`, `+0x50`)
+select among SSE variants, and the code around it holds no AVX or FMA instruction. Both bits are set on the rear rope, which takes
+a packed three-influence block that stores all four lanes with aligned stores. :observed[read from the code of
+1.17.3]{games="elden-ring"} The same block turns the decoded local normal by the blended matrix rows and writes the sum to the
+buffer's normal stream (the pointer at `+0x40`, the stride at `+0x4C`) with no normalisation. :observed[read from the code of
+1.17.3]{games="elden-ring"}
 
 :::open[Where does the skin's last ulp come from?]
 In 6 of 1,499 steps two pinned particles of the rear rope differ by 1 ulp from a skin of the recorded bones, as if one bone were
-1 ulp off; no recorded state holds that value.
+1 ulp off; no recorded state holds that value. In the second recording the skin's own instructions, run natively on the recorded
+inputs, differ on 59 of 1,500 calls (198 lanes; 8 calls touch the pinned particles 8 and 9). No single rounding mode explains it
+(round down, up or toward zero differ on all 1,500 calls, with flush-to-zero and denormals-are-zero both off or both on), nor do
+fused multiply-adds in any of eight placements, nor the inverse matrices, nor the cloth file's values, which the replay reads
+straight from the installed file. The game thread's MXCSR, and a buffer pointer at `+0x110` the skin also reads, were not recorded.
 :::

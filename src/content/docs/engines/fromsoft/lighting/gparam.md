@@ -94,6 +94,45 @@ Two- and three-component float vectors occupy 16 bytes in the value array. :sour
 | 15 | RGBA, red first | 4 | :sourced[SoulsFormatsNEXT] |
 | 16 | UTF-16 string | Variable | :sourced[SoulsFormatsNEXT] |
 
+### Extra records
+
+After the fields a file can list, per group, the value IDs whose stored values it means (SoulsFormats' `UnkParamExtra`): the
+header gives the count of these records and their offset, and each names a group by its index. Version 3 records are 12 bytes,
+without the word at 12. :sourced[SoulsFormatsNEXT]
+
+```layout
+title: GPARAM version 5 extra record
+size: 16
+fields:
+  - {at: 0, size: 4, type: u32, name: group index, level: observed}
+  - {at: 4, size: 4, type: u32, name: ID count, level: observed}
+  - {at: 8, size: 4, type: u32, name: IDs offset, level: observed, note: "Relative to the extra IDs offset (header 60); that many i32 value IDs"}
+  - {at: 12, size: 1, type: u8, name: created rows inactive, level: observed, note: "Non-zero: a value row created for a field the file lacks starts inactive"}
+  - {at: 13, size: 1, type: u8, name: force value ID 0, level: observed, note: "Non-zero: the group's fields are looked up at value ID 0; 0 in every Elden Ring file"}
+  - {at: 14, size: 2, type: u16, name: unknown, level: unknown}
+```
+
+Sekiro's `m11_01_0000` and `m11_01_0020` hold 23 records each: `LightSet` (group 0) lists the IDs 0, 100, 110 and 120 and
+the tone map (group 4) the ID 0, and the `Bloom` record's word at 12 is 0 in one file and 1 in the other.
+:observed[both files read byte by byte, agreeing with the reader]{games="sekiro"} Over 448 draw-parameter files of the Elden
+Ring install, the bytes at 12 and 13 of a group's record (0 for a group with none) are (0, 0) for 11,048 of the 11,095 groups
+and (1, 0) for 47; byte 13 is never set. :observed[an independent byte-level join over every installed extra table]{games="elden-ring"}
+
+Both executables use the record when they load a file: :observed[read from the code of Elden Ring 2.7.2.0 and Sekiro 1.06]
+
+- For a stored field, a value ID the group's list names takes the file's bytes, and any other takes the field's reference
+  value; either way the value is then marked active. A value ID missing from the list is therefore not inactive: it stands
+  at the reference value.
+- When the game asks for a value ID the file lacks, every registered field of the group gets a new row from its reference
+  value. The row starts inactive and is made active only when byte 12 is 0, so with byte 12 set a field the file lacks stays
+  inactive and the [merge](#banks-and-layers) takes it from a lower bank.
+- Byte 13, when set, makes the group's field lookups use value ID 0.
+
+A field's reference value is a copy taken when the executable registers the field: the registration keeps a pointer to the
+live field and a copy of its initial value, and the loader's fallback returns the copy, not the live field's current value
+(a second operation writes the copy back through the pointer). :observed[read from the code of Elden Ring 2.7.2.0 and Sekiro 1.06]
+Whether anything changes the copy after registration is not established. :unknown
+
 ## Part selectors
 
 | Part graphics field | GPARAM group selected | Confidence |
@@ -146,7 +185,8 @@ evening and 5 night. :sourced[Smithbox]{games="sekiro"} The calls belong to stor
 `m25`. `2002:6` (Change Time Period) is in the schema, but no script of the install calls it. :proven[every event script of the
 install]{games="sekiro"} No param definition maps a period to an hour, so that mapping is in the executable. :inferred{games="sekiro"}
 The light sets of `m11_01_0000` key their values at the hours 0, 2, 4, 6, 12, 18 and 22, and set 0's `DiffColor0` at hour 0 is
-(0, 0, 0, 1): no sun at midnight. :observed{games="sekiro"}
+(0, 0, 0, 1): no sun at midnight. :observed{games="sekiro"} Its `ColorGrading[Yebis]` `LutSourceId` stores value ID 0 at the
+hours 0, 2, 6, 12, 18 and 22 as 0, 20, 0, 30, 0 and 20. :observed{games="sekiro"}
 
 Elden Ring's scripts call `2001:4` (Set Current Time) 9 times in the 544 event scripts, each inside a story or NPC event and none
 a clock the game starts with: `common.emevd` events 703 (23:45) and 910 (22:30), `m10_01` event 50 (23:45), `m18_00` events
@@ -330,8 +370,25 @@ The executable holds the loaded draw-parameter files in numbered banks, one per 
 `MapBase` (6) bank 4, `m00_00_0000` (7) bank 5, `MapOverride_0000` (8) bank 10 and `MapOverride_forRemo` (9) bank 11; only for
 name 7 does the key take a sub-index 0 to 4 added to it. A file is loaded by formatting `gparam:/%s.gparam`, and the map loader
 requests name 6, `MapBase`. A tone-map lookup takes the record of the requested bank and value ID, else bank 1's value 0, else
-a record built into the editor. :observed[the name and key tables of the executable and the decrypted code]{games="sekiro"} That
-gives the banks' identities, not their precedence. :unknown{games="sekiro"}
+a record built into the editor. :observed[the name and key tables of the executable and the decrypted code]{games="sekiro"}
+
+:only[sekiro] The merge walks 21 bank slots (64-byte descriptors) in ascending order. For a scalar it skips an inactive value of
+any bank but 0 and blends each active one into the running value by the bank's weight; a weight of 1 or more takes the incoming
+value outright, and an incoming value equal to the running one is taken before any weighting. :observed[read from the decrypted
+code of 1.06]{games="sekiro"} So a later bank at full weight replaces an earlier one for the fields it holds active.
+:inferred{games="sekiro"} `MapBase` reaches its bank through the map, not the ordinary file load: the map context's initializer
+requests name 6 and registers that file at bank key 4 with an activation of 1, which makes the bank active, and the bank's blend
+weight, a separate field, starts at 1. :observed[read from the decrypted code of 1.06]{games="sekiro"} How the activation ramps over
+time is not traced. :unknown{games="sekiro"}
+
+:only[sekiro] The tone map shows the rules at work. `default` stores `ReinhardContrast` 1.6 and `ReinhardWhiteBalance` 1.7 at value
+ID 0, hour 0, `MapBase` 1.45 and 1.7, and `m11_01_0000` neither. All three list ID 0 in the tone map's extra record (group 4), with
+byte 12 being 0, 0 and 1; `ColorGrading[Yebis]` (group 10) lists ID 0 with byte 12 0 in all three; `VolumetricFog` has no record in
+`default` and lists ID 0 (group 22) with byte 12 0 in `MapBase` and 1 in `m11_01_0000`. :observed[the three installed files]{games="sekiro"}
+Merging `default` (bank 1), `MapBase` (bank 4) and the map's file (bank 5) at full weight by these rules gives a contrast of 1.45,
+the value of the [recorded tone curve](/engines/fromsoft/lighting/frame/#tone-curve), and 1.6 without `MapBase`.
+:observed[the merge computed from the installed files, against one recorded frame]{games="sekiro"} The map's file lacks the
+field and its byte 12 leaves the created row inactive, so the field falls through to `MapBase`. :inferred{games="sekiro"}
 
 :only[elden-ring] The layer kinds have bank bases: kind 6 has base 5, so `WeatherBase` (kind 6, sub-kind 6) is bank 11 and
 `WeatherOutdoor` (sub-kind 7) bank 12. The controller holds 21 weights, one per bank, each checked to be in [0, 1] and stored in
@@ -345,7 +402,10 @@ which bank, beyond the two weather layers, is not traced. :unknown{games="elden-
 :only[elden-ring] The `WeatherBase` layer's weight is a wetness that ramps. A weather row's `WetTime` (`f32` at `+0x10`), when
 positive, gives a rate `1 / WetTime`; each update adds the elapsed time times that rate to the wetness, up to 1, and with a
 `WetTime` of 0 or less the wetness falls at a separate rate, down to 0. An elapsed time of zero snaps to the end. That wetness is
-the weight of bank 11. :observed[read from the decrypted code of 2.7.2.0]{games="elden-ring"} So the wet group of `weatherbase`
+the weight of bank 11 unless an override is on: the two getters that give the `WeatherBase` and `WeatherOutdoor` weights read the
+owner's `+0x178` and `+0x17C`, but `+0x20` and `+0x24` when the byte at `+0xF5` is set. :observed[read from the decrypted code of
+2.7.2.0]{games="elden-ring"} What sets that byte and those two weights is not traced, so the current weather row alone gives neither
+weight. :unknown{games="elden-ring"} So the wet group of `weatherbase`
 fades in over the weather's `WetTime` and out after it, rather than following the current weather at once. :inferred{games="elden-ring"}
 The weather object holds the current `WeatherParam` row as a reference at `+0x30`: the signed row ID, then a pointer to the row's
 68 bytes at `+0x38`. In one memory snapshot it read row 0 while the word at `+0x28` read 10, so `+0x28` is not the current row.
@@ -402,6 +462,6 @@ blended is read from the code ([looking up an hour](#looking-up-an-hour)).
 
 :::open[What selects local FogVolume sets?]
 `FogVolume ParamEditor` is distinct from a part's `FogParamEditor` selector. Equal numeric IDs do not prove a join
-between a placed volume and a FogVolume set. Comment tables, the opaque data block and extra group/ID records also
-retain unresolved meanings.
+between a placed volume and a FogVolume set. Comment tables, the opaque data block and the last two bytes of an
+[extra record](#extra-records) also retain unresolved meanings.
 :::

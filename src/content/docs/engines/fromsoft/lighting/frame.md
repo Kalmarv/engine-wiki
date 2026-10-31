@@ -198,7 +198,10 @@ The box's type data chooses the program and supplies its constants. The names ar
 
 The three diffuse-only draws are each map's whole-map box `Env_Box000`, and the two specular-only ones `m11_01`'s and `m11_00`'s
 `Env_Box900`. `m11_01`'s boxes 900 to 917, named `映りこみ用` ("for reflections"), have priority 90 and `UnkT08` 1, and
-`m11_00` and `m11_02` have one each. :observed{games="sekiro"} `m11_01`'s `Env_Box902` stores 258 (`0x102`) in `UnkT24`. :observed{games="sekiro"}
+`m11_00` and `m11_02` have one each. :observed{games="sekiro"} Of `m11_01`'s 107 boxes, 87 store 0 in `UnkT24`, 2 store 1, 17
+store 2, and `Env_Box902` stores 258 (`0x102`), whose `0x100` bit has no known meaning. :observed{games="sekiro"} Lighting four
+recorded wall points from the irradiance volumes of the 89 boxes that store 0 or 1, leaving out the specular-only boxes, gives the
+frame's four packed R11G11B10 irradiance words bit for bit. :observed[four points of one frame]{games="sekiro"}
 For a parallax-corrected region, `g_envMapMatPccObb` is the box itself (`g_envMapWorld`) on all 11 draws, and
 `g_envMapRegionPccOrigin` (`cb3` byte 288) is the position of the environment point of the same number (`Env_Point<id>`) bit for
 bit on all 7 of `m11_01`'s. :observed[one frame]{games="sekiro"} `g_envMapInterpRatio` is 0 on every draw, and `g_envMapFadeRate`
@@ -251,13 +254,23 @@ That the bound texels are that table's bytes is not yet read back from the runni
 `(z / (1 + z)) ^ (1 / g_ToneMapParam.y)`. :observed[the program's disassembly]{games="sekiro"} The same operations in the same
 order, rounded to `f16` where the program narrows, give all 1,024 stored half-words of a recorded frame's table bit for bit,
 with the frame's constants: contrast 1.45, white balance 1.7 and gamma 1. :observed[one frame at the Ashina Castle gate]{games="sekiro"}
+The program narrows to `f16` toward zero. :observed[one frame]{games="sekiro"}
 `ToneMap_TabledToneMapLUTPS` multiplies the scene by the scene exposure, adds the bloom, reads the curve at `x / (x + 0.2)`,
 then applies a colour matrix and the vignette and looks up the 16³ grading table. :observed[the program's disassembly]{games="sekiro"}
+In its standard (SDR) branch: :observed[the program's disassembly and one recorded draw]{games="sekiro"}
+
+- the colour matrix is three rows of four, each dotted with (mapped r, g, b, 1), and negative results are clamped to 0;
+- the vignette takes `r = length((2 uv − 1) × xy)` and `t = 1 − saturate(r × z + w)` from its constant, and multiplies by
+  `(t² (3 − 2t))⁴`;
+- the grading cube is sampled at `pow(rgb, cbToneMap[2].z) × 15/16 + 1/32`, trilinearly between texel centres with the edges clamped.
+
+The HDR-output branch is a different path, not described here.
 
 Of the 253 draw-parameter files of the install, which hold 151 Reinhard fields, `mapbase.gparam.dcx` stores `ReinhardContrast`
 1.45 and `ReinhardWhiteBalance` 1.7, the recorded frame's values; `default.gparam` stores 1.6 and 1.7, and `m11_01_0000` neither.
-:observed[every installed draw-parameter file]{games="sekiro"} So the frame's curve takes the `MapBase` layer's values there.
-:inferred{games="sekiro"} How the [banks](/engines/fromsoft/lighting/gparam/#banks-and-layers) take precedence is not traced.
+:observed[every installed draw-parameter file]{games="sekiro"} Merging the three by the game's
+[bank rules](/engines/fromsoft/lighting/gparam/#banks-and-layers) gives the frame's 1.45: the map's file leaves the field to
+`MapBase`. :observed[the merge computed from the installed files]{games="sekiro"}
 
 ### Volumetric fog
 
@@ -267,6 +280,13 @@ Of the 253 draw-parameter files of the install, which hold 151 Reinhard fields, 
 120 × 72 × 18 volume, which the sky draw reads. Before it run the sun's shadow reprojection, the in-scattering and one dispatch
 per local point light (four in the frame). :observed[one frame, the program's disassembly]{games="sekiro"} How its constants
 come from the draw parameters is on [GPARAM](/engines/fromsoft/lighting/gparam/).
+
+The in-scattering dispatch (`GXVolumetricFog` program `2fce80b2c53e19ff`) gives each froxel the density
+`fixedDensity + heightDensity × H(h)`, with `h` the world height times the height factor and the height distribution, and
+`H(h) = exp(−|h|)` for `h ≥ 0`, `2 − exp(−|h|)` below. Computed from the dispatch's constant buffer and narrowed toward zero to
+`f16`, it gives the density half of all 138,240 froxel words of the 120 × 72 × 16 grid bit for bit. :observed[one frame]{games="sekiro"}
+In the solve, the recorded slice 16 repeats slice 15. An emulation of the solve on the recorded inputs, with fused arithmetic and
+narrowing toward zero, gives 622,048 of its 622,080 half-words; the other 32 are not explained. :observed[one frame]{games="sekiro"}
 
 The moon `o005900` is a 10 by 10 quad with the material `M[Moon]` (masked by the texture `m99_Moon_3m`), skinned whole to
 the second of its two bones, with a skeleton and animations of its own; the recorded moon draw's vertex and index data are
@@ -302,6 +322,19 @@ The sky is a family of assets, `AEG096` (82 asset binders): skyspheres 53 to 86 
 the sky material families (`M[Sky3]` to `M[Sky9]`, `M[Clouds…]`, `M[Atmosphere][Clouds]_…`, `M[DistantClouds]_…`) whose
 materials are named `Field_Skysphere_…`. :observed{games="elden-ring"} They are placed by the areas' `_99` maps: the
 open world's `m60_00_00_99` places 38 of them. :observed{games="elden-ring"}
+
+The sky's forward draws do not share one render state. With a `GreaterEqual` depth test in each, the recorded draws of the
+Stormveil gate set:
+
+| Pixel program | Colour blend | Depth write | Confidence |
+|---|---|---|---|
+| `M[Sky9]_FwdSdw` | off | on | :observed[three recorded draws]{games="elden-ring"} |
+| `M[Clouds5]_FwdSdw` | source alpha, one minus source alpha; alpha One, Zero | on | :observed[three recorded draws]{games="elden-ring"} |
+| `M[DistantClouds]_001_FwdSdw` | the same | off | :observed[three recorded draws]{games="elden-ring"} |
+
+The materials of `Field_Skysphere_10`, `Clouds400`, `Clouds410` and `Clouds411` state the matching
+[blend mode](/engines/fromsoft/materials/mtd/#blend-mode-and-alpha-reference) (0 for `M[Sky9]`, 2 for the two cloud families)
+and, for the distant clouds, a flag that turns depth writes off. :observed[those four materials]{games="elden-ring"}
 
 Which show depends on the weather: `WeatherAssetReplaceParam` (1,007 rows) lists, for a `_99` map and a weather id, the
 assets drawn; every one of `m60_00_00_99`'s 38 sky assets is listed for some weather, and its 18 weathers list 1 to 27 of

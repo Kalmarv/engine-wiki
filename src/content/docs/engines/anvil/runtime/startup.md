@@ -67,6 +67,33 @@ An optional check at `0x9EF420` asks the version of `dbghelp.dll`: it reads only
 block larger than `0x800` bytes and accepts version 5.1.2600.2181 or later; its caller (`0x9EF270`) frees the library when the check
 fails. The install ships no `dbghelp.dll`. :observed[static reading, and a run of that path]
 
+### Processors, fibers and exceptions
+
+The engine probes each processor in turn. `0x9F2D80` calls `GetProcessAffinityMask` on the current process; when the process and
+system masks differ it returns without probing, and when they are equal it walks the mask's bits, narrowing the process to one
+processor at a time with `SetProcessAffinityMask`, probes it, and restores the mask. :observed[static reading, and a boot under
+emulation with one processor]
+
+The engine uses fibers. A wrapper's constructor (`0xA1D1B0`) converts the calling thread with
+`ConvertThreadToFiber(NULL)` (`0xA1D1D7`) when its first argument is 0 and otherwise creates a fiber on the given function with
+`CreateFiber` (`0xA1D1F1`). The executable imports all five fiber functions, and `SwitchToFiber` is called from eight places
+(`0x9F29E3`, `0x9F3A45`, `0x9F3A98`, `0x9FBC83`, `0xA00D1F`, `0xA00E4B`, `0xA1D2BC` and `0x16B429C`). The boot reaches
+`ConvertThreadToFiber` right after the processor probe. :observed[static reading of the import references, and one boot under
+emulation]
+
+The boot raises a software exception on purpose: `RaiseException` is called at `0x9FC145` inside a frame of the C runtime's
+`__except_handler3` (`0x1422D58`), whose scope table (`0x1A84558`) has a filter at `0x9FC14D` that returns −1
+(`EXCEPTION_CONTINUE_EXECUTION`), so the call returns and the boot goes on. :observed[static reading, and the filter reached in a
+boot under emulation]
+
+The executable is a GUI program (PE subsystem 2) with no console: the C runtime's write routine (`0x143108C`) takes a failing
+`GetConsoleMode` to mean no console and writes with `WriteFile`, and the runtime still installs its own console control handler
+(`SetConsoleCtrlHandler(0x142F246, TRUE)` at `0x142F44E`). Its time-zone set-up (`0x1440864`) reads the `TZ` variable before
+`GetTimeZoneInformation`, and its locale code takes the user's default LCID, enumerates the installed locales with
+`EnumSystemLocalesA` and compares their English and abbreviated language and country names (`LOCALE_SENGLANGUAGE`,
+`LOCALE_SENGCOUNTRY`, `LOCALE_SABBREVLANGNAME`, `LOCALE_SABBREVCTRYNAME`) with the one requested. :observed[static reading; these
+sites were not run]
+
 ## Graphics
 
 Graphics start from a registered boot task, not from the main function. The task checks for Shader Model 3, picks the

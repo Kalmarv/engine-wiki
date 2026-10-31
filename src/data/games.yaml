@@ -140,3 +140,11 @@
   developer: Robomodo
   year: 2010
   build: "PlayStation 3 disc, title ID BLUS30542, version 01.00 (PARAM.SFO), 1,124 files of the dumped disc"
+
+- id: tmnf
+  name: TrackMania Nations Forever
+  short: TMNF
+  engine: gamebox
+  developer: Nadeo
+  year: 2008
+  build: "Map files (.Challenge.Gbx) from TrackMania Exchange, read without a fingerprinted install"

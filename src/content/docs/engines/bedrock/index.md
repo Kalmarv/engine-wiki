@@ -28,6 +28,13 @@ How an entity is drawn:
   they read the holder's variables.
 - [First-person player](/engines/bedrock/animation/first-person/): how the player model is posed for its own view.
 
+How the world and items are coloured:
+
+- [Colour maps](/engines/bedrock/vegetation/colour-maps/): the maps grass and foliage take their colour from, by
+  climate or by a client biome's `color_map`, and the single-colour birch, spruce and swamp maps.
+- [Item icons](/engines/bedrock/textures/item-icons/): a block item's carried textures, and the potions' per-effect
+  bottles.
+
 :::open[What do the current renderer's compiled materials hold?]
 The material and shader facts here are those of the 1.16-era renderer, from published copies. The game now compiles
 its materials, and their definitions are not published.

@@ -23,3 +23,7 @@ shaders; no installed game was read. :observed{games="minecraft-bedrock"}
   ([entity materials](/engines/bedrock/materials/entity-materials/#tame-cat-textures)). :observed{games="minecraft-bedrock"}
 - 151 variables the vanilla scripts read are never assigned by any script, so the engine sets them
   ([engine variables](/engines/bedrock/data-model/engine-variables/)). :observed{games="minecraft-bedrock"}
+- The birch, evergreen and two swamp foliage colour maps are each one colour, and three of the 89 client biomes name a
+  map ([colour maps](/engines/bedrock/vegetation/colour-maps/)). :observed{games="minecraft-bedrock"}
+- 151 block entries name carried textures, coloured-in pictures for the block's item
+  ([item icons](/engines/bedrock/textures/item-icons/)). :observed{games="minecraft-bedrock"}

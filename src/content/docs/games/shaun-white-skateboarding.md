@@ -64,6 +64,44 @@ the clipping is in the material. :observed[every audio clip decoded and mixed]
 Each frame is decoded into separate Y, U, V and alpha planes of one byte per sample, with sizes rounded up to multiples
 of 8 (chroma at half size); the game uploads the Y plane and the two chroma planes as separate textures. :observed[static reading of the executable and of `binkw32.dll`]
 
+Every file's header reads as below, its frame index is increasing and inside the file, and splitting the frames by it gives the
+same packets as FFmpeg 6.1.1, frame for frame. :proven[all 77 files of the patched copy]
+
+```layout
+title: Bink 1 file header
+size: "44 + 20 per audio track + 4 per frame"
+note: Little-endian. The tables after offset 44 follow one another with no gap.
+fields:
+  - {at: 0, size: 4, type: "char[4]", name: magic and revision, value: "BIKi", level: proven}
+  - {at: 4, size: 4, type: u32, name: file size minus 8, level: proven}
+  - {at: 8, size: 4, type: u32, name: frame count, level: proven}
+  - {at: 12, size: 4, type: u32, name: largest frame size, level: proven}
+  - {at: 16, size: 4, type: u32, name: duplicated frames, level: sourced}
+  - {at: 20, size: 4, type: u32, name: width, level: proven}
+  - {at: 24, size: 4, type: u32, name: height, level: proven}
+  - {at: 28, size: 4, type: u32, name: frame rate numerator, level: proven}
+  - {at: 32, size: 4, type: u32, name: frame rate denominator, level: proven}
+  - {at: 36, size: 4, type: u32, name: video flags, level: proven, note: "0x00100000 alpha plane, 0x00020000 grey; 0 in all 77 files"}
+  - {at: 40, size: 4, type: u32, name: audio track count, level: proven}
+  - {at: 44, size: "4 per track", type: "u32[]", name: largest decoded audio size, level: proven, note: one per track}
+  - {at: "after those", size: "4 per track", type: "u16, u16", name: sample rate and audio flags, level: proven, note: "flags 0x4000 16-bit, 0x2000 stereo, 0x1000 DCT; 0x7000 and 0x5000 in these files"}
+  - {at: "after those", size: "4 per track", type: "u32[]", name: track ids, level: proven}
+  - {at: "after those", size: "4 per frame", type: "u32[]", name: frame offsets, level: proven, note: "bit 0 set on a keyframe"}
+```
+
+A frame's packet starts, for each audio track, with a `u32` chunk size and then, in a non-empty chunk, a `u32` count of the
+PCM bytes the chunk decodes to and the coded blocks. A chunk holds as many whole blocks as fit: usually one, but the first
+chunk of a clip holds 18 or 19, so a decoder has to go on decoding inside a chunk (the first chunk of track 1 of `q16_sq13`
+decodes to 72,960 bytes, 19 blocks of 1,920 16-bit samples). :observed[every audio clip, decoded within one step of FFmpeg 6.1.1's output]
+
+`BinkGetFrameBuffersInfo` (in `binkw32.dll` 1.9u) fills a `u32` buffer count (1 for a file of one frame, else 2), the luma
+width and height and the chroma width and height (`(width + 1) / 2`), each rounded up to a multiple of 8, a zero word, then
+per buffer four planes (Y, U, V, alpha) of 12 bytes: `u32` used, the buffer pointer, `u32` pitch. Used is 1 for Y, U and V and
+the alpha flag for the fourth. :observed[static reading of `binkw32.dll` 1.9u] The game reads these fields of the `BINK`
+handle directly: `+0x08` frame count, `+0x0C` and `+0x10` the current frame, `+0x14` and `+0x18` the frame rate, `+0x20` the
+flags, `+0xBC` the registered buffers, `+0xE0` the audio track count, `+0x2A4` the width and `+0x2A8` the height; its
+`BinkGoto` calls count frames from 1. :observed[static reading of the executable's call sites]
+
 ## Levels
 
 The six numbered forges are the game's main levels, named by the game's district table and the strings of the English text ([localization](/engines/anvil/gameplay/localization/)). Each name below carries the id of its string. :observed

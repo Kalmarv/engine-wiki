@@ -31,6 +31,18 @@ accounts for 211 imports and 5,291 of the places. The most called are `TlsGetVal
 `EnterCriticalSection` (567), `GetCurrentThreadId` (218) and `GetLastError` (109). :observed[a scan of the executable's code
 sections for indirect calls through the import table]
 
+`user32` provides 39 of the imports. Input comes through DirectInput 8 and XInput: the one `dinput8` import is
+`DirectInput8Create`, the executable imports none of the `c_dfDIKeyboard`, `c_dfDIMouse` or `c_dfDIJoystick` data formats
+(it passes formats of its own to `SetDataFormat`), and it imports XInput by ordinal only: 2 (`XInputGetState`), 3
+(`XInputSetState`) and 4 (`XInputGetCapabilities`). :observed[the executable's import table]
+
+### Static initialisers
+
+Before `WinMain` the C runtime calls the initialisers listed in a table at `0x18C5818`: seven function pointers,
+`0x141B25D`, `0x141C232`, `0x142D07B`, `0x1432F6C`, `0x1433B78`, `0x141A6A0` and `0x1431C0A`, each the start of a function.
+Functions in the code sections are separated by runs of `int3` padding. :observed[static reading, confirmed by running the
+start-up code]
+
 ## Graphics
 
 Graphics start from a registered boot task, not from the main function. The task checks for Shader Model 3, picks the

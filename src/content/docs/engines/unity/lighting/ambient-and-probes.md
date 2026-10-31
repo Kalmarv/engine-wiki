@@ -103,3 +103,27 @@ Fog is off in every SkateBIRD scene. :proven{games="skatebird"}
 SkateBIRD's scenes store the reflection source `Skybox` with intensities 0.344 (bedrooms, rooftop, office, playground, skate
 heaven), 0.548 (server room) and 0.0 (flashback), and a subtractive shadow colour (0.42, 0.478, 0.627); each scene has 1 to 23
 reflection probes (the office has 23). :proven{games="skatebird"}
+
+## PEAK
+
+PEAK's levels light their surfaces from globals that its scripts set when a level starts, not from `RenderSettings` alone:
+:observed[the managed scripts read, and level 4's volume rebuilt]{games="peak"}
+
+- `FogShaderParams.Start` sets the global texture `FogTexture`.
+- `LightVolume.Start`, when the light map's RGB and alpha slice arrays are both non-empty, rebuilds the light volume: each slice
+  is a BC6H texture (RGB) and a BC4 texture whose red is the alpha, read with `GetPixels` and written with `SetPixels` into an
+  `RGBAHalf` `Texture3D` with no mips (rows in Unity's order, not flipped), which it binds as `_LightMap`. It then sets
+  `_Brightness`, `_AmbienceStrength`, `_AmbienceMin`, `_GridRes` (x, y, z, 0), `_RaySpacing` and `_GridOffset` (w 0), the grid
+  size and offset copied from the light map. These slices are the unnamed one-level BC6H and BC4 textures of the level bundles
+  ([textures](/engines/unity/textures/textures/)) :inferred[from the pairing and their equal counts]{games="peak"}. A reader assembling level 4's volume (`576878`) this way gives the editor's
+  `RGBAHalf` bytes slice for slice.
+- `FogConfig.Start` sets `_WeatherBlend` to 0. `_WindTexture` and the `Wind*` globals are set only by `FogConfig.SetFog`, which
+  only `StormVisual.LateUpdate` calls, while the observed character is in a storm zone whose wind is on; at a level's start no
+  script sets them.
+
+A `LightVolume`'s script data is 188 bytes plus 12 per slice reference, and a `FogConfig`'s 84 bytes (its private `sinceSet` is
+not stored). :observed{games="peak"}
+
+In the Unity editor (6000.6.4f1, linear colour space), a global texture (2D, 3D or cube) that was never set, or was set to
+null, samples as (0.2158203, 0.2158203, 0.2158203, 0.5019608): 128/255 decoded from sRGB in RGB and 128/255 in alpha. A global
+float or vector never set reads 0. :observed[probe shaders in the editor]

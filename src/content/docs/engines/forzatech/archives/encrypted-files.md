@@ -11,6 +11,12 @@ sources:
   - title: Forza-Crypto-Tool data mirror
     url: https://gist.github.com/DVS-code/b66d155ae0cb76072c7f71868538355d
     note: decrypted FH6 data from the tool's authors, including the game database as SQLite
+  - title: FH6-Local-Crypto-Car-Editor-Tool (HTTPJXRDN)
+    url: https://github.com/HTTPJXRDN/FH6-Local-Crypto-Car-Editor-Tool
+    note: decrypts FH6 files offline; its source (ForzaZip.cs, GameDb.cs, Scramble.cs) describes the cipher, and its keys sit in a bundled, obfuscated .NET library
+implementations:
+  - name: "forzatech-formats (container.rs, gamedb.rs)"
+    url: https://github.com/Kalmarv/forzatech-formats
 ---
 
 Forza Horizon 6 encrypts its game database, its string-and-settings archives and the player's profile with **Arxan
@@ -58,13 +64,36 @@ subsystem, not to these files. :observed A static analysis of `forzahorizon6.exe
 executable is not packed and its entry point is the ordinary compiler start-up code; `.text` is 104 MB of which some
 64 KB windows are near random (above 7.9 bits per byte) yet hold real function boundaries, and some individual
 functions (two that register the instancing data) are stored encrypted and decrypted in memory at run time. :observed
-No public key for the FH6 files exists; a community tool decrypts them server-side only. :sourced[Forza-Crypto-Tool]
+Forza-Crypto-Tool decrypts the FH6 files only on its authors' server and ships no key. :sourced[Forza-Crypto-Tool]
 Its authors publish decrypted data; in it `gamedbRC.slt` is an SQLite database of 205 tables listing 638 cars.
-:sourced[Forza-Crypto-Tool data mirror]
+:sourced[Forza-Crypto-Tool data mirror] A second tool decrypts them offline with plain AES keys, already lifted out of
+the white-box tables, that it ships inside an obfuscated library: two transport keys shared by every container and a
+data and MAC key pair per kind of file (`GameDB`, `ProfileData`, `General` for settings files and archive entries).
+:sourced[FH6-Local-Crypto-Car-Editor-Tool] No key is published in the open.
 
-:::open[Where does the key live?]
-White-box AES hides the key inside the transform tables; static analysis of the executable did not recover it, and
-protected functions cannot be read from the file.
+## The cipher
+
+Each block is AES-256-CBC under the file kind's data key, with no padding mode (the header's padding field covers
+the tail). :sourced[FH6-Local-Crypto-Car-Editor-Tool] Every block and every MAC has its own IV: the next IV is the
+first 16 bytes of HKDF-SHA256 with the previous IV as input key material and the two transport keys as salt and info,
+so the whole chain follows from the IV in the header. :sourced[FH6-Local-Crypto-Car-Editor-Tool] A block's MAC is the
+AES-CMAC of its plaintext under the 16-byte MAC key, stored AES-CBC-encrypted under the data key with the IV after the
+block's. :sourced[FH6-Local-Crypto-Car-Editor-Tool] The header's MAC is the AES-CMAC of the padded length (u32,
+little-endian), the header's IV and its padding field, and the game rejects a container whose header MAC is stale.
+:sourced[FH6-Local-Crypto-Car-Editor-Tool]
+
+`gamedbRC.slt` has a second layer: its decrypted blocks are XORed with a keystream to give the SQLite image. Each
+4-byte group `q` is XORed with the CRC-32 of the four little-endian bytes of `q + C × (q + 1)` (ASCII upper case folded
+to lower case first), for a constant `C`; the game removes it in its in-memory SQLite file layer. The same tool calls
+the 16 bytes after the padding field a nonce in this file and does not check them or the block MACs.
+:sourced[FH6-Local-Crypto-Car-Editor-Tool]
+
+A method-22 archive entry decrypts to a raw DEFLATE stream, and a profile to a u32 compressed size, a u32 expanded
+size and a zlib stream. :sourced[FH6-Local-Crypto-Car-Editor-Tool]
+
+:::open[Is the cipher description right on the game's files?]
+The steps above come from one tool's source, not from the game's code or a decryption checked here. A real install's
+files decrypting with every MAC matching would confirm them.
 :::
 
 ## Not encrypted

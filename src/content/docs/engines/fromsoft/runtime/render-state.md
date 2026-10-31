@@ -1,6 +1,13 @@
 ---
 title: Runtime render state
 description: Direct3D capture observations and the limits of deriving runtime bindings from static files.
+sources:
+  - title: me3
+    url: https://me3.help/en/latest/
+    note: mod loader for FromSoftware games; its option that disables the Arxan protection
+  - title: dearxan
+    url: https://github.com/tremwil/dearxan
+    note: the Arxan neutraliser me3 integrates
 implementations:
   - name: primase runtime palette binding model
     url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/passes/layer_bake/resolve.rs
@@ -15,6 +22,13 @@ constants. :observed
 :only[sekiro] Sekiro's 1.06 executable (file version 1.6.0.0) is SteamStub-wrapped, with its `.text` section
 encrypted on disk. :observed{games="sekiro"} :only[elden-ring] Elden Ring's 1.17.2 executable has more than one executable
 section named `.text`, so code can lie outside the first. :observed{games="elden-ring"}
+
+:only[elden-ring] With hardware execute breakpoints armed in the debug registers of its threads (no code patched), one launch of
+2.7.2.0 crashed during the world load, before any breakpoint fired, on an execute fault at an address outside every loaded
+module. The same recording started through me3 0.8.0 with its option that neutralises the executable's Arxan anti-tamper stubs
+before the real entry point (1,597 stubs analysed, 3,078 patches) ran through the load and 1,500 cloth steps.
+:observed[two launches]{games="elden-ring"} That the anti-tamper code reacts to the debug registers fits both launches but is not
+isolated, since the loader also changes the start-up. :inferred{games="elden-ring"}
 
 ## Sekiro
 

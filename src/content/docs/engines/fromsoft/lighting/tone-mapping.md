@@ -1,6 +1,10 @@
 ---
 title: Exposure, tone curve and colour grading
 description: "How the final picture is formed from the lit scene: the exposure scale and its meter, the Reinhard curve table, the colour matrix, vignette and the 16³ grading look-up, with their constants, files and defaults."
+sources:
+  - title: Direct3D 11.3 functional specification
+    url: https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm
+    note: "section 3.2.2: floating-point conversion rules (rounding toward zero when narrowing)"
 ---
 
 The last stage of the [rendered frame](/engines/fromsoft/lighting/frame/) turns the lit HDR scene into the 10-bit picture.

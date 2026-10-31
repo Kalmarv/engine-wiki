@@ -233,6 +233,62 @@ rotations of `a010_000009` within 0.0014 rad, which the state machine's clips th
 does not drive keeps the pose of the layers below it. :observed{games="elden-ring"} How layers are mixed (a weight below 1, or a bone
 weight below 1) is not shown by that capture. :unknown
 
+## The player's twists
+
+:only[elden-ring] The player's graph (`Behaviors/c0000.hkx` in `chr/c0000.behbnd.dcx`) carries its twists in a modifier generator
+over `Master_Script`, `ModifiersLayer_ModifierGenerator`, as modifier lists: `LookAt` (the look-at twists, sensing dummies 260,
+261 and 266), `MoveAnimeTwist`, `Twist`, `EquipTwist`, `FemaleTwist`, `WeaponTwistElbow` and `ModifierList00` (foot and hand
+IK). :observed{games="elden-ring"}
+
+| Twist | Bones and axis | Angle from | Confidence |
+|---|---|---|---|
+| `MoveAnimeTwist`'s `TwistMaster` | bone 0 (`Master`), +Y, additive | `TwistMasterAngle` | :observed{games="elden-ring"} |
+| `MoveAnimeTwist`'s `TwistRootRotYCancel` | bones 47 to 50 (`Spine` to `Spine2`), −Y | `TwistMasterAngle`: the upper body cancels the master's yaw, so the legs turn under a fixed upper body | :observed{games="elden-ring"} |
+| `Twist`'s `TwistLowerRoot` (list enabled by `IsTurnTwist`) | bone 0, +Y | `TwistLowerRootAngle` | :observed{games="elden-ring"} |
+| `MoveTwistModifier` | bones 45 to 86, about model −Z | `MoveTwistAngle` | :observed{games="elden-ring"} |
+
+Every one of these angle variables starts at 0 and its name occurs once in the file, in the variable table, so nothing in the
+graph writes them: the game's code does. :observed{games="elden-ring"} The executable resolves 41 graph variables by a name table of
+its own (UTF-16): `IsLockon`, `MoveAngle`, `MoveSpeedLevel`, `MoveDirection`, `TurnAngle`, `AddBlend00` to `09`,
+`OriginalityAddBlend00` to `04`, `Overwrite00` to `09`, `DebugPadRStickX` and `Y`, `SlopeAngle`, `TwistUpperRootAngle`,
+`TwistLowerRootAngle`, `TwistMasterAngle`, `BlendSlope`, `RideOnAnimId`, `RiddenOnAnimId`, `SYS_IgnoreAllScript` and
+`SYS_IgnoreAutoAnimeEndEvent`, keeping each one's index in the behaviour module. :observed[read from the executable's code]{games="elden-ring"}
+The player's controller (`CS::PlayerCtrl`) owns a `CS::WalkTwist` (as does `CS::EnemyCtrl`), which on every update writes
+`TwistUpperRootAngle` and `TwistMasterAngle` as its controllers' current angles (radians) × 57.29578. A controller moves its current
+angle towards its target by its rate, either as a lerp by the rate or as a step of the rate per second; the master's target comes
+from a requested direction and the sector the twist's degree limits give it, the upper body's is −(master × k), and a request of
+weight 0 or less sets both targets to 0. :observed[read from the executable's code]{games="elden-ring"}
+
+The look-at twists are `CustomLookAtTwistModifier`s, 18 in the player's graph (ids 0, 10, 30, 50, 100, 110, 120, 130, 200, 300,
+301, 310 and 311); only `0_TwistLR`, `30_Attack` and the 3xx ones have left and right limits. A [TAE](/engines/fromsoft/animation/tae/)
+`Enable Twist Modifier` event (type 700) names one by its id: twist 100, `100_Attack`, turns bones 7 to 48 (`RootPos` to `Spine1`)
+at rate 1 with gains 0.9 for a new target, 0.1 on and 0.01 off, limits 30° up, 35° down and 0° left and right, minimums 18° up and
+20° down, sensing dummy 261 over 180°, linear and additive. :observed{games="elden-ring"} Dummy 261 is on `c0000.flver` under the
+node `LookAtセンシング用_固定`, attached to no bone, 1.166 m up and facing the model's forward. :observed{games="elden-ring"}
+
+## Transition effects
+
+:only[elden-ring] A blending transition's weight comes from its elapsed fraction: `t = min(1, min(timeInTransition + offset, duration)
+/ duration)` (0 when the duration is 0), the duration being the time in the transition plus the time remaining, both advanced by
+the step. The incoming pose's weight is a curve of `t` chosen by the effect's `blendCurve`, clamped to [0, 1]; in `f32`, with
+`t2 = t × t` and `t3 = t2 × t`: :observed[read from the executable's code]{games="elden-ring"}
+
+| `blendCurve` | Weight, in the order computed | Confidence |
+|---|---|---|
+| 0 | `(t2 × 3) − (t3 + t3)`: 3t² − 2t³ | :proven[the function's own code run on 74 fractions]{games="elden-ring"} |
+| 1 | `t` | :proven[the function's own code run on 74 fractions]{games="elden-ring"} |
+| 2 | `(t2 − t3) + t` | :proven[the function's own code run on 74 fractions]{games="elden-ring"} |
+| 3 | `(t2 + t2) − t3` | :proven[the function's own code run on 74 fractions]{games="elden-ring"} |
+
+`CustomTransitionEffect` shares `hkbBlendingTransitionEffect`'s code and stores no member beyond it. All 119 transition effects of
+the player's graph that have a `blendCurve` store 0 (65 `hkbBlendingTransitionEffect`, 53 `CustomTransitionEffect`, one
+`hkbHoldFromBlendingTransitionEffect`; its 14 `hkbGeneratorTransitionEffect`s and 3 `hkbManualSelectorTransitionEffect`s have
+none). The standing forward jump's transitions are `W_NewJump` (0.5 s, from `Master_SM`'s wildcard), `W_Jump_F` (0.5 s),
+`Jump_F_to_Jump_Loop` (0.5 s), `W_Jump_Land_N` (0.2 s) and `W_Jump_Land_F` (0.5 s), each with flags, end mode, start-time
+fraction, self-transition mode and event mode 0, alignment bone −1 and no variable bindings. The jump and landing clips are
+chosen by weapon style, as the idle is: `Jump_F_Direction_Front_CMSG` holds `a000`, `a002`, `a003`, `a010` and `a012` to `a016`
+`_202020`, and `Jump_Land_N_NormalHeight` the same styles' `_202100`. :observed{games="elden-ring"}
+
 ## Corroboration by an independent reader
 
 HKLib reads Elden Ring's tagfiles (`20180100`) and writes them as `hktagfile` version 3 XML. For all 1,021 distinct

@@ -279,3 +279,64 @@ The code's arithmetic fixes the order of every sum (Havok's SSE2 build; the exec
   with `u = |ω dt / 2|^2 * 4 / pi^2`, multiplies the current rotation by it and normalises the result.
 - A plane query (`hclPlaneShape`, `hclPointContactPlanesShape` and the per-particle landscape contact planes) sums
   `((x * px + y * py) + z * pz) + w`, four particles at a time; the landscape test then adds the particle's radius.
+
+## Elden Ring
+
+### Collidables added at run time
+
+A sim cloth's particles can collide with more collidables than its file holds. Over 814 distinct cloth tagfiles (2,875 sim
+cloths), 75 sim cloths have `staticCollisionMasks` bits at or past their `perInstanceCollidables` count, 34 of them with no
+per-instance collidable at all: their particles collide with collidables the game adds. :observed[814 tagfiles]{games="elden-ring"}
+`BD_RearRope` of `bd_m_1360` and `bd_m_1361` has no collidable and every particle's mask 0, while `bd_m_1365`'s rope has 2
+collidables and the mask `0x3` on 14 of its 17 particles. :observed{games="elden-ring"}
+
+The type table of every one of those files describes the collidable and shape classes alike: :observed[814 tagfiles]{games="elden-ring"}
+
+```layout
+title: hclCollidable (version 4)
+size: 160
+games: [elden-ring]
+fields:
+  - {at: 32, size: 64, type: hkTransform, name: transform, level: observed}
+  - {at: 96, size: 16, type: hkVector4, name: linearVelocity, level: observed}
+  - {at: 112, size: 16, type: hkVector4, name: angularVelocity, level: observed}
+  - {at: 128, size: 8, type: u64, name: userData, level: observed}
+  - {at: 136, size: 8, type: pointer, name: shape, level: observed}
+  - {at: 144, size: 8, type: pointer, name: name, level: observed}
+  - {at: 152, size: 4, type: f32, name: pinchDetectionRadius, level: observed}
+  - {at: 156, size: 1, type: u8, name: pinchDetectionPriority, level: observed}
+  - {at: 157, size: 1, type: bool, name: pinchDetectionEnabled, level: observed}
+  - {at: 158, size: 1, type: bool, name: virtualCollisionPointCollisionEnabled, level: observed}
+  - {at: 159, size: 1, type: bool, name: enabled, level: observed}
+```
+
+`hclShape` is 32 bytes with its type (`int`) at `+0x18`; `hclCapsuleShape` is `0x60` bytes, `hclTaperedCapsuleShape` (version 2)
+`0xB0`, `hclSphereShape` and `hclPlaneShape` `0x30` and `hclConvexGeometryShape` `0x120`. :observed[814 tagfiles]{games="elden-ring"}
+The running game lays its collidables out the same way: the two that the player's rope instance lists in its collidable array
+(`+0x178` of the sim cloth instance) read a pinch radius of 0.01 and enabled 1 at `+0x98`, and their shapes lie `0xB0` apart.
+:observed[one recording]{games="elden-ring"}
+
+The rope's two run-time collidables are the stowed spear's. The equipped weapon model `WP_A_0902` (a spear, weapon type 25)
+ships `WP_A_0902_collidable.hkx`: an `hclClothContainer` with two `hclCollidable`s, `WP_Colidable_L_001` and `_002`, each with
+an `hclTaperedCapsuleShape`, and no cloth data. The game's two shapes equal the file's within 1 to 12 ulp in every member (it
+rebuilds them), and their flags and pinch radii are bit for bit the file's. :observed[one recording]{games="elden-ring"} The same
+file (one hash) ships with about 35 spear, halberd and great-spear models (`09xx`, `10xx`, `1551`), every one hung by
+`WepAbsorpPosParam` hang type 3 at the dummies 2037 and 2038. :observed{games="elden-ring"}
+
+The game places both as one rigid body on the character's `Spine1`: each capsule is `Spine1 × A × T`, `T` its transform in the
+file, with one `A` for both (to 5.7e−7) and `Spine1` the bone of the step before. `A`'s rotation is `c0000.flver`'s dummy 40
+(`Model_Dmy_Storage(Spine)`, attached to `Spine1`) turned 180° about its z, to 1e−4; its origin is 5.4 cm from dummy 38, and the
+rule for the origin is not established. :observed[one recording of 639 steps]{games="elden-ring"}
+
+Between a cloth step and the next notify, each collidable's translation becomes its translation after the notify plus its
+linear velocity times the step's `f32` time step, bit for bit in all 639 steps for both; its rotation changes every step, also
+where the recorded angular velocity is 0, so it does not come from integrating that velocity. The velocities read before a
+notify are already those of the next frame, and the notify itself leaves them unchanged (638 of 638). :observed[one recording of a
+standing jump]{games="elden-ring"} With these collidables a replay of the particle step gives the game's positions bit for bit in
+604 of the 639 steps; 24 of the 35 that differ fall while the rope touches the capsules, and the other 11 are small.
+:observed[one recording]{games="elden-ring"} What the replay still misses in contact is not established.
+
+:::open[Where is the spear's collidable origin?]
+The rotation of the spear's collidables is the storage dummy 40's turned about z, but their origin is 5.4 cm from dummy 38 and
+matches neither dummy.
+:::

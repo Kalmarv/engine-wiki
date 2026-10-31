@@ -100,3 +100,17 @@ The renderer draws in such a frame too. In a frame captured at the Stormveil gat
 (−216, 40, 16) from render to map, and the scene constants' `SC_CameraPos` equals `SC_RenderCameraPos`, so the frame's constants
 state no offset. :observed[one capture]{games="elden-ring"} That the render frame and the physics frame share their origin is
 :inferred{games="elden-ring"} from the same offset in both.
+
+In the scene constants (`cbSceneParam`, `b8`) the camera position is at byte 48, the view matrix at 80, the reverse-Z
+projection at 256 and the camera-to-world rows at 320; the asset and map-piece G-buffer programs take a draw's instance
+matrices from `b5`, 3 × 4 row-major with a stride of 48 bytes, as many as the draw's instance count. With the stock offset, the
+instance matrices of 40 G-buffer draws at the Stormveil gate put every resolved placement on its layout part to under 1 cm.
+:observed[40 draws of one recording]{games="elden-ring"}
+
+Since the offset belongs to the run, a recorded frame's camera and lights need that run's offset before they can be compared
+with the map. Three things in a run's own data give it: physics modules standing on at least three distinct layout Player or
+Enemy parts, to 0.01 m; the translation that puts the most point-light records on the bank's lights; or, from the camera
+alone, the candidate offset under which a known actor projects through the frame's own view and projection matrices onto
+where the picture shows it. In one run under the stock offset the eye was 3.1 m from the Main Gate grace `c1000_9008` and the
+grace projected onto its flame in the picture; under the shifted offset it projected far outside the picture.
+:observed[runs at the Stormveil gate]{games="elden-ring"}

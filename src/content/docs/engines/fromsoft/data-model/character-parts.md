@@ -106,6 +106,28 @@ of 776 hold dummies are on `c0000.flver` (the hang dummies 2069 and 2070 are not
 (row 8000000) holds model 0 at 20 (`R_Weapon`) and model 1, the sheath, at 147; the Uchigatana (row 9000000) its blade at 20 and
 its scabbard at 2069. :observed
 
+:only[elden-ring] Elden Ring's hold values come in two ranges. Over every hold slot (`right_n` to `leftBoth_n`, `n` 0 to 3) of
+every row, 581 slots name a value below 1000 and 194 a value from 2000 to 2999, and no other thousand occurs; `c0000.flver` has
+no dummy at or above 1000, and every 2xxx value less 2000 is a `c0000.flver` dummy id. :observed[every slot of every row]{games="elden-ring"}
+Of the worn parts only body parts carry dummies: 760 of the 834 `bd_` binders, none of the 552 `hd_`, 334 `am_`, 404 `lg_` or
+142 `hr_` binders, and 6 of the 195 `fg_` binders (id 15). The body parts' ids are 30, 31, 33 to 42, 47 to 52, 54, 61 to 70, 73 to
+79, 113, 114, 118, 119, 162, 406, 407 and 409. :observed[every part binder in the community file list]{games="elden-ring"}
+`bd_m_1360_l` carries 26 (30, 31, 49 to 52, 61 to 70, 73 to 79, 118, 119, 162), all under `BD_Model_Dmy_Storage(Pelvis)` and
+attached to the pelvis, and 20 of the 37 distinct 2xxx remainders are among them; where both have an id, the armour can move it
+(dummy 31 lies 3.7 cm from `c0000.flver`'s, dummy 69 0.8 mm). :observed{games="elden-ring"} So a 2xxx value names the worn body
+part's dummy `value − 2000`: the Uchigatana's scabbard (`wp_a_0550_1_l`) has `right_1`, `both_1` and `rightHang_1` 2069 and the left
+slots 2070, hanging at the body part's dummy 69 on the left hip while the sword is drawn in the right hand. :inferred{games="elden-ring"}
+The community definition describes `rightHang_n` as the dummy while the right-hand weapon is sheathed. :sourced[Smithbox]{games="elden-ring"}
+The executable holds a table of dummy-polygon id bases filled by a static initialiser: 1000, 2000, 3000, 4000, 10000, 11000,
+12000, 13000, 20000, 21000, 22000 and 23000 (`int32`); its readers are in obfuscated code and are not decompiled.
+:observed[read from the executable]{games="elden-ring"}
+
+:::open[Where does a weapon hang when the body part lacks its dummy?]
+The values 2116 and 2117 (18 slots) name ids no body part carries (`c0000.flver` has 116 and 117, under
+`Model_Dmy_AttachWeapon` on `L_Weapon`), and one slot names 408, which nothing carries. Where the game puts such a model is not
+established.
+:::
+
 | Field | Sekiro | Elden Ring | Confidence |
 |---|---|---|---|
 | `EquipParamWeapon` row size | 632 | 664 | :sourced[Paramdex] |

@@ -128,8 +128,61 @@ In the running game the sky map's 27 parts are one block of map parts, and one d
 Ashina Castle scene, read twice 40 s apart, two of the 27 have bit `0x200` set in the 32-bit word at part `+0x14C` (`0x04043E00`
 against `0x04043C00` on the other 25): the dome `m900020_0000` (entity 8904020) and the ring `m900120_0000` (entity 8904021), the
 ring's number being the dome's plus 100. :observed[one scene, two readings]{games="sekiro"} So the game shows a sky by enabling one
-dome and its ring, not by choosing among drawn domes when it renders. :inferred{games="sekiro"} Which sky state `m900020` holds
-was not read.
+dome and its ring, not by choosing among drawn domes when it renders. :inferred{games="sekiro"} `m900020` is the evening dome.
+:observed{games="sekiro"}
+
+### What chooses the sky
+
+Event 100 of `common.emevd` (initialised by instruction 6 of common event 50) chooses the sky and the environment volumes
+from four story flags, 9800 to 9803. After branches for particular maps and flags (one for map 10 selects environment 0), it
+takes the first of these that holds: :observed[the installed script, read instruction by instruction]{games="sekiro"}
+
+| Flags 9800 to 9803 | Part group enabled (`2012:1`) | `2003:80` environment |
+|---|---|---|
+| all off | 8907000 | 1 |
+| 9800 on, the rest off | 8907010 | 2 |
+| 9800 and 9801 on, 9802 and 9803 off | 8907020 | 3 |
+| 9800 to 9802 on, 9803 off | 8907030 | 4 |
+| all on | 8907050 | 5 |
+
+The third branch also clears flag 9810 and sets animation 4 on the sky object 8901000. `2012:1` takes the group, not a part:
+the one call for group 8907020 enables the evening dome (entity 8904020) and its ring (8904021); in a run of the game from a cold
+start, all 29 calls the script made reached those parts. :observed[29 of 29 calls, one run]{games="sekiro"} The sky therefore
+follows the story's world state, not the clock hour. :inferred{games="sekiro"} The environment number of `2003:80` is the
+package suffix of the environment volumes the frame draws: the evening branch's 3 goes with `_03` below. :inferred{games="sekiro"}
+
+### Irradiance volumes
+
+The walls' diffuse ambient comes from volumes, not from the light set. Each of `m11_01`'s six packages
+`m11_01_00_00_envmap_00` to `_05.tpf.dcx` holds 580 textures: 464 BC7 (DXGI 98, package code 102) single-mip volume textures
+and 116 cube maps, the volumes being 116 complete groups `GIIV<nnnn>_<ss>_W`, `_X`, `_Y` and `_Z`, and every one of the 107
+`EnvironmentMapEffectBox` regions of the layout has a group in every package (9 groups more are not placed).
+:observed[all six packages, read with an independent reader]{games="sekiro"} The four volumes of a group usually share one
+grid, but not always: six groups of `m11_00` (packages 01 and 05: groups 0250, 0300, 0307 and 0323) mix sizes, `0250_05` having
+X, Z and W of 40 × 20 × 36 and Y of 64 × 36 × 60. Every group of `m11_01`, and every group of the `_03` packages, shares one grid.
+:observed[the DDS headers of the `m11_00`, `m11_01` and `m11_02` packages]{games="sekiro"}
+
+In a frame at the evening lighting, every one of the 1,524 volume textures the game created matched, byte for byte, a `GIIV`
+texture of the packages, and each of the 61 `GXEnvMapRegion` draws bound the four volumes `X`, `Y`, `Z` and `W` of one group
+of package `_03`, in that order, including regions of the neighbouring maps `m11_00` and `m11_02`. :observed[one frame, the
+uploads hooked]{games="sekiro"} The neighbouring maps' regions draw in an `m11_01` frame: the region draws of one frame
+included `m11_00`'s box 000 (centre (102.4, 583, 8.69), 13,520 × 1,600 × 13,439 m) and `m11_02`'s (centre (−8.5, −67.3, −62.5),
+10,000 × 1,250 × 10,000 m) beside `m11_01`'s own; a drawn centre is the layout's position plus half the box's height.
+:observed[one frame]{games="sekiro"}
+
+The diffuse region program decodes each coefficient texel as `(rgb − 0.5) × 2 × 2^((a − 0.5) × 20)`, takes per colour channel
+the dot product of a coefficient row with `(n, 1)`, clamps it at 0 and multiplies by the pre-exposure; it scales by its
+diffuse colour scale (1) and does not read `g_envMapColorScale`, and it samples the volumes trilinearly at level 0, clamped,
+at a position offset along the normal. :observed[the program's disassembly]{games="sekiro"}
+
+### Volumetric fog
+
+`GXVolumetricFog_SolveVolumetricFog` runs as 15 × 9 × 1 groups of 8 × 8 × 1 threads. It integrates the 16 slices of
+120 × 72 froxels from two `R32_UINT` targets that pack density and blue, and red and green, as half floats, and writes slices
+0 to 15 in RGBA16F, the accumulated end in slice 16 and, with `EnableAnalyticalFog` 0, a neutral (0, 0, 0, 1) in slice 17: a
+120 × 72 × 18 volume, which the sky draw reads. Before it run the sun's shadow reprojection, the in-scattering and one dispatch
+per local point light (four in the frame). :observed[one frame, the program's disassembly]{games="sekiro"} How its constants
+come from the draw parameters is on [GPARAM](/engines/fromsoft/lighting/gparam/).
 
 The moon `o005900` is a 10 by 10 quad with the material `M[Moon]` (masked by the texture `m99_Moon_3m`), skinned whole to
 the second of its two bones, with a skeleton and animations of its own; the recorded moon draw's vertex and index data are
@@ -153,10 +206,9 @@ and y), its normal its own −z, and its vertices select the second of the draw'
 direction, whose y axis is the world's up made perpendicular to it, and whose x axis completes a right-handed frame.
 :observed{games="sekiro"} So the moon moves with the light set's `Angle0` over the day. :inferred{games="sekiro"}
 
-:::open[What chooses the dome?]
-Which of `m89_00_00_99`'s domes and rings is enabled can be read from the part's flag word, but what enables it (the event
-scripts' `Set Lighting` time period, 1 to 5, is the likely input) is not established: no event instruction names their entity
-ids, and no code constant names them.
+:::open[Which part groups hold which domes?]
+Group 8907020 holds the evening dome and its ring; which domes the other four groups enable, and what the map and flag
+branches before the table choose, were not read from the layouts.
 :::
 
 ## Elden Ring
@@ -220,6 +272,50 @@ fields:
 The layout reads the base game's 8 rows with every padding byte zero. :proven[the 8 rows of the base game's regulation]{games="elden-ring"} `AssetGeometryParam`'s `isSkydomeFlag` ("treated as a
 celestial sphere: follows the player", by its definition) is set on one asset only, `AEG620_002`, and no layout part names
 one of the 17 `PartsDrawParam` rows that set `isSkydomeDrawPhase` (935 layouts read). :observed{games="elden-ring"}
+
+### Frame constants
+
+In the scene constants `cbSceneParam` (2,016 bytes, `b8` of the sky and light programs) `FC_ShadowColor` is at byte 544 and
+`FC_ShadowDir` at 560, a unit vector towards the sun in the drawing frame: it agrees within 0.01 with the negated forward
+axis of the frame's orthographic shadow camera. :observed[one frame at the Stormveil gate]{games="elden-ring"} `cbPerFrame`
+(`b9`, 448 bytes, `FC_GlobalTime` at 432 and `FC_TimeOfDay` at 436) is bound from a buffer in GPU memory in every draw, not
+from an upload heap. :observed{games="elden-ring"}
+
+### Exposure
+
+The picture's exposure is a scale the CPU writes: `ToneMap_TabledToneMapLUTPS` multiplies the scene by `cbToneMap`'s
+(`b1`, 416 bytes) `g_ToneMapSceneLumScale` at byte 48, which equals `SC_SceneExposure`, and samples no luminance texture.
+:observed[the program's DXIL, three frames]{games="elden-ring"}
+
+The GPU measures the frame first: :observed[the DXIL of the four programs, with constants from recorded frames]{games="elden-ring"}
+
+1. `ToneMap_DownSample2x2PS` halves the R11G11B10F scene, one bilinear tap per half-size texel (2560 × 1440 to 1280 × 720).
+2. `ToneMap_ColorToLuminancePS` writes a 64 × 64 RG32F target. Each texel takes 16 bilinear taps of the half-size frame at its
+   centre plus `((k mod 4 − 1.5) / 256, (k / 4 − 1.5) / 256)`, the luma `dot(rgb, (0.299, 0.587, 0.114))` of each (NaN or
+   infinity read as 0) times `g_vScenePreExposure.z`, and `L = log2(Y + 1e-5) + 20`; it writes `(mean(L) × w, w)` with the centre
+   weight `w = 1 − (1 − 2^−r)³`, `r = length(2(uv − 0.5) × g_AdaptCenterWeight.xy)`. `g_AdaptCenterWeight` is the draw
+   parameters' `Center Weight` and that times 720 / 1280: (7, 3.9375) at Stormveil at noon.
+3. `ToneMap_ScaleLuminancePS` takes exact 4 × 4 means, 64 to 16 to 4 to 1.
+4. `ToneMap_AdaptedLuminancePS` forms `target = s.x / s.y − g_AdaptParam.x` and `adapted = prev + (target − prev)(1 − 10^−rate)`,
+   the rate `g_AdaptParam.y` when the target is above the previous value and `.z` otherwise, and writes
+   `(adapted, 2^−(adapted − 20))`. A still frame converges to `adapted = target`.
+
+`g_AdaptParam` is (`AutoExposure Middle Gray`, the light adaptation speed × `T`, the dark adaptation speed × `T`, 0), `T` a
+per-frame value that is 0 while the game is paused and 1/30 by default; in recorded frames it ranges from 0.025 to 1.28 with
+the recorder's stalls, so it reads as the frame time in seconds. `g_vScenePreExposure` is `(e, 2^e, 2^−e, 0)`; it is (0, 1, 1, 0)
+in all 26 frames read, so pre-exposure is off. :observed[read from the decrypted code, and 26 frames of two runs]{games="elden-ring"}
+
+The CPU then sets the scale `S`. With `x = adapted − 20`, `adapted` being the value the GPU wrote four frames earlier (the
+results come back through a ring of four read-backs), `log2 S = Exposure − L(1 − e^(−x / L))`, `L` being the Tone Map's
+`AutoExposure Adaption Max` when `x > 0` and `Adaption Min` when `x < 0`: a soft clamp, not a hard one. `Exposure`, `Max` and `Min`
+are the draw parameters at the current hour, blended by the clamped rule of [GPARAM](/engines/fromsoft/lighting/gparam/#looking-up-an-hour)
+(each is registered with interpolation); `FreezeAdaptionFade` forces `x = 0`. :observed[read from the decrypted code]{games="elden-ring"}
+Over 21 frames of two runs at Stormveil (`x` from −0.44 to −0.33) the rule gives `log2 S` within 0.00011; a lag of 0, 2 or 6
+frames, or base 2 for the exponential, misses by 0.002 to 0.09. Only the `Min` branch is checked on data. :observed[21 frames,
+two runs]{games="elden-ring"}
+
+The tone map's other constants: `g_ReinhardParam` is (`ReinhardContrast`, `ReinhardWhiteBalance`), `g_ToneMapParam`
+(`Contrast`, the table exponent 1, 1/2.2), and `g_bEnableFlags.z` the HDR flag. :observed{games="elden-ring"}
 
 :::open[Do Elden Ring's skyspheres follow the camera?]
 How a weather's list combines with the `_99` map's own placements, and whether the skyspheres move with the camera as

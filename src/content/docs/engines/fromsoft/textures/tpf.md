@@ -8,6 +8,9 @@ sources:
   - title: bcdec
     url: https://github.com/iOrange/bcdec
     note: Independent BC pixel decoder
+  - title: Smithbox
+    url: https://github.com/vawser/Smithbox
+    note: the file-name list of the asset texture packages
 implementations:
   - name: fromsoft-formats (tpf.rs)
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/tpf.rs
@@ -248,3 +251,69 @@ archive of the install holds a texture of that name. A reader of that area has t
 
 129 of Ashina Castle's 347 BC1 albedos use BC1's punch-through mode: in a three-colour block, index 3 is
 transparent black, so a decoder that ignores the mode loses their alpha. :observed{games="sekiro"}
+
+## Elden Ring
+
+### Asset textures and their low twins
+
+A map's own folder holds no surface textures: Stormveil's `m10_00_00_00` holds only environment-probe binders (high, middle
+and low), `ivinfobnd` binders (the same three) and a colour-grading package. :observed{games="elden-ring"} The surfaces of
+assets are in `/asset/aet/aetNNN/aetNNN_MMM.tpf.dcx`, and each package has a twin `aetNNN_MMM_l.tpf.dcx` (8,388 and 8,387 in the
+community file list). :sourced[Smithbox]{games="elden-ring"} Over every 40th pair of that list (147 pairs read, 313 textures),
+every texture of a package has a texture `<name>_l` in its twin. The two are made separately, not one mip chain cut short: only
+32 of the 313 low payloads are the tail of the full one's chain, and 71 have another DDS format (a DXT1 normal map with a BC7
+twin, for example). :observed[147 pairs]{games="elden-ring"}
+
+| Low width / full width | Textures | Confidence |
+|---|---:|---|
+| 1/2 | 28 | :observed{games="elden-ring"} |
+| 1/4 | 121 | :observed{games="elden-ring"} |
+| 1/8 | 123 | :observed{games="elden-ring"} |
+| 1/16 | 8 | :observed{games="elden-ring"} |
+| equal | 25 | :observed{games="elden-ring"} |
+| low larger | 8 | :observed{games="elden-ring"} |
+
+### Which form is drawn
+
+The game keeps both forms resident and chooses one for each drawn instance by its distance. Each drawn model instance
+(`CS::CSModelDispEntity`) owns a level object holding its world box (the union of its parts' boxes through their world
+matrices) and its `PartsDrawParam` row, and its level starts at 1, the `_l` form. Each frame the step computes
+`d = distance(camera, box) × tan(fovY / 2) / tan(21.5°)`, 0 inside the box (the reference field of view is 43°), and changes
+the level: :observed[read from the executable's code]{games="elden-ring"}
+
+- from 0 (full) to 1 (`_l`) when `d >= kA × (B + P) × s`;
+- from 1 to 0 when `d < kB × (B − P) × s`;
+- otherwise not, so `P` is a hysteresis band.
+
+`B` and `P` are the row's `tex_lv01_BorderDist` and `tex_lv01_PlayDist` (offsets 40 and 44); a `B` of 0 means the instance never
+switches. An asset `AEGggg_mmm` takes its row from `AssetEnvironmentGeometryParam` row `ggg × 1000 + mmm` (`refDrawParamId`,
+offset 8); a map piece takes its layout part's draw-parameter row when the part uses one ([part fields](/engines/fromsoft/world/visibility/#other-entity-data-bytes)),
+which fits all 20 map-piece draws checked. `s` is the scale of row `100 + lodType` (the row's byte at offset 80) of
+`LoadBalancerDrawDistScaleParam`, 1.0 for rows 100 to 110 in this regulation. `kA` is the memory load balancer's factor (1, or
+0.5, 0.25, 0.1 and 0 under memory pressure) and `kB` is `kA` times a ramp from 0 to 1 over the 3 s after the switching system
+turns on; while it is off, every instance stays at 1. The texture quality setting is not read on this path. When the level
+changes, an asset sets bit 1 of its `CSWorldGeomIns` word at `+0x264` (wants full) and a map piece the word at `+0x248`, and a
+refresh is queued; it applies once a readiness flag of the instance is set. :observed[read from the executable's code]{games="elden-ring"}
+
+In the running game (texture quality at maximum, two camera positions at the Stormveil gate, the textures of each draw found
+by hashing the first 64 KiB of their top level against every `aet` texture of both forms): :observed[two recordings]{games="elden-ring"}
+
+- A draw binds one form of its own group's textures (111 full, 12 low slots), and one form per instance batch. A texture is
+  drawn in both forms within one frame by different draws (109 of 123 such textures), the same mesh section full in one
+  draw and `_l` in another (72), so the form is not tied to a mesh LOD.
+- Every full draw's median pixel lies at most 14.9 m from the camera and every `_l` draw's at least 21.3 m, but for one
+  3-pixel full sliver at 24.0 m (42 read-backs of 24 draws). With the rule above and `kA = kB = 1` the measured draws fit:
+  all 38 counted.
+- A slot an asset binds to another group's textures (an `aetNNN` whose number is not the asset's) is the `_l` form in all 20
+  unambiguous slots of five asset draws, even in draws whose own textures are full; map pieces' slots all follow the level
+  (164 of 164). What makes the foreign slots low is not established.
+- Right after a load almost everything is `_l` (30,663 low slots against 270 full in the first frame recorded); about 3.5 s
+  later each frame holds about 3,500 full and 4,500 low slots, and stays so.
+
+The projection in these draws is reverse Z: clip `z = −5e−6 × z + 0.050067`, `w = z` (near plane 0.05 m), so a depth `D` is
+at `0.050067 / (D + 5e−6)` m. :observed{games="elden-ring"}
+
+:::open[Why are another group's textures always low?]
+An asset that binds textures of another `aet` group draws them in the `_l` form whatever its own level. The code path that
+does this is not traced.
+:::

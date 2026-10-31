@@ -33,6 +33,17 @@ program checked as well. It does not assign a surface meaning merely because a t
 Both games' writers encode a world normal as `n * 0.5 + b`, where `b` has float bits `0x3F002008`
 (approximately 0.50048876). The lighting path decodes with `x*2-1` and normalizes. :observed
 
+No pass keeps the normal map's variance. Each G-buffer program that reads a normal map decodes its red and green as
+`2t - 1`, rebuilds `z = sqrt(1 - saturate(dot(xy, xy)))`, normalizes the result of the tangent frame and writes that, and
+`dot(xy, xy)` has no other use: no Toksvig- or LEAN-style roughness term. :observed[every use of the self-dot in the 42
+G-buffer pixel programs drawn at Sekiro's `m11_01` (40 of which unpack a normal) and in 28 of Elden Ring's] Elden Ring's deferred
+light programs `GXLightAcc_DDirLightShadowed1`, `GXLightAcc_DPointLight1`, `GXLightAcc_DSpotLight1` and
+`GXLightDeferredAOEnvMapRegionFresnelPreMultiply` load target 0's RGB, decode it as `2t - 1` and use its squared length only
+through `rsqrt` to rescale it to unit length, so the stored normal's length carries nothing either; they read the gloss
+from target 1's green (`sqrt`, then the remap below). The point light widens the roughness by a term of the light's
+distance and size, `(1 / (3.5x² + 5))^0.25`, an area-light correction, not by normal variance. :observed[the DXIL of these
+four programs]{games="elden-ring"}
+
 The surface-only gloss interpretation is `roughness = 1 - 0.95*sqrt(gloss)`. The directional light additionally
 uses `sqrt(k*gloss)`, with `k = 1 - 0.75*0.1/w`, where `w` is a light-direction constant; the captured runtime
 distribution of that constant is not established. :observed Elden Ring's directional light forms
@@ -73,6 +84,9 @@ encoding is RGB float bits `0x3E315CAC`, whose square is approximately 0.03. Mul
 reflectance, so the constant value is not a rule for every switch. :observed{games="sekiro"}
 
 Sekiro's target-3 alpha selects the light group: `int(alpha*255)*18` identifies its first row in the light buffer.
+In a frame at the Ashina Castle gate, of the 1,695,266 pixels with geometry, 1,531,746 select group 1, 163,465 group 3 and
+55 group 0; group 1's first diffuse colour is (1.25, 0.769, 0.433, 1.5625). These are indices into the frame's buffer, not
+yet tied to the light sets' file IDs. :observed[one frame, the target read back]{games="sekiro"}
 The target-1 green value modifies the diffuse wrap term with factors 10 and 20 where it is positive.
 :observed{games="sekiro"}
 

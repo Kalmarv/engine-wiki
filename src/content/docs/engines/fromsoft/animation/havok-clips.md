@@ -222,6 +222,33 @@ value plus 0.6, and nothing crashes. The same holds when each rewritten clip car
 `TCRF` reference to the binder's compendium: the compendium's `TYPE` container is put where the `TCRF` leaf was and the outer
 length is updated. :observed{games="elden-ring"} The character's position does not follow the changed root bone. :observed{games="elden-ring"}
 
+### The player's root chain
+
+The player's Havok skeleton splits at `RootPos`: `Master` → `RootPos` → `Pelvis` (the legs), and `RootPos` → `RootRotY` →
+`RootRotXZ` → `Spine` → `Spine1` → `Spine2` → `Neck` (the upper body). In the rest pose `Master` is turned −90° about Y,
+`RootPos` +90°, `RootRotY` −90° and `RootRotXZ` not at all. :observed{games="elden-ring"}
+
+The Uchigatana's first light attack, `a029_030000`, tracks 42 of the 150 bones (no finger, twist or mantle bones) at 60 frames
+a second, 139 frames. `Master`, `RootPos` and `RootRotY` carry one yaw with alternating signs, so the legs get no net yaw while the
+upper body turns by the yaw less 90°: +18° at 0 s, +52° at 0.1 s, 0° at 0.3 s and −88° at 0.53 s; `RootRotXZ` pitches the upper
+body forward by up to 35° from 0.5 to 0.63 s. Two independent decoders agree to 0.0001° on all 42 bones every 1/30 s from 0 to
+0.8 s. :observed[one clip]{games="elden-ring"} The clip is held only by `c0000_a2x.anibnd` (the `a2x` compendium), not by the
+expansion binders or any other `c0000` binder, and its [TAE](/engines/fromsoft/animation/tae/) record only by `c0000.anibnd`'s
+`a29.tae`, which gives it a blend event (type 16) over 0 to 0.2 s and an `Enable Twist Modifier` event (type 700) naming the
+behaviour graph's twist 100 ([behaviour graphs](/engines/fromsoft/animation/behaviour-graphs/#the-players-twists)).
+:observed{games="elden-ring"}
+
+In the game, with no lock-on and no stick input, the attack from the idle turns the whole figure (hips, back, head and sword
+together) 40 to 50° further to the character's left than the clip alone, from 3 to 6 frames in and mostly by 0.2 s, and it ends
+facing where it started; the physics module's yaw (`+0x50`) stays constant throughout. So the swing is not a change of facing.
+:observed[one run, matched-camera renders at 15° steps]{games="elden-ring"} Which graph variable carries it was not measured.
+
+The standing forward jump plays `Jump_F` (`a000_202020`) at rate 1 from the start of the crouch: the pelvis-area anchor bone dips
+0.26 m, peaks 1.26 m up about 0.47 s after the clip starts and is back at standing height about 0.86 s after it (the clip lasts
+0.8 s), then the landing crouch (−0.26 m) follows, and `Jump_Loop` (`a000_202040`) gets no visible time. The clip's own root has a
+similar arc (crouch −0.32 m, peak 1.165 m at 0.467 s) but is still 0.46 m up at its end, so the game's vertical arc is not the
+clip's root alone. :observed[one jump, 639 recorded steps]{games="elden-ring"}
+
 ### Binder relationships
 
 :only[elden-ring] Character animation can be split into divisions. For example, `c2010.anibnd` contains the skeleton

@@ -33,7 +33,7 @@ fields:
   - {at: 0, size: 8, type: "u16[4]", name: magic, value: filt, level: sourced}
   - {at: 8, size: 4, type: u32, name: version, value: 5, level: observed}
   - {at: 12, size: 1, type: u8, name: padding, value: 0, level: sourced}
-  - {at: 13, size: 1, type: u8, name: unknown flag, level: unknown, note: Raw header byte}
+  - {at: 13, size: 1, type: u8, name: time axis flag, level: observed, note: "non-zero: the time axis has period 24 and an offset (see Time of day)"}
   - {at: 14, size: 2, type: u16, name: padding, value: 0, level: sourced}
   - {at: 16, size: 4, type: u32, name: group count, level: sourced}
   - {at: 20, size: 4, type: u32, name: unknown, level: unknown, note: Named Unk14 by the reference reader}
@@ -49,7 +49,7 @@ fields:
   - {at: 60, size: 4, type: u32, name: extra IDs offset, level: sourced}
   - {at: 64, size: 4, type: f32, name: unknown, level: unknown, note: Named Unk40 by the reference reader}
   - {at: 68, size: 12, type: "u32[3]", name: comment tables and text offsets, level: sourced}
-  - {at: 80, size: 4, type: f32, name: unknown, level: unknown, note: Named Unk50 by the reference reader}
+  - {at: 80, size: 4, type: f32, name: time axis period, level: observed, note: "Unk50 to the reference reader; the period when the flag at 13 is 0"}
 ```
 
 ```layout
@@ -159,6 +159,50 @@ The game keeps this state in `CSWorldSceneDrawParamManager`: per area block an o
 override ID, a flag that an override is being transitioned to and its duration, and the manager holds sixteen
 interpolators (`CSGparamIdLerper`: a destination ID, a begin ID and a timer) beside them. :sourced[fromsoftware-rs]{games="elden-ring"}
 
+#### Looking up an hour
+
+Both executables evaluate a field at an hour with one routine, all in `f32`: :observed[read from the evaluator's code in
+Elden Ring 2.7.2.0 and Sekiro 1.06]
+
+1. The file gives an axis offset `O` and a period `P`: when header byte 13 is non-zero, `P` is 24 and the axis has an
+   offset; otherwise `O` is 0 and `P` is the float at offset 80. Files before version 5 have neither.
+2. From the clock hour `t`: if `P` is not 0, subtract `P` while `t > P`; then `t -= O`, and add `P` if `t` is below 0.
+3. The keys are searched in stored order, from the key found last time. A key `k` with `|t - k| <= 0.001` (`0x3A83126F`)
+   gives its value with no blend. Otherwise the first key above `t` closes a blend from the key before it, at
+   `w = (t - before) / (k - before)`.
+4. Past the last key, a wrapping axis blends from the last key to the first at `w = (t - last) / ((P - last) + first)`, and a
+   non-wrapping one takes the last key. Before the first key, a wrapping axis blends last to first at
+   `w = t / ((P - last) + first)`: the weight leaves out the time from the last key to the axis's end, so the value is the last
+   key's at the axis's 0 and jumps to the first key's there. A non-wrapping axis blends the first key with itself at
+   `(t - first) / 0`.
+
+Every Elden Ring file wraps with period 24; of the 102 files drawn at the Stormveil gate, 98 put the axis's start at 6.5 h and
+4 at 7.0 h, so a key's time is the clock hour minus that offset. :observed{games="elden-ring"}
+
+The blend of the two keys depends on the field's slot, chosen by the type the executable registers the field with (not the
+type the file stores): :observed[the slot factory and the slots' code, Elden Ring 2.7.2.0 and Sekiro 1.06]
+
+| Slot | Elden Ring | Sekiro |
+|---|---|---|
+| Float, integer, vector | Each field has an interpolate flag. Flag 1: `A` at `w <= 0`, `B` at `w >= 1` or when `A == B`, else `(1 - w)A + wB` in `f32`; integers go through `f32` and are truncated (`cvttss2si`: an `i32` out of range gives `INT_MIN`; a `u32` through a 64-bit truncation, its low 32 bits). Flag 0 (enums, counts, resolutions) takes `B` | No flag: every float, integer, vector and RGBA slot is `(1 - w)A + wB`, not clamped and with no equality test; RGBA per byte through `f32`, keeping the low byte of a 64-bit truncation |
+| Enum (type 3, subtype 22) | The plain `i32` slot | The plain `i32` slot |
+| Boolean | `B` | `B` |
+| Subtype 25 (one float: `VolumetricFog Global HeightFogOffset`, Sekiro's `Fog-HeightOffset`) | A run-time value (beside the hour in the request) is added to both keys before the blend | the same |
+| Subtype 23 (two floats: the light angles) | The directions `(sin ry cos rx, −sin rx, cos ry cos rx)` are slerped | the same |
+
+The angle slot returns `A` at `w == 0`, `B` at `w == 1` or when every component differs by less than 2⁻²³, and otherwise turns
+`B` toward `A` by `w` times the angle (`acos` of the normalized dot), with the game's own sine and cosine polynomial: `B` if
+`B·A` exceeds the cosine, `A` if `|A − B(B·A)|² < 1e-4`, else `B·cB + n·cN` with `n` the normalized part of `A`
+perpendicular to `B`. :observed[read from the code]{games="elden-ring"} Where the run-time value of subtype 25 is written is
+not established. :unknown
+
+Elden Ring 2.7.2.0 registers 415 field keys and Sekiro 1.06 340. Against every installed timeline with more than one key: Elden
+Ring stores `ShadowParam Cascade Count` as `u32` (registered an `i32` enum) and `[GS]Lens Simulation Param  Enable` as `u32`
+(registered `u8`); 13 keys that `m61_00_0000` stores at several hours are not registered, so the game never reads them; and
+Sekiro's `VolumetricFog Global HeightFogReferenceOffset` and `ModeRate` (20 timelines each) are not registered either. Every
+two-float timeline with more than one key, in both games, is a light angle. :observed[the registration tables read from both
+executables, every installed file]
+
 ### The game's own tables
 
 Elden Ring keeps three params that decide which draw-parameter file applies. The first is keyed by decimal map numbers, the
@@ -261,7 +305,22 @@ The weather, not the map, therefore selects the `weatheroutdoor` file. The id of
 `weatherbase` layer and the event that sets `commonevent` ids are not traced. :unknown{games="elden-ring"}
 
 Volumetric-fog groups include `GameScale`, near and far depth, fixed density, height density, scattering and light
-colour fields. :observed The density unit and its relationship to `GameScale` are unresolved. :unknown
+colour fields. :observed Sekiro's fog step copies the renderer's fog settings, divides `FixedDensity`, `HeightFogDistribution`
+and `HeightFogDensity Scale` by `GameScale` and leaves `HeightFogOffset` as it is; the constants then take the fixed density,
+the absolute value of the distribution (at least 0) and half the density scale, and subtract the height offset from the world-Y
+row of the inverse view matrix (that row negated when the distribution is negative). :observed[read from the decrypted code]{games="sekiro"}
+At the Ashina Castle gate (`m11_01_0000` value ID 0 at 18:00, `GameScale` 1) this gives 0.0015, 0.08 and 0.25 × 0.5 = 0.125,
+the three constants of the recorded frame word for word, and the four height-row words from the frame's inverse view and
+the offset −110. The fog's ambient, direct and opposite colours are the stored RGB bytes / 255, raised to 2.2 in `f32` and
+weighted by the stored `w`: 9 of 9 words exact. :observed[one frame]{games="sekiro"}
+
+`Env Map:Editor` (the fields `EnvMapId` and `ColorScale`) is in 11 of Sekiro's 253 draw-parameter files, mostly the `m95` and
+`m96` test maps and `mapoverride0001` to `0003`; no `m11_01` file holds the group, and its values are keyed at no hour or
+at hour 0 only, so it does not choose the environment volumes of Ashina by time. :observed[every draw-parameter path in the
+community file list]{games="sekiro"}
+
+Elden Ring's full `Tone Map[Yebis]` group is in 77 of the `m00_00_<id>_weatheroutdoor` files and 2 `commonevent` files;
+`weatherbase` holds only the wet group. :observed{games="elden-ring"}
 
 ## From the light set to the lighting constants
 
@@ -291,15 +350,25 @@ So the stored colours are squared and multiplied by the weight before the light 
 the colours of [BTL](/engines/fromsoft/lighting/btl/) light records. :inferred A sun stored as
 (1.0, 0.784, 0.588, 2) lights the frame with (2, 1.230, 0.692). :observed{games="sekiro"}
 
+The set's hemisphere ambient goes the same way: with `up` and `down` the set's two hemisphere colours, each squared and
+multiplied by its own `w`, the set's ambient row at bytes 204, 220 and 236 holds per channel the mean `(up + down) / 2` and
+the rows at 196, 212 and 228 the vertical slope `(up − down) / 2`. In both sets of the frame all six values match this
+computed in `f32` bit for bit, for up (0.5695, 0.5294, 0.6078, 0.7) and down (0.3137, 0.3529, 0.3922, 0.1).
+:observed[one frame, value ID 0 at 18:00]{games="sekiro"} Of Sekiro's 1,044 forward FLVER pixel programs, 852 declare
+`AmbientSH` and 24 read its rows 12 to 14, all of them water programs (`Water`, `WaterInteraction`, `WaterBumpTri`,
+`WaterBumpTriInteraction`, with their shadow and alpha variants), which take `max(0, dot(row, (n, 1)))` per channel; the walls'
+ambient comes from the environment volumes instead ([rendered frame](/engines/fromsoft/lighting/frame/#irradiance-volumes)).
+:observed[the operands of every forward program's disassembly]{games="sekiro"}
+
 :::open[How do the two light sets reach the pixels?]
 The program chooses a set per pixel by the [G-buffer](/engines/fromsoft/shaders/gbuffer/)'s light-group selector; which
-parts write which value, and what selects `_0020` beside `_0000` for the map, is not established. The ambient terms of the set (spherical-harmonic rows) and the second direction
-are not yet tied to stored fields.
+parts write which value, and what selects `_0020` beside `_0000` for the map, is not established. The second direction is
+not yet tied to a stored field.
 :::
 
-:::open[Which environment is active, and how are time keys interpolated?]
-The selection from map, collision scene bytes, weather and events is not fully established. Nor are the engine's
-curves between stored hours; linear interpolation is not an established engine rule.
+:::open[Which environment is active?]
+The selection from map, collision scene bytes, weather and events is not fully established. How the hours between keys are
+blended is read from the code ([looking up an hour](#looking-up-an-hour)).
 :::
 
 :::open[What selects local FogVolume sets?]

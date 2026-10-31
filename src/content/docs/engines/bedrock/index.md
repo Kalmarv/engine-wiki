@@ -34,6 +34,8 @@ How the world and items are coloured:
   climate or by a client biome's `color_map`, and the single-colour birch, spruce and swamp maps.
 - [Item icons](/engines/bedrock/textures/item-icons/): a block item's carried textures, and the potions' per-effect
   bottles.
+- [Environment textures](/engines/bedrock/textures/environment-textures/): which texel each end portal layer
+  takes from its colour table, and the weather sheet's rain and snow cells.
 
 :::open[What do the current renderer's compiled materials hold?]
 The material and shader facts here are those of the 1.16-era renderer, from published copies. The game now compiles

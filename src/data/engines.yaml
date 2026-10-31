@@ -39,6 +39,9 @@ engines:
   - id: gamebox
     name: GameBox (Nadeo)
     summary: "Nadeo's engine as TrackMania Nations Forever ships it: GBX files of class-numbered nodes and chunks."
+  - id: bedrock
+    name: Bedrock Engine (Minecraft)
+    summary: "Minecraft: Bedrock Edition's engine: data-driven resource and behaviour packs of JSON (client entities, render controllers, geometry, materials) driven by Molang expressions."
 
 # In reading order. A page's system decides its sidebar group and its row in the coverage matrix.
 systems:

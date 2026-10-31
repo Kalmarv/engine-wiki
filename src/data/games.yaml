@@ -148,3 +148,11 @@
   developer: Nadeo
   year: 2008
   build: "Map files (.Challenge.Gbx) from TrackMania Exchange, read without a fingerprinted install"
+
+- id: minecraft-bedrock
+  name: "Minecraft: Bedrock Edition"
+  short: MCBE
+  engine: bedrock
+  developer: Mojang Studios
+  year: 2017
+  build: "Vanilla resource and behaviour packs as Mojang's bedrock-samples v1.26.60.5 publishes them (v1.21.0.3 for older geometry); entity materials and shaders of the 1.16-era renderer from published copies; no installed game read"

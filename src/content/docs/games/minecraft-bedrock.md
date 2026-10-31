@@ -21,3 +21,5 @@ shaders; no installed game was read. :observed{games="minecraft-bedrock"}
   ([entity geometry](/engines/bedrock/geometry/entity-geometry/)). :observed{games="minecraft-bedrock"}
 - The tame cat textures mark the collar by alpha for the colour mask
   ([entity materials](/engines/bedrock/materials/entity-materials/#tame-cat-textures)). :observed{games="minecraft-bedrock"}
+- 151 variables the vanilla scripts read are never assigned by any script, so the engine sets them
+  ([engine variables](/engines/bedrock/data-model/engine-variables/)). :observed{games="minecraft-bedrock"}

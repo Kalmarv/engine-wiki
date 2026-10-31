@@ -23,6 +23,10 @@ How an entity is drawn:
 - [Entity geometry](/engines/bedrock/geometry/entity-geometry/): bones and their bind poses.
 - [Behaviour components the client draws with](/engines/bedrock/data-model/behaviour-components/): `minecraft:scale`
   and `minecraft:color`.
+- [Engine variables](/engines/bedrock/data-model/engine-variables/): the variables scripts read that the engine sets.
+- [Attachables](/engines/bedrock/data-model/attachables/): held and worn items drawn as models on their holder, and how
+  they read the holder's variables.
+- [First-person player](/engines/bedrock/animation/first-person/): how the player model is posed for its own view.
 
 :::open[What do the current renderer's compiled materials hold?]
 The material and shader facts here are those of the 1.16-era renderer, from published copies. The game now compiles

@@ -109,8 +109,10 @@ compressed one) wraps and it cannot read that entry. :proven
 
 Both sit beside the chunks, one pair per chunk. :observed
 
-**`ChunkMapN.dat`** is exactly `4 × entry count` bytes: one record per entry, `u16 unknown, u8 unknown, u8` resource
-type. :observed
+**`ChunkMapN.dat`** is exactly `4 × entry count` bytes: one little-endian `u32` per entry, the resource type in the top
+byte and a 24-bit id below it (`type << 24 | id`). :proven Over the 495,394 records of the four chunk maps no `(type, id)`
+pair repeats, so a record's whole `u32` names one entry of the track. :proven Placement files name models and
+visibility lists by this word ([Hand-placed instances](/engines/forzatech/world/pvs-ribbon/)).
 
 | Type | Resource | Type | Resource |
 |---|---|---|---|
@@ -157,6 +159,7 @@ textures in `media\Stripped\gs\swatchbins.zip` (`.pb`: festival banners and flag
 They are present beside the chunks and were not read.
 :::
 
-:::open[What are the first three bytes of each ChunkMap record?]
-Each record is `u16, u8` followed by the resource type byte; only the type byte is understood.
+:::open[What do the ids of the ChunkMap records number?]
+The ids of type 4 (models) and type 12 (`.pvsz`) are named by the hand-placed instance file; what the ids of the other
+types count is not established.
 :::

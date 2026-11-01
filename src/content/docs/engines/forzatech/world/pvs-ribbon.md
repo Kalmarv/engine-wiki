@@ -1,6 +1,13 @@
 ---
 title: Hand-placed instances (.pvs)
 description: The ribbon file that places everything not placed by a .pgeo rule in Forza Horizon 6, its sections, transform and instance records, gameplay records and model bounds.
+implementations:
+  - name: forzatech-formats (pvs.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/pvs.rs
+  - name: forzatech-formats (world.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/world.rs
+  - name: forzatech-formats (track.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/track.rs
 ---
 
 Everything not placed by a [`.pgeo` rule](/engines/forzatech/world/pgeo-placements/) is in one file per track,
@@ -8,10 +15,12 @@ Everything not placed by a [`.pgeo` rule](/engines/forzatech/world/pgeo-placemen
 buildings, roofs, plinths and cables (`hda_*` folders), the heightfield terrain clusters, distance proxies and the vista
 backdrops. The executable's RTTI names the types `PVSModelInstance` and `PVSVisibleModelInstance`. :observed
 
-Only version `0xA4` is read: `brio_00.pvs` (42,782,135 bytes) parses through every section up to the model bounds, and
-`Stripped\gs\generalsceneassets.pvs` (381,229 bytes) is header and texture descriptors only. The `homespace02` file is
-version `0x63`, a different layout. :observed Counts here are from a recorded census of `Brio`, no longer re-checkable.
-:observed
+Two files of the install are version `0xA4`: `brio_00.pvs` (42,782,135 bytes) and `Stripped\gs\generalsceneassets.pvs`
+(381,229 bytes), which is the header and texture descriptors only. Both read to their last byte under the layout below, every
+constant holding and every reference (an instance's transform, parent, gameplay record, frame and LOD rows; a LOD row's model;
+a transform's clip and LOD profile group; a texture key's descriptor; a clip record's file) pointing inside what it refers to,
+on every record. :proven[both files] The `homespace02` file (82,789 bytes) is version `0x63`, a different layout.
+:observed Counts are those of `brio_00.pvs`.
 
 ## Sections
 
@@ -20,25 +29,28 @@ no searching. :observed
 
 | Section | Content | Confidence |
 |---|---|---|
-| header | 0x21 bytes: `SVPF`, u32 `0xA4`, u32 8, ...; byte 0x14 is 1 when the world sections are present (Brio) and 0 for the texture-only file | :observed |
-| megatextures | `u8 0, u32 n, n × 8 B, u32, u8 1, u32 n` then n × `{ u32 len, name, u32, u32 }` | :observed |
-| bounds | `u32, u32, u32 n`, n × 29 B `{ u32 transform index, u8, f32 centre[3], f16[4], i16, i16 }` | :observed |
-| gameplay records | `u32, u32, u32 n, u32 count` (1,079), then `{ u8 nRoutes, u8 season mask, u16 routes[nRoutes], i32 link, cstring tag }` | :observed |
-| per-pgeo-id | `u32 n + i32[n]` (mostly −1), `u32 n + u8[n]` (0xFF or 0x01) | :observed |
-| index tables | `u32 0, u32 k` (5), k × `{ u32 index, u32 n, i32[n] }`; 15,104 entries each in Brio | :unknown |
-| fixed block | 49 bytes, `u32 n + n × 8 B`, `u8 0` | :unknown |
-| texture descriptors | `u32 n` (48,733 in Brio; 6,807 in the general file) × 56 B | :observed |
-| shaders, materials | `u32 n` × `{ u32 hash, u32 len, path }`, twice | :observed |
-| models | `u32 n` (134,330) + `u32[n]` | :observed |
-| cell hierarchy | `u32 n × 12 B` | :unknown |
-| dependency blocks | `u32 n × { u32 k, k × 8 B }` | :unknown |
-| frames | `u32 n × 48 B`: the ModulateConstants table (below) | :observed |
-| transforms | `u32 n × 58 B` (below) | :observed |
-| LOD rows | `u32 n × { u32 model, u32 instance }`, sorted by instance; model = `brioout.N` | :observed |
-| LOD profiles | `u32 groups × { u32 n, n × 50 B }`, see [LODs and clusters](/engines/forzatech/geometry/lods-and-clusters/) | :observed |
-| instances | `u32 n × 35 B` (below) | :observed |
-| model bounds | `u32 0, u32 n` (= models) × the record below | :observed |
-| tail | 391,399 bytes: `u32 len + brioout`, the 14 animation clip names and GUIDs, then count tables | :unknown |
+| header | 0x21 bytes: `SVPF`, u32 `0xA4`, u32 8, u32 0, u32 0, u8 world (1 when the world sections are present, 0 for the texture-only file), u32 6, a u32 (14,000,000 in Brio, 0 in the general file), u32 0 | :proven |
+| megatextures | `u8 0`, 1,476 × 8 B entries, `u32`, `u8 1`, then 1,476 × `{ u32 len, name, u32, u32 }` | :proven |
+| bounds | `u32, u32`, `u32 n` (76,907), n × 29 B `{ u32, u8 (0 or 0xFF), f32 centre[3], f16[4], u16 0, i16 }` | :proven |
+| gameplay records | `u32, u32, u32 n` (120,225), `u32 count` (1,079), then `{ u8 nRoutes, u8 season mask, u16 routes[nRoutes], i32 link, cstring tag }` | :proven |
+| per-pgeo-id | `u32 n + i32[n]` (mostly −1), `u32 n + u8[n]` (0xFF or 0x01) | :proven |
+| index tables | `u32 0, u32 k` (5), k × `{ u32 own index, u32 n, i32[n] }`; 15,104 entries each in Brio | :proven |
+| fixed block | 49 bytes, `u32 n + n × 8 B`, `u8 0` | :proven |
+| texture descriptors | `u32 n` (48,733 in Brio; 6,807 in the general file) × 56 B | :proven |
+| shaders, materials | `u32 n` × `{ u32 hash, u32 len, path }`, twice (46 shaders, 419 materials) | :proven |
+| models | `u32 n` (134,330) + `u32[n]` | :proven |
+| cells | `u32 n` (41,106) × 12 B `{ u32 reference, u32 reference, u8 level, u8[3] = 0 }`, see [Cells](#cells) | :proven |
+| dependency blocks | `u32 n` (17,560) × `{ u32 k, k × 8 B }` | :proven |
+| frames | `u32 n` (5,489) × 48 B: the ModulateConstants table (below) | :proven |
+| transforms | `u32 n` (111,452) × 58 B (below) | :proven |
+| LOD rows | `u32 n` (593,706) × `{ u32 model, u32 instance }`, sorted by instance; model = `brioout.N` | :proven |
+| LOD profiles | `u32 groups` (155) × `{ u32 n, n × 50 B }`, 2,232 records; see [LODs and clusters](/engines/forzatech/geometry/lods-and-clusters/) | :proven |
+| instances | `u32 n` (154,254) × 35 B (below) | :proven |
+| model bounds | `u32 0, u32 n` (= models, 134,330) × the record below | :proven |
+| tail | `u32 len + brioout`, `u8[3]`, 14 animation clip names, `u32 0` × 3, `u32[3]`, 48,733 × `{ u32 key, u32 descriptor }` (keys strictly increasing, the descriptors a permutation of the texture descriptors), `u8 0`, 5 clip files `{ u64 hash, string path }`, 14 clip records `{ u32 id, u64 file hash, u32[3] }`, `u32` | :proven |
+
+The meaning of the index tables, the fixed block, the dependency blocks, the per-pgeo-id tables and the tail's `u32` words is
+not established: the bytes are read and accounted for. :unknown
 
 ## Records
 
@@ -48,16 +60,16 @@ size: 58
 games: [fh6]
 note: "Little-endian. Row-vector 3×3 with the scale baked in; apply as p' = p · M + pos, also for the world-baked Houdini pieces, which share one 90°-about-Y record."
 fields:
-  - {at: 0, size: 2, type: u16, name: animation clip index, level: observed, note: "or -1; repeated as the next u16"}
-  - {at: 2, size: 2, type: u16, name: clip index repeat, level: observed}
-  - {at: 4, size: 1, type: u8, name: unknown, level: unknown}
+  - {at: 0, size: 2, type: u16, name: animation clip index, level: observed, note: "0xFFFF for none; below the number of clip names in the tail"}
+  - {at: 2, size: 2, type: u16, name: clip index repeat, level: proven, note: "equal to the u16 at 0 on all 111,452 transforms"}
+  - {at: 4, size: 1, type: u8, name: no-group flag, level: proven, note: "0 when the transform has a LOD profile group, 1 when it has none (byte 56 is 0xFF); both on all 111,452 transforms"}
   - {at: 5, size: 12, type: "f32[3]", name: position, level: observed}
   - {at: 17, size: 18, type: "f16[9]", name: matrix, level: observed}
   - {at: 35, size: 16, type: "f32[4]", name: tint, level: observed, note: "record tint.x is the likely source of INSTANCE_VARIATION for ribbon instances"}
-  - {at: 51, size: 4, type: u32, name: zero, value: 0, level: observed}
+  - {at: 51, size: 4, type: u32, name: zero, value: 0, level: proven}
   - {at: 55, size: 1, type: u8, name: material variant, level: observed, note: "row of the Modl variant table"}
-  - {at: 56, size: 1, type: u8, name: LOD profile group, level: observed}
-  - {at: 57, size: 1, type: u8, name: unknown, level: unknown}
+  - {at: 56, size: 1, type: u8, name: LOD profile group, level: proven, note: "0xFF for none; otherwise below the number of LOD profile groups (155)"}
+  - {at: 57, size: 1, type: u8, name: group mirror, level: proven, note: "0 with a LOD profile group, 0xFF without"}
 ```
 
 ```layout
@@ -68,19 +80,21 @@ fields:
   - {at: 0, size: 4, type: u32, name: unknown, level: unknown}
   - {at: 4, size: 2, type: u16, name: flags, level: observed, note: "0x40 = catalogue copy"}
   - {at: 6, size: 2, type: u16, name: unknown, level: unknown}
-  - {at: 8, size: 4, type: i32, name: transform index, level: observed}
-  - {at: 12, size: 4, type: i32, name: HLOD parent, level: observed}
-  - {at: 16, size: 1, type: u8, name: HLOD flag, level: observed, note: "1 exactly when the HLOD parent is set, else 0xFF"}
-  - {at: 17, size: 2, type: i16, name: gameplay record, level: observed, note: "-1 = none"}
-  - {at: 19, size: 4, type: i32, name: minus one, value: -1, level: observed}
-  - {at: 23, size: 4, type: u32, name: first LOD row, level: observed}
-  - {at: 27, size: 6, type: "u8[6]", name: band rows, level: observed, note: "per LOD profile band, the index of the LOD row drawn there; 0x7F = nothing"}
-  - {at: 33, size: 2, type: u16, name: frame, level: observed, note: "index into the frames table"}
+  - {at: 8, size: 4, type: i32, name: transform index, level: proven, note: "below the number of transforms on all 154,254 instances"}
+  - {at: 12, size: 4, type: i32, name: HLOD parent, level: proven, note: "-1 = none, else an instance index"}
+  - {at: 16, size: 1, type: u8, name: HLOD flag, level: proven, note: "1 exactly when the HLOD parent is set, else 0xFF"}
+  - {at: 17, size: 2, type: i16, name: gameplay record, level: proven, note: "-1 = none, else an index into the gameplay records"}
+  - {at: 19, size: 4, type: i32, name: minus one, value: -1, level: proven}
+  - {at: 23, size: 4, type: u32, name: first LOD row, level: proven, note: "the first row of the instance; the first rows ascend and the rows between them belong to the instance"}
+  - {at: 27, size: 6, type: "u8[6]", name: band rows, level: proven, note: "per LOD profile band, the index (counted from the first row) of the LOD row drawn there; 0x7F = nothing"}
+  - {at: 33, size: 2, type: u16, name: frame, level: proven, note: "index into the frames table"}
 ```
 
-An instance's models are the LOD rows from its first row to the next instance's. Model number *N* maps to an archive entry
-through `ChunkMap0.dat` (`type << 24 | id`, type 4 = modelbin) and hence to an exact file, template and LOD cluster.
-:observed A checked 1% sample of 1,098 multi-LOD instances shows band *k* names the row whose model LOD is *k* (or repeats
+An instance's models are the LOD rows from its first row to the next instance's. :proven Model number *N* is the id of a
+`ChunkMap` record of type 4 (a `.modelbin`, all of them in `GeoChunk0`): the ids of all 113,868 type-4 records are model numbers
+below the 134,330 of the file's list, so the record names the exact file, template and LOD cluster. The other 20,462 model
+numbers have no entry in the install, and 19,436 of them are used by LOD rows (of the 130,240 model numbers the rows use).
+:proven[brio_00.pvs and the four chunk maps] A checked 1% sample of 1,098 multi-LOD instances shows band *k* names the row whose model LOD is *k* (or repeats
 the previous row) in 1,096; the two others have no LOD0 row (rows LOD1 to LOD4, band 0 points at LOD1). So the model drawn
 close up is the one named by band 0, not the first row. :observed
 
@@ -97,9 +111,19 @@ axis-aligned centre ± half only 4,734 do. The boxes contain every vertex of 113
 carry them. 78 models carry the empty sentinel (centre 0, half −1, −1, −1). One record is saturated: `ocean_vista` has half
 (65504, 375, 65504), the largest finite f16, and its vertices reach 30.8 km past that box. :observed
 
+Of the 111,452 transforms, 2,069 have no LOD profile group, and no instance uses one of them. :proven
+
+## Cells
+
+Each cell record holds two `ChunkMap` words of type 12. The second names a `.pvsz` entry of `GeoChunk0`; the first is
+the second's id plus `level × 6,851` (level 1, 2 or 3), and names no entry of the install's four chunk maps. :proven Each of the
+13,702 `.pvsz` entries is the second word of exactly three records, one per level, and the 41,106 first words are all
+different. :proven[brio_00.pvs and the four chunk maps] What the first word refers to, and what the levels mean, is not
+established. :unknown
+
 ## The catalogue
 
-Instances with flag `0x40` (3,483, all at exactly (0, 0, 0); 790 of them `0x44`) form the **catalogue**: unplaced template
+Instances with flag `0x40` (3,483 of the 154,254, each with its transform at exactly (0, 0, 0) :proven; 790 of them `0x44`) form the **catalogue**: unplaced template
 copies, including all 30 `el/` (`gpy_el_*`, evolving world) instances. 43,491 instances in all sit at the origin; being at
 the origin is not by itself the catalogue rule. :observed Five instances are the trains: an animation clip index on an
 identity transform at the origin with gameplay record 64 (route 0), positioned at run time along their clip. :observed
@@ -143,6 +167,6 @@ overlap 304 and the ocean vista's (7,021) overlap 71, all at the map's edge. :ob
 Of the 12,283 ribbon instances whose model is also placed by a `.pgeo`, none lies within 1 mm of such a placement and one
 within 5 cm: the game draws both lists. :observed
 
-:::open[What are the index tables, fixed block, cell hierarchy and dependency blocks of the .pvs?]
-They are walked past by their counts but not decoded.
+:::open[What are the index tables, fixed block, dependency blocks and tail words of the .pvs?]
+They are read to the last byte and their sizes and constants are known, but what they index or drive is not.
 :::

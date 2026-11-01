@@ -21,6 +21,11 @@ x −816..−560, z −5,156..−4,900). :observed
 | `proc` placement cells | 50, 75, 100, 125, 150, 200, 250, 300, 500, 10,000 m | origin `(cx × cs, 0, cz × cs)` | :observed |
 | Far-field ground texel | 0.25 m | mainmap 2,048 texels per 512 m cell | :observed |
 
+A placement file's cell does not bound its instances: 337,778 of the 29,164,671 `.pgeo` instance records lie outside the
+cell the file is kept under, while none lies outside the file's header box (widened by one fixed-point step and an `f32`
+rounding). :proven The 297 files whose header box meets the box x −1550..−1100, z −5000..−4566.67 hold 68,556 instances and
+30 crowd splines in it, and the same are found by reading every file. :observed
+
 ## Objects that stand over a cell edge
 
 An object may reach into an area while its origin is outside it. Its reach is bounded by the model's oriented box from the

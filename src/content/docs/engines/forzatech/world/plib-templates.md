@@ -1,16 +1,20 @@
 ---
 title: Template libraries (.plib)
 description: The instance template libraries that map a placement block name to a model, its draw behaviour and its LOD distance bands.
+implementations:
+  - name: forzatech-formats (plib.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/plib.rs
 ---
 
 Each placement category has a library, `Ribbon_00\instancetemplates\<season>\objects\<CATEGORY>.plib`, that turns the
 block names of [`.pgeo` files](/engines/forzatech/world/pgeo-placements/) into models. The `objects\` folder is
 byte-identical to `summer\`; there is one library per category per season folder (5 folders × 13 categories = 65 files of
-version 38). :observed Every field below was read from all 65 files, each of which parses exactly through the tailor
-section. The sections after it are not decoded. :observed
+version 38). :observed All 65 files read to their last byte under the layout below, every constant holding on every
+file (545 draw behaviours, 19,776 model templates and 47,835 placement templates in all). :proven[all 65 files]
 
 `Placement\GRASSTEMPLATE.plib` (version 9) is a different format: groups of weighted grass templates for the run-time `.mtp`
-grass, not used by `.pgeo`. :observed
+grass, not used by `.pgeo`. :observed All 5 (one per season folder) read to their last byte under the layout further down (512
+groups with 2,379 items and 415 sets in all). :proven[all 5 files]
 
 ## Layout
 
@@ -18,7 +22,7 @@ grass, not used by `.pgeo`. :observed
 title: .plib (version 38)
 size: variable
 games: [fh6]
-note: "Little-endian. Parsed through the tailor table; what follows it is not decoded."
+note: "Little-endian; a string is a u32 length and that many bytes of printable ASCII, a list a u32 count and that many entries. The file ends where the names end."
 fields:
   - {at: 0, size: 4, type: u32, name: version, value: 38, level: observed}
   - {at: 4, size: 4, type: u32, name: unknown, level: unknown, note: "varies per file"}
@@ -27,7 +31,13 @@ fields:
   - {at: "next", size: variable, type: "behaviour[]", name: draw behaviours, level: observed, note: "u32 count, then behaviours"}
   - {at: "next", size: variable, type: "template[]", name: model templates, level: observed, note: "u32 count, then templates"}
   - {at: "next", size: variable, type: "tailor[]", name: tailors, level: observed, note: "u32 count; each { str name, str uv, u32 0, str scale, u32 0, u32 0, str density }"}
-  - {at: "next", size: variable, type: bytes, name: later sections, level: unknown, note: "UV, scale and density tables, materials, placement and grass templates"}
+  - {at: "next", size: variable, type: "uv entry[]", name: UV entries, level: unknown, note: "list of { str name, f32[6] }; then a u32 0 (a list that is empty in every file)"}
+  - {at: "next", size: variable, type: "scale entry[]", name: scale entries, level: unknown, note: "list of { str name, f32[2] }; then two u32 0 (lists that are empty in every file)"}
+  - {at: "next", size: variable, type: "density entry[]", name: density entries, level: unknown, note: "list of { str name, f32[5] }"}
+  - {at: "next", size: variable, type: "material[]", name: materials, level: observed, note: "list of { str name, str material (empty for MATERIAL_DEFAULT), u32 0, u32 index (0 to 20, meaning unknown), u32 0 }"}
+  - {at: "next", size: variable, type: "placement template[]", name: placement templates, level: observed, note: "list of { str name, str proxy path, u32, str billboard template, str billboard tailor, str model template, str model tailor, str material, f32[2], i32 }"}
+  - {at: "next", size: 4, type: u32, name: zero, value: 0, level: observed, note: "a list that is empty in every file"}
+  - {at: "next", size: variable, type: "str[]", name: names, level: observed, note: "the crowd animation names in the crowd library; one empty name elsewhere"}
 ```
 
 A **draw behaviour** is `str name` (`TREE_3D_DEFAULT`, `PLANT_3D_DRAW_BEHAVIOUR_HIGH`, ...), `u32 mode` (0, 1 or 3), two
@@ -40,6 +50,16 @@ bytes, the x range of the AABB again, `u8 1`, `u32 nModels` (1 on all 19,776 tem
 `tracks\brio\scene\models\...\<stem>.model|.max`, `u8 0`, 65 bytes `slotToSet` (the index of the LOD set for each behaviour
 slot; non-zero exactly where the behaviour slot has ranges: 0 mismatches over 257,725), and the LOD sets
 `u32 nSets × { u32 n, n × { u8, u32 lod, u32 (0, 1, 1000000 or 0x7FFFFFFF), u32 k, k × u32 id } }` (set 0 is empty). :observed
+
+A **placement template** is what a `.pgeo` block's source range names (`GBL_SUSUKI_SUM_A_HIGH`): it names a model template (and
+a tailor and a material entry) and optionally a billboard model template. :observed The tailors, UV, scale and density
+entries, and the material entries are read as listed above; what their floats and the template's words mean is not
+established. :unknown
+
+The version 9 library is `u32 9, u32` (varies), two names (`GRASSTEMPLATE` twice), a list of groups, a list of sets and a final
+`f32`. A group is `str name, u32 n, f32` and *n* items `{ str placement template, u8 (0 or 2), f32[7], i32 (−1, 0 or 1),
+f32[3] }`; a set is `str name` and a list of group names. :proven[all 5 files] The meaning of the floats, the byte and the
+word is not established. :unknown
 
 ## Template to model
 
@@ -81,12 +101,19 @@ Some templates have an all-zero AABB and every LOD id `0xFFFFFFFF` (props `decal
 layers of the terrain ([Decals](/engines/forzatech/effects/decals/)). :inferred
 
 Placements whose model stem has no modelbin are numerous: 35,504 buildings, 19,490 props, 5,797 barriers, 1,164
-infrastructure, 120 bushes, 7 rocks map-wide. :observed
+infrastructure, 120 bushes, 7 rocks map-wide. :observed Looking every model path of the 65 libraries up as
+`<same folder>\<stem>_cluster<NNN>.<k>.modelbin` among the 113,868 modelbins of `GeoChunk0` finds a file for 12,566 of the
+19,776 paths (10,834 of the 17,874 `.max` paths and 1,732 of the 1,872 `.model` paths); 7,210 have none, 30 of those being
+empty paths. :proven[all 65 libraries]
 
-:::open[What do the later .plib sections hold?]
-After the tailor table the file holds UV, scale and density tables, material tables and the placement and grass templates
-(such as `GBL_SUSUKI_SUM_A_HIGH`, which names a billboard template, a tailor and `3D_GBL_SUSUKI_SUM_A_3D_HIGH`). None is
-decoded.
+:::open[What do the UV, scale and density entries and the tailors mean?]
+They are read and every byte is accounted for, but what a tailor does with its three entries, and what the floats are, is
+not established.
+:::
+
+:::open[What do the lists that are empty in every file hold?]
+Three lists after the UV and scale entries and one after the placement templates are empty in all 65 libraries, so their
+entry layout cannot be read from the install.
 :::
 
 :::open[What do the draw behaviour mode, flags and slot kinds mean?]

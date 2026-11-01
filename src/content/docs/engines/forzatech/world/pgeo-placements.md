@@ -5,23 +5,42 @@ sources:
   - title: ForzaTools
     url: https://github.com/Nenkai/ForzaTools
     note: the FH5 reader does not cover the FH6 pgeo layout
+implementations:
+  - name: forzatech-formats (pgeo.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/pgeo.rs
+  - name: forzatech-formats (world.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/world.rs
+  - name: forzatech-formats (track.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/track.rs
 ---
 
 Nearly everything placed by rule in the world (buildings, props, trees, bushes, barriers, rocks, signs, groundcover,
 infrastructure, bridges, smashables and the crowd and spline templates) is stored in **`.pgeo` placement files**, one file
 per (cell size, cell, category) under `scene\proc\cellsize\<cs>\<cx>_<cz>\`. A file is a list of named **blocks**, each a
 template name followed by its instances; the template name maps to one model through the category's [template
-library](/engines/forzatech/world/plib-templates/). :observed
+library](/engines/forzatech/world/plib-templates/). :observed In each season a file is shown in, a block name is the name
+of exactly one model template of its category's library for 65,988,966 of the 66,029,611 instance-seasons (instances
+counted once per season they are shown in). The rest: 37,066 name no model template (27 names, all the winter groundcover
+`GRASSTEMPLATE` crops `3D_CROP_LAVENDER_*`, `3D_CROP_ONION_SUM_*`, `3D_CROP_SUNFLOWER*`, `3D_GRASS_TUFTY_*` and
+`GEN_LONG_GRASS_*`, which the winter library does not define) and 3,579 name two (`bar_gbl_crct_foam_01_b_3D` in every
+season, `tre_urb_ginkgo_d_3D` in autumn). :proven
 
-All counts are from a recorded census of the Tokyo track `Brio` (96,234 `.pgeo` files); the install is no longer available
-to re-check. :observed
+Following those templates' model paths, 65,058,898 of the 65,996,124 (instance, season, model path) triples name a model
+whose `.modelbin` is among the track's GeoChunk entries and 937,226 name none. :proven
+
+The Tokyo track `Brio` has 96,234 `.pgeo` files, all in `GeoChunk0`, holding 665,298 blocks and 29,164,671 instance records
+(the four season variants of a position count separately). :proven Counts below are of that census unless a sentence says
+otherwise; counts not restated here come from an earlier census of the same track. :observed
 
 ## Files and names
 
 The file name is `c<cs>_<category>_<lod>[_rt_<route>][__tag_<tag>_ | _<gameplay object id>][_<mask>].pgeo`. Cell sizes on
-this map are 50, 75, 100, 125, 150, 200, 250, 300, 500 and 10,000 m; a cell's world origin is `(cx × cs, 0, cz × cs)`.
-:observed Categories are buildings, props, trees, bushes, barriers, rocks, signs, grasstemplate, infrastructure, bridges,
-smashables, crowdtemplate, cwdspline and evolving_world. :observed
+this map are 50, 75, 100, 125, 150, 200, 250, 300, 500 and 10,000 m (3,489, 20,998, 37,048, 21,157, 1,821, 5,467, 2,025,
+3,849, 378 and 2 files). :proven A cell's world origin is `(cx × cs, 0, cz × cs)`. :observed Categories are buildings,
+props, trees, bushes, barriers, rocks, signs, grasstemplate, infrastructure, bridges, smashables, crowdtemplate, cwdspline
+and evolving_world. :observed The header's category names one of 13 libraries: barriers 3,764
+files, bridges 198, buildings 3,495, bushes 35,439, crowdtemplate 540, evolving world 9, grasstemplate 20,998,
+infrastructure 683, props 4,444, rocks 1,418, signs 1,182, smashables 2,529, trees 21,535. :proven
 
 | Suffix | Holds | Confidence |
 |---|---|---|
@@ -42,7 +61,7 @@ sunflower), about 3.4 million of them in summer. `_3D_HIGH` is the only `_3D_<su
 ## File grammar
 
 One grammar covers all 96,234 files, and walking it consumes every byte of every file, with every constant below holding
-on all of them. :observed All strings are `u32` length plus ASCII with no terminator. :observed
+on all of them. :proven All strings are `u32` length plus printable ASCII with no terminator. :proven
 
 ```layout
 title: .pgeo file
@@ -51,27 +70,30 @@ games: [fh6]
 note: "Little-endian. The end of the file follows the last list; kind 5 files add a spline section."
 fields:
   - {at: 0, size: "4 + n", type: str, name: section name, level: observed, note: "like c75_grasstemplate_do_221_cellx55z114_section0"}
-  - {at: "next", size: 4, type: u32, name: kind, level: observed, note: "0 = ordinary category file (95,694), 2 = crowdtemplate_cwd (296), 5 = cwdspline (244)"}
-  - {at: "next", size: 4, type: u32, name: three, value: 3, level: observed, note: "kind 5 only"}
-  - {at: "next", size: 8, type: "u32[2]", name: constants, value: "13, 15", level: observed}
-  - {at: "next", size: 32, type: "f32[8]", name: bounding box, level: observed, note: "minX minY minZ 0, maxX maxY maxZ 1; w is 0 and 1 on every file"}
+  - {at: "next", size: 4, type: u32, name: kind, level: proven, note: "0 = ordinary category file (95,694), 2 = crowdtemplate_cwd (296), 5 = cwdspline (244); no other value"}
+  - {at: "next", size: 4, type: u32, name: three, value: 3, level: proven, note: "kind 5 only"}
+  - {at: "next", size: 8, type: "u32[2]", name: constants, value: "13, 15", level: proven}
+  - {at: "next", size: 32, type: "f32[8]", name: bounding box, level: proven, note: "minX minY minZ 0, maxX maxY maxZ 1; w is 0 and 1 on every file; every instance position and every crowd spline box lies inside it, widened by one fixed-point step and one f32 rounding"}
   - {at: "next", size: "4 + n", type: str, name: category, level: observed, note: "the library category: PROPS, GRASSTEMPLATE, CROWDTEMPLATE, EVOLVING_WORLD ..."}
   - {at: "next", size: 4, type: f32, name: unknown, level: unknown, note: "0.59 to 23 m, per file"}
   - {at: "next", size: "4 + n", type: str, name: route, level: observed, note: "empty = none; \"0\", \"8003\"; crowd: \"~101\", \"~351;~8008\""}
   - {at: "next", size: "4 + n", type: str, name: gameplay tag, level: observed, note: "empty = none; [DRIFT_ZONE_17], BARN_FIND_MAZ_55_787B_91, TAXIJOB"}
-  - {at: "next", size: 4, type: "u8, u8[3]", name: season exclusion, level: observed, note: "mask byte then three zero bytes; see Seasons below"}
-  - {at: "next", size: 4, type: u32, name: zero, value: 0, level: observed}
-  - {at: "next", size: "4 + 32 n", type: "table entry[]", name: table, level: observed}
-  - {at: "next", size: variable, type: "block[]", name: list A, level: observed, note: "u32 count, then blocks"}
-  - {at: "next", size: variable, type: "block[]", name: list B, level: observed, note: "u32 count, then blocks"}
-  - {at: "next", size: 4, type: u32, name: zero, value: 0, level: observed}
+  - {at: "next", size: 4, type: "u8, u8[3]", name: season exclusion, level: proven, note: "mask byte (its two nibbles equal on all 96,234 files) then three zero bytes; see Seasons below"}
+  - {at: "next", size: 4, type: u32, name: zero, value: 0, level: proven}
+  - {at: "next", size: "4 + 32 n", type: "table entry[]", name: table, level: proven}
+  - {at: "next", size: variable, type: "block[]", name: list A, level: proven, note: "u32 count, then blocks"}
+  - {at: "next", size: variable, type: "block[]", name: list B, level: proven, note: "u32 count, then blocks"}
+  - {at: "next", size: 4, type: u32, name: zero, value: 0, level: proven}
+  - {at: "next", size: variable, type: "crowd spline[]", name: crowd splines, level: proven, note: "kind 5 only: u32 count (1 on all 244 files), then the splines; see Crowd spline below"}
 ```
 
 Each block is `str name; u32 n; n × 80-byte instance record; u32 m (0 or n); m × 96-byte curve record; u32 nSources;
-nSources × { str source template, u32 first, u32 count }`. The sources are contiguous from record 0 and their counts
-sum to *n*; *nSources* is 0 only on the crowd blocks (PEDESTRIAN, ANIMATED, ANIMATED_SPRITE) and `bsh_flat_urb_garden_3D`.
-The source is the placement template the records came from (for grass, `GBL_SUSUKI_SUM_A_HIGH`, defined further down the
-library). :observed
+nSources × { str source template, u32 first, u32 count }`. :proven The sources are contiguous from record 0 and their counts
+sum to *n*; *nSources* is 0 on exactly 1,416 blocks: 315 PEDESTRIAN, 273 ANIMATED and 273 ANIMATED_SPRITE crowd blocks and 555
+`bsh_flat_urb_garden_3D` blocks; the other blocks hold 739,181 source ranges in all. :proven The source is the
+placement template the records came from (for grass, `GBL_SUSUKI_SUM_A_HIGH`, defined further down the library): every
+source range names a placement template of the category's library in every season the file is shown in (2,748,074 range
+and season pairs, none unresolved). :proven
 
 ```layout
 title: .pgeo table entry
@@ -117,18 +139,18 @@ fields:
   - {at: 0, size: 12, type: "u32[3]", name: position, level: observed, note: "x, y, z: bit 31 sign, bits 16-30 integer, bits 0-15 fraction / 65535 (the instanced shaders divide by 65535, not 65536)"}
   - {at: 12, size: 24, type: "f32[6]", name: rotation rows, level: observed, note: "the first two rows of the 3×3 transform, unit vectors; the third is their cross product"}
   - {at: 36, size: 12, type: "f32[3]", name: scale, level: observed, note: "local axis scale; uniform in practice"}
-  - {at: 48, size: 4, type: u32, name: flags, level: unknown, note: "0x80800000 typical"}
+  - {at: 48, size: 4, type: u32, name: flags, level: unknown, note: "0x80800000 on all 29,164,671 records"}
   - {at: 52, size: 1, type: u8, name: instance variation x, level: observed, note: "the swatch-tint palette row (byte / 255), shared by all pieces of a building"}
   - {at: 53, size: 1, type: u8, name: instance variation y, level: observed, note: "per-piece value: lights on/off variation, and the tide-mark height of rock shaders"}
   - {at: 54, size: 1, type: u8, name: instance variation z, level: observed, note: "window_linecastroom room centre override"}
   - {at: 55, size: 1, type: u8, name: instance variation w, level: observed, note: "window_linecastroom room width override"}
-  - {at: 56, size: 4, type: "u8[4]", name: unknown, level: unknown, note: "bytes 56 to 59 not described by any reader"}
+  - {at: 56, size: 4, type: "u8[4]", name: zero, value: 0, level: proven, note: "0 on all 29,164,671 records"}
   - {at: 60, size: 1, type: u8, name: material variant, level: observed, note: "row of the model's variant table; 0 = base"}
-  - {at: 61, size: 1, type: u8, name: zero, value: 0, level: observed, note: "0 in all 1,992,129 records checked"}
+  - {at: 61, size: 1, type: u8, name: zero, value: 0, level: proven, note: "0 on all 29,164,671 records"}
   - {at: 62, size: 2, type: u16, name: building id, level: observed, note: "index into the ModulateConstants frame table of the .pvs; 0 = no frame; shared by every piece of a building and its attached props, barriers and signs"}
   - {at: 64, size: 4, type: u32, name: unknown, level: unknown, note: "not described"}
   - {at: 68, size: 4, type: u32, name: random value, level: observed, note: "per-piece"}
-  - {at: 72, size: 4, type: u32, name: unknown, level: unknown, note: "not described"}
+  - {at: 72, size: 4, type: u32, name: zero, value: 0, level: proven, note: "0 on all 29,164,671 records"}
   - {at: 76, size: 4, type: u32, name: record tail, level: unknown, note: "0x00000200 on most records; groundcover 0x100 or 0x200 (0x100 in the winter grass file)"}
 ```
 
@@ -143,8 +165,10 @@ index, the record's u16 at +0x3E). :observed Groundcover records use the same 80
 `0x80800000`, variation bytes `FF FF FF FF` (tint row 1.0), variant 0 and a random value. Nothing in a record selects among
 models: a template has one model, and variety comes from separate templates. :observed
 
-Positions agree with each file's own bounding box on many cells, positive and negative on all three axes. :observed The
-sign-magnitude form matters: `0x96F33B00` is −5875.23, not −26893. :observed Groundcover sits on the extracted terrain
+Every position of the 29,164,671 records, read as fixed point on all three axes, lies inside its file's header box widened
+by one fixed-point step (1/65535 m) and one `f32` rounding. :proven The box bounds
+the positions; the cell does not: 337,778 records lie outside the cell whose folder holds their file (the other 28.8
+million inside), so a cell names where a file is kept. :proven The sign-magnitude form matters: `0x96F33B00` is −5875.23, not −26893. :observed Groundcover sits on the extracted terrain
 mesh: susuki in x 3434..3690, z 4784..5040 (160,671 summer records, 30,000 sampled) at `y − terrain` median 0.000 m, p99
 0.006 m; crops in x −1450..−1194, z −3900..−3644 (6,437) median −0.015 m, p99 0.13 m. :observed
 
@@ -159,10 +183,10 @@ wall and sleeper pieces scatter into slabs). :observed
 
 ## Curve records
 
-Present on 11,658 blocks (barriers 11,367, infrastructure 168, props 114, bushes 6, rocks 2, smashables 1; 218 block
-names), one per instance. Each is either the "no curve" sentinel (`−990, −990, −990, −991 × 3, ..., −997 × 3`, 11,634
-records) or, in 243,394 records, the instance's spline data, the struct the SplineDeform vertex shaders read verbatim:
-:observed
+A block has no curve records or one per instance. :proven They are present on 11,658 blocks, holding 255,028 records:
+the "no curve" sentinel (`−990, −990, −990, −991 × 3, ..., −997 × 3`) in 11,634 of them and, in the other 243,394, the
+instance's spline data, the struct the SplineDeform vertex shaders read verbatim. :proven The blocks are barriers 11,367,
+infrastructure 168, props 114, bushes 6, rocks 2 and smashables 1 (218 block names). :observed
 
 ```layout
 title: Curve record
@@ -183,8 +207,9 @@ is applied is on [Spline deform](/engines/forzatech/shaders/spline-deform/).
 
 **Crowd spline (kind 5).** After the lists: `u32 nSplines` (1 on all 244), then per spline a GUID string, an 8-float box, a
 length, a float (0.72 to 1), `u32 nPoints`, and `nPoints × 80 bytes` (three vec4 with w = 0 whose roles are not verified,
-eight cumulative distance samples), then two lists of floats whose meaning is unknown. The PEDESTRIAN records of these
-files sit at (0, 0, 0). :observed The name grammar is `c300_cwdspline_<cx>_<cz>_<n>` under cell `0_0`; the route carried
+eight cumulative distance samples), then two lists of floats whose meaning is unknown; the layout reads all 244 files to
+their last byte. :proven The PEDESTRIAN records of these
+files sit at (0, 0, 0): all 2,914 records of the 244 files. :proven The name grammar is `c300_cwdspline_<cx>_<cz>_<n>` under cell `0_0`; the route carried
 by 37 of them is in the header only. :observed
 
 ## Gameplay gating
@@ -219,7 +244,7 @@ state. `Stripped\EntityModel.zip` and the encrypted game database were not searc
 
 The season byte uses the trigger-zone bits of `FORZA_SeasonExclusion`: the low nibble's bit 0 is spring, 1 summer, 2
 autumn, 3 winter, and a set bit means the content is not shown in that season; the high nibble repeats the low one on
-every file seen. :observed
+every one of the 96,234 headers. :proven
 
 | Suffix (mask) | Shown in | Content (record counts, whole map) | Confidence |
 |---|---|---|---|
@@ -230,6 +255,9 @@ every file seen. :observed
 | `_119` (0x77) | winter | grass 1.20 M `SUSUKI_WNT`; buildings 3,298 `*_snow` roof overlays, `*_snow` barriers, snow log piles | :observed |
 | `_136` (0x88) | not winter | crops (cabbage, onion, lavender) 22,000; a few props | :observed |
 | `_204` 0xCC / `_153` 0x99 / `_51` 0x33 | spring+summer / summer+autumn / autumn+winter | a few dozen festival props, boxes | :observed |
+| `_17` (0x11) | not spring | one file, two records | :observed |
+
+The install holds ten masks: 0 (75,018 files, 12,258,944 records), 119 (3,151; 2,412,979), 136 (577; 43,852), 153 (10; 328), 17 (1; 2), 187 (5,933; 4,055,622), 204 (7; 50), 221 (7,201; 6,843,752), 238 (4,331; 3,549,120) and 51 (5; 22); no other value occurs. :proven
 
 The seasonal files repeat positions: in one 75 m cell (47, 59) all 2,162 `SUSUKI_WNT_A` positions are also `SUSUKI_SUM_A`
 positions in `_221` and again in `_187`; a winter `bld_gbl_resi_04_a_snow` sits exactly on its `bld_gbl_resi_04_a`.

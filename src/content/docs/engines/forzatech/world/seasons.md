@@ -10,7 +10,7 @@ re-checkable. :observed
 
 | Layer | Selected by | Confidence |
 |---|---|---|
-| Placement files | the `.pgeo` season-exclusion mask ([Placement files](/engines/forzatech/world/pgeo-placements/)) | :observed |
+| Placement files | the `.pgeo` season-exclusion mask ([Placement files](/engines/forzatech/world/pgeo-placements/)); the two nibbles of the byte are equal in all 96,234 headers | mask :observed; nibbles :proven |
 | Model per placed template | the season's template library ([Template libraries](/engines/forzatech/world/plib-templates/)) | records :observed; season folder :inferred |
 | Material instance per mesh | the mesh's material group element for the season; −1 means the group's summer element | :observed |
 | Parent materials | `bin.zip` `materials\<season>\<same hash>` | contents :observed; season folder :inferred |
@@ -19,7 +19,7 @@ re-checkable. :observed
 | Ocean optics | the `tz_oceanparams.tz` zone whose exclusion mask admits the season → an `OceanSettings.xml` preset | data :observed; evaluation :inferred |
 | `uber_water` colour | its parent materials, as for any material | :observed |
 | Near-field ground splat map | the `.mtxmoddxt` file name suffix only | :unknown |
-| Hand-placed instances and terrain clusters | the instance's gameplay record season-exclusion mask | :observed |
+| Hand-placed instances and terrain clusters | the instance's gameplay record season-exclusion mask; the two nibbles are equal in all 1,079 gameplay records of `brio_00.pvs` | mask :observed; nibbles :proven |
 
 ## Mesh material ids
 

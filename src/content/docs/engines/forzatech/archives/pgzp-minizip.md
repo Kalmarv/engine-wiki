@@ -11,6 +11,9 @@ sources:
   - title: ForzaTechStudio
     url: https://github.com/D3FEKT/ForzaTechStudio
     note: documents zip methods 21 and 22 of the platform zips
+implementations:
+  - name: forzatech-formats (minizip.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/minizip.rs
 ---
 
 A Forza Horizon 6 track keeps its world (every model, placement table and track texture) in four **GeoChunk**
@@ -18,16 +21,18 @@ archives, `GeoChunk0.minizip` to `GeoChunk3.minizip`, in the track's folder unde
 ZIP: the entries have no names inside the archive, only an index, a position and a compression method. The names and the
 resource types come from companion text and binary files beside the archives. :observed
 
-This page describes the Tokyo track `Brio`, the only track measured. :observed
+This page describes the Tokyo track `Brio`, the only track measured, as Steam build 25588841 ships it. Every
+statement marked :proven was checked on all four of its GeoChunks: every entry read by a reader that refuses any value
+the layout below does not allow, and compared field by field with ForzaTools' reading of the same files. :proven
 
 ## What a chunk holds
 
 | Chunk | Size | Entries | Holds | Confidence |
 |---|---|---|---|---|
-| `GeoChunk0` | 37 GB | 411,013 | every model, every `.pgeo` placement file and `.pb` texture (each with at least its lowest quality tier), terrain cluster models | :observed |
-| `GeoChunk1` | 3.3 GB | 3,065 | no `.modelbin`; its other contents (the models, placements and `.pb` textures are in chunks 0 to 2) are not described separately | :unknown |
-| `GeoChunk2` | 46 GB | 79,840 | higher quality tiers of textures, including the largest terrain cell maps (mainmap q5) and the `top.dxt` near-field layer files | :observed |
-| `GeoChunk3` | 4.4 GB | 1,476 | only the highest-resolution `builtmegatexture` records (the `.hq*` files) | :observed |
+| `GeoChunk0` | 39,724,802,048 bytes | 411,013 | every model, every `.pgeo` placement file and `.pb` texture (each with at least its lowest quality tier), terrain cluster models | :observed |
+| `GeoChunk1` | 3,573,829,632 bytes | 3,065 | no `.modelbin`; its other contents (the models, placements and `.pb` textures are in chunks 0 to 2) are not described separately | :unknown |
+| `GeoChunk2` | 49,414,393,856 bytes | 79,840 | higher quality tiers of textures, including the largest terrain cell maps (mainmap q5) and the `top.dxt` near-field layer files | :observed |
+| `GeoChunk3` | 4,762,284,032 bytes | 1,476 | only the highest-resolution `builtmegatexture` records (the `.hq*` files) | :observed |
 
 No path appears in two chunks. :observed Only `GeoChunk0` holds `.modelbin` files. :observed
 
@@ -39,23 +44,28 @@ size: 32
 games: [fh6]
 note: Little-endian. The folder index follows at 0x20.
 fields:
-  - {at: 0, size: 4, type: "char[4]", name: magic, value: "PGZP", level: observed}
-  - {at: 4, size: 4, type: u32, name: version, value: 101, level: observed, note: "FH5 shipped 100 and 101 per ForzaTools; the FH6 chunks are 101"}
-  - {at: 8, size: 4, type: u32, name: folder indices offset, value: "0x20", level: observed}
-  - {at: 12, size: 4, type: u32, name: directory entry count, level: observed, note: "411,013 / 3,065 / 79,840 / 1,476 for chunks 0 to 3"}
-  - {at: 16, size: 4, type: u32, name: folder count, level: observed, note: "81,657 in chunk 0"}
-  - {at: 20, size: 4, type: u32, name: files per sub-chunk, value: 512, level: observed}
-  - {at: 24, size: 4, type: u32, name: sub-chunk count, level: observed, note: "ceil(entry count / 512); 803 in chunk 0"}
-  - {at: 28, size: 4, type: u32, name: reserved, value: 0, level: observed}
+  - {at: 0, size: 4, type: "char[4]", name: magic, value: "PGZP", level: proven}
+  - {at: 4, size: 4, type: u32, name: version, value: 101, level: proven, note: "FH5 shipped 100 and 101 per ForzaTools; the FH6 chunks are 101"}
+  - {at: 8, size: 4, type: u32, name: folder index offset, value: "0x20", level: proven}
+  - {at: 12, size: 4, type: u32, name: entry count, level: proven, note: "411,013 / 3,065 / 79,840 / 1,476 for chunks 0 to 3"}
+  - {at: 16, size: 4, type: u32, name: folder count, level: proven, note: "81,657 / 3,065 / 79,840 / 1,476"}
+  - {at: 20, size: 4, type: u32, name: entries per sub-chunk, value: 512, level: proven}
+  - {at: 24, size: 4, type: u32, name: sub-chunk count, level: proven, note: "ceil(entry count / 512): 803 / 6 / 156 / 3"}
+  - {at: 28, size: 4, type: u32, name: reserved, value: 0, level: unknown, note: "0 in all four chunks"}
 ```
 
-After the header comes the folder index (`4 × folder count + 4` bytes, rounded up to a multiple of 8), then the
-sub-chunks. :observed
+After the header comes the **folder index**: one `u32` per folder, the index of the folder's first entry, then one
+more `u32`, the entry count. A folder's entries run from its value to the next, so the entries of a folder are
+consecutive and the values never go down; no folder is empty. A zero `u32` pads the list to a multiple of 8 bytes
+(chunks 2 and 3). :proven Then come the sub-chunks, and right after the directory (the end of the list below) the
+first entry's data. :proven
 
 ## Sub-chunks and entries
 
-Each sub-chunk is a `u64` data start followed by 512 twelve-byte entries; one extra 12-byte entry ends the list.
-:observed
+Each sub-chunk is a `u64` absolute data start followed by the records of its entries: 512, the last sub-chunk the
+rest. Every sub-chunk's first entry has relative offset 0. :proven One more 12-byte record ends the list: its data
+offset, relative to the last sub-chunk's data start, is where the last entry's data ends, and its other fields are 0.
+:proven
 
 ```layout
 title: PGZP entry
@@ -63,23 +73,37 @@ size: 12
 games: [fh6]
 note: Preceded in each sub-chunk by a u64 absolute data start. Little-endian.
 fields:
-  - {at: 0, size: 4, type: u32, name: relative data offset, level: observed, note: "absolute offset = sub-chunk data start + this"}
-  - {at: 4, size: 4, type: u32, name: uncompressed size, level: observed}
-  - {at: 8, size: 2, type: u16, name: flags, level: observed, note: "version 101: method = flags & 0x0FFF, padding = flags >> 12. Version 100: method = flags & 0x3FFF, padding = flags >> 14"}
-  - {at: 10, size: 2, type: u16, name: parent directory index, level: observed, note: "an index into the folder list, not an entry index"}
+  - {at: 0, size: 4, type: u32, name: relative data offset, level: proven, note: "absolute offset = sub-chunk data start + this; a multiple of 4 for every entry"}
+  - {at: 4, size: 4, type: u32, name: uncompressed size, level: proven}
+  - {at: 8, size: 2, type: u16, name: flags, level: proven, note: "version 101: method = flags & 0x0FFF, padding = flags >> 12 (0 to 3 in FH6). Version 100 (per ForzaTools): flags & 0x3FFF and flags >> 14"}
+  - {at: 10, size: 2, type: u16, name: folder, level: proven, note: "the low 16 bits of the entry's folder number (its folder by the folder index): chunks 0 and 2 have more than 65,536 folders, and the field wraps"}
 ```
 
-The compressed size of an entry is the next entry's data offset minus its own, minus the padding. :observed
+An entry's stored bytes run from its offset to the next entry's offset (for the last entry, the end the closing
+record gives), less its padding: the padding is the 0 to 3 bytes that bring the next entry to a multiple of 4. A
+stored entry's stored bytes are exactly its uncompressed size. :proven After the last entry's data the file is zero
+bytes up to a multiple of 4,096. :proven
 
 | Method | Compression | Where | Confidence |
 |---|---|---|---|
-| 0 | stored | GeoChunks | :observed |
-| 8 | raw DEFLATE (RFC 1951) | GeoChunks | :observed |
-| 31 | raw LZ4 block; the payload starts with an LZ4 token byte (`F0 30` = 15 + 48 literals) | GeoChunks; not in ForzaTools' FH5 table | :observed |
-| 21 | XMemCompress LZX | platform zips, not GeoChunks | :sourced[ForzaTechStudio] |
-| 22 | deflate wrapped in [TFIT encryption](/engines/forzatech/archives/encrypted-files/) | platform zips, not GeoChunks | :observed |
+| 0 | stored | GeoChunks | :proven |
+| 8 | raw DEFLATE (RFC 1951) | GeoChunk0 only | :proven |
+| 31 | raw LZ4 block; the payload starts with an LZ4 token byte (`F0 30` = 15 + 48 literals) | GeoChunks; not in ForzaTools' FH5 table | :proven |
+| 21 | XMemCompress LZX | platform zips per ForzaTechStudio; no entry of the 9,076 zips of the FH6 install uses it | :sourced[ForzaTechStudio] |
+| 22 | deflate wrapped in [TFIT encryption](/engines/forzatech/archives/encrypted-files/) | platform zips (29,250 entries in 1,085 of the install's 9,076 zips), not GeoChunks | :observed |
 
-A sample of 150 entries per chunk decompresses without failure in all four chunks. :observed
+| Chunk | Stored | DEFLATE | LZ4 | Confidence |
+|---|---|---|---|---|
+| `GeoChunk0` | 115,773 | 14,041 | 281,199 | :proven |
+| `GeoChunk1` | 710 | 0 | 2,355 | :proven |
+| `GeoChunk2` | 31,427 | 0 | 48,413 | :proven |
+| `GeoChunk3` | 1,137 | 0 | 339 | :proven |
+
+Every entry of the four chunks decodes to exactly its uncompressed size with every stored byte used: no DEFLATE
+stream or LZ4 block ends early or leaves bytes over. :proven 1,800 entries (200 of each method of each chunk, spread
+evenly) decode to the same bytes in ForzaTools (stored and DEFLATE entries) and K4os.Compression.LZ4 (LZ4 entries).
+:observed ForzaTools never sets the closing record's offset, so the size it gives the last entry of `GeoChunk0` (a
+compressed one) wraps and it cannot read that entry. :proven
 
 ## Companion files
 
@@ -107,9 +131,11 @@ type. :observed
 All the type names are :observed from the extensions of the paths the contents file gives for each type. A model is
 named in other files by `4 << 24 | id` and a texture by `PVSTextureIndex << 4 | (quality − 1)`. :observed
 
-**`ChunkContentsMiniZipN.txt`** has one line per entry, `<PREZIPPED>d:\...\zipcache\pc\<path>|<folder index>`. The
-line order is the entry order; the number after `|` is the parent directory index, not the entry index. The line
-count equals the entry count and the distinct `|N` values equal the folder count. :observed
+**`ChunkContentsMiniZipN.txt`** is ASCII with one line per entry in entry order, each ended by CR LF, in one of two
+forms: `<PREZIPPED>d:\...\zipcache\pc\<path>|<folder>`, the entry's path on the machine that built the archive, or a
+bare generated name and its folder, `__04965.pvsz|30579` or `__tz00021.tz|14717`. :proven `GeoChunk0` has 14,041 bare
+lines (13,702 `.pvsz`, 339 `.tz`); the other chunks have none. :proven The number after the last `|` is the entry's
+whole folder number, the one the folder index gives (not its 16-bit field). :proven
 
 ## Other files in the track folder
 

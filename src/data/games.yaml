@@ -56,7 +56,7 @@
   engine: forzatech
   developer: Playground Games
   year: 2026
-  build: Steam release, track Brio data of early October 2026 (build number not recorded; install no longer present)
+  build: "Steam build 25588841 for the PGZP archive and encrypted file pages; the other pages describe an earlier October 2026 Steam release whose build number was not recorded"
 
 - id: sunset-overdrive
   name: Sunset Overdrive

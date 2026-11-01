@@ -11,6 +11,8 @@ sources:
 implementations:
   - name: havok-formats cloth reader
     url: https://github.com/Kalmarv/havok-formats/tree/main/src/cloth
+  - name: havok-cloth captured operator replay
+    url: https://github.com/Kalmarv/havok-cloth/blob/main/tests/game_capture.rs
 ---
 
 Cloth is Havok Cloth (`hcl`) data in tagfiles beside a model: a character's `cNNNN_c.hkx` in its `chrbnd`, and the
@@ -393,9 +395,9 @@ parts, `max(sample, 0)` and `min(sample, 0)`. :inferred[from the code; one field
 column is `(B.c0 × x + B.c1 × y) + B.c2 × z` and its translation `((B.c0 × x + B.c3) + B.c1 × y) + B.c2 × z`; a weight byte is
 multiplied by `0x3B808081` (1/255); a packed local position is `f32(word << 16) × f32bits(word3 << 16)`; the blend adds `M × w` in
 bone order; and a point is `((c0 × x + c3) + c1 × y) + c2 × z`. Its transform set is the instance's `+0x30` indexed by the
-operator's `+0x6C`. :observed[read from the code of 1.17.3]{games="elden-ring"} On the rear rope over 1,499 steps such a skin
-gives the game's pinned particles bit for bit except particles 8 and 9 in 6 steps, by 1 ulp in one lane; each of these is fixed by
-changing bone 132 by 1 ulp, a value the transform set never holds at any point of the frame. :observed[one recording]{games="elden-ring"}
+operator's `+0x6C`. :observed[read from the code of 1.17.3]{games="elden-ring"} With the equipped part's own inverse binds,
+the rear rope's pinned particles match bit for bit in all 1,499 recorded steps. :observed[one Stormveil recording,
+executable 2.7.2.0, with the equipped model identified through the save and protector param]{games="elden-ring"}
 The buffer's two matrices are exactly the identity, and the transform set's `+0x28` holds a second array of 136 matrices that do not
 change. :observed[one recording]{games="elden-ring"} In a second recording that keeps the whole of each buffer, the inverse matrix
 at `+0xD0` is the identity, all 16 words, in all 1,500 skin calls. :observed[one recording]{games="elden-ring"}
@@ -407,25 +409,24 @@ a packed three-influence block that stores all four lanes with aligned stores. :
 buffer's normal stream (the pointer at `+0x40`, the stride at `+0x4C`) with no normalisation. :observed[read from the code of
 1.17.3]{games="elden-ring"}
 
-The last ulp comes from the operator's inverse bind matrices (`boneFromSkinMeshTransforms`), which differ in the running game
-from the installed file. In a recording of 1,500 skin calls of the rear rope (2.7.2.0), 12 of the 48 floats of those matrices
-differ from the installed tagfile's, the same in every call, while the operator's other arrays (`transformSubset`,
-`controlBytes`, `threeBlendEntries`, `localPNs`) equal the file's bytes. Running the executable's own skin code (the composite at
-RVA `0x15D9800` and the packed deformer it reaches, `0x15A7207` to `0x15A7606`) on each call's recorded inputs with the run-time
-matrices gives every output position and normal of all 1,500 calls bit for bit; with the installed matrices and nothing else
-changed, 77 calls differ in their positions and 110 in their normals. :observed[one recording, against the installed file read
-straight from its archive]{games="elden-ring"} The game thread's MXCSR is `0x8000` in every call (round to nearest,
-flush-to-zero on, denormals-are-zero off), and the same replay under `0x1F80` (both off) also matches all 1,500, so these inputs
-do not depend on flush-to-zero. :observed[one recording]{games="elden-ring"}
+The equipped item identifies which definition the operator uses. In one Stormveil recording, the save's chest item is
+`871100`; its `EquipParamProtector` row has `equipModelId = 1361`, category 2 and gender mode 4, naming the shared body part
+`bd_m_1361`. All 48 recorded inverse-bind lanes of `BD_RearRope` equal the installed `BD_M_1361_c.hkx` definition, with no
+changes over 1,500 paired skin calls. Its transform subset is bones 132, 133 and 134. :observed[one save, its installed
+regulation row, and the paired operator recording, executable 2.7.2.0]{games="elden-ring"}
 
-The run-time operator and its five arrays lie at the same offsets from one base as in the installed tagfile's `DATA` section,
-so the game uses the loaded file image in place for this asset rather than a constructed copy. :inferred[from one
-recording]{games="elden-ring"} The registered copy of the operator (`0x153F110`) hands the inverse binds to `0x15517A0`, whose loop
+`BD_M_1360_c.hkx` is a different asset with the same rear-rope skin's controls, weights, indices and local vectors, but
+12 differing inverse-bind lanes: seven on bone 132, two on 133 and three on 134. Comparing that other definition with the
+recording gives eight pinned-particle lane differences over four steps, by one or two ulp, and position/normal differences
+in 72/86 skin calls; these are asset-identity differences, not evidence that the game rewrites the equipped asset's binds.
+:observed[the two installed tagfiles compared field for field against one recording]{games="elden-ring"}
+
+With the equipped 1361 definition, both installed and recorded binds reproduce every position and normal of all 1,500 skin
+calls, and every pinned xyz lane in all 1,499 simulation steps, bit for bit. The game thread's MXCSR is `0x8000` in every
+paired skin call: round to nearest, flush-to-zero on and denormals-are-zero off. :observed[independent float32 arithmetic
+over all paired inputs and recorded outputs, executable 2.7.2.0]{games="elden-ring"}
+
+The registered copy of the operator (`0x153F110`) hands the inverse binds to `0x15517A0`, whose loop
 (`0x1551840` to `0x1551866`) moves each 64-byte matrix with four aligned loads and stores and no arithmetic, so a copy does not
 change their bits. :observed[read from the code of 2.7.2.0]{games="elden-ring"}
 
-:::open[What rewrites the rear rope's inverse binds?]
-The run-time inverse binds are not the installed values, and no reached stage computes them: the copy only moves bits. A hardware
-watch on the operator's constructor saw a different, default-constructed operator, not the rope's, so the writer is not found;
-that no writer exists does not follow. Whether other cloth assets differ the same way is not checked.
-:::

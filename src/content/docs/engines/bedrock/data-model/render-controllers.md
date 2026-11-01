@@ -45,6 +45,16 @@ Examples in the vanilla data :observed[the vanilla render controllers of bedrock
 - The horse's controller sets `color` to the armour's dye (`query.armor_color_slot(4, n)`) when it wears dyed armour,
   `this` otherwise.
 - The armor stand's controllers set `overlay_color` with `a` at 0.
+- The splash and lingering potions' controllers take their texture from a 31-entry `array.skins` by `query.variant`,
+  one entry per effect in the order `moveSlowdown`, `moveSpeed`, `digSlowdown`, `digSpeed`, `damageBoost`, `heal`, `harm`,
+  `jump`, `confusion`, `regeneration`, `resistance`, `fireResistance`, `waterBreathing`, `invisibility`, `blindness`,
+  `nightVision`, `hunger`, `weakness`, `poison`, `wither`, `healthBoost`, `absorption`, `saturation`, `levitation`,
+  `turtleMaster`, `slowFall`, `windCharged`, `weaving`, `oozing`, `infested`, with `default` last (index 30), and give
+  `texture.enchanted` as their second texture.
+
+The orb's `texture_frame_index` is its size class, 0 to 10 by the experience it carries, as Java Edition picks an orb's
+icon. :inferred A thrown potion's `query.variant` is the index of its first effect in that list, and 30 for a potion
+with no effect. :inferred
 
 :::open[Which orb frame does a texture frame index above 1 pick?]
 The orb's `v` offset rounds `texture_frame_index / 4`, so if Molang's `math.round` rounds halves up, indices 2 and 3

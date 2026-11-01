@@ -1,6 +1,6 @@
 ---
-title: Water fog and water surface
-description: "How the water distance fog comes in after the camera goes under (transition_fog), and where a biome's water surface opacity comes from: the legacy biomes_client.json and the client biomes."
+title: Fog and water surface
+description: "The active fog stack that decides which fog setting applies, how the water distance fog comes in after the camera goes under (transition_fog), and where a biome's water surface opacity comes from: the legacy biomes_client.json and the client biomes."
 sources:
   - title: Microsoft Learn, fog in resource packs
     url: https://learn.microsoft.com/en-us/minecraft/creator/documents/foginresourcepacks
@@ -13,13 +13,24 @@ sources:
     note: swamp water drawn at the default transparency after the move to client biomes, resolved Works As Intended
   - title: Mojang bedrock-samples
     url: https://github.com/Mojang/bedrock-samples
-    note: vanilla resource pack, v1.26.60.5
+    note: "vanilla resource pack, v1.26.60.5; metadata/doc_modules/fogs.json, Mojang's fog documentation"
 ---
 
 A fog definition (`fogs/*.json`, `minecraft:fog_settings`) gives distance fogs for air, rain (`weather`) and water,
 each with `fog_start`, `fog_end`, `fog_color` and `render_distance_type` (`fixed` blocks, or `render` fractions of
 the render distance). :sourced[Microsoft Learn, fog in resource packs] The water fog may also say how it comes in once
 the camera is under water; the water's surface itself takes its colour and opacity from the biome.
+
+## The active fog stack
+
+Each player has a stack of fog layers, bottom to top: the engine's hard-coded defaults; the data default, the fog that
+the `default` entry of `biomes_client.json` names by `fog_identifier`; the biomes, an average of the fogs of the biomes
+around the player; and the settings the `/fog` command has pushed on the player, themselves a stack. :sourced[Mojang bedrock-samples]
+Every setting is looked up on its own, from the top down, and the first layer that defines it wins: a biome fog with no
+`air` distance fog leaves the air fog to the data default, and failing that to the engine. :sourced[Mojang bedrock-samples]
+
+The vanilla resource pack of 1.26.60 still ships a legacy `biomes_client.json`, headed "Vanilla 1.20.0", beside 89
+client biome files (`biomes/*.client_biome.json`). :observed[bedrock-samples v1.26.60.5]
 
 ## How the water fog comes in
 
@@ -63,7 +74,8 @@ The client biome documentation gives no default. The old file's `default` entry 
 explicit 0.65 matches.
 :::
 
-:::open[Which wins when a pack's biomes_client.json and a client biome both set a biome's water?]
-The documentation calls client biomes the preferred format but gives no order between a pack's legacy entry and a
-vanilla client biome of the same biome.
+:::open[Which wins when biomes_client.json and a client biome both set a biome?]
+The documentation calls client biomes the preferred format but gives no order between a legacy entry and a client biome
+of the same biome, whether for its water or its fog, nor for one pack that sets a biome in both (a legacy entry naming one
+fog and the pack's client biome another).
 :::

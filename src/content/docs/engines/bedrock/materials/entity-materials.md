@@ -44,11 +44,16 @@ The base `entity` material defines `USE_OVERLAY`, so nearly every entity materia
 
 | Material | Parent and additions | Confidence |
 |---|---|---|
+| `entity` | `entity_static` + `USE_OVERLAY`; culled, opaque. `chicken` and `fox` are plain `entity` | :sourced[bridge. (vanilla resource pack copy)] |
+| `entity_alphatest` | `entity_nocull` + `ALPHA_TEST` | :sourced[bridge. (vanilla resource pack copy)] |
+| `entity_alphablend` | `entity` + state `Blending`, with a vertex colour; culled | :sourced[bridge. (vanilla resource pack copy)] |
+| `entity_emissive_alpha` | `entity_nocull` + `ALPHA_TEST`, `USE_EMISSIVE` | :sourced[bridge. (vanilla resource pack copy)] |
+| `villager_v2` | `entity_alphatest` with `depthFunc` `LessEqual` | :sourced[bridge. (vanilla resource pack copy)] |
 | `entity_change_color` | `entity_nocull` + `USE_OVERLAY`, `USE_COLOR_MASK` | :sourced[bridge. (vanilla resource pack copy)] |
 | `entity_alphatest_change_color` | `entity_change_color` + `ALPHA_TEST`, `USE_COLOR_MASK`, state `DisableAlphaWrite` | :sourced[bridge. (vanilla resource pack copy)] |
 | `cat` | `entity_alphatest_change_color` | :sourced[bridge. (vanilla resource pack copy)] |
 | `wolf`, `sheep` | `entity_change_color` | :sourced[bridge. (vanilla resource pack copy)] |
-| `experience_orb` | `entity` + `USE_UV_ANIM`, `ALPHA_TEST`, `USE_OVERLAY` | :sourced[bridge. (vanilla resource pack copy)] |
+| `experience_orb` | `entity` + the defines `USE_UV_ANIM`, `ALPHA_TEST`, `Blending`, `USE_OVERLAY`, `USE_MASK` (`Blending` listed as a define, not a state) | :sourced[bridge. (vanilla resource pack copy)] |
 | `charged_creeper` | `entity_static` + `USE_UV_ANIM`, `ALPHA_TEST`, additive blending (`One`, `One`) | :sourced[bridge. (vanilla resource pack copy)] |
 
 ## Where the colours come from

@@ -25,6 +25,13 @@ dragon, the minecart's `rail_offset` and `rail_rotation`). :observed[the vanilla
 read by the same animations as `is_holding_left`, which nothing assigns. :observed[the vanilla resource pack of bedrock-samples v1.26.60.5]
 The engine sets it like the left-hand one, the initial value being a default. :inferred
 
+A name another entity assigns is outside the census but can still be the engine's for one that never does. `variable.state`
+is assigned by the parrot's and the creaking's own scripts, but the cat's and the ocelot's movement controllers read it and
+neither entity's files assign it. :observed[the vanilla resource pack of bedrock-samples v1.26.60.5] The cat's
+`controller.animation.cat.move` goes to `sneaking` at 0, `sprinting` at 1, `sitting` at 2, `walking` at 3 and `lie_down`
+at 4. :observed[the vanilla resource pack of bedrock-samples v1.26.60.5] The engine sets it to the cat's current
+posture by those numbers. :inferred
+
 ## The entity variables
 
 Each meaning below is taken from how the vanilla scripts use the variable; the usage column quotes the vanilla data.

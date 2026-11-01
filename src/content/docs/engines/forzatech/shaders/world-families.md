@@ -148,9 +148,9 @@ A dependency census of every `GBufferLightScenario` pixel shader of four familie
 back to its texture reads and parameter rows through the `CBMP` and `TXMP` maps), with the texture formats the Shibuya
 Scramble box's materials bind (all of the box: 91,811, 14,462, 10,481 and 66,426 triangles). :observed
 
-In these four families a material's texture index dwords start 4 dwords before the end of the constants (384, 64, 48 and
-288 bytes): with that base every texture read is sampled with the tiling parameter of its own role, which the end of the
-constants as base does not give. :observed
+In `environment_plot` a material's texture index dwords start 4 dwords before the end of its 384 bytes of constants: with that
+base every texture read is sampled with the tiling parameter of its own role, which the end of the constants as base does not
+give. In the other three the base is the end of the constants (64, 48 and 288 bytes). :observed
 
 **`environment_plot`** is the `environment` family's one-texture-set material on a terrain plot.
 

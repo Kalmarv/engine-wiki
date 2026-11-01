@@ -83,6 +83,22 @@ slot 11 is 0–135 m with LOD 2; impostors take over from 225 m (`impostor_draw_
 `_HIGH` suffix is the near band of the same model. :observed Which render pass each slot is (colour, shadow ...) is not
 established. :unknown
 
+What each slot's LOD set draws, read over the 26 `<x>_impostor` templates, their 26 `<x>_3D` twins and 38 other templates
+(buildings, props, signs, barriers, infrastructure) placed in the Shibuya Scramble area: slot 13 is the only slot whose set
+holds LOD 0 of every template and holds the whole chain (trees `[0, 1, 2]`, bushes `[0]`, props `[0, 1, 2, 3]` or `[0 .. 4]`,
+buildings `[0, 3]`, impostors `[0]` or `[0, 2]`); slot 11 holds no LOD 0 of a model with several (props `[1, 2, 3]`, buildings
+`[1, 3]`, trees `[2]`); slot 12 holds `[1, 3]` and slot 10 `[3]` (buildings); slots 1 and 6 hold one coarse LOD (`[3]` or `[4]`;
+`[0]` for impostors, the one card). :observed The bucket flags of the meshes of those LODs do not tell the slots apart: they
+are the same files, with colour buckets (`0x19`, `0x1c`, `0x38`), in every slot. :observed A tree's `_3D` template covers 0 to
+25, 25 to 80 and 80 to 225 m in slot 13 and 0 to 135 m (LOD 2) in slot 11, and its `_impostor` template starts at 225 m in slot 13
+and at 135 m in slot 11 (a bush: `_3D` 0 to 55 m, impostor from 55 m in slot 13; `_3D` 0 to 40 m, impostor from 40 m in
+slot 11), but in slots 1 and 6 only the impostor has ranges (0 to 400 or 500 m and 0 to 200 or 250 m for a tree, 0 to 250 and 0 to 150 m for a
+bush). :observed Slot 13 is therefore probably the main colour view: the one pass with the finest LOD and the near bands.
+:inferred The flattenable-bush proxy templates (`bsh_flat_*_3D`, `Bush_Flattenable_Hard_3D`: two triangles, material
+`art_mesh`, and bucket `0x18` for `Bush_Flattenable_Hard_3D`) have ranges in slot 11 only, and every one of the 924 placed in the area has a real `_3D` bush at
+the same position. :observed The distinct range ends of every slot are all values of the main-view LOD profile distances
+(`.pvs`, pass 2, tier 1 or 3), which does not tell the slots apart either. :observed
+
 ## The template box is not the model's extent
 
 The AABB is not the model's extent: it can be smaller or far larger than the mesh (`prp_cty_strge_delivery_01_a`: library

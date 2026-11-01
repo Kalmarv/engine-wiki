@@ -213,7 +213,8 @@ The emissive term seeds `RT1.xyz`: `g(d) = d ≥ 1 ? 1/(d + 1e-5)² : (d + 1e-5)
 `emissiveonly`: `Color.rgb · EmissiveMultiplier · g(d)` (Tokyo: 0). `projection_lod _E`: `EmissiveTexture(uvA).rgb ·
 EmissiveTextureScale · sat((INSTANCE_VARIATION.y − EmissiveVariationMin)/(EmissiveVariationMax − EmissiveVariationMin)) · g(d)`
 (152 of 186 Tokyo materials bind the black `ubershader_default_emissive`). `pylon_cables`: `Lightmap(uv1).rgb · Color.rgb ·
-0.96 · g(d)` when `LightmapActive` (false in Tokyo). Every other family writes 0. :observed Whether a later pass multiplies
+0.96 · g(d)` when `LightmapActive` (false in Tokyo). `uberlod _Default`: `EmissiveTexture(uv0).rgb · EmissiveScale · g(d)`
+(see [Heightfield far view](#heightfield-far-view-uberlod)). :observed Whether a later pass multiplies
 `g(d)` back is not determinable statically (`FPlusPlus_CombineSeperateDiffuseSpec_Final_Tile0` and the deferred composite
 `FPlusPlus_Composite_NoDepthWrite_DirectLight_DXR_PixelClassify0` do not; no other pass was read), and the source of
 `INSTANCE_VARIATION.y` for hand-placed instances is not traced. :unknown The `environment` family's `_Emissive`
@@ -237,6 +238,26 @@ materials (12) have `EmissiveMultiplier` 0 and a black `Color`; the `anim_ledfli
 `Emissive` is 1 in 227 `environment` (18,966 triangles), 90 `environment_signage` (2,462), 912 `projection_lod` (218,071), all 10
 `uberlod` and 1,337 `window_linecastroom` materials (25,167 triangles), whose `EmissiveVariationMin` and `Max` are fractions between
 0 and 1 (most often 0.2 to 0.4, 0.6 to 0.8 or 0.7 to 0.9). :observed[a census of the box's prototype materials]
+
+## Heightfield far view (`uberlod`)
+
+The track's `uberlod` shader file (the family of the `autouberlod_*` clusters of the far heightfield) holds two G-buffer
+permutations, `_Default` and `_Rock_NM`. Both were dumped and their render-target channels followed. :observed
+
+- `_Default` reads `DiffuseATexture`, `RoughnessMetalnessATexture` and `EmissiveTexture`, every one at `TEXCOORD0` as it is, and
+  no normal map; `_Rock_NM` reads `DiffuseATexture` and `NormalATexture` at `TEXCOORD0`, takes roughness and metalness from
+  the parameters `Roughness` and `Metalness`, and reads no emission texture. The parameter switches `RoughnessMetal`,
+  `Emissive`, `NormalMap` and `Modulate` are not rows of the constant buffer. :observed
+- `_Default`: `RT0.w` is `RoughnessMetalnessATexture.g` (the metalness) and `RT1.w` is `RoughnessMetalnessATexture.r` raised
+  to a power that depends on the vertex normal's `y` and a scene constant (the roughness). `RT0.xyz` is the diffuse colour
+  moved away from or toward its luma (weights 0.3, 0.59, 0.11) by a factor of the normal's `y` and two scene constants,
+  times a scene constant. No texture alpha is read, so nothing is alpha tested. :observed
+- The emission of `_Default` adds `g(d) · EmissiveScale · EmissiveTexture.rgb` to `RT1.xyz`, `g(d)` the distance encoding
+  of [Emissive](#emissive). It has no instance variation, no tint, no `GIEmissiveScale`, no lightmap. :observed
+- The Shibuya box holds 10 `uberlod` materials (8,568 triangles) of one signature: `RoughnessMetal`, `Emissive` on,
+  `NormalMap`, `Modulate` off, `EmissiveScale` 1, `Roughness` 0.8, `Metalness` 0, `LightSwitchOnStart` 0.01, `LightSwitchOnEnd`
+  0.02 (the last two are read by neither permutation). `DiffuseATexture`, `EmissiveTexture` and `RoughnessMetalnessATexture` are BC1 sRGB, `NormalATexture`
+  BC5 linear. The switches match `_Default`, not `_Rock_NM`. :inferred[the switch names; which permutation a material takes is not read from the shader bin]
 
 ## Road decals
 

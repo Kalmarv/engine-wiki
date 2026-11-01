@@ -239,6 +239,10 @@ was followed back to its texture reads and parameter rows. :observed
   Shibuya box. :observed
 - The retro permutations' `RT1.xyz` carries a retro-reflective term from `RetroReflectivity`, `RetroReflectivityFalloff` and
   `Hardness`; the retro permutations write metalness 0, as do the `uber_roaddecal` ones without `metal`. :observed
+- `Enabled` is a `CBMP` entry of `uber_roaddecal` (byte 228), but no render-target channel and no `discard` of any of the 35
+  permutations depends on it. It is 0 on 1,161 of the 20,743 road-decal triangles of the Shibuya box (the parameter is stored
+  as a switch). Whether the draw path honours it before the shader runs is not established. :observed[the dependencies of all 35
+  permutations' outputs and discards; the materials of one Shibuya area]
 - In every material of the Shibuya box `RoadUVMultiplierA` is (1, 1), so the diffuse, normal and mask reads coincide with the mask's
   raw `uv0`. :observed[the materials of one Shibuya area]
 

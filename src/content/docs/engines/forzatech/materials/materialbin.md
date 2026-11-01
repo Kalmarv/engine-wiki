@@ -105,12 +105,14 @@ resolves it: the entry `…/pc/<rel>/<name>_<guid>_qualityN.pb` is the game path
 `media\_library\TexturesPG\*.zip`, whose entries start below the zip (`swatches/<name>.swatchbin`). :observed Materials name a
 `TexturesPG` entry by two paths: with the zip's name, `game:\media\_library\texturespg\<zip>\<path in the zip>`, and without it,
 `game:\media\_library\texturespg\<path in the zip>`; `ubershader_default_diffusea_8b3aeaf9-….swatchbin` (in `objects.zip`)
-hashes to the stored `0x97ABD0EC` by the second. :observed The two forms name one file: `objects.zip`'s
-`ubershader_default_lightmap_ba8a432b-….swatchbin` is named 168 times with the zip's name and 30 times without it.
-:observed[a scan of every `.materialbin` and `.shaderbin` of Brio's `bin.zip` for `_library` paths: 114 distinct paths; 96 in
-`Textures.zip`, 8 in `TexturesPG` with the zip's name (1 `DefaultTextures`, 7 `objects`), 6 without it (all `objects`), 4 in no
-archive of the install] Which form the game's file system resolves, and whether it resolves both, is not traced. :unknown In a
-Tokyo area this resolves every texture parameter except 81 distinct hashes that are in
+hashes to the stored `0x97ABD0EC` by the second. :observed The track's GeoChunks store each such path as a texture of its own:
+`.pb` tiers under exactly the path a material names, so `…\texturespg\objects\swatches\ubershader_default_lightmap_ba8a432b-…`
+(named 168 times) and `…\texturespg\swatches\ubershader_default_lightmap_ba8a432b-…` (named 30 times) are two GeoChunk0
+entries, and two `TexturesPG` paths that no library zip holds (`swatches\interpolate8_modu_…`, `swatches\ubershader_default_diffuseb_…`)
+are in GeoChunk0 too. :observed[a scan of every `.materialbin` and `.shaderbin` of Brio's `bin.zip` for `_library` paths: 114
+distinct paths; 96 in `Textures.zip`; of the 16 under `texturespg`, 15 are GeoChunk `.pb` entries of Brio under that exact path
+(8 without a zip's name, 7 with `objects`) and the 16th, `texturespg\defaulttextures\swatches\greyscale_grey187_…`, is only in
+`DefaultTextures.zip`; 2 paths are in no archive of the install] In a Tokyo area this resolves every texture parameter except 81 distinct hashes that are in
 no track or library archive (festival banner art, some flag and projection-LOD textures). :observed
 
 ### Parameter values: the nearest definition wins

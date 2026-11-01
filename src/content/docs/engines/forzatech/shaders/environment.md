@@ -91,6 +91,30 @@ arguments in the hundreds, where GPU `sin` implementations differ in the low bit
 gradient between float32 and float64 `sin`. The noise's lattice, frequency and amplitude are exact everywhere; the blotch
 layout is not reproducible across GPUs. :observed
 
+## What each G-buffer channel depends on
+
+Reading every `GBufferLightScenario` pixel shader of `environment` in the Tokyo track's `bin.zip` (379 permutations, one per
+variant) through the `CBMP` and `TXMP` maps, and following each render-target channel back to its texture reads and
+parameter rows, gives these dependencies. :observed
+
+- `RT0.w`, the metalness, is `RoughMetAoPorTex_A.g` in the 273 permutations that sample one texture set: alone in 199, and
+  with the mega-skirt blend's textures in the 74 `_MS` ones. The 106 `_B` (two-set) permutations add
+  `RoughMetAoPorTex_B.g`, `NormHeightTex_A.a` and `AoWetBlendContextTex.b` (54 alone, 52 with the mega-skirt blend).
+- `RT1.w`, the roughness, is `sat(RoughMetAoPorTex_A.r)` plus the wet terms; with the rain constant at 0 it is exactly that.
+- `RT2.xyz` reads `NormHeightTex_A.r` and `.g` only (378 of the 379; the one permutation without a normal output is the
+  ray-tracing hit shader), as `x = 2r − 1, y = 2g − 1, z = sqrt(sat(1 − x² − y²))`, brought to the world as
+  `x·T − y·B + z·N` with `B = (N × T)·w`. The vertex shader gives `w` as `sign(2·w_vertex − 1)` when the tangent is stored
+  as unsigned bytes and the stored `w` otherwise (`_Standard`).
+- `RT0.xyz` reads `DiffAlphaTex_A.rgb` in 378 of the 379 (the same one lacks it). The sample is taken through an sRGB view
+  (linear), raised to `1/2.2` before the wet term and to `2.2` after it, so a dry surface returns the linear sample; the
+  occlusion term of the albedo section multiplies it.
+- The three maps are sampled at `Uv_k · (TEXCOORD0 + Uv0Offset)` with their own tiling parameters, `BaseColorAlpha_A_UVTiling`,
+  `NormalHeight_A_UVTiling` and `RoughMetAoPoros_A_UVTiling`; a time-driven vertical scroll is added to V when a parameter
+  row is non-zero (`AnimTranslate`). The `DualUV_*` tilings enter the permutations that blend two UV sets.
+- `AlphaTest` permutations `discard` when `DiffAlphaTex_A.a − cb2[128].x < 0`: the reference is a constant of the draw's
+  buffer, not a material parameter, and the materials' `ATST` bytes are `1, 0`.
+- `EmissiveTexture` reaches only `RT1.xyz` (the lit colour), not the albedo.
+
 ## Signage
 
 `signage_*` families (the `*_CM` permutations) colour a one-channel or RGBA mask atlas of `AtlasImages.zw` (columns, rows)

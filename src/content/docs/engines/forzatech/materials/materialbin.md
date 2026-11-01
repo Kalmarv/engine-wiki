@@ -101,9 +101,16 @@ texture parameters with a path, every one's hash is the CRC32 of the lowercased 
 6,310,669 texture parameters have an empty path and keep a hash all the same; 1,047 of them have hash 0. :proven[all 18,367,250 parameters]
 A table from the archive
 resolves it: the entry `…/pc/<rel>/<name>_<guid>_qualityN.pb` is the game path `game:\media\<rel>\<name>_<guid>.swatchbin`
-(45,627 textures for Brio across the four chunks); shared engine textures live in `media\_library\TexturesPG\*.zip` with the
-game path `game:\media\_library\texturespg\<path in the zip>`, and `ubershader_default_diffusea_8b3aeaf9-….swatchbin` hashes to
-the stored `0x97ABD0EC`. :observed In a Tokyo area this resolves every texture parameter except 81 distinct hashes that are in
+(45,627 textures for Brio across the four chunks). Shared engine textures live in `media\_library\Textures.zip` and
+`media\_library\TexturesPG\*.zip`, whose entries start below the zip (`swatches/<name>.swatchbin`). :observed Materials name a
+`TexturesPG` entry by two paths: with the zip's name, `game:\media\_library\texturespg\<zip>\<path in the zip>`, and without it,
+`game:\media\_library\texturespg\<path in the zip>`; `ubershader_default_diffusea_8b3aeaf9-….swatchbin` (in `objects.zip`)
+hashes to the stored `0x97ABD0EC` by the second. :observed The two forms name one file: `objects.zip`'s
+`ubershader_default_lightmap_ba8a432b-….swatchbin` is named 168 times with the zip's name and 30 times without it.
+:observed[a scan of every `.materialbin` and `.shaderbin` of Brio's `bin.zip` for `_library` paths: 114 distinct paths; 96 in
+`Textures.zip`, 8 in `TexturesPG` with the zip's name (1 `DefaultTextures`, 7 `objects`), 6 without it (all `objects`), 4 in no
+archive of the install] Which form the game's file system resolves, and whether it resolves both, is not traced. :unknown In a
+Tokyo area this resolves every texture parameter except 81 distinct hashes that are in
 no track or library archive (festival banner art, some flag and projection-LOD textures). :observed
 
 ### Parameter values: the nearest definition wins

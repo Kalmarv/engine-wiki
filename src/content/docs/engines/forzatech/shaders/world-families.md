@@ -216,7 +216,17 @@ EmissiveTextureScale · sat((INSTANCE_VARIATION.y − EmissiveVariationMin)/(Emi
 0.96 · g(d)` when `LightmapActive` (false in Tokyo). Every other family writes 0. :observed Whether a later pass multiplies
 `g(d)` back is not determinable statically (`FPlusPlus_CombineSeperateDiffuseSpec_Final_Tile0` and the deferred composite
 `FPlusPlus_Composite_NoDepthWrite_DirectLight_DXR_PixelClassify0` do not; no other pass was read), and the source of
-`INSTANCE_VARIATION.y` for hand-placed instances is not traced. :unknown The preset scales that turn the authored values into
+`INSTANCE_VARIATION.y` for hand-placed instances is not traced. :unknown The `environment` family's `_Emissive`
+permutations are on [Environment](/engines/forzatech/shaders/environment/#what-each-g-buffer-channel-depends-on).
+
+In the Shibuya box, 174 of the 1,366 placed prototypes hold an emissive material (306,233 triangles), and 87 of them
+(213,088 triangles) hold one whose emission depends on `INSTANCE_VARIATION.y`: 795 `projection_lod`, 2 `environment` and
+1 `environment_signage` materials. Those 87 are placed 106 times. The 22 rule placements all store the byte 255, so the
+factor is 1. The 84 hand placements have no such byte (see [the tint's inputs](/engines/forzatech/shaders/environment/#the-tints-inputs-over-the-shibuya-box)).
+Their tint's second float is 0 in 79 of them, 0.098 in one, 0.246 in one, and 0.648, 0.922 or 1 in the other three.
+The ramps (`EmissiveVariationMin`, `Max`) of the materials concerned are (0.2, 0.4) in 508, (0, 0.2) in 122, (0.6, 0.8) in 76 and
+(0.7, 0.9) in 62. :observed[the prototypes and placements of the box] If that float were `y`, 80 of the 84 hand-placed
+buildings would emit nothing. Nothing establishes whether it is `y` or a field left at zero. :unknown The preset scales that turn the authored values into
 lighting units are on [Time-of-day presets and light units](/engines/forzatech/lighting/time-of-day/).
 
 The authored magnitudes in the prototypes of the Shibuya box (every prototype placed there, counted by material and triangle) are

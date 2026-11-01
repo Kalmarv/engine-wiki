@@ -51,6 +51,11 @@ Read from the models of every prototype of the Shibuya Scramble box (summer), 56
   other or one, the same kinds of population as the rule records' four bytes (all ones, all zeros, a varied first with the
   rest ones). :observed The first float is therefore the likely `INSTANCE_VARIATION.x` of a hand-placed instance, read as
   the palette row as it is. :inferred
+- Over all 835 hand placements of the box, of every prototype, the tint is (1, 1, 1, 1) in 281, (0, 0, 0, 0) in 232,
+  (1, 0, 0, 0) in 90 and something else in 232, mostly of the shapes (a, a, 0, 0) and (a, b, b, 0). The box's 61,292 rule
+  records hold four bytes of 255 in 9,435, four zeros in 6,411 and mostly a varied first byte with the other three 255 in
+  the rest. :observed The later tint components do not follow the rule record's pattern, so which of them, if any, a
+  hand-placed instance's `INSTANCE_VARIATION.y` comes from is not established. :unknown
 
 ### The palette read
 
@@ -148,6 +153,31 @@ parameter rows, gives these dependencies. :observed
 - `AlphaTest` permutations `discard` when `DiffAlphaTex_A.a − cb2[128].x < 0`: the reference is a constant of the draw's
   buffer, not a material parameter, and the materials' `ATST` bytes are `1, 0`.
 - `EmissiveTexture` reaches only `RT1.xyz` (the lit colour), not the albedo.
+
+The `_Emissive` permutations (`_Emissive`, `_Emissive_EAUV`, `_Emissive_EF`) add this emission to `RT1.xyz`, in the
+`g(d)` encoding of [Emissive](/engines/forzatech/shaders/world-families/#emissive): :observed[the expressions of those
+three permutations' `RT1` channels]
+
+```
+E = DiffAlphaTex_A.rgb · EmissiveTexture.rgb · EmissiveTint.rgb · GIEmissiveScale · V · H · g(d)
+V = 1 + LightEmisVariationOnOff · (sat((INSTANCE_VARIATION.y − EmissiveVariationMin)
+                                       / (EmissiveVariationMax − EmissiveVariationMin)) − 1)
+H = EmissiveTempVariationOnOff ? √3 · c / |c| : 1
+c = lerp(lerp(1, WarmHue.rgb, sat(h)), ColdHue.rgb, sat(−h))     h = 2 · frc(hash) − 1
+```
+
+- `DiffAlphaTex_A` is read at `BaseColorAlpha_A_UVTiling · (Uv0Offset + TEXCOORD0)`, as in the other permutations, but
+  `EmissiveTexture` at `Uv0Offset + TEXCOORD0`, without a tiling: the two maps line up only when the base colour map
+  is not tiled. :observed
+- The hue term `H` is a direction of length √3, so it leaves white unchanged and its magnitude never depends on `h`.
+  `h` runs from −1 (fully `ColdHue`) to 1 (fully `WarmHue`). Its hash is the sum of three terms `ceil(row_k.x · q + row_k.w)`,
+  one per row of a scene constant buffer, weighted 14.853, 10.474 and 11.125. :observed Those are the weights of the x, y
+  and z of the instance position in the third component of the random offset of [Triplanar modulate](#triplanar-modulate),
+  so the rows likely quantise the three axes of a position and the hue changes in steps from one place to the next. :inferred
+- `_Emissive_EF` (`EmissiveFlash`) scales the emission by `1 + EmissiveFlashIntensity · (on − 1)`, where `on` is 1 while
+  `frc(t · FlashTimeScale + FlashOffset) ≤ FlashOnDuration` and 0 otherwise, `t` being a scene constant. The emission
+  therefore drops to `1 − EmissiveFlashIntensity` of its value for the rest of each period. :observed `t` is likely the
+  clock. :inferred
 
 ## Signage
 

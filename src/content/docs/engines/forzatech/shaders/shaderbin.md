@@ -12,7 +12,9 @@ A permutation file is named like `_Standard…_ST…\environmentGBufferLightScen
 shader containers that carry no depth, raster or blend state. :observed Disassembling them works with a current DXC
 (`dxc -dumpbin`); the 2020 SDK build crashes on them. :observed
 
-Counts here come from a recorded census of the Tokyo track `Brio`, no longer re-checkable. :observed
+Counts about the Tokyo track `Brio` here are from a recorded census, no longer re-checkable. :observed Counts about the
+install (build 25588841) come from reading all 987 `.shaderbin` files (of the world, car and library zips) with the rules
+below, which refuse any byte they do not account for; none is refused. :proven[all 987 shaderbins]
 
 ## Blobs
 
@@ -26,12 +28,27 @@ Counts here come from a recorded census of the Tokyo track `Brio`, no longer re-
 | `SPMP` | parameter hash → sampler register | :observed |
 | `CBEX` | the material constant buffer size | :observed |
 
-`PARM`, written as the tag bytes `MRAP`, is `u32 count` then `count × { u32, varint name length, name, u32 hash, u8 n, n bytes }`;
-`n` is usually 0. Walking records this way ends exactly at the blob's end (`environment`: 328 records, 15,003 bytes); a
-parser that assumes `n = 0` stops halfway. :observed
+Every shaderbin holds exactly one each of `PARM` 1.2, `CBMP`, `TXMP` and `SPMP` (3.1), `CBEX` 1.0 and `DFPR` 2.1.
+:proven[all 987 shaderbins]
+
+`PARM`, written as the tag bytes `MRAP`, is `u32 count` then `count × { u32 name hash, varint name length, name, u32 key hash, u8 n, n bytes }`.
+Walking records this way ends exactly at the blob's end (`environment`: 328 records, 15,003 bytes); a parser that assumes
+`n = 0` stops halfway. :proven[all 19,539 records of 987 shaderbins]
+The first u32 is the CRC32 of the name on every record. :proven[all 19,539 records]
+The second hash, the one a material's parameter, a `CBMP`, `TXMP` or `SPMP` entry and a `DFPR` default carry, equals the CRC32
+of the name in only 3,362 of the 19,539 records and differs in 16,177: it is a key of its own, not a name hash.
+:proven[all 19,539 records]
+`n` is 0 on 19,162 records; on the other 377 it is between 2 and 40 and the bytes are not understood. :proven[all 19,539 records] :unknown
 
 `CBMP`, `TXMP` and `SPMP` (version 3.1) are `u16 count; count × { u32 parameter hash; u16 value; u8 guid[16] }`, 22 bytes each,
-so the blob size is `2 + 22 n` (checked on `car_standard`). :observed
+so the blob size is `2 + 22 n`. :proven[all 18,492 entries of 987 shaderbins: 13,192 `CBMP`, 4,440 `TXMP`, 860 `SPMP`]
+Every one of those parameter hashes is the key hash of a `PARM` record of the same shaderbin. :proven[all 18,492 entries]
+`CBEX` is one `u16`, the constant buffer size. :proven[all 987 shaderbins]
+`DFPR` (version 2.1) is a `u16` count and parameters in the layout of a material's ([Materials](/engines/forzatech/materials/materialbin/)),
+without a trailer; it holds 19,539 parameters in all, 16,588 of them flagged, and the flag hash of every flagged one equals
+the CRC32 of the name of the `PARM` record with the parameter's hash. :proven[all 987 shaderbins]
+The three `DFPR` parameters of type 8 (a gradient) are particle defaults. :observed
+`VARS` and the other blobs are not read. :unknown
 
 ## Choosing a permutation
 

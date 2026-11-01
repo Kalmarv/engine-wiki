@@ -12,7 +12,10 @@ parent material by path; the parent is a `.materialbin` in the track's `bin.zip`
 the **shader family** (`environment`, `window_linecastroom`, `uber_road`, `environment_signage`, ...). What a pixel looks like
 is decided by the family's compiled shader ([Shader containers](/engines/forzatech/shaders/shaderbin/)). :observed
 
-Counts below are from a recorded census of the Tokyo track `Brio`, no longer re-checkable. :observed
+Counts about the Tokyo track `Brio` below are from a recorded census, no longer re-checkable. :observed Counts about the
+install (build 25588841) come from reading every material file of it with the rules below, each refusing any byte it does not
+account for: 9,707 `.materialbin` files, 987 `.shaderbin` files and 196,620 `.modelbin` files (693 of them with no `MatI`
+blob), holding 1,524,285 material instances. No file of any of them is refused. :proven[all 9,707 materialbins, 987 shaderbins and 196,620 modelbins]
 
 ## Where materials are stored
 
@@ -28,6 +31,28 @@ with the parent material path as a 7-bit-length string. :observed A `MatI` blob 
 else): 821 of 20,000 models' blobs, for example `OCC_Material`; in the two Tokyo areas checked the only empty one with
 geometry is `Boing_material` on a 32-triangle plane. :observed
 
+## File layout
+
+A `.materialbin` is a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) of exactly three blobs, in this order, with
+no other blob, blob version or metadata arrangement. :proven[all 9,707 materialbins]
+
+| Blob | Version | Holds |
+|---|---|---|
+| `MATL` | 1.2 | three strings: the shader (`Game:\Media\...\<family>.shaderbin`), the technique (`Standard`, `AlphaTest`, `Road`, ... or empty) and a third string that is empty or `UBER_FOLIAGE` |
+| `MTUD` | 1.0 | a `u8` pair count, then that many pairs of strings (a key such as `FM5Path` and its value) |
+| `MTPR` | 2.0 | the parameters, below |
+
+`MATL` carries the metadata `Name` (version 0: the material's name, its whole payload), `ATST` (version 2, 2 bytes), `BLST`
+(version 1, 5 bytes) and on most also `XTRA` (version 4), in that order. :proven[all 9,707 materialbins]
+A material instance (`MatI` blob of a model) is a bundle of two blobs: `MATI` 1.0 (stored as the tag bytes `ITAM`), whose data
+is one string, the parent material path, with the metadata `Name` (version 0), `ATST` (version 2, 2 bytes) and `XTRA`
+(version 5); then `MTPR` 2.0. :proven[all 1,524,285 material instances]
+A string is a length in 7-bit groups (low group first, the high bit set on every byte but the last) and that many bytes of UTF-8.
+:proven[every string of every material]
+6,539 `MatI` blobs are empty (no bytes at all, not even a bundle header). :proven[all 196,620 modelbins]
+
+What `ATST`, `BLST` and `XTRA` hold is not known. :unknown
+
 ## Parameters (MTPR and DFPR)
 
 ```layout
@@ -36,38 +61,45 @@ size: variable
 games: [fh6]
 note: "The blob starts with a count: u16 if the blob version is 2.1 or later, else u8. Little-endian."
 fields:
-  - {at: 0, size: 1, type: u8, name: version major, value: 3, level: observed}
-  - {at: 1, size: 1, type: u8, name: version minor, value: 4, level: observed, note: "3.4 on every parameter except two car models' materials (3.3, same layout)"}
-  - {at: 2, size: 4, type: u32, name: hash, level: observed, note: "CRC32 of the parameter name"}
-  - {at: 6, size: 1, type: u8, name: flag, level: observed, note: "when non-zero a u32 follows: a hash, set on switches such as RoughnessMetal, NormalMap, Tint, Skinning"}
-  - {at: "next", size: 1, type: u8, name: type, level: observed}
-  - {at: "next", size: 16, type: "u8[16]", name: guid, level: observed}
-  - {at: "next", size: variable, type: bytes, name: payload, level: observed, note: "by type, below"}
+  - {at: 0, size: 1, type: u8, name: version major, value: 3, level: proven}
+  - {at: 1, size: 1, type: u8, name: version minor, level: proven, note: "4 on all but a few materials; 3 on 649 materials of two cars (same layout); 1 on 12 texture parameters"}
+  - {at: 2, size: 4, type: u32, name: hash, level: proven, note: "the parameter, as its shader's PARM table lists it; not always the CRC32 of the name (see below)"}
+  - {at: 6, size: 1, type: u8, name: flag, level: proven, note: "0 or 1; when 1 a u32 follows: the flag hash, which for a shader default equals the CRC32 of the parameter's PARM name (set on switches such as RoughnessMetal, NormalMap, Tint, Skinning)"}
+  - {at: "next", size: 1, type: u8, name: type, level: proven}
+  - {at: "next", size: 16, type: "u8[16]", name: guid, level: proven}
+  - {at: "next", size: variable, type: bytes, name: payload, level: proven, note: "by type, below"}
 ```
 
 | Type | Payload | Notes | Confidence |
 |---|---|---|---|
-| 0 | 4 × f32 | float4, such as terrain `BlendMapScale` and `BlendMapOffset` | :observed |
-| 1 | 4 × f32 | colour | :observed |
-| 2 | f32 | | :observed |
-| 3 | u32 | bool | :observed |
-| 4 | i32 | mostly 0 or 1: feature switches | :observed |
-| 5 | 4 × f32 | BlendShuffle: a channel order, (0,1,2,3), (0,2,1,3), (2,0,1,3) or (1,2,0,3) | :observed |
-| 6 | 7-bit-length string + u32 | texture path and its path hash | :observed |
+| 0 | 4 × f32 | float4, such as terrain `BlendMapScale` and `BlendMapOffset` | :proven[18,367,250 parameters] |
+| 1 | 4 × f32 | colour | :proven[18,367,250 parameters] |
+| 2 | f32 | | :proven[18,367,250 parameters] |
+| 3 | u32 | bool | :proven[18,367,250 parameters] |
+| 4 | i32 | mostly 0 or 1: feature switches | :proven[18,367,250 parameters] |
+| 5 | 4 × f32 | BlendShuffle: a channel order, (0,1,2,3), (0,2,1,3), (2,0,1,3) or (1,2,0,3) | :proven[18,367,250 parameters] |
+| 6 | 7-bit-length string + u32 | texture path and its path hash | :proven[18,367,250 parameters] |
 | 7 | 4 × u32 | sampler state (address U, address V, w2, 0); U and V are 1 or 3, w2 is 0 to 6 | :observed; 1 = wrap, 3 = clamp :inferred |
-| 11 | 2 × f32 | | :observed |
-| 12 | 4 × f32 | an FH6 addition missing from the FH5 notes; missing it desynchronises the parse near the 17th parameter | :observed |
+| 8 | u32 count, then 4 bytes per entry | a gradient; 3 parameters in the install, all v3.4 | :proven[18,367,250 parameters] |
+| 11 | 2 × f32 | | :proven[18,367,250 parameters] |
+| 12 | 4 × u32 | an FH6 addition missing from the FH5 notes; missing it desynchronises the parse near the 17th parameter; 26,433 occur | :proven[18,367,250 parameters] |
 
-After the last parameter a v2.0 blob (`MTPR`) has a 12-byte trailer (u64, u32 0); a v2.1 shader blob (`DFPR`) has nothing.
-:observed Across 165,000 parameter blobs (the `bin.zip` materials and the `MatI` bundles of 20,000 models) only types 0 to 7,
-11 and 12 occur (no 8, 9, 10), every parameter is v3.4 and every blob ends exactly at its trailer. :observed 649 materials of
-two cars (`HOL_530_MalooFD_16` 389, `JAG_XJ220S_93` 260) use v3.3 with the same layout. :observed
+Types 9 and 10 never occur, and no other type does. The census counts: type 0 1,646,364; 1 357,515; 2 4,901,345; 3 790,016;
+4 2,410,103; 5 66,027; 6 6,879,839; 7 9,409; 8 3; 11 1,280,196; 12 26,433. :proven[all 18,367,250 parameters of 9,707 materialbins, 987 shaderbin defaults and 1,524,285 instances]
+
+After the last parameter a v2.0 blob (`MTPR`) has a 12-byte trailer: a u32 that is 0, a u32 that varies from blob to blob
+(its meaning is not known), and a u32 that is 0. :proven[all `MTPR` blobs] A v2.1 shader blob (`DFPR`) has a `u16` count and no
+trailer. :proven[all 987 shaderbins] Every blob ends exactly at its trailer or its last parameter. :proven[all parameter blobs]
+649 materials of two cars (`HOL_530_MalooFD_16` 389, `JAG_XJ220S_93` 260) use v3.3 with the same layout. :observed
 
 ### Texture path hash
 
 The u32 after a texture path is `crc32(lowercase(full game path))` with backslashes, for example
 `crc32("game:\media\tracks\brio\textures\assets\city\surface_tiling\tex_cty_tile_porcelain_tiles_a\swatches\tex_cty_tile_porcelain_a_bclr_2b7c5d03-e9d7-4023-8970-b24feb22a499.swatchbin") = 0xE513CC9F`.
-It is written even when the path string is empty, which is the norm for instance materials. :observed A table from the archive
+It is written even when the path string is empty, which is the norm for instance materials. :observed Of the 569,170
+texture parameters with a path, every one's hash is the CRC32 of the lowercased path, backslashes kept. :proven[all 569,170 texture parameters with a path]
+6,310,669 texture parameters have an empty path and keep a hash all the same; 1,047 of them have hash 0. :proven[all 18,367,250 parameters]
+A table from the archive
 resolves it: the entry `…/pc/<rel>/<name>_<guid>_qualityN.pb` is the game path `game:\media\<rel>\<name>_<guid>.swatchbin`
 (45,627 textures for Brio across the four chunks); shared engine textures live in `media\_library\TexturesPG\*.zip` with the
 game path `game:\media\_library\texturespg\<path in the zip>`, and `ubershader_default_diffusea_8b3aeaf9-….swatchbin` hashes to
@@ -90,7 +122,10 @@ maps point to. :observed
 
 ## Parameter hashes used most
 
-`crc32("NormalTiling") = 0x730F2086` matches the FH5 constants, so the hash is the same CRC32. :sourced[ForzaTech-extraction-tools]
+`crc32("NormalTiling") = 0x730F2086` matches the FH5 constants. :sourced[ForzaTech-extraction-tools] That is not so of every
+parameter: in the 19,539 `PARM` records of the 987 shaderbins the record's key hash (the one materials, `CBMP`, `TXMP`, `SPMP`
+and `DFPR` use; see [Shader containers](/engines/forzatech/shaders/shaderbin/)) equals the CRC32 of the record's name in only
+3,362. The record's first u32 is that CRC32 on every record, and a flagged default's flag hash equals it. :proven[all 19,539 PARM records]
 
 | Hash | Name | Swatch channel in file names | Confidence |
 |---|---|---|---|

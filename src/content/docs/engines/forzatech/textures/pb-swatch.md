@@ -10,56 +10,88 @@ A texture is a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) holding
 `game:\media\<rel>\<name>_<guid>.swatchbin`, which is what material parameters hash ([Materials](/engines/forzatech/materials/materialbin/)). :observed The `SourceHash` of the track's
 [asset manifest](/engines/forzatech/data-model/asset-manifest/#sourcehash) is the same hash. :proven
 
-All counts are from a recorded census of the Tokyo track `Brio` (169,351 world textures in `GeoChunk0` to `GeoChunk3`); the
-install is no longer available. :observed
+A texture bundle holds exactly one blob, `TXCB`, with exactly one metadata record, `TXCH` version 0. :proven[every texture of the install]
+The `TXCB` blob's version names the header: 0.0 the PC header below, 2.0 the Durango (Xbox One) header. :proven[every texture of the install]
+
+The install (build 25588841) holds 318,129 textures: 169,351 `.pb` in `GeoChunk0` to `GeoChunk3`, all PC, and in its zips
+22,251 `.pb` and 126,527 `.swatchbin`, of which 148,767 are PC and 11 are Durango (all `.swatchbin` in `WeatherTextures.zip`).
+The file extension does not tell the container: a zip holds both. Every one of them reads under
+the rules below with no refusal and no byte of any header unaccounted for. :proven[all 318,129 textures]
 
 ## Header
 
 ```layout
-title: TXCH metadata
+title: TXCH metadata (PC)
 size: variable
 games: [fh6]
-note: "Offsets are from the start of the TXCH metadata. Little-endian."
+note: "Offsets are from the start of the TXCH metadata. Little-endian. The header ends exactly after the last mip record."
 fields:
-  - {at: 24, size: 4, type: u32, name: width, level: observed}
-  - {at: 28, size: 4, type: u32, name: height, level: observed}
-  - {at: 32, size: 4, type: u32, name: depth, level: observed}
-  - {at: 36, size: 2, type: u16, name: slices and platform, level: observed, note: "14 bits slices, 2 bits platform"}
-  - {at: 38, size: 1, type: u8, name: mip count, level: observed}
-  - {at: 39, size: 1, type: u8, name: flags, level: observed, note: "1 cube, 2 premultiplied"}
-  - {at: 40, size: 4, type: u32, name: transcoding, level: observed, note: "0 on all 169,351 world textures"}
-  - {at: 44, size: 4, type: u32, name: encoded colour profile, level: observed}
-  - {at: 48, size: 4, type: u32, name: target colour profile, level: observed, note: "1 = sRGB"}
-  - {at: 52, size: 4, type: u32, name: address mode, level: observed, note: "0 wrap, 1 clamp, 2 mirror"}
-  - {at: 56, size: 4, type: u32, name: slices offset, level: observed, note: "→ { u32 encoding, u32 mips offset, u32 next }; mips offset → mip count × { u32 size, u32 offset, u32 next }, offsets into the TXCB data"}
+  - {at: 0, size: 4, type: u32, name: slice list offset, value: "0x38", level: proven}
+  - {at: 4, size: 4, type: u32, name: first mip record link, level: proven, note: "the offset of the first mip record plus 4"}
+  - {at: 8, size: 16, type: "u8[16]", name: guid, level: proven, note: "a Windows GUID; the (last) GUID in the file name when the name holds one, on 219,951 of the 220,008 textures whose name holds one; the other 57 (car scene textures in five car zips, the engine's DefaultTextures and a cinematic library) hold 00000000-0000-0000-0000-000000000001"}
+  - {at: 24, size: 4, type: u32, name: width, level: proven}
+  - {at: 28, size: 4, type: u32, name: height, level: proven}
+  - {at: 32, size: 4, type: u32, name: depth, level: proven, note: "1, or the number of layers every mip holds (9, 60 and 128 occur); it does not shrink from mip to mip"}
+  - {at: 36, size: 2, type: u16, name: slice count, level: proven, note: "1, the array size or 6 for a cube; at most 128"}
+  - {at: 38, size: 1, type: u8, name: mip count, level: proven}
+  - {at: 39, size: 1, type: u8, name: flags, level: observed, note: "0, 1, 4, 5 or 6; bit 0 set only on 6-slice textures"}
+  - {at: 40, size: 4, type: u32, name: transcoding, level: proven, note: "0 on every texture"}
+  - {at: 44, size: 4, type: u32, name: second colour profile, level: unknown, note: "equal to the colour profile at 48 on every texture"}
+  - {at: 48, size: 4, type: u32, name: colour profile, level: proven, note: "0 linear, 1 sRGB; selects the sRGB DXGI format where one exists"}
+  - {at: 52, size: 4, type: u32, name: address mode, level: observed, note: "0 on every texture of a zip; 0 or 1 on the GeoChunk .pb (1 on 98,049 of 169,351)"}
+  - {at: 56, size: 4, type: u32, name: slice list offset again, value: "0x40", level: proven}
+  - {at: 60, size: 4, type: u32, name: slice list link, value: "0x44", level: proven}
+  - {at: 64, size: "12 per slice", type: bytes, name: slice records, level: proven, note: "{ u32 encoding, u32 offset of the slice's first mip record, u32 next slice record offset + 4 or 0xFFFFFFFF on the last }"}
+  - {at: "after the slice records", size: "12 per mip per slice", type: bytes, name: mip records, level: proven, note: "{ u32 size, u32 offset into the TXCB data, u32 next mip record offset + 4 or 0xFFFFFFFF on the very last }; one list runs through every slice, largest mip first"}
 ```
 
-The pixel format is `transcoding ≤ 1 ? encoding : transcoding − 2`, and it is sRGB only when the target profile is 1. :observed
-Transcoding 1 ("BcBlockRle") exists in the enum but no FH6 PC texture uses it. :observed
+The slice count is a whole u16: bits 14 and 15 are 0 on every texture (no platform bits). :proven[all 318,118 PC textures]
+A mip record's size is the bytes its format needs for that level, times the depth: `max(1, width >> level)` by
+`max(1, height >> level)` pixels, a block-compressed level a whole number of 4 × 4 blocks and at least one. :proven[every mip of every slice of all 318,118 PC textures]
+The mips follow one another in the `TXCB` data with nothing between, from offset 0 to the end of the data, slice by slice. :proven[all 318,118 PC textures]
+An independent reading of where the mips lie, ForzaTools.TexConv's DDS writer read back by BCnEncoder.Net (which takes each
+mip's size from the DXGI format alone), gives the same bytes for every mip of a sample of textures of depth 1. :observed[a sample of PC textures]
+Flag bit 0 is set only on textures of 6 slices (cube maps), and not on every texture of 6 slices. :proven[all 318,118 PC textures]
+Whether the other flag bits mean "premultiplied" or anything else is not established. :unknown
 
-| Value | Format |
-|---|---|
-| 0 | BC1 |
-| 1 | BC2 |
-| 2 | BC3 |
-| 3 / 4 | BC4 UNORM / SNORM |
-| 5 / 6 | BC5 UNORM / SNORM |
-| 7 / 8 | BC6H UF16 / SF16 |
-| 9, 22 | BC7 (22 = high-quality encode) |
-| 10 / 11 / 12 | R32G32B32A32 float / R16G16B16A16 UNORM / R16G16B16A16 float |
-| 13 | R8G8B8A8 |
-| 14 / 15 | B5G6R5 / B5G5R5A1 |
-| 19 / 20 / 21 | R8 / A8 / R8G8 |
+The pixel format is the first slice's `encoding`, and it is sRGB only when the colour profile is 1. :proven[every PC texture; the same formats as ForzaTools and Doliman's tables]
 
-All rows :observed. The header parse reproduces every BC mip-0 size exactly over all 169,351 textures; loading each strictly
-(exactly one `TXCB` blob with `TXCH`, mip 0 inside the data with exactly the format's size, transcoding other than 1, address
-mode 0 to 2) fails on none. :observed
+| Encoding | Format | DXGI (linear / sRGB) |
+|---|---|---|
+| 0 | BC1 | 71 / 72 |
+| 1 | BC2 | 74 / 75 |
+| 2 | BC3 | 77 / 78 |
+| 3 / 4 | BC4 UNORM / SNORM | 80 / 81 |
+| 5 / 6 | BC5 UNORM / SNORM | 83 / 84 |
+| 7 / 8 | BC6H UF16 / SF16 | 95 / 96 |
+| 9 | BC7 | 98 / 99 |
+| 10 / 11 / 12 | R32G32B32A32 float / R16G16B16A16 UNORM / R16G16B16A16 float | 2 / 11 / 10 |
+| 13 | R8G8B8A8 | 28 / 29 |
+| 14 / 15 | B5G6R5 / B5G5R5A1 | 85 / 86 |
+| 19 / 20 | R8 / A8 | 61 / 65 |
 
-The address mode over the 169,351 textures is 0 (wrap) for 71,302 and 1 (clamp) for 98,049; mode 2 never occurs. Clamp is on
-the per-cell terrain maps (`mainmap_*`, `submap_*`, `autouberglossmap_*`, whose half-texel border makes neighbouring cells share
-edge texels) and on most `ub_*` far-LOD swatches; tiling surfaces, detail maps, normal maps and swatch-tint palettes are
-wrap. :observed Whether the run-time sampler of every slot honours the texture's own mode is not established; materials also
-carry sampler-state parameters. :unknown
+Counted by the first slice's encoding, the 318,118 PC textures are: BC7 212,892; BC1 30,374; BC4 UNORM 26,382 and SNORM 5,344;
+BC5 UNORM 14,035 and SNORM 2,583; R8 8,955; R16G16B16A16 float 6,618 and UNORM 935; BC6H UF16 5,064; R8G8B8A8 4,860; A8 51;
+BC3 19; BC2 4; R32G32B32A32 float 2. No slice of any texture has an encoding of 16 to 18, 21 or 22 (the reader refuses them), and no texture's first slice is
+BC6H SF16, B5G6R5 or B5G5R5A1. :proven[all 318,118 PC textures]
+Sources list 21 as R8G8 and 22 as a high-quality BC7 encode; neither occurs in this install. :sourced[ForzaTools]
+Transcoding 1 ("BcBlockRle") exists in the enum but no PC texture uses it. :proven[all 318,118 PC textures]
+
+The address mode (offset 52) over the 169,351 GeoChunk `.pb` textures is 0 (wrap) for 71,302 and 1 (clamp) for 98,049, and 0
+on all 148,767 PC textures of the zips (`.pb` or `.swatchbin`); mode 2 never occurs. :proven[all 318,118 PC textures]
+Clamp is on the per-cell terrain maps (`mainmap_*`, `submap_*`, `autouberglossmap_*`, whose half-texel border makes neighbouring
+cells share edge texels) and on most `ub_*` far-LOD swatches; tiling surfaces, detail maps, normal maps and swatch-tint
+palettes are wrap. :observed Whether the run-time sampler of every slot honours the texture's own mode is not established;
+materials also carry sampler-state parameters. :unknown
+
+## Durango header
+
+A texture whose `TXCB` blob is version 2.0 has a 35-byte `TXCH` payload: the GUID (16 bytes), the base mip's width and height
+(u16 each), the slice count (u16), the full texture's width and height (u16 each), a u16, the mip count, the full mip count and
+the base mip (u8 each), and a u32 of bit fields. :proven[the 11 Durango textures of the install]
+The bit fields are the console tile mode (bits 0 to 4; 13 on all 11), the encoding (5 to 10), the transcoding (11 to 16; 0) and
+the colour profile (20 to 22). :proven[the 11 Durango textures of the install]
+The payload is tiled for the console, and where each mip lies in it is not stored in the file. :observed
 
 ## Quality tiers
 
@@ -122,6 +154,7 @@ Livery decals (`media\Livery\Decals.zip`: 270 BC7 sRGB `decalNNN.swatchbin`, `De
 (2,048 × 1,024 BC4 UNORM per region in each car archive) use the same container. :observed The pause-map tiles are 1,024 px
 swatches ([The map](/engines/forzatech/world/coordinates-and-cells/)). :observed
 
-:::open[What does the second encoded colour profile field mean?]
-Offset 44 (`encoded colour profile`) is read and kept; only the target profile (offset 48, 1 = sRGB) selects a format.
+:::open[What does the second colour profile field mean?]
+Offset 44 equals the colour profile at offset 48 on every PC texture, so no texture says what it would be if it differed;
+only the profile at 48 selects a format.
 :::

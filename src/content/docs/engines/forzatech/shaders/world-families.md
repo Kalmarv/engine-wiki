@@ -79,6 +79,57 @@ roughness and normal then depend on the run-time wetness globals `cb2[91].y` and
 (interpreter: 78 of 100 such points change with random values of them). :observed The rural road families `uber_megaroad` and
 `uber_megaroad_edge` have no traced roughness or normal. :unknown
 
+## Foliage, branch and facade-LOD permutations
+
+A dependency census of every `GBufferLightScenario` pixel shader of three families in the Tokyo track's `bin.zip`
+(`uber_foliage` 27 permutations, `uber_branch` 7, `projection_lod` 24; each render-target channel followed back to its
+texture reads and parameter rows through the `CBMP` and `TXMP` maps), with the texture formats the Shibuya Scramble box's
+materials bind (18, 6 and 59 materials; 13,674, 8,213 and 10,002 triangles). :observed
+
+**`uber_foliage`**
+
+- `RT1.w` is `NormalTexture.a · RoughnessScale` in the 11 HiQ, static and punch-through permutations of tree, bush and grass
+  and in the ray-tracing hit shader; `RTAOTexture.b` joins it in `Grass3DNoFlattenVCO`. The 7 very-low-quality (`VL`) and
+  billboard permutations write no `RT1.w` and no normal (`RT2`), and the 7 impostor permutations read `MaskTexture`,
+  `NormalTexture.a` and `RTAOTexture` for both. :observed
+- `RT0.xyz` is `DiffuseTexture.rgb` times a factor of `RTAOTexture.b`, `MediumDOPower`, `MediumDOIntensity` and three
+  scene constants (`cb2[43].x`, `cb2[44].x`, `cb2[159].x`); the `_Tint` permutations add `LUTTex` and `RTAOTexture.g`, and
+  the static, punch-through and world-tint ones `RTAOTexture.r`. :observed
+- The bush and grass permutations take the normal from `NormalTexture.r` and `.g` only; the tree permutations read all four
+  channels (the canopy normal). :observed
+- Every map is sampled at `TEXCOORD0` with no tiling parameter; the alpha discard compares
+  `sat((DiffuseTexture.a − AlphaStepMin)/(AlphaStepMax − AlphaStepMin))` with `cb2[128].x`, a constant of the draw. :observed
+- Formats bound in the box: `DiffuseTexture` BC7 sRGB; `NormalTexture` BC7 linear (BC5 unorm on 2 triangles, which has no
+  alpha); `RTAOTexture` BC7 linear; `LUTTex` BC1 sRGB (10,444) or BC7 linear (3,230); `WorldTintMap` BC1 linear or BC7 sRGB;
+  `MaskTexture` RGBA8 sRGB; `NoiseTexture` BC4 unorm. :observed
+
+**`uber_branch`**
+
+- `RT0.xyz` is `DiffuseA.rgb` (read at `uv0 · DiffuseAUVTiling`) times a factor of `NormalA.a`, the vertex colour's alpha,
+  `MediumDOPower`, `MediumDOIntensity` and the same scene constants (the `NormalAlpha_AO` permutations: `NormalA.a` is the
+  occlusion). `RT1.w` is `DiffuseA.a`; `NormalA.a` enters only the wetness terms. `RT2` is `NormalA.r` and `.g` read at
+  `uv0 · NormalAUVTiling`. :observed
+- The only `discard` compares a value that is not a texture channel with `cb2[128].x`: the surface is opaque. :observed
+- The `_MS` (mega-skirt) permutations read the terrain's textures (`DeferredTerrainRoot_MegaSkirtTwinkleTexture` and a texture at a fixed
+  register, class 0 space 4 t0) for a height-gated blend; the box's six materials all select them. :observed
+- Formats bound in the box: `DiffuseA` and `FuzzBaseColor` BC7 sRGB; `NormalA`, `MicroNormal` and `FuzzNormal` BC7 linear;
+  `NormalB` BC5 unorm; `TintTexture` and `FuzzMask` RGBA8 sRGB. :observed
+
+**`projection_lod`**
+
+- Every map (`DiffuseATexture`, `RoughnessMetalnessATexture`, `NormalATexture`, `EmissiveTexture`, `BakedVCTexture`) is read
+  at `UVOutMinMax.xy + (UVOutMinMax.zw − UVOutMinMax.xy) · TEXCOORD0`, the atlas cell of the building. :observed
+- `RT0.xyz` is `DiffuseATexture.rgb · ((1 − a(1 − v))(1 − s) + s)` with `a = DiffuseATexture.a`, `v = BakedVCTexture.r` and
+  `s = SwatchTintTexture.r` (read at row `BakedVCTexture.g` and the instance variation), through the wetness terms; the
+  alpha is not the surface's opacity. :observed
+- 18 of the 24 permutations (every `_RM` one) write `RT0.w = RoughnessMetalnessATexture.g` and
+  `RT1.w = RoughnessMetalnessATexture.r` before wetness; the other 6 use the constant `Roughness` and no metalness. The 6
+  `HiQ` permutations read `NormalATexture.r` and `.g`, the others the vertex normal. The `AlphaTest` permutations discard
+  when `DiffuseATexture.a` is below `cb2[128].x`. :observed
+- Formats bound in the box: `DiffuseATexture` BC1 sRGB; `RoughnessMetalnessATexture` BC5 SNORM linear (9,650 triangles) or
+  BC7 sRGB (352); `NormalATexture` BC5 unorm linear; `BakedVCTexture` BC5 unorm linear (9,842) or RGBA8 sRGB (160);
+  `EmissiveTexture` BC1 linear (9,400), BC1 sRGB (12) or BC7 sRGB (518); `SwatchTintTexture` and `LightmapTexture` RGBA8 sRGB. :observed
+
 ## Emissive
 
 The emissive term seeds `RT1.xyz`: `g(d) = d ≥ 1 ? 1/(d + 1e-5)² : (d + 1e-5)²`, `d` the distance to the camera.

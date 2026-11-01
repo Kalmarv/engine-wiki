@@ -51,6 +51,12 @@ colour of the G-buffer shader (`TintColor`, or `BaseColour.rgb` with `BaseColorT
 `k = (0.4·Alpha + 0.5)·(0.98 − a view-dependent term)·(1 − Cloudyness)·(1 − fog)`. The `_ATT` permutations
 (`AlphaTestTexOnOff`) drop the `Alpha` factor and `discard` where `BaseColour.a < 1e-4`: a cut-out, not a coverage. :observed
 
+`Cloudyness` scales only `k`, so at 1 the transmittance is 1 and the reflected radiance of target 0 is the whole
+contribution; in 61% of the triangles of the 119 Shibuya glass materials the transmission alone, `k` times the luminance of
+`c`, is below 2%. :observed The two-target output has the form of dual-source blending, `dst = target0 + dst·target1`, as the
+car glass group does ([Car materials](/engines/forzatech/shaders/car-materials/#glass-group)); the blend state is run time, so
+that the reflection is added whatever the transmittance is inferred. :inferred
+
 ## Roughness, metalness and normal
 
 `uvK` is `TEXCOORDK` (D3D v down).

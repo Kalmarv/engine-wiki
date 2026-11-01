@@ -38,6 +38,8 @@ How the world and items are coloured:
   takes from its colour table, and the weather sheet's rain and snow cells.
 - [Particles drawn from a block or item picture](/engines/bedrock/effects/picture-particles/): the effects on
   `atlas.terrain` and `atlas.items`, the variables the engine hands them, and when each starts.
+- [Particle block tests](/engines/bedrock/effects/particle-block-tests/): the block lists a particle expires by, and
+  the old block names current Bedrock no longer has.
 
 :::open[What do the current renderer's compiled materials hold?]
 The material and shader facts here are those of the 1.16-era renderer, from published copies. The game now compiles

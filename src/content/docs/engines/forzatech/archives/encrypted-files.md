@@ -68,7 +68,9 @@ Forza-Crypto-Tool decrypts the FH6 files only on its authors' server and ships n
 Its authors publish decrypted data; in it `gamedbRC.slt` is an SQLite database of 205 tables listing 638 cars.
 :sourced[Forza-Crypto-Tool data mirror] A second tool decrypts them offline with plain AES keys, already lifted out of
 the white-box tables, that it ships inside an obfuscated library: two transport keys shared by every container and a
-data and MAC key pair per kind of file (`GameDB`, `ProfileData`, `General` for settings files and archive entries).
+data and MAC key pair for each of seven usages — `GameDB`, `ProfileData`, `General` for settings files and archive
+entries, `Engine`, `SFS` for `sfsdata`, and `ServiceA`, `ServiceB` for the per-player containers. The same library
+holds a separate AES key for the `Motorsport` CMS entries, which are not FH6's.
 :sourced[FH6-Local-Crypto-Car-Editor-Tool] No key is published in the open.
 
 ## The cipher
@@ -88,12 +90,25 @@ to lower case first), for a constant `C`; the game removes it in its in-memory S
 the 16 bytes after the padding field a nonce in this file and does not check them or the block MACs.
 :sourced[FH6-Local-Crypto-Car-Editor-Tool]
 
-A method-22 archive entry decrypts to a raw DEFLATE stream, and a profile to a u32 compressed size, a u32 expanded
-size and a zlib stream. :sourced[FH6-Local-Crypto-Car-Editor-Tool]
+A profile decrypts to a u32 compressed size, a u32 expanded size and a zlib stream. :observed A method-22 archive
+entry decrypts to a raw DEFLATE stream. :sourced[FH6-Local-Crypto-Car-Editor-Tool]
 
-:::open[Is the cipher description right on the game's files?]
-The steps above come from one tool's source, not from the game's code or a decryption checked here. A real install's
-files decrypting with every MAC matching would confirm them.
+## Checked on files the game wrote
+
+The player's save folder holds containers the game wrote, and they decrypt exactly as described. Profiles of 737 and
+735 blocks (paddings 78, 306, 306) authenticate their header under the `ProfileData` pair and every one of their
+blocks' MACs matches. Each profile's plaintext is a u32 compressed size equal to the bytes that follow it, a u32
+expanded size, then a zlib stream (header `78 9C`) that inflates to exactly that expanded size, its Adler-32 checked.
+An `Estate` blob and a `CustomFlyer` blob authenticate the same way under the `ServiceB` pair. :observed
+
+That confirms the envelope, the HKDF IV chain, the block CMACs, the header MAC and the profile's inner layout on real
+files. Not yet checked this way: the game database's keystream, the method-22 archive entries' raw DEFLATE, and any
+0x20000-block file. :observed
+
+:::open[Are the game database keystream and the settings archives right on the game's files?]
+A real `gamedbRC.slt` decrypting with its MACs matching, then reading as SQLite only after the keystream is removed,
+would confirm the keystream; a decrypted method-22 entry inflating to its stated size would confirm the inner format of
+the settings archives. Neither has been checked here.
 :::
 
 ## Not encrypted

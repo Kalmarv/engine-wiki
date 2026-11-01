@@ -125,10 +125,11 @@ census]{games="sekiro"} The spot record's `+128` is compared in the same two pla
 The game writes 1.0 for a light it draws with a local shadow and 0 for every other. At the Stormveil gate four consecutive
 dispatches of `GXLightOrganize8` held light 32 of `m10_00_00_00_0000`, the one light among the records whose bank sets its
 cast-shadows byte, with 1.0 in all four, and 0 in every other record: four of a bank light that casts none (light 116) and 80 of
-lights of no bank. :observed[one light, one session, four dispatches]{games="elden-ring"} Over every read-back record of both
-games, 80 of 80 records of bank lights that cast no shadow (28 lights) and 229 of 229 records of lights of no bank hold 0; no
-record holds a value other than 0 and 1. :observed[three sessions]{games="sekiro elden-ring"} Sekiro's recorded bank,
-`m11_01`'s, holds no shadow-casting light, so its records add nothing on the shadowed side. :observed{games="sekiro"}
+lights of no bank. :observed[one light, one session, four dispatches]{games="elden-ring"}
+Of Sekiro's nine read-back frames, all 148 records (142 point,
+6 spot) hold 0 at the flag: 54 of them (51 point, 3 spot) stand on lights of the area's bank `m11_01` whose cast-shadows byte
+is 0, and 94 on no light of it. :observed[nine frames of three sessions]{games="sekiro"} No record of either game holds a value
+other than 0 and 1. :observed[the read-back records]{games="sekiro elden-ring"} Sekiro's recorded bank, `m11_01`'s, holds no shadow-casting light, so its records add nothing on the shadowed side. :observed{games="sekiro"}
 
 ### Effects on the tile lists
 

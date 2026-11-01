@@ -49,7 +49,7 @@ Ring 1.17.2 at 2560x1440 at night at the Stormveil gate. Programs are named by m
 
 ## Across recorded frames
 
-Over more recorded frames (Sekiro: 9 frames of 4 sessions at 1920x1080; Elden Ring: 7 frames of 2 sessions at 2560x1440): :observed
+Over more recorded frames (Sekiro: 9 frames of 3 sessions at 1920x1080; Elden Ring: 7 frames of 2 sessions at 2560x1440): :observed
 
 - Every full-screen draw of Sekiro binds one 3-vertex buffer, a triangle over the screen: positions (−1, 1, 1, 1), (3, 1, 1, 1),
   (−1, −3, 1, 1) with texture coordinates (0, 0), (2, 0), (0, 2). :observed{games="sekiro"}
@@ -57,6 +57,10 @@ Over more recorded frames (Sekiro: 9 frames of 4 sessions at 1920x1080; Elden Ri
   10x6. :observed
 - The tiled light lists: Elden Ring's `GXLightOrganize8` writes 1,382,400 bytes at `u0` (345,600 words) and 43,264 at `u1`
   (3,600 records of 12 bytes); Sekiro's `GXLightOrganize16` writes 522,240 bytes at `u0`. :observed
+- The last tone-map step's target is RGB10A2 in Sekiro's nine frames and in five Elden Ring frames of one session, and RGBA8 in
+  two frames of another Elden Ring session; the scene targets of both are 2560x1440, and the RGBA8 session ran on a display
+  that reported 8 bits per colour channel with advanced colour (HDR) supported and off. What chooses the format is not shown.
+  :observed[7 Elden Ring frames of 2 sessions]{games="elden-ring"} :unknown
 - Elden Ring draws the shadows of local lights into a 4096x4096 R16 atlas in 64x64 regions (26 in one frame), which
   `GXLightAcc_DPointLightShadowed1` reads at `t7`. It is there in the 2 of 7 frames that have shadowed point lights.
   :observed{games="elden-ring"}

@@ -25,10 +25,10 @@ memory at run time. :observed
 |---|---|---|
 | global LOD distance scale(s) | LOD selection (CPU); encrypted render settings | [LODs and clusters](/engines/forzatech/geometry/lods-and-clusters/) |
 | clipmap ring size (metres per texel) and ring origins | `terr_mega` pixel shader rows 36 to 42 and 45 to 51 | [Near-field ground](/engines/forzatech/terrain/near-field-megatexture/) |
-| per-ring megatexture switches (modulate mode, BC1 diagonal check, height-blend sharpness) | `MegaTexture.Params` in encrypted `Megatexture.xml` | same |
+| per-ring megatexture switches (modulate mode, BC1 diagonal check, height-blend sharpness): readable with the keys, values in [Settings files](/engines/forzatech/data-model/settings-files/) | `MegaTexture.Params` in encrypted `Megatexture.xml` | same |
 | CPU-built splat weights and layer buffers | the `MegaTextureSplat_*` compute shaders | same |
 | decal depth offset `cb2[141].w`, `cb9[24].w` and the per-draw root constant | every non-instanced G-buffer vertex shader | [Decals](/engines/forzatech/effects/decals/) |
-| depth, raster and blend state (decal blend op, alpha-to-coverage) | pipeline state (names in the executable, values encrypted) | same |
+| depth, raster and blend state (decal blend op, alpha-to-coverage) | pipeline state (names in the executable; not in any encrypted settings entry) | same |
 | alpha-test threshold `cb2[128].x` | every alpha-tested pixel shader | [Other world families](/engines/forzatech/shaders/world-families/) |
 | AO strength `K = cb2[159].x` and the AO globals `cb2[92..93]` | `environment` and plot albedo | [Environment](/engines/forzatech/shaders/environment/) |
 | sampler filter and address modes of run-time descriptors (e.g. the triplanar modulate sampler `s1`) | the families that use them | same |
@@ -49,7 +49,7 @@ All rows :unknown as values; the consumer column is :observed.
 | tyre contact-patch bulge (slots 2 to 4, `cb4[36..37]`) | car and tyre vertex shaders | same |
 | the default factory colour of each car; the user's garage (owned cars, fitted parts, paint, livery) | encrypted database and profile | [Factory paints](/engines/forzatech/gameplay/car-paint/) |
 | the livery canvas (vinyl layers composited at run time) | paint shader, bindless space 43 index 1 | [Liveries](/engines/forzatech/gameplay/liveries/) |
-| vinyl shape id → `Vinyls.zip` entry; paint-slot paint type; render-target sample count and blend state | game database and code | same |
+| vinyl shape id → `Vinyls.zip` entry; paint-slot paint type; the livery blend state (the render target's size and sample counts are in `Livery.xml`, [Settings files](/engines/forzatech/data-model/settings-files/)) | game database and code | same |
 | lamp and gauge light-group intensities (`Emissive_Trigger`, `LightFunction`) | most car families | [Car materials](/engines/forzatech/shaders/car-materials/) |
 | brake-rotor glow, window dirt, wipers, glass break amount, interior-camera switch, car fade, fog in glass | car families | same |
 | per-object matrix `cb9[4..7]`, per-wheel wear `cb4[67]`, blur `cb4[31+i].w`, sidewall V scale `cb4[61]`, AO V offset `cb4[47]` | `car_tires_pg` | same |

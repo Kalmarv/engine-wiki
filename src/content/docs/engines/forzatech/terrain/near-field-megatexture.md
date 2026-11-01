@@ -18,7 +18,7 @@ longer available. :observed
 |---|---|---|---|
 | clipmap ring size (metres per texel) and ring origins (`terr_mega` pixel shader constant rows 36 to 42, 45 to 51) | engine | per-frame constants | :unknown |
 | which layer record feeds which ring | CPU (the splat shaders' `SplatMaterialConstants` slots) | chosen by CPU code | :unknown |
-| per-ring switches: modulate mode 0/1/2, BC1 diagonal check, height-blend sharpness | `MegaTexture.Params` (names in the executable: `ApplyModulatePerPixelLevel`, `CheckDiffuseDiagonalsLevel`, `HeightfieldBlendSharpnessPerMip`, `MinMip`, ...) | values in the encrypted `Rendering.zip` `Megatexture.xml` | :unknown |
+| per-ring switches: modulate mode 0/1/2, BC1 diagonal check, height-blend sharpness | `MegaTexture.Params` (names in the executable: `ApplyModulatePerPixelLevel`, `CheckDiffuseDiagonalsLevel`, `HeightfieldBlendSharpnessPerMip`, `MinMip`, ...) | `Rendering.zip` `Megatexture.xml` (encrypted) stores `ApplyModulatePerPixelLevel` 5, `ApplyModulateCornersPerPixelLevel` 3, `CheckDiffuseDiagonalsLevel` 5, `HeightfieldBlendSharpnessPerMip` 240, 235, 230, 225, 220, 220, 220 and `MinMip` 0 ([Settings files](/engines/forzatech/data-model/settings-files/)); how the shaders use each per ring is not traced | :proven |
 | splat weights per texel (the float4 atlas) and which (at most 8) layers each clipmap tile draws | CPU, built from `.mtxmoddxt` (executable: `MegaTexture::UpdateBlendMapDecompressionCache`, `SplatMapAtlas`) | the byte layout and channel map are decoded; the atlas texel format, sampler and per-tile list are CPU-side | :unknown |
 | per-layer weight scale (`SplatMaterialConstants` row 6 `.y`) and per-block height textures | CPU (`BlendHeight_R8`) | no file holds the scale; height files hold no record at the block resolution the shader reads | :unknown |
 | GPU form of the layer textures (palette buffer, index and selector textures) | CPU, from the `builtmegatexture` files (`MegaTexture_SetupGPUTiledSourceTexture{BC1,BC3,BC5,...}`) | the file layout maps onto the shader inputs one to one | :observed |
@@ -205,8 +205,9 @@ so the near field changes nothing visible there; parks (cell x−2046 z−9207) 
 −4,5 and −3,5) 1,464 of its 2,048 splat tiles have nine or more layers, so more than the shader's eight apply. :observed
 
 :::open[What are the near-field ring sizes and per-ring switches?]
-They live in per-frame constants and in the encrypted `Megatexture.xml`. The record-per-ring correspondence and the 1/256 m ring-0
-texel are inferred from layer names and record widths only.
+The ring sizes live in per-frame constants. The per-ring switch values are in `Megatexture.xml`
+([Settings files](/engines/forzatech/data-model/settings-files/)), but how a "level" there maps to a ring is not traced. The
+record-per-ring correspondence and the 1/256 m ring-0 texel are inferred from layer names and record widths only.
 :::
 
 :::open[What is the layout of the megatexture normal files and the 2-bit height record?]

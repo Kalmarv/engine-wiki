@@ -30,7 +30,10 @@ without the engine's depth offset shows flicker. :inferred
 In the Shibuya pilot area (1,200 m square) the decal-family meshes number 10,316 against 67,860 others. :observed
 
 No shipped file holds the depth, raster or blend state: the `.pso` files are plain shader containers, and the executable has preset
-names such as `DecalGreaterEqual` and `ZBiasDecalOpaque`, with values in encrypted settings. :unknown
+names such as `DecalGreaterEqual` and `ZBiasDecalOpaque`. :unknown The encrypted settings do not hold them either: none of the
+install's 29,250 encrypted zip entries, decrypted, contains `DecalGreaterEqual`, `ZBiasDecalOpaque`, `GreaterEqual` or `BlendState`
+(compared without case), and `DecalManager.xml` holds only `Enabled` ([Settings files](/engines/forzatech/data-model/settings-files/)).
+:proven
 
 ## Mesh decals
 
@@ -71,7 +74,7 @@ matched by interpreting its compiled shader on real materials (max error 1e-7). 
 points down, so `cross(ddx P, ddy P)` points out of the visible surface toward the camera. :observed On the four `dec_def_rush_a`
 instances (game x ≈ 993, z ≈ −5868) the logos land on the dock plates and read the right way round in a top-down view. :observed
 
-Not in any shipped file: how `alpha` composites into the decal buffer (the blend state is in encrypted settings), the decal's
+Not in any shipped file: how `alpha` composites into the decal buffer (the blend state, which the encrypted settings do not hold either), the decal's
 roughness and `_NAO` normal outputs, and the in-game look. :unknown
 
 :::open[Is there a constant 12 mm decal lift?]

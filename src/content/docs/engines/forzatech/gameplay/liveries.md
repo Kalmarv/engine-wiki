@@ -31,7 +31,7 @@ media\Livery\EntitlementLiveries.zip  shipped designs: <name>\header, C_livery, 
 media\Cars\<CAR>.zip  LiveryMasks\    Masks.xml + front/back/top/left/right/glass_*.swatchbin (2048×1024 BC4 UNORM)
 media\ShadersDXIL.zip                 LiveryModel{.vshader,_OpaqueOnly,_NonOpaqueOnly,_OpaqueNonOpaque}.pshader, LiveryBlitMask,
                                       LiveryBlitSectionToLivery, LiveryBlitGroupToFinal(_Node), ...
-media\Rendering.zip  Livery.xml       method 22 (deflate + TFIT): not readable
+media\Rendering.zip  Livery.xml       method 22 (deflate + TFIT): the livery render settings, readable with the keys
 ```
 
 The saved designs sit in the platform's game-save folder as one directory per container, one file per blob ([Saves and tunes](/engines/forzatech/gameplay/saves-and-tunes/)):

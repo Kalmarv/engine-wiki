@@ -1,6 +1,9 @@
 ---
 title: Wheels and tyres
-description: How Forza Horizon 6 sizes its normalised wheel and tyre models with morph targets, which slots do what, and which values only the encrypted database holds.
+description: How Forza Horizon 6 sizes its normalised wheel and tyre models with morph targets, which slots do what, and the stock tyre and rim sizes the game database holds.
+implementations:
+  - name: "forzatech-formats (gamedb.rs: car_wheels)"
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/gamedb.rs
 ---
 
 A car's wheel model, `Scene\_library\Scene\Wheels\<CAR>_WheelLF.modelbin` (one instance per corner), is stored at a **normalised
@@ -18,7 +21,8 @@ Counts come from a recorded census of the install's `media\Cars` (682 cars, 197 
 | `weight[1]` | width: x delta −0.8999 on the inner barrel, so the barrel depth is 1.0 − 0.9 w1 | :observed |
 
 The single-target meshes of the wheel (the blur disc) carry the radius target on slot 0. Body panels carry one target on slot 0 (damage).
-:observed The weights the game uses come from the rim size and width of the fitted wheel, which are in the encrypted database. :unknown
+:observed The weights the game uses come from the rim size and width of the fitted wheel, which are in the encrypted database
+(below). :inferred How the game turns those sizes into the two weights is code, not data, and has not been traced. :unknown
 
 ## Tyres
 
@@ -44,14 +48,29 @@ Of the 197 tyre archives (407 models), 195 have every material taken by a traced
 sidewall02, sidewallLOD2, tiretread, treadLOD2) and `tire_PG_Full` (scaling_text) have materials whose chain does not reach a shader.
 :observed
 
+## Sizes in the game database
+
+The decrypted [game database](/engines/forzatech/archives/encrypted-files/) holds each car's stock tyre and rim size per
+axle in `Data_Car`: `FrontTireWidthMM`, `FrontTireAspect`, `FrontWheelDiameterIN` and the same three for `Rear`, all
+integers, on all 682 rows. :proven They are the tyre size in ISO metric notation (section width in millimetres, aspect
+ratio in percent, rim diameter in inches): over the 682 cars widths run 90 to 535 mm, aspect ratios 23 to 115 and rims
+5 to 24 inches, and the cars checked against their manufacturers' figures agree (a 2023 Porsche 911 GT3 RS 275/35 R20
+front and 335/30 R21 rear, a 2017 Nissan GT-R 255/40 R20 and 285/35 R20, a Toyota GR86 215/45 R17). :observed
+
+`Data_Car.StockWheelID` names the stock wheel's row of `List_Wheels` (whose `MediaName` is the wheel model's name) on
+every car. :proven Upgrade sizes are in `List_UpgradeRimSizeFront` / `Rear` (`FrontWheelDiameter`, `RearWheelDiameter`),
+`List_UpgradeCarBodyTireWidthFront` / `Rear` and `List_UpgradeCarBodyTireAspectRatioFront` / `Rear` (offsets).
+:observed
+
 ## What no readable file holds
 
-Nothing readable pins the wheel and tyre size: the morph weights come from the encrypted `gamedbRC.slt`; the car archives,
+Without the database's keys nothing pins the wheel and tyre size; the car archives,
 `Locators.xml` (camera and IK locators), the skeleton (no tyre bones), `physicsdefinition.bin` (hull points), the tyre and rim archives,
 the `Performance.zip` benchmarks (body keyframes only) and the method-22 `Physics`, `GameTunableSettings` and `ProfileSchema` archives
 hold no size. :observed There are 646 distinct wheel geometries over the 682 cars (34 shared groups, 70 cars). :observed
 
-:::open[Where do the wheel and tyre sizes of a car come from?]
-The size weights and the tyre model per car and upgrade are in the encrypted game database, and the tyre contact-patch weights are
+:::open[How does the game turn a tyre and rim size into the morph weights?]
+The stock sizes are in `Data_Car` (above); the code that converts them into the wheel's `weight[0]`, `weight[1]` and the tyre's
+slot 0 and 1 weights, and the tyre model chosen per car and upgrade, have not been traced. The tyre contact-patch weights are
 computed at run time from load.
 :::

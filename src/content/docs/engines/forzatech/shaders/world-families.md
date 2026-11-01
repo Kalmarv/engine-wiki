@@ -216,6 +216,32 @@ EmissiveTextureScale · sat((INSTANCE_VARIATION.y − EmissiveVariationMin)/(Emi
 `g(d)` back (a precision encoding) is not determinable statically, and the source of `INSTANCE_VARIATION.y` for hand-placed
 instances is not traced. :unknown
 
+## Road decals
+
+Over the 30 G-buffer permutations of `uber_roaddecal` (`decal`, `winter`, `metal`, `T`, `AM`, `Modulate`, `POM` in their
+combinations) and the 5 of `uber_roaddecalretro` (`decal`, `HA`, `M`, `T`, `T_M`) of the Tokyo track, each render-target channel
+was followed back to its texture reads and parameter rows. :observed
+
+- Only the `AM` permutations of `uber_roaddecal` and every `uber_roaddecalretro` permutation test a mask per pixel. The other
+  `uber_roaddecal` permutations (`_decal`, `_T`, `_metal_T`, ...) have two `discard`s, both on `1 − cb2[128].x < 0`, which holds
+  for the whole draw or for none of it; they write every pixel of a draw otherwise, the diffuse alpha is the roughness and
+  no opacity is derived. :observed[all 35 permutations hold two `discard`s; the mask test is the first one in the permutations named, and the 4 non-`AM` ones without `winter` have no noise code at all]
+- The `discard` is a dithered coverage test. With `s` the test value (`mask · (AlphaFadeOnOff ? COLOR.g : 1)`, or the `HA` form;
+  the retro permutations also multiply by a camera-distance smoothstep of scene constants) and the scene's dither on, the pixel
+  is kept where `s·sat(5(s − 0.2)) − 1 + n ≥ 0`, with `n = frac(52.98·frac(0.0671·x + 0.00584·y))` (interleaved gradient noise of the
+  pixel coordinates; when a second scene flag is set both coordinates are first shifted by `(frame & 63)·5.588`). The test value
+  is then 0.5 or −0.5 and is compared with the per-draw reference `cb2[128].x`. With the dither off the pixel is kept where `s`
+  reaches that reference. `s·sat(5(s − 0.2))` equals `s` from 0.4 up, so a hard 0/1 mask is exact either way, and a plain test at one
+  half is the median of the dither. :observed[the discard code of the `_decal_AM` permutation read; the constants are those of the compiled code]
+- Dry albedo goes toward `FadeColor` by a smoothstep between `FadeStart` and `FadeEnd` of the screen-space derivative of `uv0.x`
+  (a far fade); wetness (`WetScale`, `Porosity`, `HeightPuddlingOnOff`) acts on run-time rain state, so the other formulas on this
+  page are the dry surface. `Snow` and `Frost` change nothing while `SnowAmount` and `FrostAmount` are 0, as in every material of the
+  Shibuya box. :observed
+- The retro permutations' `RT1.xyz` carries a retro-reflective term from `RetroReflectivity`, `RetroReflectivityFalloff` and
+  `Hardness`; the retro permutations write metalness 0, as do the `uber_roaddecal` ones without `metal`. :observed
+- In every material of the Shibuya box `RoadUVMultiplierA` is (1, 1), so the diffuse, normal and mask reads coincide with the mask's
+  raw `uv0`. :observed[the materials of one Shibuya area]
+
 ## Mesh decals
 
 The mesh permutations `_Standard_DR`, `_DR_NAO` and `_DR_ST` of `environmentdeferreddecal` sit in draw bucket `0x1C`
@@ -231,6 +257,13 @@ SV_Target0 = (c.rgb, a)
 SV_Target1 = NAO ? (normalize(T·x − B^·y + N·z) of NormalTex(uv · NormalUVTiling), aN) : 0
 SV_Target2 = (1 − RoughMetAOTex(uv · RMAOUVTiling).r, NAO ? 1 − max(cb2[43].x, RMAO.b) : 0, 0.5, NAO ? max(a, aN) : a)
 ```
+
+The ten pixel shaders of the family are these two mesh groups (`_DR`, `_DR_NAO` and `_ST`; the `RCSM` ones add a cone-step march of
+`ConeMapTexture` for `uv`) and the two projected ones. The permutations with the `DiffRough` switch off are different: `_Standard`
+discards every pixel and writes zero to all three targets, and `_Standard_NAO` writes zero to targets 0 and 2 and only the normal
+and its weight to target 1. :observed[the dumped bodies of all ten permutations] Every material of the Shibuya box has `DiffRough` on
+and `Projected` off (the draws are the `_DR` ones); `NormalAOIntensity` is 0 in 1,056 of its 38,263 triangles, where the
+normal's weight is 0 and the occlusion's weight is `a`. :observed[the materials of one Shibuya area]
 
 The blend state and the resolve of the decal buffer into the G-buffer are in no shipped file. :unknown
 

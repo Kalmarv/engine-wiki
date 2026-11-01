@@ -15,7 +15,8 @@ Counts come from a recorded census of the Tokyo track `Brio`; the install is no 
 
 The shader families `uber_roaddecal` and `uber_roaddecalretro` draw hard cut-outs into the G-buffer (`_AM`: `DecalMaskATexture`
 dithered and alpha-tested; the diffuse alpha is not opacity). Road markings are alpha-test decals, parent material
-`Decal_D1n1p1_Retro_Alphatest`, with the paint shape in the alpha. :observed The shipped geometry already lifts them: measured on 1,042
+`Decal_D1n1p1_Retro_Alphatest`, with the paint shape in the alpha. :observed The permutations without `AM` test no mask and cover every
+pixel of the mesh; the mask test, its noise and the far fade are on [Other world families](/engines/forzatech/shaders/world-families/#road-decals). :observed The shipped geometry already lifts them: measured on 1,042
 road-decal meshes all sit 5 to 25 mm above the road, terrain or pavement, with patch stacks stepping about 1 mm per layer (7.8, 8.8,
 9.9, 10.7 mm) and paint lines about 17.6 mm; 209 facade decal meshes sit a median 2.2 mm in front of the wall. Vertex positions are
 quantised to 0.98 mm, so these offsets are deliberate. :observed Another description of the same data gives the decals a

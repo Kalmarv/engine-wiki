@@ -80,7 +80,9 @@ value: 188 for `environment`, 124 for `window_linecastroom` (whose `CBEX` says 3
 times the register count), 88 for `uber_rock_array` and 76 for `uber_rock`. :observed Per draw one packed integer X locates the
 material: constants at row `(X >> 16) + CBMP offset / 16`, textures at index-buffer entry `(X & 0xFFFF) + (TXMP offset − 16)`.
 `environmentdeferreddecal` and `projection_lod` keep their texture indices in parameter rows from register 9, `anim_flag`
-from 12 and `environment_plot` from 27. :observed
+from 12 and `environment_plot` from 27. :observed The road decal families `uber_roaddecal` and `uber_roaddecalretro` keep
+theirs in row 0 of the material's block, which the compiled code reaches as `(X >> 2) & 0x3FFF` rather than through the
+two-part `X` above. :observed[read in all 35 GBuffer permutations of the two families]
 
 Car families use classic bound registers instead: the `CBMP` value is the byte offset in the material buffer `cb0` (register =
 value ÷ 16), the `TXMP` value is the `t` register (t16 to t33 for `car_standard`), and `SPMP` the sampler register; `CBEX` is 528

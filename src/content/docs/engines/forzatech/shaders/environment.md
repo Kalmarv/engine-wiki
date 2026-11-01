@@ -131,7 +131,26 @@ if UseFiveColorMask: c = lerp(c, ColorG, m.g); c = lerp(c, ColorB, m.b); c = ler
 
 Constant registers (byte offset ÷ 16, from the constant map): background 1, R 2, G 3, B 4, A 5, AtlasImages 10.zw, AtlasIndex
 11.xy, UseFiveColorMask 48.x, UseSteppedMask 57.z. `TEXCOORD3` exists only on a model's sign meshes, so attribute sets are
-per mesh, not per model. :observed Emissive signage (night lighting) is not described. :unknown
+per mesh, not per model. :observed
+
+Around that, over the 19 Tokyo `signage_*` G-buffer permutations (each render target channel followed back through the
+constant and texture maps; the texture indices of the parameter buffer start at dword 236): :observed
+
+- Without `_CM` the sampled cell is the colour itself; with `_CM` it is the mask above. The sample is taken through the
+  format's own view, raised to 1/2.2, darkened by wetness and raised back to 2.2, so a dry surface returns the linear
+  sample; the `BiCubic` permutations filter with Catmull-Rom, the others bilinearly. The result is saturated.
+- The metalness is `RoughMetAoPorTex_A.g`, the roughness `saturate(RoughMetAoPorTex_A.r)` (wetness off) and the normal the
+  standard decode of `NormHeightTex_A.rg`, all at `TEXCOORD0` with the environment family's tilings; the albedo is
+  multiplied by a factor of `AoWetBlendContextTex.r` read at `TEXCOORD1`. A sign face is one coordinate set (`TEXCOORD3`)
+  and the surface maps are others.
+- The `Signage*Mural*` permutations lerp the wall colour (`DiffAlphaTex_A`, `TEXCOORD0`) to the sign colour by
+  `MuralTexture.r` read in the same cell.
+- The `_SignageEmissive*` permutations write `EmissiveTexture.rgb · EmissiveTint.rgb · (the sign colour above)`, times
+  `GIEmissiveScale` and an instance-variation factor (`LightEmisVariationOnOff`), to `RT1.xyz` as `g(d)` of
+  [Emissive](/engines/forzatech/shaders/world-families/#emissive); `EmissiveTexture` is read in the same cell of the same
+  `TEXCOORD3` atlas, or at `TEXCOORD4` with `EmissiveAltUV`.
+- The only `discard` compares a constant of the draw with one: the surface is opaque. The scroll, rotation and scale of the
+  four mask channels, `RandomiseIndexOnOff` and `_AnimatedSign` are driven by the clock.
 
 ## Windows and other relatives
 
@@ -139,4 +158,18 @@ per mesh, not per model. :observed Emissive signage (night lighting) is not desc
 roughness is `max(FrameGlassRoughness(uv2 frame).r, lerp(1 − a, GlassRoughness(uv0 · tiling).r, a))` with `a = COLOR.a`;
 `FrameGlassNormalTexture` is sampled on `uv2` (frame atlas) but built on `WORLDTANGENT0`, the only tangent the window shaders
 take. The room's x centre and width come from `INSTANCE_VARIATION.z/.w` ([Placement files](/engines/forzatech/world/pgeo-placements/)). :observed
-The room interior itself is not traced. :unknown
+
+Over the 51 Tokyo G-buffer permutations (texture indices from dword 124): :observed
+
+```
+albedo   = lerp(t, F.rgb, F.a) · (1 − (1 − Fit.a)(1 − F.a))     F = FrameDiffuseandMask at uv2 in its atlas
+t        = FittingsDiffAlphaTex.r at uv1 (in its atlas) · WindowTintColour
+metal    = Metalness
+```
+
+so the albedo is 0 where neither the frame nor a fitting covers the pane. `FrameUseAtlasOnOff` picks the frame cell
+`(FrameAtlasIndex + uv2) / FrameAtlasCount`. The room behind the pane (`BoxDiffRoughTex`, `BoxEmissiveTex`, up to three
+furniture layers with parallax) is traced in the pixel shader from the world position, the camera and the material's
+`RoomPos`, `RoomScale`, `RoomRotation`, `RoomAtlasIndex`, `RoomAtlasCount` and `RoomRandomisationOnOff` (the room is
+a box intersected with the eye ray per wall; its atlas cell is `(RoomAtlasIndex + h) mod RoomAtlasCount`, `h` a hash of the
+ceiled `RoomPos` under a per-draw matrix when `RoomRandomisationOnOff`, else 0), and reaches `RT1.xyz`, not the albedo. The only `discard` compares a constant of the draw with one. :observed

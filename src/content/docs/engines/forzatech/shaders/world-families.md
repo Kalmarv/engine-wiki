@@ -42,6 +42,15 @@ at `uv0 · RoadUVMultiplierA`. :observed
 `uber_road` `_TB` (terrain blend, 12 materials) and glass `_M` were transcribed but not run on a material; the road world-uv
 origin depends on camera constants. :unknown
 
+### Glass transparency
+
+`glass` is drawn by the forward `glassTrack` pass (17 Tokyo permutations, each with a G-buffer and a forward shader), which
+writes two targets: target 0 the reflected radiance (the fresnel term between `F0` and 1 times the lit sky, with
+`Cloudyness`) and its gloss, target 1 the transmittance the background is multiplied by, `1 − k·c` per channel, `c` the
+colour of the G-buffer shader (`TintColor`, or `BaseColour.rgb` with `BaseColorTexOnOff`) and
+`k = (0.4·Alpha + 0.5)·(0.98 − a view-dependent term)·(1 − Cloudyness)·(1 − fog)`. The `_ATT` permutations
+(`AlphaTestTexOnOff`) drop the `Alpha` factor and `discard` where `BaseColour.a < 1e-4`: a cut-out, not a coverage. :observed
+
 ## Roughness, metalness and normal
 
 `uvK` is `TEXCOORDK` (D3D v down).

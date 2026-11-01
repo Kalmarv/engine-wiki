@@ -142,6 +142,16 @@ on road decals is the default of the `TerrainGlossTexture` slot (0xAE91CDD4), a 
 colour in dry weather. :observed The engine's neutral modulate texture `greyscale_grey128` has RGB 127/255, which is a
 brightness and saturation shift of 0.002, below one 8-bit step. :observed A window glass default is `#2A3038`. :inferred
 
+The default of an unset normal-map slot is a SNORM map whose texels all hold the neutral normal. Over the Shibuya Scramble box,
+four BC5 SNORM textures are bound to a normal-map slot of the `environment`, `environment_plot`, `environment_signage`, `glass`,
+`environmentdeferreddecal`, `window_linecastroom` and `uber_roaddecal` families, and none holds a negative texel. :observed The
+32 × 32 `TriPlanarNormalTexRef` default has one value in all 1,024 texels (the decoded bytes are 191 and 192, signed +0.498 and +0.506),
+so `x = 2v − 1` is −0.004 and `y` is +0.012: a flat normal. :observed The 16 × 16 default of the `NormalHeightTexture` slot has bytes 184
+to 198 (red) and 186 to 196 (green), so `2v − 1` lies within ±0.11 and its mean is 0.499: close to flat, but not one value.
+:observed The 128 × 128 default of the `Blend2TextureSet` slots has bytes 151 to 231, so `2v − 1` reaches ±0.63: it is a detailed
+normal map, not a flat default. :observed All four store only the positive half of the signed range, which fits the read
+`2v − 1`: a negative `v` would give a component below −1. :inferred
+
 215 texture paths referenced by car materials are in no archive of the install (referenced 396 times from materials of 142
 cars: mostly badge and symbol labels, `car_standard` alpha, normal and roughness maps, interior LOD maps, the
 `pg_hatchback_lip_ao` back normal of seven lamp lenses); what the engine binds for a missing texture is run-time only.

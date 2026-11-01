@@ -300,6 +300,17 @@ and 1.179e-6 (3008), and with the skeleton to 1.985e-6 and 3.102e-6. :observed[e
 outfits, with the joints' weights resolved through the palettes]{games="elden-ring"} A different stored parent alone therefore
 does not make a part's rest geometry incompatible. :observed[two outfits]{games="elden-ring"}
 
+A part can also store parents that name a bone it does not itself attach to. The outfit of initializer row 3002 in the female
+presentation is the head `hd_m_1380_l`, body `bd_f_1380_l`, arms `am_m_1380_l` and legs `lg_f_1380_l`; 14 joints of its parts
+(3 in the head, 2 in the body, 9 in the legs: among them `L_UpArmTwist` and `R_UpArmTwist`, `Spine`, `Pelvis`, the thigh-twist
+joints and the calves) have a stored parent other than the one `c0000`'s main Havok skeleton gives them. For all 14 the part's
+model-space rest agrees with the skeleton's to at most 5.515e-6. :observed[the four parts of row 3002, each stored joint
+compared with the skeleton's]{games="elden-ring"} The head part is stored mostly as detached roots (142 of its 154 bones, among
+them `L_UpperArm`), yet its `L_UpArmTwist` is parented to `L_Clavicle`; the body part parents the same twist bone to
+`L_UpperArm`, as the skeleton does. :observed[the head and body parts of row 3002]{games="elden-ring"} So a part's stored parent
+is not the nearest ancestor the part holds, and only the character's skeleton states one hierarchy that all four parts follow.
+:inferred{games="elden-ring"}
+
 A part can also keep the skeleton's parents and still have its own rest. The Confessor's body and head give `Neck`, `Head`
 and `Collar` the same parents as `c0000`'s skeleton but other model-space rests: their matrices differ by up to about 0.01475 in
 an entry for `Collar` and `Neck` and 0.00155 for `Head`, and these joints weight vertices. :observed[the Confessor's parts]{games="elden-ring"}

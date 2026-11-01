@@ -105,6 +105,13 @@ programs' colour reads find `COLOR1` stored 2,260 times and `COLOR0` 78 times, w
 :observed[one region of `m10_00_00_00`]{games="elden-ring"} The cliff material `aet000_052_a` of the open world uses the
 `M[AMSN_V][Mb4][3Mask][Far_AN]_Gbuf` vertex program, whose inputs are `POSITION0`, `NORMAL0`, `TANGENT0`, `COLOR1`, `TEXCOORD0`
 and the instance id; it passes `COLOR1.x` on to its pixel program as `TEXCOORD4.z`. :observed[the program's code]{games="elden-ring"}
+The programs of `M[AMSN_V][Ov_N][Mb4_ColorAdjust][3Mask_ch18]` read only `COLOR1.x` and `COLOR1.w`, and `COLOR1.w` only on
+the branch that the material's `snp_0_bool_0` (the `cbMtdParam` word at `+144`) switches on. Folding that word to 0 in the
+program leaves `COLOR1.x` as the only lane it reads. :observed[a dependency trace of the program's code]{games="elden-ring"}
+Stormveil's ColorAdjust materials `m10_00_113`, `m10_00_440`, `m10_00_450`, `m10_00_604`, `m10_00_680` and `m10_00_681` set
+the word to false, so their draws use only the first lane of `COLOR1`.
+:observed[the materials of one region of `m10_00_00_00`]{games="elden-ring"} Whether the four `Mb3_ColorAdjust` materials
+of that region (`m10_00_869`, `870`, `873` and `874`) follow the same rule has not been traced.
 
 A UV set the vertex program reads is not necessarily one the draw uses. :only[sekiro] In the Wolf's default head and
 the twelve Sekiro material variants (three distinct pixel programs) whose vertex programs compute outputs from the

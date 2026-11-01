@@ -166,8 +166,10 @@ How a weapon draws its trail from these dummies is on [FXR](/engines/fromsoft/ef
 ### Character binders
 
 Character model IDs name characters: `c1010` is the Ashina Soldier, `c5000` the Corrupted Monk, `c5100` the
-Guardian Ape and `c7400` Emma. :sourced[Smithbox]{games="sekiro"} The player model `c1000` holds no visible body; the
-Wolf the player sees is assembled from equipment parts. :inferred{games="sekiro"}
+Guardian Ape and `c7400` Emma. :sourced[Smithbox]{games="sekiro"} The player is `c0000`, and `c1000` and `c1001` are
+both named "Invisible" and tagged as placeholders for interactable objects. :sourced[Smithbox]{games="sekiro"} The player's
+`c0000.flver` holds no mesh ([Where weapons are held](#where-weapons-are-held)), so the Wolf the player sees is put together from
+equipment parts ([The Wolf's outfits](#the-wolfs-outfits)). :inferred{games="sekiro"}
 
 `c1010.chrbnd.dcx` holds the FLVER, the Havok skeleton `c1010.HKX`, `c1010.hkxpwv`, `c1010_c.hkx` and
 `c1010_c.clm2`. Its animation binder holds 350 Havok 2016.2 tagfiles (`hkaAnimationContainer`), one TAE and a type

@@ -203,7 +203,13 @@ The fields after `LightType` place the shadow; the shadowed tiled pass and the p
 light. :observed[code read]
 
 - `ProjParam`: the tiled pass takes `.x` and `.y` as the face projection's depth terms and `.w` as the shadow's strength.
-  :inferred[from the code's use] Light 32's holds (1.001, -0.008, 0, 1). :observed[1 light]{games="elden-ring"}
+  :inferred[from the code's use] Light 32's holds (1.001, -0.008, 0, 1). :observed[1 light]{games="elden-ring"} Its `.x`
+  and `.y` are `f / (f - n)` and `-n f / (f - n)` for the far plane `f` = the light's range (8) and the near plane `n` =
+  0.008, a thousandth of it, computed in 32-bit floats: equal bit for bit. :observed[1 light, one frame]{games="elden-ring"}
+  The per-light pass compares the atlas's depth with `1 - x - y / m`, `m` the distance along the face's axis: the
+  reversed depth (1 at the near plane, 0 at the far) the face's camera writes. :observed[the program's DXIL]{games="elden-ring"}
+  Whether the near plane is always a thousandth of the range or a fixed 0.008 is not separated by one light of range 8.
+  :unknown
 - `ShadowCenterPos`: the point the shadow is rendered from, in the frame `g_CameraMatrix` (`cbLightAccParam +128`) takes view
   positions to, with w 1. Light 32's is its stored position moved by the session's render-frame translation, (-34.254, 8.079,
   -0.55, 1). :observed[1 light]{games="elden-ring"} (On frames, see [coordinate frames](/engines/fromsoft/world/frames/#elden-ring).)
@@ -212,7 +218,20 @@ light. :observed[code read]
   (`SampleCmpLevelZero`) of `t7`. :observed[the program's DXIL]{games="elden-ring"} Light 32's six faces have scales of
   ±0.0071 and offsets that put their centres, times 4096, at (32, 32), (160, 32), (32, 160), (160, 160), (288, 32) and (416,
   32): the centres of six 64-pixel squares of the atlas, five of which received the recorded frames' caster draws.
-  :observed[1 light, a separate session from the frames]{games="elden-ring"}
+  :observed[1 light, a separate session from the frames]{games="elden-ring"} Every face's scale is (+29/4096, -29/4096) exactly,
+  so the 58 central texels of a 64-texel region span the face's 90 degrees. :observed[1 light, one frame]{games="elden-ring"}
+  The six faces, in the record's order, are chosen by the light-to-pixel vector `L` (the pixel's position less
+  `ShadowCenterPos`), and each samples the atlas at `offset + scale * (u, v) / m`, `m` the largest of `|L.x|`, `|L.y|`,
+  `|L.z|`: :observed[`GXLightAcc_DPointLightShadowed1`'s DXIL]{games="elden-ring"}
+
+  | Face | Major axis | u | v |
+  |---|---|---|---|
+  | 0 | +x | -L.z | L.y |
+  | 1 | -x | L.z | L.y |
+  | 2 | +y | L.x | -L.z |
+  | 3 | -y | L.x | L.z |
+  | 4 | +z | L.x | L.y |
+  | 5 | -z | -L.x | L.y |
 - A spot light's `ShadowParam` and its one `ViewportScaleOffset` do the same for its single region.
   :observed[code read]{games="elden-ring"}
 
@@ -228,7 +247,25 @@ and of every shadowed per-light pass's `b1` in one frame, with two or more of th
 shadow-casting light can hold 0 (a budget or a distance rule).
 :::
 
-:::open[How are the atlas faces rendered?]
-The camera and projection of each caster face, and what `g_aShadowMapInfo` holds, have not been read back. The per-light pass
-uses `g_aShadowMapInfo[0].zw` as its filter step. :observed[the program's DXIL]{games="elden-ring"}
+### How the atlas faces are drawn
+
+The casters of face 0 (+x) of light 32 are drawn with a `cbSceneParam` whose camera sits at `ShadowCenterPos` and looks along
++x, its view's rows right (0, 0, -1), up (0, 1, 0) and forward (1, 0, 0): the face's (u, v) above are its view's x and y.
+Its projection's `P00` and `P11` are 0.90625 (58/64: a 64-texel viewport spans 95.6 degrees, its 58 central texels 90), its
+depth is reversed (`P22` -0.001001, `P23` 0.008008, `FC_FrustumNear` 0.008, `FC_FarClipInfo.x` 8.0000057), and the same
+camera is bound in three consecutive frames. :observed[one session, 15 or 16 caster draws in each of three
+frames]{games="elden-ring"} The cameras of the other five faces have not been read back; that each looks along its axis with
+the (u, v) above as its x and y follows from how the per-light pass samples them. :inferred
+
+The caster draws into the atlas test depth with `GREATER_EQUAL` and write it, after a clear of the atlas to 0, with a depth
+bias of -2, a slope-scaled bias of -3 and no clamp; 15 of the 16 cull no faces and one culls back faces.
+:observed[16 caster draws of one frame]{games="elden-ring"}
+
+The per-light pass's `g_aShadowMapInfo[0]` holds the atlas's size and its texel's step, (4096, 4096, 1/4096, 1/4096), and it
+uses `.zw` as its filter step. :observed[one frame; the program's DXIL]{games="elden-ring"}
+
+:::open[Where does a second shadowed light go in the atlas?]
+Light 32's six regions sit at (0, 0), (128, 0), (0, 128), (128, 128), (256, 0) and (384, 0): the first six cells of a grid of
+128 texels in Morton order. :observed[1 light]{games="elden-ring"} Whether further lights take the next cells, and whether
+every light's region is 64 texels, needs a frame with two shadowed lights. :inferred
 :::

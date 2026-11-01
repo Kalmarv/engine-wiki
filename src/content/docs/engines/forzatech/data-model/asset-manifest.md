@@ -58,9 +58,14 @@ season folders are not named in it. :proven How the season folders are selected 
 ### Resolving a material chain
 
 A model's material instance names its parent material by the source's game path,
-`Game:\Media\<Source less .material>.materialbin`, and a material names its shader as `…\<Source less .shader>.shaderbin`.
-To find the stored entry, look the `Source` up in the manifest and take its `Name`. :observed[materials of one Shibuya
-area; not a census] The chain itself is on [Materials](/engines/forzatech/materials/materialbin/).
+`Game:\Media\<Source less .material>.materialbin`. To find the stored entry, look the `Source` up in the manifest and
+take its `Name`. :observed[materials of one Shibuya area; not a census]
+
+A material names its shader with the family once more as a folder: the shader whose `Source` is
+`<folder>\<family>.shader` is named `Game:\Media\<folder>\<family>\<family>.shaderbin`. :proven[every shader path the
+materials of the three `bin.zip` archives give, 1,956 references counting each season folder's copy] The paths that
+match no manifest's shader are all under `_library\shaderspg` (28 of the 1,956), whose families are not in any
+`bin.zip`. :proven The chain itself is on [Materials](/engines/forzatech/materials/materialbin/).
 
 ## Textures
 

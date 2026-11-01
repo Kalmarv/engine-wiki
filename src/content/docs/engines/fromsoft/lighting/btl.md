@@ -137,7 +137,7 @@ programs, with 19 point records in the buffer and none for spot lights. :observe
 
 A point record holds, as floats: the light's position in view space and `1 / radius^2` (offset 0); the diffuse colour (red,
 green, blue) and a fourth value (16); the specular colour and a fourth value (32); the translucency parameters (48) and the
-radius (60); the light type (64). :observed{games="sekiro"} Against the stored values of the five lights of the map's banks that
+radius (60); the shadowed flag `LightType` (64; see [light records](/engines/fromsoft/lighting/light-records/)). :observed{games="sekiro"} Against the stored values of the five lights of the map's banks that
 the frames held (matched by position, within 0.01 m, over two frames):
 
 | Record field | Value | Largest relative difference |
@@ -232,13 +232,15 @@ the fourth), the same `1 / radius^2`, `1 / word` and exposure term (its scene va
 light of a bank was read back (`m10_00_00_00_0000` light 32: bytes 240, 180, 120, power 0.5, radius 8, fourth word 2): the record's diffuse
 colour is `(byte / 255)^2 * power` per channel, 0.4429066, 0.2491350 and 0.1107266, to 2e-6. :observed{games="elden-ring"}[1 light]
 
-:only[elden-ring] At the Stormveil main gate four consecutive dispatches of `GXLightOrganize8` held 16 point records and no spot
-record each, and 20 of the records are five lights of bank `m10_00_00_00_0000`, matched by position within 0.01 m. Their fields are
-Sekiro's: the diffuse colour `(byte / 255)^2 * power`; its fourth value 1 divided by the word at `+164` (8, 1.5 and 0.5 seen); the
+:only[elden-ring] At the Stormveil main gate, in one session four consecutive dispatches of `GXLightOrganize8` held 16 point
+records and no spot record each, and 20 of the records are five lights of bank `m10_00_00_00_0000`, matched by position within
+0.01 m; in another, four dispatches held 22 point records and no spot record each, and 8 of them are the bank's lights 32 and 116.
+:observed[two sessions, one area]{games="elden-ring"} Their fields are Sekiro's: the diffuse colour `(byte / 255)^2 * power`; its fourth value 1 divided by the word at `+164` (8, 1.5 and 0.5 seen); the
 specular colour `(specular byte / 255)^2 * specular power`, separate from the diffuse (it differs on all 20); its fourth value the
 Rec. 601 luma (0.2989, 0.5866, 0.1145) of the specular colour, which no Elden Ring program reads; the translucency parameters'
-first two values 1 and 1; and light type 0 (all 64 records). The shadow fields of an unshadowed light keep stale bytes of the buffer:
-the game writes none. :observed[one capture, one area]{games="elden-ring"} In the program's DXIL, `g_lightCount` (`cbLightAccParam`
+first two values 1 and 1. `LightType` is 0 in every record but light 32's, which casts shadows and holds 1.0; the shadow fields
+of an unshadowed light keep stale bytes of the buffer (see [light records](/engines/fromsoft/lighting/light-records/#the-shadowed-flag)).
+:observed[two sessions, one area]{games="elden-ring"} In the program's DXIL, `g_lightCount` (`cbLightAccParam`
 `+272`) bounds the loop over the point records and `g_spotLightCount` (`+280`) the loop over the spot records.
 :observed{games="elden-ring"} The positions are in the renderer's frame, whose origin moves (see
 [coordinate frames](/engines/fromsoft/world/frames/#elden-ring)). Elden Ring's spot-light record is known only from the program's

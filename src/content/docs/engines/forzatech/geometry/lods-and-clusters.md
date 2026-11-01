@@ -64,7 +64,9 @@ one unplaced ribbon instance of the template at exactly (0, 0, 0), which exists 
 rest ship no modelbin. :observed The LODs the build stripped equal the LODs the profile never draws for 98.6% of model sets.
 :observed
 
-The game's global LOD distance scales and which PC preset is which tier are in encrypted settings. :unknown
+The game's global LOD distance scales are in the encrypted render settings: `DefaultLODDistanceScale` 1.0 at every
+geometry quality, with a `DrawDistanceType` per quality ([Settings files](/engines/forzatech/data-model/settings-files/)).
+:proven Which draw-behaviour slot or LOD-profile tier a `DrawDistanceType` selects is not in any file. :unknown
 
 ## Distance bands of the template libraries
 

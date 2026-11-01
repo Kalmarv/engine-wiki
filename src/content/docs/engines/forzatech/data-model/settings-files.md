@@ -66,5 +66,43 @@ the names and the files' comments. :inferred
 | `DecalManager.xml` | `DecalManagerParams.Params` | only `Enabled` true | :proven |
 | `MaterialSystemUtil.xml` | `PixelDepthSettings` | `ZBiasGlancingAngleScale` 5.6 for terrain and 3.5 for `RCSMSettings`, `ZBiasNearPlaneDistance` 1 | :proven |
 
+### LOD and draw distance
+
+`Rendering.zip`'s `Presentation.xml` holds the global LOD distance scales, in the `Data` block
+`RenderProceduralQuality.Settings` (type `RenderProceduralQualitySettings`). Its defaults are `DrawDistanceType` `High`,
+`DefaultDensityScale` 1.0, `DefaultLODDistanceScale` 1.0, `TreesLODDistanceScale`, `GrassLODDistanceScale` and
+`BushLODDistanceScale` 0.0, `CubeMinArea` and `ShadowMinArea` 0.0, `CrowdCull` 0.0, `TreeLODReduction` 0 and
+`CubemapExtraTerrainHeight` 0.5. :proven Its `Settings` blocks change only `DrawDistanceType`, `DefaultDensityScale`,
+`CrowdCull`, `TreeLODReduction` and `CubemapExtraTerrainHeight`, never a LOD distance scale. :proven By tag:
+
+| Tags | `DrawDistanceType` | `DefaultDensityScale` | `CrowdCull` | `TreeLODReduction` |
+|---|---|---|---|---|
+| `Config.GeometryQuality.VeryLow` | `Low` | 0.1 | 0.5 | 2 |
+| `Config.GeometryQuality.Low` | `Low` | 0.3 | 0.5 | 2 |
+| `Config.GeometryQuality.Medium` | `High` | 0.5 | 0.5 | 1 |
+| `Config.GeometryQuality.High` | `High` | 0.7 | 0.25 | (default) |
+| `Config.Lockhart60Hz` | `High` | 0.7 | 0.5 | (default) |
+| `Config.Anaconda60Hz` | `VeryHigh` | 0.8 | 0.25 | (default) |
+| `Config.Lockhart30Hz OR Config.GeometryQuality.Ultra` | `Ultra` | (default) | (default) | (default) |
+| `Config.Anaconda30Hz OR Config.GeometryQuality.Extreme` | `Extreme` | (default) | (default) | (default) |
+| `Config.Scarlett60Hz AND Track.Name_HENDRIX` | `VeryHigh` | (default) | (default) | (default) |
+| `Config.Scarlett30Hz AND Track.Name_HENDRIX` | `Ultra` | (default) | (default) | (default) |
+
+:proven The Ultra and Extreme blocks also set `CubemapExtraTerrainHeight` 0. :proven So on PC the LOD distance scale is
+1.0 at every geometry quality, and what a quality changes is the `DrawDistanceType` and the densities. :inferred Which
+draw-behaviour slot or LOD-profile tier a `DrawDistanceType` selects is not in the file. :unknown
+
+The same file's `VisibilityCulling.Params` holds screen-area tests: `ScreenAreaTests.MainScene` 200 by default, 100,
+140 and 180 at `Config.GeometryQuality.VeryLow`, `Low` and `Medium`, and -1 at `Config.Scarlett30Hz OR
+Config.GeometryQuality.Extreme`; `Mirror` and `Cubemap` 20 (5, 10, 15 by reflection quality), `Shadow` 100 (20, 40, 60
+by shadow quality) and `ShadowOffscreen` 7. :proven
+
+`GeneralScene.xml`'s `GeneralScene.DefaultLODs` lists LOD bands per object kind (`animated`, `static`, `checkpoint`,
+`animal`, `vehicle`, ...) and scene (`Main`, `ShadowPSSM`, `Cube`, `GlobalCube`), each band a `StartDistance` and
+`EndDistance` (for example 0 to 40, 40 to 80, 80 to 160 and 160 to 320 metres). :proven `SmoothLOD.xml`'s
+`SmoothLOD.Params` holds the LOD transition: `ProceduralFadeMethod` `FadeInThenOut` (`CrossFade` with
+`ProceduralCrossFadeOverlap` 0.65 under `Config.Scarlett30Hz OR Config.Scarlett60Hz OR Config.ShaderQuality.Extreme OR
+Config.ShaderQuality.Ultra`, 1.0 otherwise), and fade ranges `MaxFadeInRange` and `MaxFadeOutRange` 500. :proven
+
 The values are what the files store. What each name controls in the renderer is read from the name and the file's
 comments, not traced. :inferred

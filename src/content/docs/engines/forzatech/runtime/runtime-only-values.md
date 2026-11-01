@@ -23,7 +23,7 @@ memory at run time. :observed
 
 | Value | Consumed by | Section |
 |---|---|---|
-| global LOD distance scale(s) | LOD selection (CPU); encrypted render settings | [LODs and clusters](/engines/forzatech/geometry/lods-and-clusters/) |
+| which draw-behaviour slot or LOD-profile tier a `DrawDistanceType` selects (the scales themselves are read: `DefaultLODDistanceScale` 1.0, [Settings files](/engines/forzatech/data-model/settings-files/)) | LOD selection (CPU) | [LODs and clusters](/engines/forzatech/geometry/lods-and-clusters/) |
 | clipmap ring size (metres per texel) and ring origins | `terr_mega` pixel shader rows 36 to 42 and 45 to 51 | [Near-field ground](/engines/forzatech/terrain/near-field-megatexture/) |
 | per-ring megatexture switches (modulate mode, BC1 diagonal check, height-blend sharpness): readable with the keys, values in [Settings files](/engines/forzatech/data-model/settings-files/) | `MegaTexture.Params` in encrypted `Megatexture.xml` | same |
 | CPU-built splat weights and layer buffers | the `MegaTextureSplat_*` compute shaders | same |

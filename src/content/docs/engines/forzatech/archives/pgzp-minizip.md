@@ -146,7 +146,8 @@ Beside the chunks sit the files below. They are named here and described on the 
 | File | Holds | Described in |
 |---|---|---|
 | `ChunkAssign*.dat`, `Duplication_*.dat`, `TransHints_*.dat`, `Compensation.dat` | streaming assignment data | :unknown |
-| `bin.zip` | shaders, DXIL permutations, 1,676 material files (419 parent materials × summer, spring, autumn, winter), `AssetManifest.xml` | [Material files](/engines/forzatech/materials/materialbin/), [Shader containers](/engines/forzatech/shaders/shaderbin/) |
+| `bin.zip` | shaders, DXIL permutations, 1,676 material files (419 parent materials × summer, spring, autumn, winter), `AssetManifest.xml` | [Asset manifests](/engines/forzatech/data-model/asset-manifest/), [Material files](/engines/forzatech/materials/materialbin/), [Shader containers](/engines/forzatech/shaders/shaderbin/) |
+| `AssetManifest.xml` | the loose manifest of textures, models and instances | [Asset manifests](/engines/forzatech/data-model/asset-manifest/) |
 | `Ribbon_00\` | `brio_00.pvs` (hand-placed instances) and the instance template libraries | [Hand-placed instances](/engines/forzatech/world/pvs-ribbon/), [Template libraries](/engines/forzatech/world/plib-templates/) |
 | `trackroutes\*.nt` | plain XML track locators | [Coordinates and cells](/engines/forzatech/world/coordinates-and-cells/) |
 | `triggerzones\tz_oceanparams\` | the ocean preset zones | [Water](/engines/forzatech/water/water/) |

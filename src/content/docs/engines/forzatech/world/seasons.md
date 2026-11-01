@@ -49,6 +49,9 @@ bushes, Houdini infrastructure, and 193 of 2,512 city buildings. :observed
 
 ## Parent materials
 
+In each of the three `bin.zip` archives the season folders hold exactly the entry names of the base folder, and the
+[asset manifest](/engines/forzatech/data-model/asset-manifest/#season-folders) lists only the base folder. :proven
+
 The `bin.zip` manifest lists 419 materials as `materials\_0xN.materialbin`; the `spring\`, `autumn\` and `winter\` folders
 hold the same 419 hashed names. 358 are byte-identical in all four sets; 61 differ (31 in winter only, 22 in spring, autumn
 and winter, 5 in spring and autumn, 3 in spring and winter). The differences are data: switches and constants (for

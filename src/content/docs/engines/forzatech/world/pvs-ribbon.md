@@ -49,6 +49,11 @@ no searching. :observed
 | model bounds | `u32 0, u32 n` (= models, 134,330) × the record below | :proven |
 | tail | `u32 len + brioout`, `u8[3]`, 14 animation clip names, `u32 0` × 3, `u32[3]`, 48,733 × `{ u32 key, u32 descriptor }` (keys strictly increasing, the descriptors a permutation of the texture descriptors), `u8 0`, 5 clip files `{ u64 hash, string path }`, 14 clip records `{ u32 id, u64 file hash, u32[3] }`, `u32` | :proven |
 
+The shader and material paths are `game:\media\tracks\brio\bin\<name>`, where `<name>` is the `Name` of the `bin.zip`
+[asset manifest](/engines/forzatech/data-model/asset-manifest/#the-names-in-brio_00pvs) (`bin\` is the archive), on all 465 names. :proven
+The loose manifest lists the file's textures, models and instances: its model numbers are the file's, and every LOD row is
+named by one of its `Instance` elements. :proven
+
 The meaning of the index tables, the fixed block, the dependency blocks, the per-pgeo-id tables and the tail's `u32` words is
 not established: the bytes are read and accounted for. :unknown
 

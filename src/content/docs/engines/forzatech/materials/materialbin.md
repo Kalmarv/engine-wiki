@@ -18,7 +18,7 @@ Counts below are from a recorded census of the Tokyo track `Brio`, no longer re-
 
 The track's material store is `bin.zip` → `materials\[<season>\]_0xNNNNNNNN.materialbin`: 419 parent materials, each also
 under `spring\`, `autumn\` and `winter\` with the same hashed name; the flat set is summer and is the only one the manifest
-lists. There are no loose `.materialbin` files in the track folder. :observed The manifest `AssetManifest.xml` maps the hashed
+lists. There are no loose `.materialbin` files in the track folder. :observed The manifest `AssetManifest.xml` ([Asset manifests](/engines/forzatech/data-model/asset-manifest/)) maps the hashed
 names back to source paths, for example
 `materials\_0x00000016.materialbin` → `tracks\brio\materials\assets\city\features\mat_cty_hrise_m_s3_feature_standard.material`
 (419 entries). :observed
@@ -115,7 +115,7 @@ UseFiveColorMask, `0x30613025` UseSteppedMask. :observed
 ## Resolving a material to a texture
 
 1. Read the instance's own parameters and resolve empty texture paths through the path hash. :observed
-2. Merge the parent chain (`MATI` path → hashed entry via the manifest → `_0xNNNNNNNN.materialbin`), nearest definition
+2. Merge the parent chain (`MATI` path → hashed entry via the [manifest](/engines/forzatech/data-model/asset-manifest/#resolving-a-material-chain) → `_0xNNNNNNNN.materialbin`), nearest definition
    winning; the chain ends at a `.shaderbin` path, the family. Name every parameter from the family's own `PARM` table. :observed
 3. Which slots make the colour is defined per family by its compiled shader ([Environment](/engines/forzatech/shaders/environment/),
    [Other families](/engines/forzatech/shaders/world-families/)). File names are not reliable: short ids such as

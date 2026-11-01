@@ -7,7 +7,8 @@ A texture is a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) holding
 `TXCH` metadata is the PC texture content header. Track textures are `.pb` files named
 `<name>_<guid>_qualityN.pb` (some use a short id instead of a GUID, such as `_bclr_tupfjgh`); shared engine textures are
 `.swatchbin` entries in zips. :observed A texture's game path is
-`game:\media\<rel>\<name>_<guid>.swatchbin`, which is what material parameters hash ([Materials](/engines/forzatech/materials/materialbin/)). :observed
+`game:\media\<rel>\<name>_<guid>.swatchbin`, which is what material parameters hash ([Materials](/engines/forzatech/materials/materialbin/)). :observed The `SourceHash` of the track's
+[asset manifest](/engines/forzatech/data-model/asset-manifest/#sourcehash) is the same hash. :proven
 
 All counts are from a recorded census of the Tokyo track `Brio` (169,351 world textures in `GeoChunk0` to `GeoChunk3`); the
 install is no longer available. :observed

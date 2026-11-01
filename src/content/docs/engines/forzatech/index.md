@@ -51,7 +51,7 @@ Third-party tool knowledge (the FH5 readers) is :sourced; reasoning from the com
 | Encrypted files (database, settings, profile) | white-box AES; no key is published in the open. With the keys, every encrypted zip entry decrypts and inflates, and the database decrypts to SQLite | :observed |
 
 The zip archives are on [Zip archives](/engines/forzatech/archives/zip/). The encrypted files and the values only the running game holds are on [Encrypted files](/engines/forzatech/archives/encrypted-files/) and
-[Values only the running game holds](/engines/forzatech/runtime/runtime-only-values/). Games: [Forza Horizon 6](/games/fh6/).
+[Values only the running game holds](/engines/forzatech/runtime/runtime-only-values/). The hashed shader and material names in a track's `bin.zip` are mapped to their sources by its [asset manifest](/engines/forzatech/data-model/asset-manifest/). Games: [Forza Horizon 6](/games/fh6/).
 
 The render settings in the encrypted `Rendering.zip` are [DatabaseFile XML](/engines/forzatech/data-model/settings-files/). :proven
 

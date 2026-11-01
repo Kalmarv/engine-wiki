@@ -6,7 +6,8 @@ description: How Forza Horizon 6 packs shader families, their parameter names, v
 Each shader **family** (`environment`, `uber_road`, `terr_mega`, `glass`, `uber_water`, ...) is a `.shaderbin`, a
 [Grub bundle](/engines/forzatech/data-model/grub-bundle/), plus one compiled **DXIL** container per permutation and
 light scenario. World families are in `<track>\bin.zip` → `shaders\_0xNN\<family>.shaderbin`; the car families are in
-`media\Cars\_library\shaders\<family>.zip`; the engine's compute and post shaders are in `media\ShadersDXIL.zip`. :observed
+`media\Cars\_library\shaders\<family>.zip`; the engine's compute and post shaders are in `media\ShadersDXIL.zip`. :observed The hashed `_0xNN` folder and family names of a `bin.zip` are mapped to their source
+paths by its [asset manifest](/engines/forzatech/data-model/asset-manifest/). :proven
 A permutation file is named like `_Standard…_ST…\environmentGBufferLightScenario_I.pcdxil.pso`; the `.pso` files are plain
 shader containers that carry no depth, raster or blend state. :observed Disassembling them works with a current DXC
 (`dxc -dumpbin`); the 2020 SDK build crashes on them. :observed

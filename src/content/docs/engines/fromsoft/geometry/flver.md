@@ -82,6 +82,16 @@ contain 16-byte records. SoulsFormatsNEXT calls them base and all skeletons. :so
 Elden Ring files may have zero padding from the end of the declared data block to the next 2,048-byte boundary.
 :observed{games="elden-ring"}
 
+### Header bytes without a known meaning
+
+On every FLVER of the Sekiro install (14,459 files, read at their fixed offsets), the bytes the header table leaves
+unknown hold few values. The default index width at 0x48 is 0 in every file, so the face sets state every index width
+themselves. :proven[every FLVER of the install]{games="sekiro"} 0x4A, the u32 at 0x4C and 0x5C are 0 in every file.
+:proven[every FLVER of the install]{games="sekiro"} 0x5D is 2 in each of the 14,442 version `0x2001A` files and 0 in the
+17 of earlier versions. :proven[every FLVER of the install]{games="sekiro"} The u16 at 0x68 is 4 in every file but the
+one of version `0x20013`, where it is 0. :proven[every FLVER of the install]{games="sekiro"} What 0x5D and 0x68 select
+is not known. :unknown
+
 ### Header bounds
 
 The two header bounds are the box of every vertex of every mesh, static vertices posed by their node as described

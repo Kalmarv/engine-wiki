@@ -132,6 +132,65 @@ materials bind (18, 6 and 59 materials; 13,674, 8,213 and 10,002 triangles). :ob
   BC7 sRGB (352); `NormalATexture` BC5 unorm linear; `BakedVCTexture` BC5 unorm linear (9,842) or RGBA8 sRGB (160);
   `EmissiveTexture` BC1 linear (9,400), BC1 sRGB (12) or BC7 sRGB (518); `SwatchTintTexture` and `LightmapTexture` RGBA8 sRGB. :observed
 
+## Ground permutations: plots, terrain and roads
+
+A dependency census of every `GBufferLightScenario` pixel shader of four families in the Tokyo track's `bin.zip`
+(`environment_plot` 19 permutations, `terr_mega` 65, `terr_distant` 2, `uber_road` 50; each render-target channel followed
+back to its texture reads and parameter rows through the `CBMP` and `TXMP` maps), with the texture formats the Shibuya
+Scramble box's materials bind (all of the box: 91,811, 14,462, 10,481 and 66,426 triangles). :observed
+
+In these four families a material's texture index dwords start 4 dwords before the end of the constants (384, 64, 48 and
+288 bytes): with that base every texture read is sampled with the tiling parameter of its own role, which the end of the
+constants as base does not give. :observed
+
+**`environment_plot`** is the `environment` family's one-texture-set material on a terrain plot.
+
+- It reads `DiffAlphaTex_A`, `NormHeightTex_A` and `RoughMetAoPorTex_A` with `environment`'s tiling parameters and offset
+  (`BaseColorAlpha_A_UVTiling`, `NormalHeight_A_UVTiling`, `RoughMetAoPoros_A_UVTiling`, `Uv0Offset`), and `RT0.w` is
+  `RoughMetAoPorTex_A.g` in all 19 permutations. :observed
+- `TerrainGlossTexture` (sampled at `BlendMapOffset + BlendMapScale · world xz`) and `NormHeightTex_A.a` against
+  `BlendHeightMapRange` make the mask of the snow term, which mixes the albedo, the roughness (`RoughMetAoPorTex_A.r`
+  when dry) and the normal; `AoWetBlendContextTex.r` (`TEXCOORD1` at `MacroAOWetBlendMaskTiling`) enters the occlusion
+  factor with `RoughMetAoPorTex_A.b`. :observed
+- The `_M` permutations add `ModulateTexture` and `ModulateTexture_PavementCorner` (`TEXCOORD2` at `ModulateUVTiling`): red
+  moves the brightness, green the saturation and blue the roughness around one half, scaled by `_BrightnessStrength`,
+  `_SaturationStrength` and `_RoughnessStrength`. The `_B` permutations blend a second set (`DiffAlphaTex_B`,
+  `NormHeightTex_B`, `RoughMetAoPorTex_B`) by `BlendHeightMapBRange`, and the `_W` ones add `Snow_WetMax`. :observed
+- The alpha test discards `DiffAlphaTex_A.a` below `cb2[128].x`. :observed
+- Formats bound in the box: `DiffAlphaTex_A` BC1 or BC7 sRGB; `NormHeightTex_A` BC7 linear; `RoughMetAoPorTex_A` BC7
+  linear; `TerrainGlossTexture` BC7 linear; `AoWetBlendContextTex` BC7 linear. :observed
+
+**`terr_mega` and `terr_distant`**
+
+- Every texture is sampled at `BlendMapOffset + BlendMapScale · (x, z)`, the surface point's position in the ground plane;
+  `terr_mega`'s `Alpha` permutations take it from `TEXCOORD1` and `TEXCOORD4` instead. No other mesh coordinate is
+  read. :observed
+- `TerrainNormalTexture.rgb` (BC7 sRGB: a colour) times `TerrainColourTexture.a` squared is the albedo before the gamma
+  1/2.2 and snow terms; `TerrainColourTexture.rg` are decoded as `x = 2 r − 1` and `z = 2 g − 1`, lerped with the vertex
+  normal's `x` and `z` by a distance term, and `y = sqrt(sat(1 − x² − z²))` completes the vector, which makes them a
+  world-space normal's horizontal components :inferred; `TerrainGlossTexture.r · 1.0752689` (`r / 0.93`) is the dry roughness; `RT0.w` is not
+  written. The dependency sets of these channels are the same in `terr_mega`'s `Default`, `Distant`, `Winter`, `Alpha_NR` and
+  `Noise` permutations and in `terr_distant`'s `Default`. :observed
+- Formats bound in the box: `TerrainColourTexture` and `TerrainGlossTexture` BC7 linear; `TerrainNormalTexture` BC7 sRGB. :observed
+
+**`uber_road`**
+
+- A layer `L` of `A` to `D` is `UberRoadLDiffuseTexture` (colour in RGB, roughness in A) and `UberRoadLNormalTexture`
+  (`x = 2 r − 1`, `z = 2 g − 1`, occlusion in B, a height in A). Both are sampled at `TEXCOORD0` or `TEXCOORD1`
+  times `UberRoadLUVTiling` when `UberRoadLUVSet` is 0 or 1, and at the surface point's position in the ground plane times
+  `UberRoadLWorldUVScale` when it is −1. :observed
+- The layers combine from the last: `lerp(D, lerp(C, lerp(B, A, s1), s2), s3)` of the albedo, the roughness, the occlusion
+  and the decoded normals, with `s1 = smoothstep(sat((s + (1 − hB) − w0 (1 + s)) / s))` for `s = BlendSmoothness`, `hB`
+  the layer's normal alpha and `w0` the channel `BlendShuffle[0]` of `BlendTexture` (`TEXCOORD2`); `s2` and `s3` are the same
+  with `hC`, `w1` and `hD`, `w2`. :observed
+- `TintTexture` (`TEXCOORD2`) is blended over the albedo as an overlay before the snow and frost mixes
+  (`UberRoadLFrost`, `UberRoadLSnow`, `FrostAmount`); `RT0.w` is not written. :observed
+- The permutations are named by the layer count (`blend1` to `blend4`), `M` and `modnorm` (modulate maps), `TB` (terrain
+  blend), `winter` and `S` (frost and snow). In the box `Blend2` is on for 9,157 triangles and `Blend3` for 582, `Blend4` for none;
+  `UberRoadAUVSet` is −1 for 22,433 triangles, `UberRoadBUVSet` for 9,095 and `UberRoadCUVSet` for 235, and 0 for the rest. :observed
+- Formats bound in the box: the diffuse maps BC7 sRGB; the normal maps BC7 linear; `BlendTexture` BC7 linear (23,021) or
+  RGBA8 sRGB (43,405); `TintTexture` BC7 linear. :observed
+
 ## Emissive
 
 The emissive term seeds `RT1.xyz`: `g(d) = d ≥ 1 ? 1/(d + 1e-5)² : (d + 1e-5)²`, `d` the distance to the camera.

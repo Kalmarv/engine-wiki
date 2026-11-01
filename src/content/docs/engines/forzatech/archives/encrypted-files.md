@@ -24,8 +24,9 @@ TransformIT** (TFIT), a white-box AES. The geometry, placements, materials and t
 (see [PGZP archives](/engines/forzatech/archives/pgzp-minizip/)), so everything on the World pages can be read without a
 key. :observed
 
-The measurements here come from a recorded census of the install; the game is no longer installed, so they cannot be
-re-checked. :observed
+The measurements here come from a census of one install; a later fresh install of the same game carries the same
+block counts and sizes (game database 16,123,860 bytes in 123 blocks, `sfsdata` 77,604,132 in 592,
+`NerdData.json` 564 in one). :observed
 
 ## What is encrypted
 
@@ -91,25 +92,27 @@ the 16 bytes after the padding field a nonce in this file and does not check the
 :sourced[FH6-Local-Crypto-Car-Editor-Tool]
 
 A profile decrypts to a u32 compressed size, a u32 expanded size and a zlib stream. :observed A method-22 archive
-entry decrypts to a raw DEFLATE stream. :sourced[FH6-Local-Crypto-Car-Editor-Tool]
+entry decrypts to a raw DEFLATE stream. :observed
 
 ## Checked on files the game wrote
 
-The player's save folder holds containers the game wrote, and they decrypt exactly as described. Profiles of 737 and
-735 blocks (paddings 78, 306, 306) authenticate their header under the `ProfileData` pair and every one of their
-blocks' MACs matches. Each profile's plaintext is a u32 compressed size equal to the bytes that follow it, a u32
-expanded size, then a zlib stream (header `78 9C`) that inflates to exactly that expanded size, its Adler-32 checked.
-An `Estate` blob and a `CustomFlyer` blob authenticate the same way under the `ServiceB` pair. :observed
+Every part of the description above has been confirmed against files the game wrote: each container's header
+authenticates under its usage's MAC key, every one of its blocks' MACs matches, and the plaintext comes out as the
+inner format promises.
 
-That confirms the envelope, the HKDF IV chain, the block CMACs, the header MAC and the profile's inner layout on real
-files. Not yet checked this way: the game database's keystream, the method-22 archive entries' raw DEFLATE, and any
-0x20000-block file. :observed
+| Files | Usage that authenticates them | What the plaintext is |
+|---|---|---|
+| profiles, 737 and 735 blocks (paddings 78, 306) | `ProfileData` | a u32 compressed size equal to the bytes after it, a u32 expanded size, then a zlib stream (header `78 9C`) inflating to that size, Adler-32 checked |
+| an `Estate` and a `CustomFlyer` blob | `ServiceB` | that container kind's own records |
+| `media\sfsdata`, 592 blocks | `SFS` | 77,522,352 bytes |
+| `media\Stripped\gamedbRC.slt`, 123 blocks | `GameDB` | an SQLite image once the keystream is removed: its header string and a page size times page count that fits |
+| method-22 entries of `Rendering.zip` and `GameTunableSettings.zip` (2, 4 and 22 blocks) | `General` | a raw DEFLATE stream inflating to exactly the zip's stated size — XML for the entries checked |
+| `media\NerdData\NerdData.json`, one block | `General` | 78 bytes |
 
-:::open[Are the game database keystream and the settings archives right on the game's files?]
-A real `gamedbRC.slt` decrypting with its MACs matching, then reading as SQLite only after the keystream is removed,
-would confirm the keystream; a decrypted method-22 entry inflating to its stated size would confirm the inner format of
-the settings archives. Neither has been checked here.
-:::
+:observed The `Engine` pair has not matched any file seen here.
+
+That confirms the envelope, the HKDF IV chain, the block CMACs, the header MAC, the keystream, the profile's compressed
+header and the settings entries' raw DEFLATE. :observed
 
 ## Not encrypted
 

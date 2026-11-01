@@ -40,6 +40,8 @@ How the world and items are coloured:
   `atlas.terrain` and `atlas.items`, the variables the engine hands them, and when each starts.
 - [Particle block tests](/engines/bedrock/effects/particle-block-tests/): the block lists a particle expires by, and
   the old block names current Bedrock no longer has.
+- [Spell particles](/engines/bedrock/effects/spell-particles/): the effects for potions, status effects and tipped
+  arrows, and the colour and cloud variables the engine hands them.
 
 :::open[What do the current renderer's compiled materials hold?]
 The material and shader facts here are those of the 1.16-era renderer, from published copies. The game now compiles

@@ -30,3 +30,5 @@ shaders; no installed game was read. :observed{games="minecraft-bedrock"}
 - Eight particle effects draw from the block or item atlas at UVs the engine hands them
   ([picture particles](/engines/bedrock/effects/picture-particles/)).
   :observed{games="minecraft-bedrock"}
+- Potion and status-effect swirls are five effects whose colour, and a lingering cloud's radius, the engine hands
+  them ([spell particles](/engines/bedrock/effects/spell-particles/)). :observed{games="minecraft-bedrock"}

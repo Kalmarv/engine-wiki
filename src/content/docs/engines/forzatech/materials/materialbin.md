@@ -23,7 +23,7 @@ names back to source paths, for example
 `materials\_0x00000016.materialbin` → `tracks\brio\materials\assets\city\features\mat_cty_hrise_m_s3_feature_standard.material`
 (419 entries). :observed
 
-A model's `MatI` blob is a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) of its own; its `ITAM` or `MatI` blob starts
+A model's `MatI` blob is a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) of its own; its `MATI` blob (the bytes `ITAM`) starts
 with the parent material path as a 7-bit-length string. :observed A `MatI` blob can be empty (zero bytes: a name and nothing
 else): 821 of 20,000 models' blobs, for example `OCC_Material`; in the two Tokyo areas checked the only empty one with
 geometry is `Boing_material` on a 32-triangle plane. :observed
@@ -115,7 +115,7 @@ UseFiveColorMask, `0x30613025` UseSteppedMask. :observed
 ## Resolving a material to a texture
 
 1. Read the instance's own parameters and resolve empty texture paths through the path hash. :observed
-2. Merge the parent chain (`ITAM` path → hashed entry via the manifest → `_0xNNNNNNNN.materialbin`), nearest definition
+2. Merge the parent chain (`MATI` path → hashed entry via the manifest → `_0xNNNNNNNN.materialbin`), nearest definition
    winning; the chain ends at a `.shaderbin` path, the family. Name every parameter from the family's own `PARM` table. :observed
 3. Which slots make the colour is defined per family by its compiled shader ([Environment](/engines/forzatech/shaders/environment/),
    [Other families](/engines/forzatech/shaders/world-families/)). File names are not reliable: short ids such as

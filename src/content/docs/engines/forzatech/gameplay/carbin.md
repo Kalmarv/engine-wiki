@@ -17,7 +17,7 @@ media\Cars\<CAR>.zip                      one standard zip per car, e.g. NIS_240
     <CAR>.carbin_debug                    build-time names of sub-parts merged into the shipped models
     Manifest.xml                          streaming manifest: per NonUpgradeablePart / UpgradeablePart (PartEnum, PartId)
                                           the models, materials and swatches it needs
-    ManufacturerColors.bin                a Grub bundle with one 'LCNM' blob: the factory paint list
+    ManufacturerColors.bin                a Grub bundle with one 'MNCL' blob: the factory paint list
     Scene\...\*.modelbin                  part models (Grub, Mesh v1.12), Scene\<CAR>_skeleton.modelbin
     Scene\_library\Scene\{Brakes,Wheels,Undercarriage}\...   car-specific copies of library parts
     Textures\...\*.swatchbin              AO bakes, symbols, gauges

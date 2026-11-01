@@ -3,14 +3,14 @@ title: Factory paints (ManufacturerColors)
 description: The per-car factory colour list of Forza Horizon 6 and how a material's customisation slot hash links to a paint layer.
 ---
 
-Each car archive holds `ManufacturerColors.bin`, a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) with one `LCNM` blob (the
-bytes `MNCL` in the file, blob version 2.0) listing the car's factory paints. Walking it ends exactly at the blob end on 682 of 682
+Each car archive holds `ManufacturerColors.bin`, a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) with one `MNCL` blob (the
+bytes `LCNM` in the file, blob version 2.0) listing the car's factory paints. Walking it ends exactly at the blob end on 682 of 682
 cars (3,890 colour entries in all). `str7` below is a 7-bit varint length plus ASCII. :observed
 
 Counts come from a recorded census of the install's `media\Cars`; the install is no longer available. :observed
 
 ```layout
-title: LCNM blob (ManufacturerColors.bin)
+title: MNCL blob (ManufacturerColors.bin)
 size: variable
 games: [fh6]
 note: "Little-endian."

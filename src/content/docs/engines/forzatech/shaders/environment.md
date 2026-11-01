@@ -29,6 +29,26 @@ palette. :observed For the Shibuya facade `SHOP_W7_02_A_Tiling_14_VARIANT_6` the
 ≈ (214, 214, 213). :observed Its visible character comes from the AO and grime mask, deposits, modulate, normal map and
 lighting. :inferred
 
+### The tint's inputs over the Shibuya box
+
+Read from the models of every prototype of the Shibuya Scramble box (summer), 568 of its 1,534 prototypes draw an
+`environment` material with `SwatchTint` on: 3,984 primitives, 729,706 triangles, 976,427 vertices. :observed
+
+- `COLOR.r` is 0 on 666,214 vertices and 1 on 306,530; 3,683 (0.4%) lie between. The triangles whose corners disagree on
+  red number 499. :observed
+- `COLOR.g` is one value over the whole primitive in 3,196 of the 3,984, at most four in 772 more and five to 32 in 16;
+  the vertices hold 47 distinct values over 0 to 255, 255 on 293,996 and 24 on 153,316 of them. Among the triangles
+  whose red is 0, 813 have corners that disagree on green. :observed
+- A base colour with an alpha channel is the rule: 662,422 of the 729,712 triangles of these materials (90.8%) are
+  drawn with a BC7 sRGB `DiffAlphaTex_A`, whose texels have alpha under 250 on average 46% at its third mip level; the
+  other 67,242 use an opaque BC1 sRGB texture, so the tint there covers the whole surface where red is 0. :observed
+- The palette textures are RGBA8 or BC7 sRGB and range from 4 × 4 to 1024 × 1024 (32 × 512, 32 × 32, 64 × 64, 16 × 16
+  and 256 × 256 among them), with one to seven stored mips. :observed
+- Rule placements (`.pgeo` records) carry the byte at +0x34: 2,801 distinct (prototype, byte) pairs over 39,446
+  instances, at most 111 bytes for one prototype. :observed Hand placements (`.pvs` instances) have no such record:
+  26 instances of these prototypes, and where the shader's `INSTANCE_VARIATION` comes from for them is not
+  established. :unknown
+
 ## G-buffer albedo (`_StandardRCSM_ShadowsTriPlanar_ST_TPNAO_D`)
 
 ```

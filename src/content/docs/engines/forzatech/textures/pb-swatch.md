@@ -28,7 +28,7 @@ note: "Offsets are from the start of the TXCH metadata. Little-endian. The heade
 fields:
   - {at: 0, size: 4, type: u32, name: slice list offset, value: "0x38", level: proven}
   - {at: 4, size: 4, type: u32, name: first mip record link, level: proven, note: "the offset of the first mip record plus 4"}
-  - {at: 8, size: 16, type: "u8[16]", name: guid, level: proven, note: "a Windows GUID; the (last) GUID in the file name when the name holds one, on 219,951 of the 220,008 textures whose name holds one; the other 57 (car scene textures in five car zips, the engine's DefaultTextures and a cinematic library) hold 00000000-0000-0000-0000-000000000001"}
+  - {at: 8, size: 16, type: "u8[16]", name: guid, level: proven, note: "a Windows GUID; the (last) GUID in the file name when the name holds one, on 219,951 of the 220,008 textures whose name holds one; 54 of the other 57 (car scene textures in five car zips) hold 00000000-0000-0000-0000-000000000001 and the last 3 (the `test*_diff` swatches of DefaultTextures and a cinematic library) all hold 25C29A40-AA32-4334-933F-DC8EB3D663A0"}
   - {at: 24, size: 4, type: u32, name: width, level: proven}
   - {at: 28, size: 4, type: u32, name: height, level: proven}
   - {at: 32, size: 4, type: u32, name: depth, level: proven, note: "1, or the number of layers every mip holds (9, 60 and 128 occur); it does not shrink from mip to mip"}

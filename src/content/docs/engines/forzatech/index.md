@@ -24,17 +24,20 @@ Nearly everything in the world is data in a few shared containers. The track's g
 [Grub bundle](/engines/forzatech/data-model/grub-bundle/). Models are [`.modelbin`](/engines/forzatech/geometry/modelbin/) files with FH6's own
 mesh record, split into [LOD files](/engines/forzatech/geometry/lods-and-clusters/). The world is placed by rule in
 [`.pgeo` files](/engines/forzatech/world/pgeo-placements/) through [template libraries](/engines/forzatech/world/plib-templates/), and by
-hand in one [`.pvs` file](/engines/forzatech/world/pvs-ribbon/). :observed
+hand in one [`.pvs` file](/engines/forzatech/world/pvs-ribbon/). Gameplay places are in a small
+[`GameObjs.xml`](/engines/forzatech/world/game-objects/) and ambient effects in
+[`.particlebin` files](/engines/forzatech/world/particle-instances/). :observed
 
 Materials are a chain of parameter lists ending at a [shader family](/engines/forzatech/shaders/shaderbin/), and the compiled DXIL of the
 family decides the look, which is why most of the knowledge on the shader pages was read from the shaders themselves. :observed
 
 ## How sure the pages are
 
-The numbers on these pages come from a recorded census of the Tokyo track in a build that is no longer installed, so they cannot be
-re-checked today. The counts are real measurements over every file of the stated kind, and they are marked :observed with their scope;
-nothing for FH6 is marked as proven. Third-party tool knowledge (the FH5 readers) is :sourced; reasoning from the compiled shaders where no
-readable value exists is :inferred. :observed
+Some numbers on these pages come from a recorded census of the Tokyo track in a build that is no longer installed, so they cannot be
+re-checked today; they are real measurements over every file of the stated kind, marked :observed with their scope. Pages whose
+readers have since been run over every file of the installed build mark what held on all of them :proven, and say so in the sentence.
+Third-party tool knowledge (the FH5 readers) is :sourced; reasoning from the compiled shaders where no readable value exists is
+:inferred. :observed
 
 ## What is known and what is not
 

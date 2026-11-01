@@ -26,6 +26,8 @@ How an entity is drawn:
 - [Engine variables](/engines/bedrock/data-model/engine-variables/): the variables scripts read that the engine sets.
 - [Attachables](/engines/bedrock/data-model/attachables/): held and worn items drawn as models on their holder, and how
   they read the holder's variables.
+- [Item queries](/engines/bedrock/data-model/item-queries/): how scripts read held and worn items: names, item tags,
+  a spear's kinetic timings and cooldowns.
 - [First-person player](/engines/bedrock/animation/first-person/): how the player model is posed for its own view.
 
 How the world and items are coloured:

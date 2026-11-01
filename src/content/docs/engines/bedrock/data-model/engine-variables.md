@@ -50,7 +50,7 @@ Each meaning below is taken from how the vanilla scripts use the variable; the u
 | `first_person_item_rotation_factor` | first-person attack swings, where the third-person ones use `first_person_rotation_factor` (which the player computes as `sin((1 - v.attack_time) * 180)`) | a scale on the first-person swing | :unknown |
 | `short_arm_offset_left`, `short_arm_offset_right` | added to first-person arm positions | an offset for the arm's length | :unknown |
 | `is_using_vr`, `is_horizontal_splitscreen`, `is_vertical_splitscreen` | small corrections to first-person arm poses (`95.0 + v.is_using_vr * 7.5`) | the display mode | :inferred |
-| `fp_melee_spear_*`, `tp_melee_spear_*` | the player's and the spear's melee animations; the player declares four of them public | the spear's melee motion, first and third person | :unknown |
+| `fp_melee_spear_*`, `tp_melee_spear_*` | the player's and the spear's melee animations; the player declares four of them public. The zombie, husk, zombie villager, piglin and zombified piglin assign the third-person ones themselves in `pre_animation`, from the spear's [kinetic timings](/engines/bedrock/data-model/item-queries/) and `v.item_use_duration`; for the player no script does | the spear's melee motion, first and third person; for the player, the engine's own computation | :unknown |
 | `liedownamount`, `liedownamounttail`, `lieonplayer` | the cat's lying-down animations | the cat's lie-down progress, and whether it lies on a sleeping player | :inferred |
 | `animationamount`, `animationamountprev` | the fishes' swim animations, blended by `q.frame_alpha` | the swim cycle this tick and last | :inferred |
 

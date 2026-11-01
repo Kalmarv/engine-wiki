@@ -13,12 +13,13 @@ sources:
 Most particle effects name one texture file. A few draw a piece of whatever block or item is involved (the block
 being broken, the food being eaten): their texture is `atlas.terrain` or `atlas.items`, the game's block or item
 atlas, and their UVs are expressions over variables that give the picture's place in that atlas.
-:observed[the eight vanilla effects with an atlas texture, bedrock-samples v1.26.60.5] No file assigns those
-variables, so the engine sets them when it starts the effect. :inferred
+:observed[the eight vanilla effects with an atlas texture, bedrock-samples v1.26.60.5] For six of them no file assigns
+those variables, so the engine sets them when it starts the effect. :inferred The warden's and the breeze's are
+assigned by the animations that start them, from queries (below). :observed[the vanilla warden and breeze animations of bedrock-samples v1.26.60.5]
 
 ## The effects and what they read
 
-| Effect | Atlas | Variables read and never assigned |
+| Effect | Atlas | Variables read |
 | --- | --- | --- |
 | `minecraft:block_destruct` | `atlas.terrain` | `emitter_texture_coordinate`, `emitter_texture_size`, `emitter_particles_count`, `emitter_radius`, `velocity_scalar`, `color` |
 | `minecraft:block_slide` | `atlas.terrain` | the same six |
@@ -47,6 +48,13 @@ an entity lands from a long fall, and when players and cats sprint. :sourced[Min
 `breaking_item_terrain` shows for feeding mobs and a panda eating bamboo or cake, the item drawn from the block
 atlas. :sourced[Minecraft Wiki, Particles (Bedrock Edition)] The warden's digging and the breeze's ground particles are
 their own effects (`warden_dig`, `breeze_ground_particle`), not `block_destruct`. :observed[the vanilla particle files of bedrock-samples v1.26.60.5]
+
+The warden's client entity names `minecraft:warden_dig` as its `digging` effect, and two of its animations start it at
+0 s with a `pre_effect_script` that sets `variable.dig_particle_texture_coordinate`, `_texture_size` and `_color` from
+`query.surface_particle_texture_coordinate`, `query.surface_particle_texture_size` and `query.surface_particle_color`.
+The breeze's animations set its `ground_particle_*` variables from the same queries.
+:observed[the vanilla warden and breeze animations and client entities of bedrock-samples v1.26.60.5] The queries
+give the picture and colour of the block the entity stands on. :inferred
 
 :::open[What counts, radii and speeds does the engine hand block_destruct for each use?]
 No published source gives them, and the Linux dedicated server (1.26.61.1) carries none of these variable names, the

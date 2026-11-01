@@ -45,9 +45,9 @@ readable value exists is :inferred. :observed
 | Materials and the major shader families | parameters and formulas read from the compiled shaders; run-time constants unknown | :observed |
 | Terrain colour (far and near field), water, decals | formulas known; ring sizes, blend states and settings are in encrypted files | :observed |
 | Cars, liveries, saves | formats decoded; make, year, wheel size and default colours are in the encrypted database | :observed |
-| Encrypted files (database, settings, profile) | white-box AES; no key | :unknown |
+| Encrypted files (database, settings, profile) | white-box AES; no key is published in the open. With the keys, every encrypted zip entry decrypts and inflates, and the database decrypts to SQLite | :observed |
 
-The encrypted files and the values only the running game holds are on [Encrypted files](/engines/forzatech/archives/encrypted-files/) and
+The zip archives are on [Zip archives](/engines/forzatech/archives/zip/). The encrypted files and the values only the running game holds are on [Encrypted files](/engines/forzatech/archives/encrypted-files/) and
 [Values only the running game holds](/engines/forzatech/runtime/runtime-only-values/). Games: [Forza Horizon 6](/games/fh6/).
 
 :::open[What is in the encrypted settings archives?]

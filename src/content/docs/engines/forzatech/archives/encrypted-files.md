@@ -32,14 +32,14 @@ block counts and sizes (game database 16,123,860 bytes in 123 blocks, `sfsdata` 
 
 | File | Block size | Notes | Confidence |
 |---|---|---|---|
-| `media\Stripped\gamedbRC.slt` | 0x20000 (123 blocks) | the game database: cars, parts, wheel and tyre sizes, prices. About 16 MB at 7.99999 bits per byte, no SQLite header | :observed |
+| `media\Stripped\gamedbRC.slt` | 0x20000 (123 blocks) | the game database: cars, parts, wheel and tyre sizes, prices. About 16 MB at 7.99999 bits per byte, no SQLite header; decrypted, an SQLite database of 207 tables that passes SQLite's integrity check | :observed |
 | `media\sfsdata` | 0x20000 (592 blocks) | | :observed |
 | `NerdData.json` | 0x200 | | :observed |
 | Profile files (`<xuid>ProfileBackup`, `<xuid>Meta`, `CmsCache\**`) | 0x200 | the player's garage, tunes, paint and liveries; local copy of a cloud save | :observed |
-| 67 zip entries of method 22 (`Rendering.zip`, `Rules.zip`, `GameTunableSettings.zip`, `Camera.zip`, `RenderScenarios.zip`, `stateflow.zip`, `Physics`, `ProfileSchema`, ...) | 0x200 | raw DEFLATE inside the TFIT envelope; sizes are rounded up to whole blocks (64 bytes become 564) | :observed |
+| the 29,250 zip entries of method 22, in 1,085 archives under `media` (every entry of `Rendering.zip` and `GameTunableSettings.zip`, and most of `media\Audio\EngineSynth`) | 0x200 | raw DEFLATE inside the TFIT envelope; sizes are rounded up to whole blocks (64 bytes become 564); see [Zip archives](/engines/forzatech/archives/zip/) | :proven |
 
-The render settings in these archives (the near-field megatexture parameters in `Megatexture.xml`, `Livery.xml`, the
-decal blend state) are therefore not readable from the install. :observed
+The render settings in these archives (the near-field megatexture parameters in `Megatexture.xml`, `Livery.xml`,
+`DecalManager.xml`) are readable only with the `General` usage's keys. :proven
 
 ## Envelope
 
@@ -106,10 +106,10 @@ inner format promises.
 | an `Estate` and a `CustomFlyer` blob | `ServiceB` | that container kind's own records |
 | `media\sfsdata`, 592 blocks | `SFS` | 77,522,352 bytes |
 | `media\Stripped\gamedbRC.slt`, 123 blocks | `GameDB` | an SQLite image once the keystream is removed: its header string and a page size times page count that fits |
-| method-22 entries of `Rendering.zip` and `GameTunableSettings.zip` (2, 4 and 22 blocks) | `General` | a raw DEFLATE stream inflating to exactly the zip's stated size — XML for the entries checked |
+| every method-22 zip entry of the install, 29,250 in 1,085 archives | `General` | a raw DEFLATE stream inflating to exactly the zip's stated size and CRC-32 |
 | `media\NerdData\NerdData.json`, one block | `General` | 78 bytes |
 
-:observed The `Engine` pair has not matched any file seen here.
+:observed The zip entries are every one there is (:proven). The `Engine` pair has not matched any file seen here.
 
 That confirms the envelope, the HKDF IV chain, the block CMACs, the header MAC, the keystream, the profile's compressed
 header and the settings entries' raw DEFLATE. :observed

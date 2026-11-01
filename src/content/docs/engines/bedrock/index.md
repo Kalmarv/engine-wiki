@@ -36,6 +36,8 @@ How the world and items are coloured:
   bottles.
 - [Environment textures](/engines/bedrock/textures/environment-textures/): which texel each end portal layer
   takes from its colour table, and the weather sheet's rain and snow cells.
+- [Particles drawn from a block or item picture](/engines/bedrock/effects/picture-particles/): the effects on
+  `atlas.terrain` and `atlas.items`, the variables the engine hands them, and when each starts.
 
 :::open[What do the current renderer's compiled materials hold?]
 The material and shader facts here are those of the 1.16-era renderer, from published copies. The game now compiles

@@ -27,3 +27,6 @@ shaders; no installed game was read. :observed{games="minecraft-bedrock"}
   map ([colour maps](/engines/bedrock/vegetation/colour-maps/)). :observed{games="minecraft-bedrock"}
 - 151 block entries name carried textures, coloured-in pictures for the block's item
   ([item icons](/engines/bedrock/textures/item-icons/)). :observed{games="minecraft-bedrock"}
+- Eight particle effects draw from the block or item atlas at UVs the engine hands them
+  ([picture particles](/engines/bedrock/effects/picture-particles/)).
+  :observed{games="minecraft-bedrock"}

@@ -47,7 +47,7 @@ size: 50
 games: [fh6]
 note: "In the .pvs. u32 group count, then per group a u32 n and n records. Little-endian."
 fields:
-  - {at: 0, size: 2, type: u16, name: tier, level: observed, note: "quality tier 0 to 4"}
+  - {at: 0, size: 2, type: u16, name: tier, level: observed, note: "0 to 4; what selects it is below"}
   - {at: 2, size: 2, type: u16, name: pass, level: observed}
   - {at: 4, size: 36, type: "band[6]", name: bands, level: observed, note: "per band: f16 distance, f16 fade, u8 0, u8 last"}
   - {at: 40, size: 1, type: u8, name: one, value: 1, level: observed}
@@ -58,6 +58,14 @@ fields:
 LOD *k* is drawn in `[max(dist_0..dist_k−1), dist_k)`; a zero-width band skips the LOD; nothing is drawn beyond the band
 marked `last`. :observed Pass 2 is the main view and the only pass with fades; passes 4, 10 and 11 equal `dist − fade/2`
 exactly, pass 7 `min(dist − fade/2, 100)`. :observed
+
+The Tokyo track's table holds, by (pass, tier): in passes 2, 4, 7, 10, 11 and 12, 14 tier 0, 153 tier 1, 17 tier 2,
+114 tier 3 and 3 tier 4 records each; in passes 0, 1 and 9, 68 tier 1, 1 tier 2 and 36 tier 3; in pass 8, 71 tier 1,
+1 tier 2 and 39 tier 3, and no tier 0 or 4 record in those four passes. :observed A group does not hold a record of
+every tier: of the 1,140 hand-placed instances around the Shibuya Scramble, 741 have no pass 2 record of tier 0, 7 none
+of tier 1, 741 none of tier 2, 414 none of tier 3 and 821 none of tier 4. :observed So the tier selects among a
+group's records, but whether it is a quality setting, and what the game draws for a group with no record of its tier,
+is not established. :unknown
 
 A hand-placed instance's group is its transform byte +56. A `.pgeo` template's group is that of its **catalogue copy**: the
 one unplaced ribbon instance of the template at exactly (0, 0, 0), which exists for 1,882 of 2,010 `.pgeo` templates; the

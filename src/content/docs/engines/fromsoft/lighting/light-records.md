@@ -1,6 +1,6 @@
 ---
 title: Light records
-description: "The per-frame PointLight and SpotLight records the light-organize, tiled and per-light programs read, the shadowed flag at +64 and +128, and where a shadowed local light's shadow is placed."
+description: "The per-frame PointLight and SpotLight records the light-organize, tiled and per-light programs read, the tiled pass's distance and translucency terms, the shadowed flag at +64 and +128, and where a shadowed local light's shadow is placed."
 implementations:
   - name: primase light records (light_records.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/light_records.rs
@@ -33,7 +33,9 @@ fields:
   - {at: 28, size: 4, type: float, name: "DiffColor.w", level: observed, note: "1 / the bank light's word at +164: scales distance in the wrapped Lambert term"}
   - {at: 32, size: 12, type: "float3", name: "SpecColor.rgb", level: observed, note: "the specular colour"}
   - {at: 44, size: 4, type: float, name: "SpecColor.w", level: observed, note: "the specular colour's Rec. 601 luma; no Elden Ring program reads it"}
-  - {at: 48, size: 12, type: "float3", name: "TransLightParam.xyz", level: observed, note: "translucency parameters"}
+  - {at: 48, size: 4, type: float, name: "TransLightParam.x", level: inferred, note: "the translucency term's strength"}
+  - {at: 52, size: 4, type: float, name: "TransLightParam.y", level: observed, note: "the translucency term's exponent, a 32nd of the power; at least 0.01 from Elden Ring's packer"}
+  - {at: 56, size: 4, type: float, name: "TransLightParam.z", level: unknown, note: "not read by the unshadowed tiled pass"}
   - {at: 60, size: 4, type: float, name: "TransLightParam.w", level: observed, note: "the radius"}
   - {at: 64, size: 4, type: float, name: LightType, level: observed, note: "0: unshadowed; above 0: drawn with a local shadow this frame (below)"}
   - {at: 68, size: 12, type: "float3", name: Pad, level: observed, note: "read by no Elden Ring program"}
@@ -46,6 +48,29 @@ The fields up to the radius are read as on [BTL light banks](/engines/fromsoft/l
 matched against the banks' stored values. :observed[the read-back records of Ashina Castle and the Stormveil gate] No program of
 Elden Ring reads `Pad`, and its 80-byte variant (below) declares none of the shadow fields.
 :proven[dxc disassembly of every program]{games="elden-ring"}
+
+### How the tiled pass reads a point record
+
+Elden Ring's unshadowed `GXRend_TileBasedLighting` reads, of each point record, the words at `+0` to `+40`, `+48` and `+52`:
+not `SpecColor.w`, `TransLightParam.z`, the radius at `+60` or anything after it. :observed[the installed program's
+DXIL]{games="elden-ring"} Its point loop scales distance by `DiffColor.w` (`k = distance × DiffColor.w`) and uses it twice:
+an attenuation `1 / (1 + 0.7 k²)` and the wrap of the Lambert term, `(1.4 / (1.4 + k))²`; the specular lobe's width depends
+on it too. :observed[the installed program's DXIL]{games="elden-ring"} `1 / DiffColor.w`, the bank word at `+164`, is thus a
+distance the light's fall-off is normalised to, not shown to be the size of the emitter. :inferred The point packer
+divides 1 by that word with no clamp (`divss` at `0x7ff7e1161309`); the 216 values of the word in Stormveil's bank
+`m10_00_00_00_0000` are all finite and between 0.2 and 13, so a stored 0 is never met there. :observed[read from the code of
+2.7.2.0; the installed bank]{games="elden-ring"} Over the 20 records of that bank's five lights read back at the Stormveil gate,
+`DiffColor.w` is exactly 1 divided by the word: 0.125 on 8, 0.6666667 on 4 and 2 on 8. :observed[four dispatches of one
+session]{games="elden-ring"}
+
+The translucency term is `exp2(32 × TransLightParam.y × log2(saturate(L·V)))`, `saturate(L·V)` raised to the power
+`32 y`. :observed[the installed program's DXIL]{games="elden-ring"} `TransLightParam.x` is its strength. :inferred The game
+keeps both on the light object, where the shared light constructor writes 1.0 to each (`+0x98` and `+0x9C`), and the point
+packer (`0x7ff7e1161260`) copies the strength as it is and the exponent as `max(exponent, 0.01)`; the spot packer does the
+same. :observed[read from the code of 2.7.2.0]{games="elden-ring"} The floor matters: with an exponent of 0 the term is
+`0 × log2(0)` where `L·V` is 0 or less, a NaN that a strength of 0 does not cancel. :proven[the installed program run with
+these inputs]{games="elden-ring"} All 20 records above hold (1, 1), the constructor's values; whether any light sets others
+is not established. :observed[four dispatches of one session]{games="elden-ring"}
 
 ## The spot record
 
@@ -88,7 +113,8 @@ pass only where it equals 0.0; the shadowed (`Sdw`) tiled and compute passes sam
 | Sekiro | `GXLightOrganize`, `8` and `16`; `GXLightCompute`, `8` and `16` | `eq LightType, 0.0` | :observed[fxc census of the 931 programs that declare it]{games="sekiro"} |
 | Sekiro | `GXLight8Sdw`, `GXLightCompute8Sdw`, the other `GXLight*Sdw` and `GXLightCompute*Sdw`, `GXRend_TileBasedLightingSdw` | `lt 0.0, LightType` | :observed[fxc census of the 931 programs that declare it]{games="sekiro"} |
 
-In Elden Ring no other program reads point `+64`: not the unshadowed `GXRend_TileBasedLighting` (it reads `+0` to `+63`), not
+In Elden Ring no other program reads point `+64`: not the unshadowed `GXRend_TileBasedLighting` (it reads `+0` to `+40`,
+`+48` and `+52`), not
 the shadowed organize programs `GXLightOrganize8Sdw`, `16Sdw` and `8Sdw_noopt` (they read `+60` and mark every light in its
 depth range for the tiled pass), and none of the effect, FLVER, forward or SpeedTree programs. :proven[dxc census of every
 program]{games="elden-ring"} No forward material of either game reads `LightType` or any shadow field after it.

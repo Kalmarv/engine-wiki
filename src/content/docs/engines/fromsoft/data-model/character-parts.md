@@ -293,7 +293,15 @@ outfit (CharaInitParam 3001) weights 13 face and cloth joints that are in neithe
 3000, 3001 and 3008]{games="elden-ring"} So a skeleton taken from either alone loses joints the parts' meshes and cloth bind to.
 :inferred{games="elden-ring"}
 
-Parts of one outfit can disagree on a shared joint's parent. In the Warrior (3001) and Confessor (3008) outfits four weighted
+The starting classes are initializer rows 3000 to 3009, Vagabond, Warrior, Hero, Bandit, Astrologer, Prophet, Confessor,
+Samurai, Prisoner and Wretch in that order. :sourced[Paramdex]{games="elden-ring"} Rows 3000 to 3008 equip armour in both
+presentations; row 3009 equips none, so the Wretch's outfit has no part to draw. :observed[the twenty presentations of
+rows 3000 to 3009]{games="elden-ring"} The character creator's starting looks are another chain: `BaseChrSelectMenuParam` rows
+2000 to 2009 name initializer rows 3100 to 3118, whose `npcPlayerFaceGenId` (`+164`) names the `FaceParam` row of the same
+id. :observed[the installed regulation]{games="elden-ring"} How the player's own face and body parts (`fg_`) are shaped from a
+`FaceParam` row is not established. :unknown{games="elden-ring"}
+
+Parts of one outfit can disagree on a shared joint's parent. In the Warrior (3001) and Prisoner (3008) outfits four weighted
 joints are parented under `Pelvis` in the body part and under the thighs in the legs part; `c0000`'s FLVER and skeleton both
 parent them under the thighs. The two copies still agree in model-space rest: with `c0000`'s FLVER to at most 1.946e-7 (3001)
 and 1.179e-6 (3008), and with the skeleton to 1.985e-6 and 3.102e-6. :observed[every stored mesh and level of detail of the two
@@ -311,9 +319,9 @@ them `L_UpperArm`), yet its `L_UpArmTwist` is parented to `L_Clavicle`; the body
 is not the nearest ancestor the part holds, and only the character's skeleton states one hierarchy that all four parts follow.
 :inferred{games="elden-ring"}
 
-A part can also keep the skeleton's parents and still have its own rest. The Confessor's body and head give `Neck`, `Head`
+A part can also keep the skeleton's parents and still have its own rest. The Prisoner's (3008) body and head give `Neck`, `Head`
 and `Collar` the same parents as `c0000`'s skeleton but other model-space rests: their matrices differ by up to about 0.01475 in
-an entry for `Collar` and `Neck` and 0.00155 for `Head`, and these joints weight vertices. :observed[the Confessor's parts]{games="elden-ring"}
+an entry for `Collar` and `Neck` and 0.00155 for `Head`, and these joints weight vertices. :observed[the Prisoner's parts]{games="elden-ring"}
 The differences mix rotation and translation entries and are not a vertex displacement. :inferred{games="elden-ring"}
 
 :::open[Which part letter does `npcPlayerSex` select in Elden Ring?]

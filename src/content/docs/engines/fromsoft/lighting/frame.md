@@ -428,6 +428,24 @@ draws. The source cubes are BC6H_UF16, 128 × 128, six faces, five levels; the w
 eight levels; the coefficient volumes BC7_UNORM 3-D with one level. :observed[one frame]{games="elden-ring"} Each `[LerpDiff]` draw
 reads the working cube the dispatch before it has just rewritten. :observed[one frame]{games="elden-ring"}
 
+The two region programs shade alike apart from the cube. With `[Lerp]`'s two cube samples and their blend replaced by one
+sample, and `[LerpDiff]`'s working-cube sample by the same, the programs keep the same resource registers, constants,
+dependencies, branches and output stores, the only other difference two operands of one multiplication in swapped order.
+:observed[the two installed programs' DXIL, compared in SSA form]{games="elden-ring"} `[LerpDiff]` is therefore `[Lerp]` with
+the blend of the two states' cubes done ahead of it by the compute dispatch. :inferred
+
+Both read the cubes' highest level from `g_envMapMipmapLevelNum0` and `1` (`b3` bytes 496 and 500), and all 56 draws hold
+(4, 4) there: the source cubes' five levels counted from 0, not their number. :observed[one frame]{games="elden-ring"} The
+`[LerpDiff]` draws hold 4 too, so they read only the first five of the working cube's eight levels.
+:observed[one frame]{games="elden-ring"} What a `[LerpDiff]` region adds then differs from sampling and blending the two
+source cubes directly only by the working cube's R11G11B10 storage and its levels. :inferred
+
+`[Lerp]` also scales the cube's contribution by `g_ivShLuminance0` and `1`; its diffuse output from the coefficient volumes
+does not depend on them. :observed[the program's DXIL]{games="elden-ring"} Four of the frame's values of these constants are
+non-zero, and none of them is stored, byte for byte, in any of the 129 environment boxes of Stormveil's layout or in 194
+param tables read from the install, nor equals a decoded volume's average. :observed[one frame, the installed layout and
+params]{games="elden-ring"} Where the game takes them from is not established. :unknown{games="elden-ring"}
+
 The two states are `05` and `06` of the `high` tier: by the fingerprints of the uploads, 55 of the 56 draws read those packages'
 textures, and 548 of the 550 uploaded inputs are identified uniquely; the other two are `GILM0800` cubes whose bytes are the same in
 states 00, 03, 04, 05 and 06, so a cube alone does not tell the states apart, while the volumes do. All 56 draws' `b3`
@@ -442,7 +460,14 @@ the box's local half-height offset turned by that rotation, then the map's trans
 The pitched `Env_Box253` misses by about 3.165 if the offset is not turned. :observed[55 boxes of one frame]{games="elden-ring"}
 
 The box's type data at `+0x34` is not its probe group: `Env_Box002` stores 0 there but binds `GIIV` and `GILM` group 0002, and
-`Env_Box902` binds group 0901, so the box's name is not the group either. :observed[55 boxes of one frame]{games="elden-ring"}
+`Env_Box902` binds group 0901, so the box's name alone is not the group either. :observed[55 boxes of one frame]{games="elden-ring"}
+The signed 16-bit word at `+0x0A` of the type data overrides the group: where it is -1 the box binds the group of its own
+number, the digits of its name `Env_Box<n>`, and otherwise the group the word gives (`Env_Box902` stores 901). The rule names
+the group of all 55 captured boxes, and over all 129 boxes of Stormveil's layout it names 128 groups, every one present in
+the area's packages. :observed[55 boxes of one frame; the 129 installed boxes]{games="elden-ring"} No numeric field of the
+box's record, its shape, type data or entity data holds the number of the name on every box (the best on 6 of 129), so the
+default comes from the name itself. :observed[the 129 installed boxes]{games="elden-ring"} That the game resolves the group
+this way on every map is not traced in its code. :inferred{games="elden-ring"}
 
 Byte `+0x1A` of `MapDefaultInfoParam` row 10000000 (Stormveil) is 1, and of row 10010000 also 1. :observed{games="elden-ring"}
 The community param definition names it `IsEnableBlendTimezoneEnvmap`, blending environment maps by time of day on the legacy
@@ -452,8 +477,9 @@ maps. :sourced[Paramdex]{games="elden-ring"} It enables blending; it does not gi
 :observed[the nine files, read from the archives]{games="elden-ring"}
 
 :::open[What chooses Elden Ring's environment states and the blend?]
-The code that picks the two states and the ratio from the hour, the rule that picks a tier on PC, and how a region chooses its
-probe group are not established; the frame shows one choice, not the rule.
+The code that picks the two states and the ratio from the hour and the rule that picks a tier on PC are not established; the
+frame shows one choice, not the rule. The probe-group rule above fits Stormveil but has not been followed in the executable or
+checked on another map.
 :::
 
 ### Exposure

@@ -141,8 +141,8 @@ materials bind (18, 6 and 59 materials; 13,674, 8,213 and 10,002 triangles). :ob
   `RT1.w = RoughnessMetalnessATexture.r` before wetness; the other 6 use the constant `Roughness` and no metalness. The 6
   `HiQ` permutations read `NormalATexture.r` and `.g`, the others the vertex normal. The `AlphaTest` permutations discard
   when `DiffuseATexture.a` is below `cb2[128].x`. :observed
-- Over the 36 distinct BC5 SNORM `RoughnessMetalnessATexture` maps the box binds, 19 of 34,701,312 channels in level 0 are below −0.06: the
-  stored values are the positive half of the signed range. :observed
+- Over the 142 distinct BC5 SNORM `RoughnessMetalnessATexture` maps the whole box binds, 5,707 of 112,664,608 channels (0.0051%) in level 0 are
+  below −0.06 (the 36 maps of every twentieth prototype: 19 of 34,701,312): the stored values are the positive half of the signed range. :observed
 - Formats bound in the box: `DiffuseATexture` BC1 sRGB; `RoughnessMetalnessATexture` BC5 SNORM linear (9,650 triangles) or
   BC7 sRGB (352); `NormalATexture` BC5 unorm linear; `BakedVCTexture` BC5 unorm linear (9,842) or RGBA8 sRGB (160);
   `EmissiveTexture` BC1 linear (9,400), BC1 sRGB (12) or BC7 sRGB (518); `SwatchTintTexture` and `LightmapTexture` RGBA8 sRGB. :observed

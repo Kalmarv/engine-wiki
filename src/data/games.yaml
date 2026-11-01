@@ -147,7 +147,7 @@
   engine: gamebox
   developer: Nadeo
   year: 2008
-  build: "Map files (.Challenge.Gbx) from TrackMania Exchange, read without a fingerprinted install"
+  build: "Steam install (Nadeo.ini version 2.11.16): the 2,572 GBX files of its packs and its 65 campaign maps; map files (.Challenge.Gbx) from TrackMania Exchange"
 
 - id: minecraft-bedrock
   name: "Minecraft: Bedrock Edition"

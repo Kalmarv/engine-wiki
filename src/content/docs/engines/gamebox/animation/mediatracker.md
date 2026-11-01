@@ -51,7 +51,7 @@ identifier. `CFuncKeysReal` reads those and adds chunk `0x0501A001`: the Y value
 mode. :sourced[GBX.NET]
 
 Of 100 maps of the 2026 top-downloads list, one holds `CFuncKeysReal` nodes, three of them, and it reaches them through
-TMUnlimiter's version 7 extension data; the map's ordinary clip graph does not lead to them. :observed[100 maps]
+[TMUnlimiter's version 7 extension data](/engines/gamebox/world/tmunlimiter/); the map's ordinary clip graph does not lead to them. :observed[100 maps]
 
 :::open[What do the pick fields and interpolation values mean?]
 The pick mode, the pick plane and the values of the interpolation mode carry GBX.NET's names only; what the game does with them

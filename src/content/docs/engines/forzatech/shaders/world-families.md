@@ -117,6 +117,7 @@ materials bind (18, 6 and 59 materials; 13,674, 8,213 and 10,002 triangles). :ob
 - Formats bound in the box: `DiffuseTexture` BC7 sRGB; `NormalTexture` BC7 linear (BC5 unorm on 2 triangles, which has no
   alpha); `RTAOTexture` BC7 linear; `LUTTex` BC1 sRGB (10,444) or BC7 linear (3,230); `WorldTintMap` BC1 linear or BC7 sRGB;
   `MaskTexture` RGBA8 sRGB; `NoiseTexture` BC4 unorm. :observed
+- The impostor permutations (`Impostor` on; `FramesXY_Colour` 4, `FramesXY_Depth` 6) draw a tree from an atlas of views, chosen by the object-space camera direction a per-draw constant holds. `DiffuseTexture` is 4 × 4 colour frames (256² each in a 1,024² texture), `MaskTexture` 6 × 6 depth frames (BC4 snorm), `NormalTexture` an object-space normal (the texture's name ends `objnorm`) and `RTAOTexture` the occlusion, in the same frame layout as the colour. The pixel shader encodes the direction hemi-octahedrally, `dir = (x, (1 − |x| − |z|)^p, z)` with `x = (u + v)/2`, `z = (v − u)/2` and `p` = `HemiOctahedronRemapYPower`, takes the colour frames at `u`, `v` in {−1, −⅓, ⅓, 1}, blends the four nearest frames, ray-marches the depth frames, and discards when a saturated coverage of the blended alpha is below `cb2[128].x`. :observed Of the 16 colour frames, the 12 with |u| or |v| = 1 have `dir.y` = 0: horizon views, and the 4 inner ones look down. :inferred
 
 **`uber_branch`**
 

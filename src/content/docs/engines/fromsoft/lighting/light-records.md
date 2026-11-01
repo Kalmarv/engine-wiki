@@ -85,12 +85,12 @@ fields:
   - {at: 32, size: 16, type: "float4", name: SpecColor, level: observed, note: "as a point light's"}
   - {at: 48, size: 12, type: "float3", name: TransLightParam, level: observed, note: "translucency parameters"}
   - {at: 60, size: 4, type: float, name: unused_ShadingMode, level: unknown, note: "named unused by the declaration"}
-  - {at: 64, size: 64, type: "float4x4", name: ViewToLightSpaceMatrix, level: observed, note: "rows that take a view-space position into the cone's space"}
+  - {at: 64, size: 64, type: "float4x4", name: ViewToLightSpaceMatrix, level: observed, note: "rows that take a view-space position into the spot's space: its two cone axes, its near plane and its beam (below)"}
   - {at: 128, size: 4, type: float, name: LightType, level: observed, note: "as the point record's +64"}
-  - {at: 132, size: 4, type: float, name: MinDist, level: inferred, note: "by its name, a view depth bound"}
-  - {at: 136, size: 4, type: float, name: MaxDist, level: inferred, note: "by its name, a view depth bound"}
+  - {at: 132, size: 4, type: float, name: MinDist, level: observed, note: "the least view depth of the spot's apex and base corners"}
+  - {at: 136, size: 4, type: float, name: MaxDist, level: observed, note: "the greatest view depth of the spot's apex and base corners"}
   - {at: 140, size: 4, type: float, name: Pad, level: unknown}
-  - {at: 144, size: 16, type: "float4", name: CullPositionAndRange, level: inferred, note: "by its name, the sphere the organize program culls with"}
+  - {at: 144, size: 16, type: "float4", name: CullPositionAndRange, level: observed, note: "the sphere the organize program culls with: the vertical cone's, plus 0.001 (below)"}
   - {at: 160, size: 16, type: "float4", name: ShadowParam, level: observed, note: "shadowed only: .x read by the shadowed tiled pass"}
   - {at: 176, size: 16, type: "float4", name: ViewportScaleOffset, level: observed, note: "shadowed only: the scale and offset of the spot's region in the atlas"}
 ```
@@ -98,6 +98,49 @@ fields:
 The spot record's position, range, colours and cone matrix are Sekiro's read-back values (see
 [spot lights](/engines/fromsoft/lighting/btl/#spot-lights)). :observed{games="sekiro"} Elden Ring's spot record is known from
 the programs' declaration and code alone. :unknown[no read-back]{games="elden-ring"}
+
+### The spot's shape
+
+A spot light is a rectangular pyramid with a near plane: it opens by its own half-angle across each of its two axes, `h`
+about the horizontal axis and `v` about the vertical one, and lights only past its near plane `n`, out to its range `L`. For
+a BTL spot, `h` and `v` are half the stored full angles (the width at `+184` and the cone angle at `+44`), `n` is the word at
+`+188` and `L` the radius (see [spot lights](/engines/fromsoft/lighting/btl/#spot-lights)). Below, `p` is the light's view
+position and `right`, `up` and `beam` its horizontal axis, vertical axis and beam in view space. Three spot records of two
+Ashina Castle bank spots (30 by 30 degrees with `n` 15, and 90 by 8 degrees with `n` 3, `L` 35) hold the following, to float
+rounding (2.8e-6 relative). :observed[3 records, 2 lights]{games="sekiro"}
+
+| Field | Value |
+|---|---|
+| `ViewToLightSpaceMatrix` row 0 | `right * cot h`, with `-right . p * cot h` in w |
+| row 1 | `up * cot v`, with `-up . p * cot v` in w |
+| row 2 | `beam * L / (L - n)`, with `-(beam . p + n) * L / (L - n)` in w: the near plane |
+| row 3 | `beam`, with `-beam . p` in w |
+| `MinDist`, `MaxDist` | the least and greatest of `p.z` and `base.z ∓ L * (tan h * abs(right.z) + tan v * abs(up.z))`, where `base = p + beam * L`: the view depths of the apex and the base's four corners |
+| `CullPositionAndRange` | centre `p + beam * a` and radius `a + 0.001`, where `a = L / (2 cos^2 v)`: the sphere through the apex and the rim of the circular cone of the vertical half-angle, plus a margin |
+
+`GXRend_TileBasedLighting` lights a pixel from a spot only where row 2 of its position is above 0, that is past the near
+plane. It shades by `max(0, 1 - x^2 - y^2)`, where `x` and `y` are rows 0 and 1 over row 3. :observed[the program's code, read not run]{games="sekiro"}
+`GXLightOrganize16` tests `CullPositionAndRange` against the four side planes of each tile and `MinDist` and `MaxDist`
+against the tile's depth range. :observed[the program's code, read not run]{games="sekiro"} So the cull sphere and the
+depth range choose tiles, and the matrix chooses pixels. :inferred[from the code]
+
+The cull sphere need not contain the light. The 90 by 8 degree spot's base corners lie 35 m from its beam, but its sphere's
+radius is 17.6 m. The game therefore lists that spot only in tiles its vertical cone's sphere reaches.
+:observed[1 light]{games="sekiro"}
+
+In the executable, the BTL loader passes four values to the spot's frustum setter: the near plane (`+188`), the radius as
+the far plane, and the full cone angle (`+44`) and width (`+184`) in radians, each falling back to the other where it is
+below 1.1920929e-7. The setter then raises the far plane to at least 1 and each full angle to at least 1 degree. Where the
+near plane is not above 0, it takes `far * 0.01` instead. The drawn spot keeps the vertical angle, the aspect ratio
+`tan(h) / tan(v)` and the near and far planes. :inferred[code read, Sekiro 1.06]{games="sekiro"}
+
+:::open[Does the cull sphere take the vertical half-angle or the narrower one?]
+The one recorded spot of unequal axes is narrower vertically (90 by 8 degrees), so its record cannot tell "the vertical
+axis" from "the narrower axis". The code that writes `CullPositionAndRange` has not been located. A read-back of a spot that
+is narrower across than up, such as the 10 by 50 degree spot among the five in
+[spot lights](/engines/fromsoft/lighting/btl/#spot-lights), would settle it. The rule is also unsampled above a vertical
+half-angle of 15 degrees.
+:::
 
 ## The shadowed flag
 

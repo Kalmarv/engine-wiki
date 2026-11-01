@@ -8,6 +8,9 @@ sources:
   - title: ForzaTech-extraction-tools
     url: https://github.com/Doliman100/ForzaTech-extraction-tools
     note: modelbin extraction for FH5
+implementations:
+  - name: forzatech-formats (modelbin.rs)
+    url: https://github.com/Kalmarv/forzatech-formats/blob/main/src/modelbin.rs
 ---
 
 Every model of the game is a `.modelbin`, a [Grub bundle](/engines/forzatech/data-model/grub-bundle/) with a header blob
@@ -19,8 +22,39 @@ whose names end `_clusterNNN.i.modelbin` are those levels or pieces of a smashab
 The FH6 mesh record (version 1.13) is where FH6 diverges from FH4 and FH5 and where the published readers stop working.
 :sourced[ForzaTools]
 
-All counts below come from a recorded census of the Tokyo track `Brio`, where `GeoChunk0` holds 113,868 modelbins with
-407,461 meshes; the install is no longer available to re-check. :observed
+This page describes Steam build 25588841. A strict reader (it refuses an unexpected value, a reserved byte that is not
+zero, a blob that does not end where its fields end, a count that does not match the blobs and a reference to nothing)
+read all 113,868 modelbins of the Tokyo track `Brio`'s `GeoChunk0` (407,461 meshes) and all 82,752 under `media` in zips
+(cars and characters; 1,339,215 meshes) with no refusals; each statement marked :proven below held on all of them. The
+remaining counts come from a recorded census of `GeoChunk0` taken before. :observed
+
+## Blobs
+
+A model holds these blobs. The versions and counts are those of the two sets above; the Tokyo track has no morph or
+instance-layout blobs.
+
+| Tag | Versions (Tokyo and zips) | Blobs in Tokyo; in zips | What |
+|---|---|---|---|
+| `Modl` | 1.4, 1.5 | 113,868 (110,578 and 3,290); 82,752 (82,374 and 378) | the header |
+| `Skel` | 1.0 | 113,868; 82,752 | the skeleton: one in every model |
+| `MatI` | 1.0 | 1,134,500; 396,324 | a material slot |
+| `Mesh` | 1.12, 1.13 | 407,461 (400,931 and 6,530); 1,339,215 (1,338,642 and 573) | one draw |
+| `VLay` | 1.1 | 167,984; 175,041 | a vertex layout |
+| `ILay` | 1.1 | none; 144 | an instance layout, stored as a `VLay` is |
+| `IndB` | 1.0 | 113,868; 82,059 | the index buffer |
+| `VerB` | 1.1 | 275,919; 233,356 | a vertex buffer |
+| `MBuf` | 1.1 | none; 49,600 | a morph buffer |
+| `Skin` | 1.1 | 20; 12,434 | a skinning buffer |
+| `Mrph` | 0.0 | none; 31,831 | the morph target names |
+
+No other tag, version or metadata record occurs. :proven In the 75,108 Tokyo models that a second reader also read, the
+blobs come in the order `Skel`, `MatI`, `Mesh`, `IndB`, `VLay`, `VerB`, `Modl`, each kind in a run. :observed
+
+### Material slots
+
+A `MatI` blob is either empty, a slot with no material instance, or a Grub bundle holding the material instance
+([Grub bundles](/engines/forzatech/data-model/grub-bundle/)). 5,621 of the Tokyo track's 1,134,500 slots are empty, and 918
+of the zips' 396,324. :proven A mesh's material id names the `Id  ` of one of these slots. :proven
 
 ## Modl
 
@@ -30,19 +64,19 @@ size: variable
 games: [fh6]
 note: "Little-endian. Fields after the LOD flags appear from the blob version shown."
 fields:
-  - {at: 0, size: 2, type: u16, name: mesh count, level: observed}
-  - {at: 2, size: 2, type: u16, name: buffer count, level: observed}
-  - {at: 4, size: 2, type: u16, name: vertex layout count, level: observed}
-  - {at: 6, size: 2, type: u16, name: material count, level: observed}
-  - {at: 8, size: 1, type: u8, name: has LOD, level: observed}
-  - {at: 9, size: 1, type: i8, name: min LOD, level: observed}
-  - {at: 10, size: 1, type: i8, name: max LOD, level: observed}
-  - {at: 11, size: 1, type: u8, name: padding, level: observed}
+  - {at: 0, size: 2, type: u16, name: mesh count, level: proven}
+  - {at: 2, size: 2, type: u16, name: buffer count, level: proven}
+  - {at: 4, size: 2, type: u16, name: vertex layout count, level: proven}
+  - {at: 6, size: 2, type: u16, name: material count, level: proven}
+  - {at: 8, size: 1, type: u8, name: has LOD, level: proven}
+  - {at: 9, size: 1, type: i8, name: min LOD, level: proven}
+  - {at: 10, size: 1, type: i8, name: max LOD, level: proven}
+  - {at: 11, size: 1, type: u8, name: padding, level: proven}
   - {at: 12, size: 2, type: u16, name: LOD flags, level: observed, note: "bit 1 is LOD0, bit i+1 is LOD i"}
   - {at: 14, size: 2, type: "u8[2]", name: decompress flags, level: observed, note: "v1.2 and later: u8 flags, u8 padding"}
   - {at: 16, size: 1, type: u8, name: retain CPU buffer copy, level: observed, note: "v1.3 and later"}
   - {at: 17, size: 1, type: u8, name: visibility flags, level: observed, note: "v1.4 and later"}
-  - {at: 18, size: 4, type: u32, name: variant count, level: observed, note: "v1.5 and later, followed by variant count × mesh count bytes: the material variant table"}
+  - {at: 18, size: 4, type: u32, name: variant count, level: proven, note: "v1.5 and later, followed by variant count × mesh count bytes: the material variant table"}
 ```
 
 In `.i.modelbin` files `minLOD` and `maxLOD` are equal (4,992 of 4,992 checked). In animated `.a.modelbin` files all LODs
@@ -56,8 +90,9 @@ variant *v*; row 0 is the base look. A placement picks its row with a byte of it
 schemes or window types. :observed The material named `…_VARIANT_k` is not reliably the one row *k* selects; in about
 28% of models it is not. :observed
 
-The table length is exactly `22 + variant count × mesh count` on all 1,808 v1.5 blobs checked, every entry is below its
-mesh's group count and row 0 is all zeros. :observed A sample of 90,000 `.pgeo` records has 42,000 of 42,000 indices
+The table length is exactly `22 + variant count × mesh count` on all 3,290 v1.5 blobs of the Tokyo track and the 378 of the
+zips, and every entry names a material group its mesh has. :proven Row 0 is all zeros in the 1,808 v1.5 blobs of the earlier
+census. :observed A sample of 90,000 `.pgeo` records has 42,000 of 42,000 indices
 below the model's variant count and 47,500 of 47,500 zeros on models without a table. :observed
 
 ## Buffers
@@ -99,7 +134,8 @@ fields:
 
 Slot 0 is normally the position stream; slot 1 packs normals, UVs, colour and tangents. :observed
 
-Across all 113,868 models the only elements are the ones below, and every element uses the append offset. :observed
+The elements of every mesh of the Tokyo track and of the zips are only the ones below. :proven Over the 113,868 Tokyo
+models every element uses the append offset. :observed
 
 | Semantic | DXGI format | Decoding | Confidence |
 |---|---|---|---|
@@ -133,36 +169,37 @@ size: variable
 games: [fh6]
 note: "Little-endian. Fields marked with a version appear from that blob version on; offsets are given for the 1.13 layout in reading order, with variable parts called out."
 fields:
-  - {at: 0, size: 4, type: i32, name: material group count, level: observed, note: "v1.13"}
-  - {at: 4, size: "8 × group count", type: "i16[4][]", name: material ids, level: observed, note: "v1.9 and later: spring, summer, autumn, winter per group; -1 means the group's summer id. Before: one i16"}
-  - {at: "after groups", size: 2, type: i16, name: rigid bone index, level: observed}
-  - {at: "+2", size: 2, type: u16, name: LOD flags, level: observed}
-  - {at: "+4", size: 2, type: "u8[2]", name: LOD level 1 and 2, level: observed}
-  - {at: "+6", size: 2, type: u16, name: bucket flags, level: observed, note: "see below"}
-  - {at: "+8", size: 1, type: u8, name: bucket order, level: observed}
-  - {at: "+9", size: 1, type: u8, name: skinning elements count, level: observed, note: "v1.2 and later"}
-  - {at: "+10", size: 4, type: u32, name: morph target count, level: observed, note: "v1.10 and later; a u8 before"}
-  - {at: "+14", size: 1, type: u8, name: is morph damage, level: observed, note: "v1.3 and later"}
-  - {at: "+15", size: 1, type: u8, name: is 32-bit indices, level: observed}
-  - {at: "+16", size: 2, type: u16, name: topology, level: observed, note: "4 = triangle list on all 407,461 meshes"}
-  - {at: "+18", size: 4, type: i32, name: index buffer index, level: observed}
-  - {at: "+22", size: 4, type: i32, name: index buffer offset, level: observed}
-  - {at: "+26", size: 4, type: i32, name: index buffer draw offset, level: observed, note: "start index, in indices"}
-  - {at: "+30", size: 4, type: i32, name: indexed vertex offset, level: observed, note: "added to every vertex id"}
-  - {at: "+34", size: 4, type: i32, name: index count, level: observed}
-  - {at: "+38", size: 4, type: i32, name: primitive count, level: observed, note: "primitive count × 3 = index count on every mesh"}
-  - {at: "+42", size: 8, type: "f32, u32", name: ACMR and referenced vertex count, level: observed, note: "v1.6 and later"}
-  - {at: "+50", size: "4 + 4n", type: "u32[]", name: referenced vertex indices, level: observed, note: "v1.11 and later"}
-  - {at: "next", size: 4, type: i32, name: vertex layout index, level: observed}
-  - {at: "+4", size: "4 + 20 × buffers", type: "buffer ref[]", name: vertex buffers, level: observed, note: "count, then per buffer i32 buffer id, u32 input slot, u32 stride, u32 offset and, v1.12 and later, a u32 reserved"}
-  - {at: "next", size: 8, type: "i32[2]", name: morph and skinning buffer indices, level: observed, note: "v1.4 and later"}
-  - {at: "next", size: "4 + 4n", type: "i32[]", name: constant buffers, level: observed}
-  - {at: "next", size: 4, type: u32, name: source mesh index, level: observed, note: "v1.1 and later"}
-  - {at: "next", size: 80, type: "f32[4][5]", name: texture coordinate transforms, level: observed, note: "v1.5 and later: five (uOffset, uScale, vOffset, vScale)"}
-  - {at: "next", size: 32, type: "f32[4][2]", name: position scale and translate, level: observed, note: "v1.8 and later"}
+  - {at: 0, size: 4, type: i32, name: material group count, level: proven, note: "v1.13"}
+  - {at: 4, size: "8 × group count", type: "i16[4][]", name: material ids, level: proven, note: "v1.9 and later: spring, summer, autumn, winter per group; -1 means the group's summer id. Before: one i16"}
+  - {at: "after groups", size: 2, type: i16, name: rigid bone index, level: proven}
+  - {at: "+2", size: 2, type: u16, name: LOD flags, level: proven}
+  - {at: "+4", size: 2, type: "u8[2]", name: LOD level 1 and 2, level: proven}
+  - {at: "+6", size: 2, type: u16, name: bucket flags, level: proven, note: "see below"}
+  - {at: "+8", size: 1, type: u8, name: bucket order, level: proven}
+  - {at: "+9", size: 1, type: u8, name: skinning elements count, level: proven, note: "v1.2 and later"}
+  - {at: "+10", size: 4, type: u32, name: morph target count, level: proven, note: "v1.10 and later; a u8 before"}
+  - {at: "+14", size: 1, type: u8, name: is morph damage, level: proven, note: "v1.3 and later"}
+  - {at: "+15", size: 1, type: u8, name: is 32-bit indices, level: proven}
+  - {at: "+16", size: 2, type: u16, name: topology, level: proven, note: "4 = triangle list on all 407,461 meshes"}
+  - {at: "+18", size: 4, type: i32, name: index buffer index, level: proven}
+  - {at: "+22", size: 4, type: i32, name: index buffer offset, level: proven}
+  - {at: "+26", size: 4, type: i32, name: index buffer draw offset, level: proven, note: "start index, in indices"}
+  - {at: "+30", size: 4, type: i32, name: indexed vertex offset, level: proven, note: "added to every vertex id"}
+  - {at: "+34", size: 4, type: i32, name: index count, level: proven}
+  - {at: "+38", size: 4, type: i32, name: primitive count, level: proven, note: "primitive count × 3 = index count on every mesh"}
+  - {at: "+42", size: 8, type: "f32, u32", name: ACMR and referenced vertex count, level: proven, note: "v1.6 and later"}
+  - {at: "+50", size: "4 + 4n", type: "u32[]", name: referenced vertex indices, level: proven, note: "v1.11 and later"}
+  - {at: "next", size: 4, type: i32, name: vertex layout index, level: proven}
+  - {at: "+4", size: "4 + 20 × buffers", type: "buffer ref[]", name: vertex buffers, level: proven, note: "count, then per buffer i32 buffer id, u32 input slot, u32 stride, u32 offset and, v1.12 and later, a u32 reserved"}
+  - {at: "next", size: 8, type: "i32[2]", name: morph and skinning buffer indices, level: proven, note: "v1.4 and later"}
+  - {at: "next", size: "4 + 4n", type: "i32[]", name: constant buffers, level: proven}
+  - {at: "next", size: 4, type: u32, name: source mesh index, level: proven, note: "v1.1 and later"}
+  - {at: "next", size: 80, type: "f32[4][5]", name: texture coordinate transforms, level: proven, note: "v1.5 and later: five (uOffset, uScale, vOffset, vScale)"}
+  - {at: "next", size: 32, type: "f32[4][2]", name: position scale and translate, level: proven, note: "v1.8 and later"}
 ```
 
-Each mesh has index buffer index 0, which is also that blob's id; the mesh draws `index count` indices from
+A model with a version 1.13 mesh can have several material groups: 3,209 Tokyo models have a mesh whose group count is not
+1. :proven Each mesh has index buffer index 0, which is also that blob's id; the mesh draws `index count` indices from
 `index buffer offset + draw offset × index stride`, with 4-byte indices when the flag is set. :observed No mesh has a
 (0, 0, 0) position scale. :observed
 
@@ -187,10 +224,12 @@ the decal bit. :observed
    stream. :observed
 4. Triangles wind (A, C, B) for a left-handed frame; the engine's frame is Y-up left-handed in metres. :observed
 
-Decoding all 113,868 `GeoChunk0` models strictly (unknown topology, semantic or format, an index or vertex outside its
-buffer, a missing NORMAL on a non-occluder, a variant row selecting a missing group, a material id without a `MatI`, a
-variant table that does not end at the blob end all count as failures) gave no failures. :observed 5,938 files contain
-only occluder meshes. :observed
+Decoding every mesh of the 113,868 `GeoChunk0` models and the 82,752 models in zips strictly (a topology other than a
+triangle list, an index count other than three times the primitive count, a semantic or format that is not decoded, an
+index or vertex outside its buffer, an input slot no vertex buffer is bound to, a variant row selecting a missing group, a
+material id without a `MatI`, a variant table that does not end at the blob end all count as failures) gave no failures.
+:proven Together they hold 792,016,881 indices on 243,811,731 vertices in the Tokyo track and 1,932,566,781 indices on
+962,738,195 vertices in the zips. :proven 5,938 Tokyo files contain only occluder meshes. :observed
 
 ## Normals at the instance
 
@@ -201,17 +240,30 @@ non-uniform scale) the game's normal is the rotated stored normal, not the geome
 surface. :observed Whether hand-placed instances go through the instanced path (the non-instanced shader reads a separate
 normal matrix filled by the CPU) was not traced. :unknown
 
+## What the published readers do with it
+
+Run over the 113,868 Tokyo models, the bundle classes of ForzaTools read 75,108 and throw on 38,760: 5,617 on a `MatI` blob
+that is empty, and 33,143 in the mesh record, whose class is written for Forza Horizon 5. :observed That class reads the
+morph target count as one byte where version 1.10 and later store a u32, which would move every later field.
+:sourced[ForzaTools] The importer of ForzaTech-extraction-tools reads 110,591 and raises on 3,208: 3,140 models that have a
+mesh with several material groups, and 68 that have a vertex whose stored normal is (0, 0, 0), which it normalises by dividing
+by the length. :observed It reads the first group's four ids of a version 1.13 mesh and carries on from there.
+:sourced[ForzaTech-extraction-tools] Where both read a model, the header, skeleton, meshes, layouts, buffers and material
+slots agree with the strict reader field by field (75,108 and 110,591 models); 69 further models with several material
+groups were not compared with the importer. :observed
+
 ## Animated models
 
 Five `.a.modelbin` files exist in Brio, all in `GeoChunk0`: the Ferris wheel and Equinox ride, the wind turbine
 `inf_lmt_wind_01_a` and the two trains. Their clips are in the track's `animation.zip`. :observed They use the same
-bundle with two more blobs: :observed
+bundle. Every model, animated or not, has one `Skel` blob; skinned meshes (93 in the Tokyo track, 55,074 in the zips) add a
+`Skin` blob. :proven
 
 ```layout
 title: Skel blob
 size: variable
 games: [fh6]
-note: "Little-endian. The walk ends 4 bytes before the blob end on all five files."
+note: "Little-endian. The walk ends 4 bytes before the blob end on every Skel of the Tokyo track and the zips, and those 4 bytes are a u32."
 fields:
   - {at: 0, size: 2, type: u16, name: bone count, level: observed}
   - {at: 2, size: 4, type: u32, name: name length, level: observed, note: "per bone, followed by the name"}
@@ -237,6 +289,9 @@ R16G16B16A16_FLOAT, sub-element count 2n), one per slot-1 vertex buffer, indexed
 values: *n* position deltas then *n* normal deltas; each vector's w is the index of its weight slot in the morph weight
 constant buffer, and the `Mrph` blob names the slots as `weight[0]`, `weight[1]`, ... :observed The vertex shader computes
 `p += w[slot] × dp` and `n = normalize(n + w[slot] × dn)` per target, in model space before skinning. :observed
+
+The Tokyo track has no morph buffers; the zips hold 49,600 `MBuf` blobs, 31,831 `Mrph` blobs (a u16 count, then each name as
+a u32 length and that many bytes) and 732,030 meshes with morph deltas. :proven
 
 Wheels and tyres use morphs to take their size; see [Wheels and tyres](/engines/forzatech/gameplay/car-wheels/). Body
 panels carry one target on slot 0 (damage). :observed

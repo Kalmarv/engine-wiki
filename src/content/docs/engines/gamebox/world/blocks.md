@@ -49,11 +49,11 @@ coordinate times (32, 8, 32) m. :observed[the 65 campaign maps]
 | 0–5 | Variant: the outer index of the model's mobil lists | :observed |
 | 6–11 | Sub-variant: the inner index | :observed |
 | 12 | Ground: use the model's ground mobils; otherwise its air mobils | :observed |
-| 13 | Clip: the sub-variant is always 63, and the block shows the first mobil of its variant's list | :observed |
+| 13 | Clip: the sub-variant is always 63 | :observed |
 | 14 | Pillar: the pillar is a block stored in the map; the game generates none | :observed |
 
 Over the 65 campaign maps every block resolves this way; a block whose list is empty draws nothing. :observed[the 65
-campaign maps] That a clip shows its list's first mobil is reasoned from Stadium's clip models, which have one mobil per
+campaign maps] A clip shows the first mobil of its variant's list; this is reasoned from Stadium's clip models, which have one mobil per
 ground list and empty air lists. :inferred
 
 `StadiumRoadMain`'s variants 0 to 5 are Base, Deadend, Corner, Straight, TShaped and Cross; the ground Straight has four

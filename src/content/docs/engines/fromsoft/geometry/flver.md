@@ -92,6 +92,14 @@ themselves. :proven[every FLVER of the install]{games="sekiro"} 0x4A, the u32 at
 one of version `0x20013`, where it is 0. :proven[every FLVER of the install]{games="sekiro"} What 0x5D and 0x68 select
 is not known. :unknown
 
+Elden Ring's install (22,169 FLVERs, 119 of them SpeedTree models of version `0x20014`) holds the same values for
+the same versions, the SpeedTree models apart.
+:proven[every FLVER of the install]{games="elden-ring"} The default index width at 0x48 is 0 in every file but the
+SpeedTree models, where it is 16. :proven[every FLVER of the install]{games="elden-ring"} 0x5D is 2 in each of the
+22,047 version `0x2001A` files and 0 in the 3 of earlier versions and in the SpeedTree models.
+:proven[every FLVER of the install]{games="elden-ring"} The u16 at 0x68 is 4 in the version `0x2001A` and `0x20014`
+files, 0 in the one of version `0x20013`, and 5 in the SpeedTree models. :proven[every FLVER of the install]{games="elden-ring"}
+
 ### Header bounds
 
 The two header bounds are the box of every vertex of every mesh, static vertices posed by their node as described

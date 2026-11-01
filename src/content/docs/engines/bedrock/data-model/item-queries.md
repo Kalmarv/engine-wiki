@@ -8,6 +8,9 @@ sources:
   - title: GeyserMC mappings
     url: https://github.com/GeyserMC/mappings
     note: item_components.nbt, the client's item components as Geyser records them
+  - title: bedrock.dev Molang documentation
+    url: https://bedrock.dev/docs/stable/Molang
+    note: query descriptions
 ---
 
 Client entity scripts, animations and render controllers read an entity's items through queries on the entity. Over
@@ -63,6 +66,18 @@ ticks) and time the spear's raise, sway, lower and raise-back against `query.kin
 `query.kinetic_weapon_dismount_duration`, `_knockback_duration` and `_damage_duration`. :observed[the zombie, husk, zombie villager, piglin and zombified piglin client entities of bedrock-samples v1.26.60.5]
 The queries return the main hand's component values in ticks. :inferred That the scripts add them to a tick count is
 the evidence.
+
+## Use durations
+
+`query.item_remaining_use_duration` returns the time an item has left to use, for the hand its first argument names
+(`'main_hand'` or `'off_hand'`), in seconds, or normalized by a second argument when one is given.
+:sourced[bedrock.dev Molang documentation] Vanilla's player crossbow controller enters its `charge` state while the
+query, with no arguments, is above 0, and leaves it for `hold` once `query.item_is_charged`; the first-person crossbow
+scales the bow by `1.15 - query.item_remaining_use_duration('main_hand', 1.0) * 0.15` and moves it by
+`2.5 - query.item_remaining_use_duration('main_hand', 1.0) * 1.5`. :observed[the vanilla resource pack of bedrock-samples v1.26.60.5]
+The normalized form is the fraction of the item's full use duration still left, times the argument, running from the
+argument down to 0 over the use. :inferred That the first-person crossbow's scale and offset only make sense over that
+range is the evidence.
 
 :::open[What does query.cooldown_time_remaining count for an attack cooldown?]
 Third-party packs start a spear's charge animations only when `query.cooldown_time_remaining` is 0. Whether the attack

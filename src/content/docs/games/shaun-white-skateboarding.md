@@ -63,6 +63,11 @@ reaches the 16-bit limits in 11,016 of the 10,471,680 mixed samples (9,560 in `d
 the clipping is in the material. :observed[every audio clip decoded and mixed]
 Each frame is decoded into separate Y, U, V and alpha planes of one byte per sample, with sizes rounded up to multiples
 of 8 (chroma at half size); the game uploads the Y plane and the two chroma planes as separate textures. :observed[static reading of the executable and of `binkw32.dll`]
+The first intro frame is drawn as one quad: its vertex declaration is stream 0 with a `FLOAT3` `POSITION0` at byte 0 and a
+`FLOAT2` `TEXCOORD0` at 12, a stride of 20, and its pixel program samples the Y, Cr and Cb planes, three L8 textures, at samplers
+0, 1 and 2. :observed[the game's first presented frame, recorded] Its programs, run on that frame's recorded constants and planes,
+give at every one of the 921,600 pixels the same RGB as an independent BT.601 conversion, to the last bit.
+:proven[the first intro quad's programs run on its recorded inputs]
 
 Every file's header reads as below, its frame index is increasing and inside the file, and splitting the frames by it gives the
 same packets as FFmpeg 6.1.1, frame for frame. :proven[all 77 files of the patched copy]

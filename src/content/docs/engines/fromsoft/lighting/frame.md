@@ -4,7 +4,7 @@ description: "The renderer's passes in GPU order, from shadow maps through defer
 sources:
   - title: Paramdex
     url: https://github.com/soulsmods/Paramdex
-    note: the field names and types of WEATHER_ASSET_CREATE_PARAM_ST
+    note: the field names and types of WEATHER_ASSET_CREATE_PARAM_ST, and the name of MapDefaultInfoParam's IsEnableBlendTimezoneEnvmap
   - title: SoulsFormats
     url: https://github.com/JKAnderson/SoulsFormats
     note: the names of the environment-map box's type-data words (UnkT08 and on)
@@ -403,6 +403,58 @@ pipeline states, recognised by their four targets' formats) set a stencil refere
 These three draws have independent blending off, so target 0's blend state applies to every target they write.
 :observed[one frame]{games="elden-ring"} Which material or draw data chooses a draw's reference is not established.
 :unknown{games="elden-ring"}
+
+### Environment-map regions
+
+Stormveil's environment packages are `m10_00_00_00_envmap_<state>_<tier>_00.tpfbnd.dcx`, seven states (`00` to `06`) in three
+tiers (`high`, `middle`, `low`). Each of the 21 holds 640 TPF members of one texture each: 512 `GIIV` coefficient volumes and 128
+`GILM` reflection cubes, 13,440 textures in all. The volumes are BC7_UNORM true 3-D textures of one level, their size depending
+on the group (group 0000: 60 × 44 × 60 in `high`, 28 × 20 × 28 in `middle`, 12 × 8 × 12 in `low`); the cubes are BC6H_UF16 with
+six faces and five levels, 128 × 128 in `high` and 64 × 64 in `middle` and `low`. Within a tier the seven states agree in their
+members' names, kinds, sizes, levels and formats. :observed[the 21 Stormveil packages, read from the installed archives]{games="elden-ring"}
+
+Elden Ring blends two states in its region draws, where Sekiro's draw one package's. :observed[one frame]{games="elden-ring"} In
+a second recorded Stormveil frame, not the one of the pass table:
+
+| Program | Draws | Reads | Confidence |
+|---|---|---|---|
+| `GXEnvMapRegion[Box][DiffSpc][Lerp]` | 47 | the cubes `g_IBLTexture` (`t25`) and `g_IBLTexture2` (`t26`), and two `X`, `Y`, `Z`, `W` volume groups at `t27` to `t34` | :observed{games="elden-ring"} |
+| `GXEnvMapRegion[Box][DiffSpc][LerpDiff]` | 9 | the same eight volumes, and one working cube at `t25` | :observed{games="elden-ring"} |
+| `GXEnvMapRegion_CopyCubeToCubeLerp` (compute) | 9 dispatches | two source cubes at `t0` and `t1`, at eight levels, writing `u0` to `u7` | :observed{games="elden-ring"} |
+
+That the programs read these slots is traced in their DXIL, from each resource handle to its sample, not taken from the
+reflection. :observed[the installed programs' DXIL]{games="elden-ring"} The frame has 56 such sampled region draws and 6 stencil
+draws. The source cubes are BC6H_UF16, 128 × 128, six faces, five levels; the working cube R11G11B10_FLOAT, 128 × 128, six faces,
+eight levels; the coefficient volumes BC7_UNORM 3-D with one level. :observed[one frame]{games="elden-ring"} Each `[LerpDiff]` draw
+reads the working cube the dispatch before it has just rewritten. :observed[one frame]{games="elden-ring"}
+
+The two states are `05` and `06` of the `high` tier: by the fingerprints of the uploads, 55 of the 56 draws read those packages'
+textures, and 548 of the 550 uploaded inputs are identified uniquely; the other two are `GILM0800` cubes whose bytes are the same in
+states 00, 03, 04, 05 and 06, so a cube alone does not tell the states apart, while the volumes do. All 56 draws' `b3`
+`g_envMapInterpRatio` and all 9 dispatches' blend rate are the same `f32`, `0x3EB4E81C` (0.35333335). One draw and its 10 inputs
+match none of the 21 packages. :observed[one frame; the uploads fingerprinted, not compared byte for byte]{games="elden-ring"}
+
+#### Placing a region
+
+The same frame's region matrices (`b3`) are 55 boxes of Stormveil's layout, each within 0.000122 in every one of the 16 floats.
+The box's basis is `Ry × Rz × Rx` of its rotation, scaled by half its width, height and depth; its centre is its position plus
+the box's local half-height offset turned by that rotation, then the map's translation into the drawing frame, (88, −16, −16).
+The pitched `Env_Box253` misses by about 3.165 if the offset is not turned. :observed[55 boxes of one frame]{games="elden-ring"}
+
+The box's type data at `+0x34` is not its probe group: `Env_Box002` stores 0 there but binds `GIIV` and `GILM` group 0002, and
+`Env_Box902` binds group 0901, so the box's name is not the group either. :observed[55 boxes of one frame]{games="elden-ring"}
+
+Byte `+0x1A` of `MapDefaultInfoParam` row 10000000 (Stormveil) is 1, and of row 10010000 also 1. :observed{games="elden-ring"}
+The community param definition names it `IsEnableBlendTimezoneEnvmap`, blending environment maps by time of day on the legacy
+maps. :sourced[Paramdex]{games="elden-ring"} It enables blending; it does not give the schedule from hour to state. The nine
+`m10_00` GPARAM files (`0000` to `0600`, `0800`, `0900`) have time axes offset to 6.5 h with period 24, an empty
+`EnvironmentConfig` group and no `Env Map:Editor` group, so they hold no state schedule either.
+:observed[the nine files, read from the archives]{games="elden-ring"}
+
+:::open[What chooses Elden Ring's environment states and the blend?]
+The code that picks the two states and the ratio from the hour, the rule that picks a tier on PC, and how a region chooses its
+probe group are not established; the frame shows one choice, not the rule.
+:::
 
 ### Exposure
 

@@ -284,6 +284,27 @@ a binder have `m` only (688) or both letters (5), and 4 gender-4 rows have none;
 letters, 2 only `f` and 1 only `m`; the 5 gender-2 rows have `f` only. No `a` binder exists for any protector row.
 :observed{games="elden-ring"}
 
+### Joining an outfit's parts
+
+The player model `c0000`'s FLVER has 488 distinct bone names and its main Havok animation skeleton 150, all 150 among the
+FLVER's; 33 of them have another parent in the FLVER than in the skeleton, many being FLVER roots, and the Spine's parent among
+them. :observed[`c0000`'s FLVER and HKX]{games="elden-ring"} Neither holds every joint the armour parts weight: the male Warrior
+outfit (CharaInitParam 3001) weights 13 face and cloth joints that are in neither. :observed[the parts of male initializer rows
+3000, 3001 and 3008]{games="elden-ring"} So a skeleton taken from either alone loses joints the parts' meshes and cloth bind to.
+:inferred{games="elden-ring"}
+
+Parts of one outfit can disagree on a shared joint's parent. In the Warrior (3001) and Confessor (3008) outfits four weighted
+joints are parented under `Pelvis` in the body part and under the thighs in the legs part; `c0000`'s FLVER and skeleton both
+parent them under the thighs. The two copies still agree in model-space rest: with `c0000`'s FLVER to at most 1.946e-7 (3001)
+and 1.179e-6 (3008), and with the skeleton to 1.985e-6 and 3.102e-6. :observed[every stored mesh and level of detail of the two
+outfits, with the joints' weights resolved through the palettes]{games="elden-ring"} A different stored parent alone therefore
+does not make a part's rest geometry incompatible. :observed[two outfits]{games="elden-ring"}
+
+A part can also keep the skeleton's parents and still have its own rest. The Confessor's body and head give `Neck`, `Head`
+and `Collar` the same parents as `c0000`'s skeleton but other model-space rests: their matrices differ by up to about 0.01475 in
+an entry for `Collar` and `Neck` and 0.00155 for `Head`, and these joints weight vertices. :observed[the Confessor's parts]{games="elden-ring"}
+The differences mix rotation and translation entries and are not a vertex displacement. :inferred{games="elden-ring"}
+
 :::open[Which part letter does `npcPlayerSex` select in Elden Ring?]
 The value is 0 in 512 initializer rows and 1 in 2,761; no enum names the two values. Among the 22 slots that name a
 female-only protector (gender 2), 19 belong to rows with value 0 and 3 to rows with value 1, and no row equips a male-only

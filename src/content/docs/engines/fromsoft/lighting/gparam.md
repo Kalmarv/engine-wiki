@@ -448,6 +448,11 @@ forms its half vector from the view direction plus this direction, so the stored
 surface towards the light, in the world frame; it picks the set by the light-group selector times 18 rows of 16 bytes (one
 set is 288 bytes). :observed[the program's code]{games="sekiro"}
 
+Elden Ring's `GXLightAcc_DDirLightShadowed1` reads two light sets of 224 bytes, choosing one per pixel by `GBuffer2.w × 255`.
+It uses the `w` of the set's first two vectors in its gloss arithmetic, so even a set with no light needs a finite `w` other than
+zero there, and it multiplies both its RGB sums by `SC_PreExposure` (`cbSceneParam` register 72, `z`).
+:observed[the installed program's DXIL]{games="elden-ring"}
+
 So the stored colours are squared and multiplied by the weight before the light reaches the program, the same squaring as
 the colours of [BTL](/engines/fromsoft/lighting/btl/) light records. :inferred A sun stored as
 (1.0, 0.784, 0.588, 2) lights the frame with (2, 1.230, 0.692). :observed{games="sekiro"}

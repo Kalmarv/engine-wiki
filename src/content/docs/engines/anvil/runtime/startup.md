@@ -20,6 +20,11 @@ a badge says so, the original code was run under emulation from a recorded state
 | | Initialises the engine (`::Engine::Init`), reads `gamesettings.ini` (section `[SETTINGS]`), opens the data (it exits with code 1 when the data check reports failure), initialises graphics (`::Init::Graphic`) and starts loading (`::Loading`) | :observed |
 | | Then waits: `while (flag) Sleep(33)` until the game asks to quit, and tears down | :observed |
 
+Two files the start-up asks for are optional. When the archive manager cannot open `DataPC_Common.forge`, it marks the common
+pack's two resource indices −1 and carries on; the retail install has no such file, so that open always fails. A missing
+`scimitar.ini` leaves the defaults. :observed[static reading of the failure branches, and a case-insensitive search of the whole
+install]
+
 The first world is therefore the menu world `Main_Menu`, the world of `DataPC_Main_Menu.forge`
 ([world roots](/engines/anvil/world/world-resource/)). :inferred[from the boot command line]
 
@@ -128,7 +133,21 @@ null and the listing has no manager to queue on. :inferred[static reading]
 When the listing function returns false, its caller's list stays empty, the handler skips reading saves, sets the request's
 flag at `+0x6D` and returns 1, which completes the request as an empty listing. :observed[static reading] The options'
 listeners (`0x11B2A40`, `0x11B2A70`) report their own failures, `WriteOptionsFailed` (9) and `ReadOptionsFailed` (10), in place of
-the general mapping. :observed[static reading]
+the general mapping. :observed[static reading] In that general mapping the save worker's result 8 is the reflected error
+`NoSaveExists` (1); an options read that returns no bytes is therefore not the same as no save. :observed[static reading]
+
+Whether the options are read depends on the current profile's name. For the profile `AUTOSAV` the game queues a separate options
+read; for any other name, a new profile among them, it takes a branch that sets the default options and marks the request
+complete. :observed[static reading] An empty save listing does not stop that read: in one start-up whose listing returned no
+saves, the options read ran after the title screen was confirmed. :observed[one start-up]
+
+A load request is checked in memory before anything is taken from it. The serialization thread (`SerializationThread::ThreadRun`)
+calls the current profile's virtual load method and records the request as corrupt when that returns false and the request's
+error is 2 (`SaveCorrupted`); `LoadRequest::DoObjectSerialization` returns false when the request has no data pointer or a data
+length of 0, and its error getter returns 2. :observed[static reading, and hardware watchpoints on the request's fields in one
+start-up] In that start-up an options request (action 14) completed with status 2 and error 0, and the serialization request
+after it (action 8) failed with status 3, `SaveCorrupted` (2) and the back end's result `0x18`; the start-up had the options set to
+their defaults by an intervention, so it does not show the path of an unmodified start-up. :observed[one start-up]
 
 ## Graphics
 
@@ -151,6 +170,11 @@ device at `+0x10` and a cache flag at `+0xC`. :observed
 The frame is drawn by a function the graphics manager reaches through its vtable (`0xBDB260`): it brackets the scene
 with `BeginScene` and `EndScene`, presents through the device or a swap chain, and pumps the window messages
 (`PeekMessageA`, `TranslateMessage`, `DispatchMessageA`) after each present. :observed
+
+The title screen's background is a 1280 × 720 BC1 image drawn on a quad larger than the 1280 × 720 viewport, so the screen shows
+it cropped and enlarged, not texel for texel; the image is stored with its V axis the other way up, which the sprite's vertex
+program turns. :observed[the title screen's recorded draws] Drawn 1:1 with the same programs and identity constants, the image
+gives at all 921,600 pixels the same RGB as an independent BC1 decoder. :proven[the title sprite's programs run on its texture]
 
 :::open[What calls the frame function?]
 The loop that calls the frame function dispatches through a vtable, so following the direct calls does not find it.

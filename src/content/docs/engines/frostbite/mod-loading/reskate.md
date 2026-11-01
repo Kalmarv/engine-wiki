@@ -80,6 +80,11 @@ setting that echoes `= [value]` was accepted. A bare engine setting name in the 
 catalogue becomes ready later than process startup. Launcher `--log-level` controls runtime logging even when
 `RESKATE_LOG_LEVEL` is set in the environment. :sourced[ReSkate]
 
+The trainer's `trainer where` prints, and `trainer tp X Y Z` takes, positions in the map's own frame as `map.json` states it
+(metres, +Y up, forward −Z), with no axis turned or negated: a map's spawn stated as (171.2, 90.3, 688.0) reads back as
+(171.20, 90.95, 688.00) with the skater standing on the start, while a teleport with Z negated lands outside the map. `trainer
+where` also prints the position as `Blender: (x, -z, y)`. :observed[one map]
+
 Camera height preference `UseHighCam` belongs to `/settings/native_profile_options/2`; normal camera-height
 input can change it during play. It is not a pinned console or Game.cfg value. :observed
 

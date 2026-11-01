@@ -124,4 +124,8 @@ One measured tile spends about half its 142-second compile in packaging. :observ
 
 Two compiles of one export differ in 201,352 of 506,104 manifest rows because identities are regenerated.
 Raw binary differences between such compiles therefore do not independently demonstrate changed source content.
-:observed
+:observed Compiling one map twice from a byte-identical input folder with 20261012 gives different bytes in the default install
+package's `cas_01.cas` (33,973,484 and 33,973,268 bytes) and `cas_02.cas`, the initial install package's `cas_01.cas`,
+`globals.toc` and the level's `.toc`; `dingolevel_root.toc`, `initfs_win32` and `layout.toc` are identical, and
+`reskate-build.json` differs only in its time stamp. :observed[two compiles of one map] Whether a change of input changed a
+level is shown by the input Studio reads, not by its output. :inferred

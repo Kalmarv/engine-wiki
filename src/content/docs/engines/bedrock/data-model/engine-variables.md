@@ -44,7 +44,7 @@ Each meaning below is taken from how the vanilla scripts use the variable; the u
 | `is_sneaking` | `q.target_x_rotation - 105 - (v.is_sneaking ? 15 : 0)` in humanoid arm poses | the entity sneaks | :inferred |
 | `swim_amount` | the drowned's `swimming` state: `v.swim_amount > 0.0` | how far into the swimming pose, 0 to 1 | :inferred |
 | `player_x_rotation` | read in the player's scripts | the player's view pitch | :inferred |
-| `use_item_interval_progress`, `use_item_startup_progress` | the drowned's `use_item_progress` state when either is above 0 | the progress of an item being used, by phase | :inferred |
+| `use_item_interval_progress`, `use_item_startup_progress` | the drowned's and player's `use_item_progress` state when either is above 0, whose `animation.humanoid.use_item_progress` turns the right arm by `startup * (-60, -22.5, -5.625) + interval * 11.25` on each axis | the progress of an item being used, by phase: a wind-up that raises the arm, then a repeating interval that shakes it | :inferred |
 | `is_enchanted` | eight render controllers (item default, bow, crossbow, shield and four armour ones) choose `variable.is_enchanted ? material.enchanted : material.default`, the enchanted materials being glint ones (`entity_alphatest_glint`) | the item drawn has the enchantment glint | :inferred |
 | `player_arm_height` | first-person swap animations: arm position `y = -10 * (1 - v.player_arm_height)` | how far the main hand is raised as an item is swapped, 0 lowered to 1 raised | :inferred |
 | `bob_animation` | gates the player's `first_person_walk` state, which moves the held item by `v.bob_animation * sin(q.life_time * 45) * 0.5` | whether the held item bobs | :unknown |

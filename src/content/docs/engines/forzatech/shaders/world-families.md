@@ -213,8 +213,19 @@ The emissive term seeds `RT1.xyz`: `g(d) = d ≥ 1 ? 1/(d + 1e-5)² : (d + 1e-5)
 EmissiveTextureScale · sat((INSTANCE_VARIATION.y − EmissiveVariationMin)/(EmissiveVariationMax − EmissiveVariationMin)) · g(d)`
 (152 of 186 Tokyo materials bind the black `ubershader_default_emissive`). `pylon_cables`: `Lightmap(uv1).rgb · Color.rgb ·
 0.96 · g(d)` when `LightmapActive` (false in Tokyo). Every other family writes 0. :observed Whether a later pass multiplies
-`g(d)` back (a precision encoding) is not determinable statically, and the source of `INSTANCE_VARIATION.y` for hand-placed
-instances is not traced. :unknown
+`g(d)` back is not determinable statically (`FPlusPlus_CombineSeperateDiffuseSpec_Final_Tile0` and the deferred composite
+`FPlusPlus_Composite_NoDepthWrite_DirectLight_DXR_PixelClassify0` do not; no other pass was read), and the source of
+`INSTANCE_VARIATION.y` for hand-placed instances is not traced. :unknown The preset scales that turn the authored values into
+lighting units are on [Time-of-day presets and light units](/engines/forzatech/lighting/time-of-day/).
+
+The authored magnitudes in the prototypes of the Shibuya box (every prototype placed there, counted by material and triangle) are
+small: `GIEmissiveScale` is 1 in all 9,467 `environment`, 286 `environment_plot` and 188 `environment_signage` materials;
+`EmissiveTint` is at most 1 per channel (white in all but about 35 of those materials, whose channels run from 0.002 to 0.982);
+`EmissiveTextureScale` of `projection_lod` is 1 in 1,166 of its 1,178 materials and between 0.16 and 1.4 in the other 12; the `emissiveonly`
+materials (12) have `EmissiveMultiplier` 0 and a black `Color`; the `anim_ledflipbookpanel` materials (8) have `Brightness` 1 or 10;
+`Emissive` is 1 in 227 `environment` (18,966 triangles), 90 `environment_signage` (2,462), 912 `projection_lod` (218,071), all 10
+`uberlod` and 1,337 `window_linecastroom` materials (25,167 triangles), whose `EmissiveVariationMin` and `Max` are fractions between
+0 and 1 (most often 0.2 to 0.4, 0.6 to 0.8 or 0.7 to 0.9). :observed[a census of the box's prototype materials]
 
 ## Road decals
 

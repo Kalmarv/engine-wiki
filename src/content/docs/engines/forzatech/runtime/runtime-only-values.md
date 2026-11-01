@@ -37,7 +37,7 @@ memory at run time. :observed
 | emissive distance term `g(d)` and anything that undoes it | `emissiveonly`, `projection_lod _E`, `pylon_cables` | [Other world families](/engines/forzatech/shaders/world-families/) |
 | specular exponent `LS[107].y` and its floor; caustics `cb2[171]`; transmittance remap switch | water and ocean shaders | [Water](/engines/forzatech/water/water/) |
 | weather globals (rain `cb7[2].x`, wetness `cb2[91]`, `cb2[140]`, `cb2[144]`) | the shared wetness step | the identity when dry |
-| light scenario (sun, sky, exposure) | lighting passes | not described |
+| light scenario (sun, sky, exposure): `cb[59].x`, `cb[59].z` and the scales that turn authored emission into lighting units | lighting passes | [Time-of-day presets and light units](/engines/forzatech/lighting/time-of-day/) |
 
 All rows :unknown as values; the consumer column is :observed.
 

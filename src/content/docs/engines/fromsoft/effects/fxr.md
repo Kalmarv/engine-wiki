@@ -381,6 +381,17 @@ is about 25 times a bank power of the same value in this scene, not equal to it 
 factor 1. :observed{games="elden-ring"} That the factor comes from a weight of 1 set on effect lights by the effect's light
 update, rather than from a constant, is an inference from the shape of the factor (it moves with the scene). :inferred
 
+:only[elden-ring] In one dispatch of another session at the same gate, seven point records stand within 5 cm of stored effect
+lights placed on assets' dummy polygons: five on effect 800023 (radius 5, a multiplier keyframed from 0 to 10, flickering) and
+two on effect 800400 (radius 4, a constant multiplier of 8, flickering). Each record's diffuse and specular colours are the
+stored `colour^2 * alpha * multiplier` (the multiplier at its last keyframe) times one scalar per record, the same in red,
+green and blue and in diffuse and specular: 0.0388, 0.0409, 0.0468, 0.0495 and 0.0495 for 800023, 0.0429 and 0.0436 for
+800400; the radius is the stored one and the specular fourth value is the specular colour's luma, as in bank lights.
+:observed{games="elden-ring"}[7 records of 2 effects, 1 dispatch] With a flicker factor of at most 1, the exposure factor in
+that frame is at least 0.0495 (`X` at most 4.34), above the range of the first session, consistent with a factor that moves
+with the scene. :inferred As 800400's multiplier is a constant, the scalar does not come from the time at which an effect's
+curves are sampled. :inferred
+
 ## How the games name an effect
 
 An effect runs because something names its id. The routes, with the share of ids in each that exist and reach a light (the

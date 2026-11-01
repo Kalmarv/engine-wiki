@@ -46,8 +46,22 @@ Read from the models of every prototype of the Shibuya Scramble box (summer), 56
   and 256 × 256 among them), with one to seven stored mips. :observed
 - Rule placements (`.pgeo` records) carry the byte at +0x34: 2,801 distinct (prototype, byte) pairs over 39,446
   instances, at most 111 bytes for one prototype. :observed Hand placements (`.pvs` instances) have no such record:
-  26 instances of these prototypes, and where the shader's `INSTANCE_VARIATION` comes from for them is not
-  established. :unknown
+  26 instances of these prototypes. :observed Their transform's tint (four floats) is not a whole byte over 255 in 25 of
+  the 26; the values are round authored fractions (0.51, 0.514, 0.13, 0.66, 0.09) with the other components equal to each
+  other or one, the same kinds of population as the rule records' four bytes (all ones, all zeros, a varied first with the
+  rest ones). :observed The first float is therefore the likely `INSTANCE_VARIATION.x` of a hand-placed instance, read as
+  the palette row as it is. :inferred
+
+### The palette read
+
+- The palette is the only texture the `_ST` pixel shaders sample through the static sampler register `s11`, and it is
+  sampled with `SampleLevel` at level 0. :observed (the compiled pixel shaders of the `_Standard_ST` permutations)
+- The root signature of those shaders declares no static samplers, so the filter and the address mode of `s11` are set
+  at run time and are not in the shader. :observed The filter is not known. :unknown
+- Over the Shibuya box the (palette, green, row) combinations read number 1,267 (rows from the rule placements' bytes
+  over 255 and the hand placements' first tint float); a bilinear read of the same positions differs from a nearest-texel
+  read by more than two 8-bit steps in 477 of them with clamp addressing and 592 with wrap. :observed Which filter the
+  game uses is not established, so a nearest-texel read is a guess. :unknown
 
 ## G-buffer albedo (`_StandardRCSM_ShadowsTriPlanar_ST_TPNAO_D`)
 

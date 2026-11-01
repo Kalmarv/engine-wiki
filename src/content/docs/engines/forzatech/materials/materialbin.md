@@ -165,8 +165,11 @@ UseFiveColorMask, `0x30613025` UseSteppedMask. :observed
    [Other families](/engines/forzatech/shaders/world-families/)). File names are not reliable: short ids such as
    `_bclr_tupfjgh` replace GUIDs, and `..._lmbake_diff` is a lightmap, not a colour. :observed
 
-A chain can end at `Materials\Default.materialbin` with no shader family: the `Areabound` material of the 44 drawn
-`area_NN_boundary` walls, whose meshes are in no colour pass (bucket 0x18). :observed
+A chain can end at `Default.materialbin` with no shader family reached through the manifest: the `Areabound` material of
+the 44 drawn `area_NN_boundary` walls, the `Bush_Flatten_LOD0` meshes (bucket 0x18) and the `OCC_occ_volume` occluder
+volumes (bucket 0x58), all in no colour pass. :observed The file is not in the manifest's own zips but in
+`_library/MaterialsPG/objects.zip` (`Default.materialbin`, with Autumn, Spring and Winter copies), and its shader is
+`Game:\Media\_library\shaders\pg\diff1\diff1.shaderbin`. :observed
 
 Water, decals and roads are recognised by shader family only, never by material name: `Material__855` is a river;
 `Ocean_2-6103ab46` is `ocean_shoreline` while `Ocean_2-0ce7d6f3` is `ocean`; `ATC_CTY_PIPE_WATER_*`, `ATC_CTY_WATERTOWER_*` and

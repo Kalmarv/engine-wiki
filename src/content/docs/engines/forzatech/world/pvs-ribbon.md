@@ -70,7 +70,7 @@ fields:
   - {at: 4, size: 1, type: u8, name: no-group flag, level: proven, note: "0 when the transform has a LOD profile group, 1 when it has none (byte 56 is 0xFF); both on all 111,452 transforms"}
   - {at: 5, size: 12, type: "f32[3]", name: position, level: observed}
   - {at: 17, size: 18, type: "f16[9]", name: matrix, level: observed}
-  - {at: 35, size: 16, type: "f32[4]", name: tint, level: observed, note: "record tint.x is the likely source of INSTANCE_VARIATION for ribbon instances"}
+  - {at: 35, size: 16, type: "f32[4]", name: tint, level: observed, note: "tint.x is the likely source of INSTANCE_VARIATION (the swatch palette row, read as it is) for hand-placed instances: see Environment, The palette read"}
   - {at: 51, size: 4, type: u32, name: zero, value: 0, level: proven}
   - {at: 55, size: 1, type: u8, name: material variant, level: observed, note: "row of the Modl variant table"}
   - {at: 56, size: 1, type: u8, name: LOD profile group, level: proven, note: "0xFF for none; otherwise below the number of LOD profile groups (155)"}

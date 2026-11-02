@@ -156,6 +156,19 @@ The whole-install attribute inventory records these pivots on 306 Sekiro meshes 
 Ring meshes (5,301,513 vertices), with SpeedTree's stored members handled separately. The respective maximum
 absolute components are 487.75 and 2,118. :proven[whole-install attribute inventory]
 
+W is zero in every value of every Half4 UV member outside SpeedTree models: 978,040 values in Sekiro and 5,301,513 in
+Elden Ring. :proven[every FLVER member of a top-level BND4 binder of the archives: 14,459 Sekiro models, 22,169 Elden Ring models]
+A consumer can therefore read the member as a point (XYZ, W 0) without losing a stored lane.
+
+A UV member's semantic index is its ordinal among the mesh's UV members, not the storage slot it decodes into (a Float4
+or `0x16` member fills two slots): of Elden Ring's 127,550 UV members (counted once per mesh that uses the layout), all
+but 1,712 follow the ordinal, and those are 1,708 `0x13` members and 4 Half4 members of SpeedTree models; of Sekiro's
+131,998, all but 4 `0x13` members do. :proven[the same models]
+In Sekiro the Half4 members are all at semantic index 2, in the 24 `Translucency_Pivot` material definitions (for
+example `M[m10_00]_Translucency_Pivot_Parent1.mtd`); in Elden Ring 319 of 12,974 definitions have one, for example
+`AEG001_251.matxml` at index 3. No definition's meshes store a Half4 member and another type at the same semantic
+index; 6 Elden Ring and 4 Sekiro definitions store `0x12` beside `0x13` at index 1. :proven[the same models]
+
 :::open[Does every declared member type have a consumer-verified meaning?]
 No exhaustive shader-consumer check establishes every type/semantic combination. The table deliberately separates
 sampled decoding from community enum descriptions; the name Half4 alone does not establish half-float decoding for

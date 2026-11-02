@@ -33,7 +33,7 @@ Ring 1.17.2 at 2560x1440 at night at the Stormveil gate. Programs are named by m
 | 5 | Sun shadow mask: `GXScreenSpaceCascadedShadow_PCF9`, `GXRend_CompositeShadowMask` | splits 10 / 50 / 200 m, fades 2 / 10 / 40 m; plus a view-space shadow volume (`GXViewSpaceShadowVolume_*`) and two blurs | neither the volume nor the blurs among the named programs | :observed |
 | 6 | Screen-space reflections: `GXSsrConvertDepth`, `GXSsrNew`, then `GXSsrTexDownScale` / `GXSsrTexBlur2` | RGBA16F, half resolution, 6 mips | a prepass of programs not named in the recording, then the down-scale and blur chain, five levels | :observed |
 | 7 | Environment-map regions: one box draw per region, `GXEnvMapRegion[Box][DiffSpc]` and variants | 61 regions in the frame | 64 | :observed |
-| 8 | Sun: `GXLightAcc_DDirLightShadowed1` | with `GXLightDeferredAOWithSsr` | | :observed |
+| 8 | Sun: `GXLightAcc_DDirLightShadowed1` | after `GXLightDeferredAOWithSsr` | after `GXLightDeferredAOWithSsr` | :observed |
 | 9 | Point and spot lights: `GXLightOrganize<N>` (compute, tile lists) then a tiled light pass | `GXLightOrganize16`, `GXRend_TileBasedLighting` | `GXLightOrganize8` and `GXRend_TileBasedLighting`, and `GXLightAcc_DPointLightShadowed1` for a shadowed point light | :observed |
 | 10 | `GXLightCmbAlbedo`, `GXSssBlurX` / `Y`, `GXLightComposite` | into R11G11B10F | then `OutputColor` | :observed |
 | 11 | Volumetric fog: `GXVolumetricFog_DirLightShadowReproj`, `_WriteInScatteringPreShadowed`, a dispatch per local light, `_SolveVolumetricFog`, `_SceneComposite` | froxels 120x72x16 | 144x88x36, plus `_DirLightShadowPostFilter`; then `GXFogVolume_*` fog volumes at half resolution | :observed |
@@ -394,6 +394,19 @@ The name `g_ShadowTexture` at `t32` does not name one texture. `GXLightAcc_DDirL
 through `s8` at the pixel's screen position: it is the screen-space shadow mask of pass 5. `GXScreenSpaceCascadedShadow_PCF9`
 reads its `t32` with a depth comparison (`SampleCmpLevelZero`) through `s12` at shadow-atlas coordinates: there it is the
 cascade atlas. :observed[the two installed programs' DXIL, joined by their bytecode to three draws of the Stormveil frame]{games="elden-ring"}
+
+The sun program's `cbLight` holds one constant, `FC_DirLight`: an array of two light sets, of which each pixel's G-buffer
+selects one. A set's members, in order, are the directions `Vec_0` to `Vec_3`, the colours `Col_0` to `Col_3` and the
+specular colours `Spc_0` to `Spc_3` (four floats each), then `bLocalLight` (four unsigned integers) and `FC_SsaoWeight`:
+224 bytes a set in Elden Ring. Sekiro's sets put `AmbientSH` (48 bytes) and `AmbientReflection` between the specular
+colours and `bLocalLight`: 288 bytes a set. :observed[the reflection of the installed `GXLightAcc_DDirLightShadowed1` pixel program each recorded graph binds]{games="elden-ring sekiro"}
+
+In the recorded graphs `GXLightDeferredAOWithSsr` draws the two light targets first, and the sun program blends onto
+them; it reads the environment-map regions' targets, the reflections and the shadow mask. The sun program reads the shadow
+mask that `GXRend_CompositeShadowMask` writes. Elden Ring's `GXRend_TileBasedLighting` reads that mask too, after the mask
+step has read the ambient occlusion; Sekiro's tiled program reads the ambient occlusion straight from
+`ScreenSpaceAO2_BilateralUpScale`. `GXSssBlurX` and `Y` redraw `GXLightCmbAlbedo`'s target before `GXLightComposite` reads
+it. :observed[the recorded graphs of `m11_01` (nine frames) and of Elden Ring (five frames)]{games="elden-ring sekiro"}
 
 The tiled point and spot lights are drawn by `GXRend_TileBasedLighting` in Elden Ring too. Each tile's 12-byte record from
 `GXLightOrganize8` holds its light counts in the third word, point lights in the low 16 bits and spot lights in the high 16: the

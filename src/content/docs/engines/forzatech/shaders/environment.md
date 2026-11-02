@@ -153,6 +153,10 @@ parameter rows, gives these dependencies. :observed
 - `AlphaTest` permutations `discard` when `DiffAlphaTex_A.a − cb2[128].x < 0`: the reference is a constant of the draw's
   buffer, not a material parameter, and the materials' `ATST` bytes are `1, 0`.
 - `EmissiveTexture` reaches only `RT1.xyz` (the lit colour), not the albedo.
+- The `EmissiveTexture` files bound by the `EmissiveAltUV` materials drawn in the Shibuya Scramble box (21 distinct
+  textures, 256 x 256 or 512 x 512, linear) are all BC6H unsigned float, and they hold radiance rather than a 0 to 1 colour:
+  the largest red, green or blue value of each is between 3.5 and 3,808, and between 4,700 and 141,400 texels of
+  each map are above 1. :observed[every one of the 21 decoded to float32 and its extremes taken]
 
 The `_Emissive` permutations (`_Emissive`, `_Emissive_EAUV`, `_Emissive_EF`) add this emission to `RT1.xyz`, in the
 `g(d)` encoding of [Emissive](/engines/forzatech/shaders/world-families/#emissive): :observed[the expressions of those

@@ -86,6 +86,26 @@ one region of `m10_00_00_00`]{games="elden-ring"} A layer's value `L_i` takes on
 | `lerp(texel, C, f)` | ColorAdjust; `f` between 0 and 1 (`lerp(texel, white, 0.3)`) in 4 of the 11 ColorAdjust materials | :observed{games="elden-ring"} |
 | `texel × C`, with `C` up to 1.47 | ColorAdjust; the blended colour can then pass 1, so the outer `saturate` changes it | :observed{games="elden-ring"} |
 
+`TEXCOORD0.w` reaches the albedo in the plain `Mb2` programs alone: in all 17 materials of `M[AMSN_V][Mb2]_Gbuf` and
+`M[AMSN][Mb2]_Skin_Gbuf` in the region, and in none of the other 45. There their vertex programs write it from the
+vertex colour's alpha, `COLOR0.w`, unchanged. Run on each of the 256 byte values the stream can store, the vertex
+program gives that value back exactly, with no constant read on the way. It is the `t` of the `Mb2` weight above.
+:observed[the 62 `Mb` materials of one region of `m10_00_00_00`, each vertex program run over every stored value]{games="elden-ring"}
+
+The material constant `snp_0_float_6` means different things in different programs. :observed[62 `Mb` materials of one
+region]{games="elden-ring"}
+
+| Program | `snp_0_float_6` | Read by the albedo | Confidence |
+|---|---|---|---|
+| `[Mb2][Ov_AN]` (4 materials) | 2.5, and 0 in the `_Edge` program | yes: a value computed from it multiplies the overlay's centred colour (`pow(o, 1/2.2) - 0.5`) | :observed{games="elden-ring"} |
+| plain `Mb3` (7) | 1, 1.5 or 2 | yes, with no overlay colour in the program | :observed{games="elden-ring"} |
+| `Mb2`, `Mb3` and `Mb4` ColorAdjust (11) | 1 or 2 | yes, with no overlay colour in the program | :observed{games="elden-ring"} |
+| `[Mb3][Ov_N2_T]` (1) | 0.8 | no | :observed{games="elden-ring"} |
+| plain `Mb2`, `[Ov_N]`, `[Flag][Mb2]`, `[Mb4][3Mask][Ov_AN]` (39) | not stated | no | :observed{games="elden-ring"} |
+
+So `snp_0_float_6` is the overlay's strength only where an `Ov_AN` overlay colours the albedo; in the plain `Mb3`
+and ColorAdjust programs it feeds some other part of the albedo, not established which. :inferred{games="elden-ring"}
+
 `F` is a colour of the drawing instance's palette: `aColor[13 × r + 9 + FC_ColorSlotNo]` of `cbInstanceData` (`b4`), the
 four colours at byte 144 of the 208-byte record `r`, as the [SpeedTree leaf](/engines/fromsoft/vegetation/speedtree/#leaf-colour)
 program reads them. The pixel program's record `r` arrives as `NORMAL0.w`,

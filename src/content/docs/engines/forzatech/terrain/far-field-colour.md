@@ -26,6 +26,16 @@ from the cell's `terr_mega` instances ([Seasons](/engines/forzatech/world/season
 `uber_megaroad` uses the same far-field base plus a near-field tint from its roadblend `_tint_` map at `TEXCOORD2`; city
 `uber_road` meshes have their own textures. :observed
 
+In the Shibuya cell the submap stores four tiers (1,024, 512, 256 and 128 px) and the mainmap five (2,048 down to 128), each tier one
+block-compressed level. :observed[the one pair every terrain material of the box reads] The baked colour `B.rgb · A.a²` at the 1,024 px
+submap tier (0.5 m per pixel) carries the road markings: zebra crossings, lane lines, kerb lines and painted text are separate marks of one
+to a few pixels; at the 256 px tier (2 m per pixel) the same marks are smeared into grey bands. :observed[the cell's pair, both tiers
+viewed] The stored data has smooth horizontal bands over the whole cell: the row means of the mainmap alpha range 60 to 108 with a
+dominant period of 27 m (108 rows at 2,048 px, 54 rows at 1,024), and the submap's green row means range 235 to 248 with the same
+27 m period; the period in metres is the same at every tier. :observed[the cell's pair, three independent BC7 decoders]
+The three decoders give identical RGBA on all four tiers read (0 differing texels in 4,194,304, 1,048,576,
+1,048,576 and 262,144), so the bands are in the stored swatches, not a decode artefact. :observed[three decoders over four tiers of one pair]
+
 The far-field roughness is `sat(TerrainGlossTexture(uvB).r / 0.93)` and the normal is `x = 2A.r − 1, z = 2A.g − 1,
 y = sqrt(sat(1 − x² − z²))` in world space, from the mainmap `A` ([Other world families](/engines/forzatech/shaders/world-families/)).
 :observed

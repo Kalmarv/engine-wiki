@@ -220,6 +220,23 @@ buffers at registers 0 (all 279) and 7 (225), shader resources at 0 to 6, 16 (25
 vertex, domain and geometry programs read the structured buffers at registers 8 to 15 and 59 to 62; the geometry and domain
 programs the constant buffers at 0, 1 and 10. :observed[the resource ranges of each program's module]{games="elden-ring"}
 
+### Where a billboard's corners are placed
+
+The 12 geometry programs of the textured billboards (`GXFfxtessellate` with `Texture`, `SoftTexture`, `BumpTexture`,
+`SoftBumpTexture` and their `AboveSdw` forms, and the four `MultiTexture` ones) each take one point per particle and read
+`g_CroppingTexture`. Each reads the `x`, `y` and `w` lanes of three coordinates of the point: `TEXCOORD3` to `TEXCOORD5` in
+the single-texture programs, `TEXCOORD6` to `TEXCOORD8` in the multi-texture ones. The bump-mapped programs read the `z`
+lanes as well. :observed[the input loads of every geometry program in the bundle]{games="elden-ring"} In
+`GXFfxtessellateMultiTexture` the three coordinates are the rows of a 3×4 matrix. Each corner's world position is that
+matrix applied to (u − ½, v − ½, 0, 1), where (u, v) is a corner of the cropping polygon read from `g_CroppingTexture`. The
+position then goes through `g_ds_viewMatrix` and `g_ds_projectionMatrix` of `DSCommonBuffer` (constant buffer 0), and no
+other transform applies. :observed[that program's module]{games="elden-ring"} The program's vertex program passes all 14
+inputs through unchanged and writes no position. :observed[`GXFfxtessellateMultiTexture.vpo`]{games="elden-ring"} So a
+billboard's plane and turn in the world are not made on the GPU: they arrive with each particle in the vertex buffer, with
+the quad's two edges as the matrix's first two columns and its centre as the last. :inferred[from the loads; the other
+eleven programs were checked for the same lanes, not read through] The `z` lanes of the bump-mapped programs are the
+quad's third axis, for the lighting. :inferred[by the lanes alone]
+
 ## What the engine binds for an effect draw
 
 A session of Sekiro with a capture of the Direct3D 11 calls (five captures of two frames each) recorded 904 draws and 9 dispatches

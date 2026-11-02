@@ -17,6 +17,16 @@ The source coordinate frame is left-handed, with +Y up and distances in metres. 
 changes it into a right-handed frame. :sourced[Soulstruct Blender] Sekiro model comparisons preserve positions,
 normals and tangent directions under that reflection, including both tangent handedness signs. :observed{games="sekiro"}
 
+The game's shader programs compute in this left-handed frame, not a reflected one: the asset and map-piece G-buffer
+programs take a draw's instance matrices as the placements in the map's frame (see [the physics and render frames](/engines/fromsoft/world/frames/#the-physics-and-render-frames)
+below). :observed[40 draws of one recording]{games="elden-ring"} A program's result therefore changes under the reflection
+wherever it computes something the reflection does not preserve. The far tree billboard's vertex program
+(`M[AMSN][XZ_BillBoard]_Edge_Gbuf.vpo`) turns each card about its pivot by the angle `acos(d.z) · sign(d.x)` of the
+horizontal direction `d` from the pivot toward the camera. :observed[the program's code]{games="elden-ring"} Reflecting Z
+gives `acos(-z) = π - acos(z)`, so fed right-handed values the program turns every card by an extra π. A reimplementation
+that feeds it right-handed values and adds π to the angle draws the cards where the trees stand, facing the camera; without the π
+they are back-face culled. :observed[one Liurnia view]{games="elden-ring"}
+
 ## Placements
 
 MSB rotations are degrees. A part applies scale, then rotations about X, Z and Y, then translation; with column

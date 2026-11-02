@@ -189,6 +189,37 @@ other effect draw among them (21, 22 and 20 sheets in three frames of two sessio
 sessions]{games="elden-ring"} So each sheet moves the picture with every effect drawn before it, and the sheets drawn before
 it, in it. :inferred{games="elden-ring"}
 
+### The constants a sheet is drawn with
+
+In one recorded frame of Stormveil Castle the 20 distortion draws (17 `GXFfxdistortionBump`, 3 `GXFfxdistortionSoftBump`, each
+a quad of six vertices) carry these pixel constants: :observed[the constant buffers of one frame capture]{games="elden-ring"}
+
+| Constant | `GXFfxdistortionBump` (17 draws) | `GXFfxdistortionSoftBump` (3 draws) |
+|---|---|---|
+| `g_waveStrength` | 10 in every draw | 0.296, 4.308 and 8.348: 10 times an opacity that rounds to the draw's `g_color.a` (0.031, 0.431 and 0.835) |
+| `g_clampDistanceInverse` | 1 | 1 |
+| `g_waveTime` | 1 | 1 |
+| `g_vNormalMapScrollDistance`, `g_hNormalMapScrollDistance` | different in each draw, 0.05 to 0.95 and 0.19 to 1.32 | 0 and 0 |
+| `g_normalMapScrollScale` | 0.5, 0.5 | 1, 1 |
+| `g_color` | white, its alpha rising from 0.19 to 1 over four draws, 1 over the next nine and falling to 0.22 over the last four | white, the alphas above |
+| `g_vColorScale` | 1, 1, 1, 1 | 1, 1, 1, 1 |
+
+Every `g_color` alpha in them is a whole number of 255ths. :observed[the constant buffers of one frame capture]{games="elden-ring"}
+So the scrolls reach the program as distances already travelled, with `g_waveTime` left at 1, and each Bump sheet moves the
+picture by the same strength while it fades in and out by its opacity alone. :inferred{games="elden-ring"}
+
+The executable writes one record per particle of a distortion sheet: it evaluates action 607's properties at the particle,
+packs `color` times the particle's own colour into four bytes, and keeps the 4-component property after `color`, `intensity`,
+the property after it and `radius` as the floats they evaluate to, `intensity` with no factor applied. :observed[the decompiled
+per-particle writer of `FXSingleAppearanceDistortion`]{games="elden-ring"} The bytes account for the 255ths of `g_color`. How
+the record becomes the draw's constants is not traced. :inferred{games="elden-ring"}
+
+Of the 1,348 distortion actions of Elden Ring's effect files (each effect id once), 1,304 have mode 1 (the normal-map push)
+and 44 mode 0 (the stir); none has another. 726 store `intensity` as a constant (most often 30, in 106; then 5, in 75;
+1, in 68; 2.5, in 57; and 10, in 51) and 622 as a curve. `radius` is 1 in all but one (0.85), and `normalMapScaleU` and `V`
+are both 1 in 985 and both 0.5 in 267.
+:observed[every distortion action the effect reader types in Elden Ring's effect binders]{games="elden-ring"}
+
 :::open[Can an effect file's blend mode change a distortion's blend?]
 Action 607 stores a blend mode, as the billboards do, but no captured distortion draw is tied to its effect file, so whether a
 sheet of another mode draws with another blend is not read. The captures hold one pipeline per distortion program, which fits
@@ -196,8 +227,13 @@ a fixed blend.
 :::
 
 :::open[How does the engine set the strength and the stir from the file?]
-That `g_waveStrength` is the file's intensity unscaled and `g_waveTime` the angle the stir speed has turned through is not
-read: the executable holds no string naming the constants, and their writer is not traced.
+The per-particle record keeps the file's intensity unscaled, and the captured Bump sheets' strength of 10 is a constant
+intensity 51 actions store, but no captured draw is tied to its effect file, and the step from the record to
+`g_waveStrength` is not traced. The SoftBump sheets' strength follows their opacity: an intensity curve keyed with the
+colour's alpha fits that, and so would the engine multiplying the two, though the record holds the opacity only rounded to
+bytes and the strength follows it unrounded. Whether `g_clampDistanceInverse` is the inverse of `radius`,
+`g_normalMapScrollScale` the normal map's scale and the two scroll distances its offset plus its speed times the age (and
+which of them is u), and what `g_waveTime` holds for a stir, are not read either.
 :::
 
 ## Elden Ring's bundle

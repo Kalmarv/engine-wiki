@@ -508,6 +508,47 @@ frame shows one choice, not the rule. The probe-group rule above fits Stormveil 
 checked on another map.
 :::
 
+#### Far tiles
+
+The overworld far tiles (`m60_<x>_<z>_02`, and the `_12` alternates) have environment packages whose probe groups no
+box of the tile's layout names: groups `0900` to `0959`, each `GIIV` volume 84 × 84 × 84 in `high`, with a `GILM` cube
+beside it. 48 far tiles have such a package, all of them `m60`: 46 `_02` tiles, of which 32 hold one group and 14 hold
+two (the second numbered `0946` to `0959`), and `m60_11_09_12` (one group, `0920`) and `m60_11_13_12` (two, `0924` and
+`0953`, as `m60_11_13_02`). :observed[every `m60` and `m61` far tile name, `_02` and `_12`, state 05 `high`, read from
+the installed archives]{games="elden-ring"} No recorded frame draws one of them. :observed[the recorded Elden Ring
+frames]{games="elden-ring"}
+
+Their volumes line up with the ground. Decoded, a `W` coefficient is dark in texels inside the terrain and bright in open
+air. Against the highest collision surface of the far tile's 16 small tiles and the ring around them, the volume
+separates buried from open texels (those more than 1.5 rows from the surface) best when its columns run along +X, its
+slices along +Z and its rows up +Y, centred on the far tile's origin and spanning the tile's 1,024 m (12.19 m texels).
+Spans from 1,021 to 1,033 m score within 0.0001 of the best, so the volume spans the tile edge to edge.
+:observed[four far tiles with relief: m60_08_10, 08_11, 09_10 and 11_09]{games="elden-ring"}
+
+The vertical placement is known less well. With one bottom and row height shared by every tile, the second group's rows
+stacked on the first's, the mean area under the ROC curve over twelve tiles is 0.971 at rows of 13.25 m from 105 m below
+the origin. Bottoms from -120 to -80 m with rows of 12.75 to 13.625 m score within 0.001 of that, while flipping X or Z,
+spans 2.5 % narrower or wider, a shift of two texels, the bottom 40 m higher or lower, rows 10 % shorter or taller, or
+cubic texels all score worse. :observed[twelve far tiles, eight with two groups: m60_08_10, 08_11, 09_10, 11_09, 10_12,
+10_13, 11_12, 11_13, 12_12, 12_13, 13_13 and 13_14]{games="elden-ring"} The tiles disagree within that range: the six
+one-group tiles checked, taken alone, separate best with rows of 14 m from -75 m (pooled, 0.996), and the lower group of a
+two-group tile separates worst (0.81 to 0.99 per tile). :observed[the same twelve tiles, and m60_10_14 and
+10_15]{games="elden-ring"} The lower groups sit under high ground, where cliffs and overhangs make a highest-surface
+height field a poor label of buried and open, which would explain their scores without a different placement.
+:inferred{games="elden-ring"}
+
+Where a tile has two groups, the second continues the first directly above it. Stacked with the lower-numbered group at
+the bottom, the two volumes separate buried from open texels at 0.902 to 0.997, and swapped at 0.079 to 0.699, on each
+of the 14 `_02` tiles, whose terrain reaches 22 to 1,969 m. Letting the upper group take a bottom and row height of its
+own gains 0.0008 and moves its bottom 38 m down, within the uncertainty of the stack.
+:observed[all 14 `_02` far tiles with two groups, at the shared placement above]{games="elden-ring"}
+
+:::open[How does the game place a far tile's environment groups?]
+The boxes above are fitted to the volumes' contents; the code that places these groups, whether the height range is one
+constant or depends on the tile, and whether they are drawn with the region programs, a fade, colour scales or a
+priority, is not traced. Which state blend and tier a far tile uses is the open question above.
+:::
+
 ### Exposure
 
 Elden Ring's exposure meter and the scale the CPU derives from it are on

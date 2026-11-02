@@ -159,7 +159,7 @@ the game puts that model is not established.
 | `WepAbsorpPosParam` row size; models of five s16 from | 128; 6 models from 4 | 96; 4 models from 8 | :sourced[Paramdex] |
 | `leftBoth_n` | 70 | 52 | :sourced[Paramdex] |
 
-How a weapon draws its trail from these dummies is on [FXR](/engines/fromsoft/effects/fxr/#weapon-trails).
+How a weapon draws its trail from these dummies is on [What starts an effect](/engines/fromsoft/effects/effect-starts/#weapon-trails).
 
 ## Sekiro
 

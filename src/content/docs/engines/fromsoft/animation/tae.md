@@ -205,7 +205,7 @@ event of both installs] Sekiro's `a050_300020`, for instance, starts 404000, 404
 window under the states 153, 152 and 357, and in a mod-free recording of a plain swing the game does not draw the conditioned
 effect 600030 (at polygon 10301) of `a050_300000`. :observed{games="sekiro"} Attack events (type 1) carry `State Info` as well:
 `a050_300000` has three, two of them with the states 358 and 940. :observed{games="sekiro"} The trail of a light attack comes from
-the weapon, not from an effect event (see [weapon trails](/engines/fromsoft/effects/fxr/#weapon-trails)).
+the weapon, not from an effect event (see [weapon trails](/engines/fromsoft/effects/effect-starts/#weapon-trails)).
 
 ## Spell and item events
 

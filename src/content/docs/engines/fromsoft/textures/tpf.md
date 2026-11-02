@@ -178,7 +178,11 @@ alone. :observed{games="elden-ring"} The shader METAPARAM category 1 (albedo) of
 `AlbedoMap` in all 140,357 bindings where both exist, and 99.1% of them carry the sRGB tag; categories 4 (normal),
 10 (flow) and 14 to 17 (metallic and masks) carry it on 0 to 2.2% of their bindings and category 6 (emissive) on 90%.
 :observed{games="elden-ring"} Whether the game views the untagged albedo textures as sRGB is not in the files.
-:unknown{games="elden-ring"}
+:unknown{games="elden-ring"} The effect draws of two frame captures bind block-compressed BC1 textures two ways: as a
+`BC1_UNORM` resource viewed as `BC1_UNORM` (530 and 299 bindings) and as a `BC1_TYPELESS` resource viewed as
+`BC1_UNORM_SRGB` (10 and 12). :observed[the effect draws of two frame captures]{games="elden-ring"} The captures do not name
+the textures, and no effect texture's header states `BC1_UNORM` (DXGI 71), so which header kind each binding comes from is
+matched only by size, which does not separate them. :observed{games="elden-ring"}
 
 ## Package format codes in the installs
 

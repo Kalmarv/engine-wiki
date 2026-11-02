@@ -172,6 +172,12 @@ alpha kept. The two distortion pixel programs the captures hold (`GXFfxdistortio
 have one pipeline in a frame, and all 156 of their draws in two frame captures (82 and 74) carry that blend; the other
 distortion programs are not drawn in them. :observed[two frame captures of a running session]{games="elden-ring"}
 
+The frame each sheet moves is copied just before it: each distortion draw follows a `PointSampleColor1` draw into a target of
+its own, and the distortion draws come as one run after the other effect draws of the full-resolution effect pass, with no
+other effect draw among them (21, 22 and 20 sheets in three frames of two sessions). :observed[three frames of two capture
+sessions]{games="elden-ring"} So each sheet moves the picture with every effect drawn before it, and the sheets drawn before
+it, in it. :inferred{games="elden-ring"}
+
 :::open[Can an effect file's blend mode change a distortion's blend?]
 Action 607 stores a blend mode, as the billboards do, but no captured distortion draw is tied to its effect file, so whether a
 sheet of another mode draws with another blend is not read. The captures hold one pipeline per distortion program, which fits

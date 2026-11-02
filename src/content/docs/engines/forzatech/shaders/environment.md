@@ -239,3 +239,36 @@ a box intersected with the eye ray per wall; its atlas cell is `(RoomAtlasIndex 
 ceiled `RoomPos` under a per-draw matrix when `RoomRandomisationOnOff`, else 0), and reaches `RT1.xyz`, not the albedo. The only `discard` compares a constant of the draw with one. :observed
 
 A cell of the room atlas (`BoxDiffRoughTex`, `BoxEmissiveTex`) is four columns wide: the first column holds two side walls (one above the other), the second a back wall in its lower half and black in its upper half (the front, which no view reaches), the third the floor and the fourth the ceiling, each one tile spanning both rows of its column. Viewed as decoded images, the `BoxDiffRoughTex` textures of the Shibuya Scramble box's windows that were looked at (2048 x 512 for a one-cell texture) show this layout; the back wall is the tile at `u` 0.25 to 0.5, `v` 0.5 to 1 of the cell, `v` down the image. Without `BoxUseAtlas` the whole texture is one cell; with it `RoomAtlasCount` gives the columns and rows of cells and `RoomAtlasIndex` a zero-based (column, row), wrapped by the count. :observed
+
+### The room's glow
+
+In `_Standard_E` the traced room's emission (`BoxEmissiveTex`) reaches `RT1.xyz` scaled as follows: :observed[the expressions of the permutation's three `RT1` colour channels]
+
+```
+E = room · g(d) · GIBakeEmissiveScale · F · WindowTintColour.rgb · H · ExposureValues · COLOR.x · S
+S = sat((INSTANCE_VARIATION.y − EmissiveVariationMin) / (EmissiveVariationMax − EmissiveVariationMin))
+```
+
+`g(d)` is the distance encoding of [Emissive](/engines/forzatech/shaders/world-families/#emissive) and `H` the warm/cold
+hue term of the [`_Emissive` permutations](#what-each-g-buffer-channel-depends-on) (`WarmHue`,
+`ColdHue`, length √3), which the shader applies or leaves out by a switch, as there. :observed `F` has the form
+`(1 − a)(1 − b⁵)`, the shape of one minus a Schlick Fresnel term, so less of the room shows at grazing angles. :inferred
+So a pane's room is dark where its vertex colour's red is 0 or where its placement's `INSTANCE_VARIATION.y` is at or below
+`EmissiveVariationMin`, and nothing in the term depends on the time of day: none of the 51 permutations reads
+`LightSwitchOnTime` or `LightSwitchOffTime`. :observed
+
+Over the Shibuya box (the 3,259 `window_linecastroom` materials loaded with its prototypes, their 1,361 window primitives
+and 22,662 placements): :observed[a census of the box's prototypes and placements]
+
+| Input | Values | Confidence |
+|---|---|---|
+| `ExposureValues` | 1.4 in 2,908 materials, 0.352 in 183, 11.2 in 156, 0.704 in 12: a material constant | :observed |
+| `GIBakeEmissiveScale`, `EmissiveTempVariationOnOff` | 1 in every material | :observed |
+| `Emissive` | 1 in 3,163, 0 in 96 | :observed |
+| `LightSwitchOnTime`, `LightSwitchOffTime` | −1 in 2,643; 0.01 and 0.02 in 616 | :observed |
+| `EmissiveVariationMin`–`Max` | 0–0.2, 0.1–0.3, 0.2–0.4, 0.6–0.75, 0.6–0.8, 0.7–0.9, 0.7–1, 0.75–0.9, 0.8–0.9 and 1–1 over the placed primitives; most often 0.7–0.9, 0.75–0.9, 0.7–1 and 0.6–0.8 | :observed |
+| `COLOR.x` | Every window primitive has `COLOR_0`. Over the 25,281 triangles of the prototypes, 27.6% are 0, 21.9% are 1 and 50.4% between (multiples of 1/255, 120/255 the commonest); weighted by placements, 96.4% of 145,639 placed triangles are 1 and 1.3% are 0 | :observed |
+| `INSTANCE_VARIATION.y` | The placement record's variation byte over 255, spread evenly over 0 to 1 on the 22,654 rule placements; the 8 hand placements have no variation byte | :observed |
+
+With those ramps `S` is 0 on 73.4% of the 140,366 placed triangles of rule placements, 1 on 11.0% and between on
+15.6%; `COLOR.x · S` is 0 on 73.5%. So about three windows in four show a dark room wherever the box is drawn. :observed

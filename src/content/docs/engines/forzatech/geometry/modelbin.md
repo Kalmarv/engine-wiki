@@ -231,6 +231,14 @@ material id without a `MatI`, a variant table that does not end at the blob end 
 :proven Together they hold 792,016,881 indices on 243,811,731 vertices in the Tokyo track and 1,932,566,781 indices on
 962,738,195 vertices in the zips. :proven 5,938 Tokyo files contain only occluder meshes. :observed
 
+A mesh can hold the same triangle more than once. Over the 3,297,221 triangles of every LOD of the models placed in the
+Shibuya box, 3,565 (168.7 m²) repeat an earlier triangle of the same mesh corner for corner, bit for bit in every vertex
+stream and with the same winding; 3,062 of them are `environment` triangles, 157 `environment_rcsm`, 95 `TERR_Mega_Distant`
+and 30 `deferred_decal_standard`. A further 6,843 repeat only the positions, in any corner order (10,408 in all,
+5,597 m²); the largest area of those is in `environment_glass` (172 triangles, 1,453 m², none of them a full repeat).
+:observed On an opaque surface a full repeat adds nothing to the picture (a blended one would draw twice), and a position-only repeat in glass is most likely the reversed
+back face of a pane, as in the [terrain meshes](/engines/forzatech/terrain/heightfield-clusters/). :inferred
+
 ## Normals at the instance
 
 The instanced vertex shaders (`environment`, `uber_rock`, `uber_rock_array`) place a normal as

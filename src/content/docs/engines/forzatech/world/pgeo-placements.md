@@ -261,5 +261,8 @@ The install holds ten masks: 0 (75,018 files, 12,258,944 records), 119 (3,151; 2
 
 The seasonal files repeat positions: in one 75 m cell (47, 59) all 2,162 `SUSUKI_WNT_A` positions are also `SUSUKI_SUM_A`
 positions in `_221` and again in `_187`; a winter `bld_gbl_resi_04_a_snow` sits exactly on its `bld_gbl_resi_04_a`.
-Reading every file therefore stacks up to four copies. :observed See [Seasons](/engines/forzatech/world/seasons/) for what
+Reading every file therefore stacks up to four copies. :observed Within one season the same prototype is also placed
+twice at one transform: of the 82,026 summer placements of the Shibuya box, 274 transforms hold two placements of one
+prototype (548 placements). Most are tree and bush impostors (`tre_gbl_deciduous_e_impostor` at 100 transforms,
+`bsh_gbl_elm_b_impostor` at 59); the rest are building pieces such as the `*_billbrd_01_a_3D` billboard bases and tops. :observed See [Seasons](/engines/forzatech/world/seasons/) for what
 else changes by season.

@@ -96,7 +96,11 @@ slot 11), but in slots 1 and 6 only the impostor has ranges (0 to 400 or 500 m a
 bush). :observed Slot 13 is therefore probably the main colour view: the one pass with the finest LOD and the near bands.
 :inferred The flattenable-bush proxy templates (`bsh_flat_*_3D`, `Bush_Flattenable_Hard_3D`: two triangles, material
 `art_mesh`, and bucket `0x18` for `Bush_Flattenable_Hard_3D`) have ranges in slot 11 only, and every one of the 924 placed in the area has a real `_3D` bush at
-the same position. :observed The distinct range ends of every slot are all values of the main-view LOD profile distances
+the same position. :observed The impostors are placed the same way: each of the 3,270 placements of the 26 `<x>_impostor`
+templates in and within 30 m of the area has a placement of the same tree's or bush's `<x>_3D` template at the same position
+(within 1 cm). They come from the rule files (`…so.pgeo` 2,764, `…ulc.pgeo` 253, `…ulp.pgeo` 253). :observed An impostor is
+marked only by names: the template's `_impostor` suffix, its materials' `Impostor_LOD<n>` names and the `uber_foliage`
+`Impostor` parameter, while their meshes' bucket flags (`0x38`) are those of other foliage. :observed The distinct range ends of every slot are all values of the main-view LOD profile distances
 (`.pvs`, pass 2, tier 1 or 3), which does not tell the slots apart either. :observed
 
 ## The template box is not the model's extent

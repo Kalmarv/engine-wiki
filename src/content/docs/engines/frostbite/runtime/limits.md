@@ -18,6 +18,7 @@ the same pool. :observed
 | Light ids per class | 8,192 in each of six classes | Guard refuses new light entities near capacity | :observed |
 | Physics geometries/bodies | 5,000 / 8,200 | 40,000 / 65,000 from 1.1.7 | :sourced[ReSkate] |
 | Render-resource ids | 8,192 | 65,536 from 1.1.7 | :sourced[ReSkate] |
+| Spatial records per cull-id owner (the array at owner `+0x330`) | 65,536, no capacity check | Unchanged in 2.1.2: it caps a level below the raised cull-id list | :observed |
 | Entity slots | Not established here | 262,144 in 2.0.7; an older 524,288 log label is stale | :sourced[ReSkate] |
 | Renderer descriptor heap | 131,072 per frame | Raised by 2.1.0 | :sourced[ReSkate] |
 | Mesh streaming pool | 532,960 KB | Version-dependent sizing | :sourced[ReSkate] |
@@ -51,6 +52,22 @@ The game's `GameView.cfg` sets 80,000, but it is read only in GameView mode; ord
 One spatial/render object holds its id at `+0x3c`. Grouped instances are counted by member mesh, not instance.
 Repeated skater creation due to missing spawn ground can exhaust ids independently of the map's steady count.
 :observed
+
+The same owner holds a second, paged array at `+0x330`: 512 page pointers (`+0x330` to `+0x1330`), the page
+allocator at `+0x1330` and a `u32` count at `+0x1338`. A page holds 128 records of `0x30` bytes. The append
+`Skate+0x4eeff50` takes page `count>>7`, allocates a missing page, returns `page + (count & 127) * 0x30` and
+increments the count, without checking it against the 512 pages. :observed
+
+The registration at `Skate+0x4ebecc9` pops a cull id for an object that has none (`Skate+0x489db30`) and appends one
+record to this array for it, so the array grows with the cull ids the owner hands out. It holds 65,536 records.
+The 65,537th append reads the allocator pointer at `+0x1330` as page 512 and writes the record through it. :observed
+
+In one Studio level loaded under ReSkate 2.1.2, objects needing 100,777 cull ids (one per object per 200 m cell
+the object's box meets) faulted 1 s after the level became active. The fault was at `Skate+0x4ebecf0`, the write of
+the first appended record. The returned record address was the allocator value itself, with a zero record offset,
+as an append at count 65,536 produces. The same level with 49,410 cull ids loaded. So the raised cull-id list does
+not raise the level's capacity: the record array still limits a level to 65,536 cull ids, less what stock resident
+content in the same owner holds. :observed
 
 ## Light tables
 

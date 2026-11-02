@@ -171,10 +171,30 @@ What a writer cannot reproduce is the payload, because the shipped compressors a
 | `KRAK` | `oo2core_6` Kraken at levels 0 to 9 reproduces the shipped payload of none of 40 sampled Sekiro envelopes except the 3 or 4 whose payload is the data stored raw; the sizes at level 6 (the header's level byte) and at level 4 come within about 4 % of the shipped ones, above and below. | :observed{games="sekiro"} |
 | `ZSTD` | Every shipped frame (13 files) has the descriptor byte `0x00` (no content size, no checksum, no dictionary, not single-segment) and the window descriptor `0x80` (a 64 MiB window, the window log of level 21). libzstd 1.5.7 at level 21, streaming without a stated size, makes the same first six bytes for the installed 1.17.3 regulation's 54,111,776 bytes and 1,739,983 bytes after them where the shipped frame has 2,045,636. | :observed{games="elden-ring"} |
 
-A decoder that checks sizes exactly refuses what an envelope with a wrong size word makes of these streams. For 190
-sampled Sekiro and 708 sampled Elden Ring Kraken payloads, `oo2core_6` refuses every one decoded to one byte more than
-the header says, and every one decoded to one byte less except those whose last block is stored (14 and 45), which it
-decodes to the shorter prefix; it refuses every payload one byte short and accepts every payload with one byte added. :observed
+A decoder that checks sizes exactly refuses what an envelope with a wrong size word makes of these streams, except a
+stream that ends in a memset quantum (below). For 190 sampled Sekiro and 708 sampled Elden Ring Kraken payloads,
+`oo2core_6` refuses every one decoded to one byte more than the header says, and every one decoded to one byte less
+except those whose last block is stored (14 and 45), which it decodes to the shorter prefix; it refuses every payload
+one byte short and accepts every payload with one byte added. :observed
 Walking the framing ([Kraken payload framing](#kraken-payload-framing)) refuses the two it accepts: a payload one byte
 over, and an envelope whose decoded size is one less where the last block is stored, both leave bytes after the last block.
 :observed
+
+A memset quantum states no length: it is its header and one fill byte, and it decodes to as many copies of the byte as
+the quantum covers, which only the envelope's decoded size sets. A payload whose last quantum is a memset is therefore
+consistent with the decoded size one less or one more, as long as the last quantum stays within its quantum size, and
+`oo2core_6`, oozextract and the walk of the framing all decode it to its bytes one shorter, or with one more fill byte.
+A one-block payload `8C 06 07 FF FF xx` decodes through `oo2core_6` to as many bytes of `xx`, from 1 to 262,144, as its
+decoded size says, and is refused at 0 and at 262,145, where a second block would need a header. :observed Over every
+Kraken payload of both installs, with each size word one less and one more and the payload one byte short and one byte
+over (six variants of each payload), the walk of the framing followed by `oo2core_6` refuses every variant but decoded
+sizes one off of a payload ending in a memset quantum: 8 of Elden Ring's 702,726 variants and 2 of Sekiro's 162,438,
+each decoding to one byte fewer or one more fill byte. :proven[both archive sets, Elden Ring without the `DLC` pair]
+Elden Ring's `/asset/aet/aet220/aet220_816.tpf.dcx`, 11,884,253 bytes ending in three memset blocks (`8C 06 07 FF FF 00`),
+is one. :observed{games="elden-ring"} So no reader can check the decoded-size word of such an envelope against its
+payload; only the decoded file's own sizes can.
+
+:::open[Is a stream that ends in a whole-match quantum length-free too?]
+A whole-match quantum (a 16 KiB quantum header's escape `0`) states a distance, not a length, as oozextract reads it, so
+the decoded size one off may decode the same way. No shipped payload has a whole-match quantum.
+:::

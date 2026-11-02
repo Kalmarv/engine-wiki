@@ -401,6 +401,15 @@ specular colours `Spc_0` to `Spc_3` (four floats each), then `bLocalLight` (four
 224 bytes a set in Elden Ring. Sekiro's sets put `AmbientSH` (48 bytes) and `AmbientReflection` between the specular
 colours and `bLocalLight`: 288 bytes a set. :observed[the reflection of the installed `GXLightAcc_DDirLightShadowed1` pixel program each recorded graph binds]{games="elden-ring sekiro"}
 
+A direction's `w` is not part of the direction. In the frames recorded from the running game (nine frames of three
+sessions at the Ashina Castle gate), 243 of the 248 draws whose pixel program reads one light set at `b5` bind a set
+whose `Vec_0.w` is 1, with `Vec_1.w` to `Vec_3.w` at 0.12 or 0.15 or 1. The other 5 bind a set of four equal lights of
+colour 1.5 whose every `w` is 50. :observed[nine recorded frames]{games="sekiro"} Elden Ring's forward lake program
+(`M[PlacidLake]_FwdSdw`) takes the sun's highlight with a smoothness of `sqrt(smoothness * (1 - 0.075 / Vec_0.w))`, so a
+larger `w` gives a sharper highlight and a `w` of 0 none that is a number. :observed[the installed program's DXIL]{games="elden-ring"}
+What the game writes to Elden Ring's `Vec_0.w`, and from which stored field, is not established: no recorded Elden Ring
+frame holds its `cbLight` (the forward water draws bind it at `b5` as a 50,432-byte view). :unknown{games="elden-ring"}
+
 In the recorded graphs `GXLightDeferredAOWithSsr` draws the two light targets first, and the sun program blends onto
 them; it reads the environment-map regions' targets, the reflections and the shadow mask. The sun program reads the shadow
 mask that `GXRend_CompositeShadowMask` writes. Elden Ring's `GXRend_TileBasedLighting` reads that mask too, after the mask

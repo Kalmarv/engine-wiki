@@ -137,6 +137,52 @@ scroll, offset and scale before the draw. Whether a scale is about the corner or
 atlas cell applies to every layer, is not established.
 :::
 
+## How the distortion draws move the picture
+
+A distortion sheet ([action 607](/engines/fromsoft/effects/fxr-actions/)) draws the picture already drawn behind it, sampled at
+a moved point. Elden Ring's three distortion pixel programs (`GXFfxdistortion`, `GXFfxdistortionBump` and
+`GXFfxdistortionRotation`, each with a `Soft` variant) read the frame drawn so far (`g_frameBufferTexture`, through the clamping
+linear sampler) and the depth (`g_depthTexture`, through the clamping point sampler). :observed[the disassembly of the pixel
+programs]{games="elden-ring"}
+
+The move is a strength times a falloff from the sheet's centre. With `r` the distance from the centre in the sheet's own
+coordinates (`TEXCOORD0.xy`, 0 to 1 across the sheet: `r = |(|u - 0.5| * 2, |v - 0.5| * 2)|`), the strength is
+`max(1 - g_clampDistanceInverse * r, 0) * 0.01 * g_waveStrength`, in shares of the view: the radius at which it reaches 0 is the
+inverse of `g_clampDistanceInverse`, 1 being the ellipse the sheet inscribes. :observed[the disassembly of the pixel
+programs]{games="elden-ring"} The three programs move the point differently:
+
+| Program | The moved point |
+|---|---|
+| `GXFfxdistortion` (stir) | along the direction at the angle `-TEXCOORD1.z - g_waveTime * TEXCOORD1.y + g_waveNum * r`, by the strength; the vertex program sets `TEXCOORD1.y` to 1 or -1 and `TEXCOORD1.z` to 0 or pi together, by one condition |
+| `GXFfxdistortionBump` (push) | by the strength times the normal texture's `xy * 2 - 1` (`g_normalTexture`, through the wrapping linear sampler), read at the sheet's coordinates scrolled by `g_waveTime` times `g_vNormalMapScrollDistance` and `g_hNormalMapScrollDistance` and scaled about the centre by `g_normalMapScrollScale` |
+| `GXFfxdistortionRotation` (twist) | turned about the sheet's projected centre (`TEXCOORD6`) by the strength in radians, in the view's coordinates (not its pixels, so the turn is not round on a view that is not square) |
+
+:observed[the disassembly of the pixel programs]{games="elden-ring"} The point is the pixel's own place in the view (from
+`TEXCOORD0.zw` over `TEXCOORD1.x`, the clip position over its w) plus the move, scaled by `g_dynamicResolution_UVScale` and
+clamped to `g_resolveRectUV`. Where the depth stored at the moved point is nearer than the sheet (`TEXCOORD3.z`), the program
+samples the pixel's own place instead, so a nearer surface is not pulled in behind the sheet. :observed[the disassembly of the
+pixel programs]{games="elden-ring"}
+
+The sample is multiplied by `g_ps_invPreExposure`, then by the colour `g_color` (with `g_ps_ColorBlendType` 2 it is overlaid
+with it instead) and by `g_vColorScale`; the opacity is `g_color.a * g_vColorScale.a * TEXCOORD5`, and 0 at or below a
+cutoff constant. :observed[the disassembly of the pixel programs]{games="elden-ring"}
+
+The distortion draws blend by their opacity: source colour times its alpha plus the target times one minus it, the target's
+alpha kept. The two distortion pixel programs the captures hold (`GXFfxdistortionBump` and `GXFfxdistortionSoftBump`) each
+have one pipeline in a frame, and all 156 of their draws in two frame captures (82 and 74) carry that blend; the other
+distortion programs are not drawn in them. :observed[two frame captures of a running session]{games="elden-ring"}
+
+:::open[Can an effect file's blend mode change a distortion's blend?]
+Action 607 stores a blend mode, as the billboards do, but no captured distortion draw is tied to its effect file, so whether a
+sheet of another mode draws with another blend is not read. The captures hold one pipeline per distortion program, which fits
+a fixed blend.
+:::
+
+:::open[How does the engine set the strength and the stir from the file?]
+That `g_waveStrength` is the file's intensity unscaled and `g_waveTime` the angle the stir speed has turned through is not
+read: the executable holds no string naming the constants, and their writer is not traced.
+:::
+
 ## Elden Ring's bundle
 
 `/shader/gxffxshader.shaderbnd.dcx` holds 488 members: 279 pixel, 77 compute, 41 vertex, 39 domain, 27 geometry and 25 hull

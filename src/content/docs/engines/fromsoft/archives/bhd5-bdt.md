@@ -37,8 +37,21 @@ SoulsFormatsNEXT for Elden Ring, both with UXM's keys and dictionaries), and eve
 | Elden Ring | `Data0` to `Data3`; `DLC` when the expansion is installed; the sound archives `sd/sd` and `sd/sd_dlc02` | :proven{games="elden-ring"} |
 
 Elden Ring's list, and which of its pairs may be absent, is the one UXM's `EldenRingGameInfo.xml` gives.
-:sourced[UXM]{games="elden-ring"} No path hash appears in two pairs of the same game, so a hash names one file across
-the whole install. :observed
+:sourced[UXM]{games="elden-ring"} No path hash appears in two of Sekiro's pairs, nor in two of Elden Ring's pairs
+without the expansion. :proven[every index]{games="sekiro elden-ring"}
+
+With the expansion installed, the `DLC` index lists five of `Data3`'s hashes again, and no other hash appears in two
+pairs: `/chr/c5550.anibnd.dcx`, `c5550.behbnd.dcx`, `c5550.chrbnd.dcx`, `c5550_h.texbnd.dcx` and `c5550_l.texbnd.dcx`.
+:proven[every index, the expansion installed]{games="elden-ring"} The two copies of each hold the same bytes. Each is the
+same DCX envelope byte for byte up to its end (the 76-byte header and the payload), and each decodes to the same bytes.
+They differ only in padding: `Data3` pads its copies with 6 to 14 zero bytes to a multiple of sixteen; the `DLC` copies
+are unpadded. The records of all ten state a logical size of 0. :proven[all five]{games="elden-ring"} So whichever pair
+the game reads them from, it gets the same file. :inferred{games="elden-ring"}
+
+:::open[Which pair does the game read a hash from when two pairs list it?]
+The five repeats on the installed expansion hold the same bytes, so they cannot tell. Whether a later pair overrides an
+earlier one, or the first listing wins, decides what the game reads only if two listings ever hold different bytes.
+:::
 
 Sekiro's five indexes list 8,765 files, of which UXM's path dictionary names 8,752. :proven{games="sekiro"}
 Elden Ring's six installed indexes list 97,118 files (5,878 in `Data0`, 39,419 in `Data1`, 39,684 in `Data2`, 1,672 in
@@ -48,6 +61,7 @@ the newer copy of that list bundled with Smithbox names 97,045, and Smithbox's o
 sharing a hash) names all 97,118. :proven{games="elden-ring"} The 87 entries UXM 9501be8 leaves unnamed are 77 `.dcx` files
 (54 `parts/*.partsbnd`, 8 `chr/*.texbnd`, 4 `chr/*.anibnd`, 4 `chr/*.chrbnd`, 3 asset geometry binders, 2 `.gparam`
 and 2 `.devpatch` shader bundles), 5 `.bnk` and 5 `.wem`. :proven{games="elden-ring"}
+The expansion's `DLC` index lists 33,755 files, five of them the repeats above. :proven{games="elden-ring"}
 `Data5` holds the map files: its salt is `NTC_map` and its index lists 5,449 of them. :observed{games="sekiro"}
 
 ## The index is wrapped in RSA
@@ -195,11 +209,12 @@ then candidates for that file. :inferred
 
 Smithbox's file dictionaries list, for each path, the archive it is said to be in and a flag that says whether the path was
 validated. Sekiro's lists 8,949 paths (no archive named; 8,752 flagged valid and in the index, 197 flagged invalid and not) that
-name 8,752 of the 8,765 index entries. :proven{games="sekiro"} Elden Ring's lists 130,951 lines (130,946 distinct paths) and
-names all 97,118 index entries; 97,123 of its lines hash into the index (five paths twice). The archive it states is the pair
+name 8,752 of the 8,765 index entries. :proven{games="sekiro"} Elden Ring's lists 130,951 lines (130,946 distinct paths) and,
+held to the indexes without the expansion, names all 97,118 index entries; 97,123 of its lines hash into the index (five paths twice). The archive it states is the pair
 that holds the path for all but five paths (stated `dlc`, in `Data3`), but the flag is not exact: 10,467 paths flagged invalid are
-in the index, and 33,750 flagged valid are in none; 33,757 of the lines state the archive `dlc`, which the index does not
-list. :proven{games="elden-ring"}
+in the index, and 33,750 flagged valid are in none; 33,757 of the lines state the archive `dlc`, which those indexes do not
+list. :proven{games="elden-ring"} The five paths stated `dlc` but held in `Data3` are the five the expansion's index
+lists again. :proven{games="elden-ring"}
 
 :::open[What is the byte at offset 5 of the index header?]
 It is 0 or 1. Neither reference reader gives it a meaning, and reading does not depend on it.

@@ -179,6 +179,29 @@ c = lerp(lerp(1, WarmHue.rgb, sat(h)), ColdHue.rgb, sat(−h))     h = 2 · frc(
   therefore drops to `1 − EmissiveFlashIntensity` of its value for the rest of each period. :observed `t` is likely the
   clock. :inferred
 
+## Mega-skirt (the `_MS` permutations)
+
+Following `_Standard_MS`'s albedo channels back to their inputs gives the blend toward the ground near the bottom of a
+mesh. :observed
+
+```text
+h  = worldpos.y + cb2[8].y − height(xz)          height: a texture at cb7[29] · (worldpos.xz + cb2[8].xz + cb7[29].xy)
+H  = MegaSkirtUseVariationOnOff ? INSTANCE_VARIATION.z : MegaSkirtHeight
+s  = sat((h − H) / −H) · cb7[28].x               1 at the ground, 0 at the height H
+m  = lerp(clip.r, 0.5, f) · 2 − 1                clip: the terrain clipmap (class 0, space 4, t0, a 2D array)
+k  = sat((sat(S · m − S + (2S + 1) · s) − MegaSkirtHeightMin) / (MegaSkirtHeightMax − MegaSkirtHeightMin))
+albedo = lerp(DiffAlphaTex_A, clip · (1 − f), k)                         S = MegaSkirtHeightStrength
+```
+
+- `clip` is read in the clipmap ring that holds the pixel: a loop over the rings at `cb7[36]` onwards compares the
+  position with each ring's origin and extent, the coordinate is `(pos − origin) · scale` from that ring's row, and the
+  array slice and mip come through a `Texture3D<uint>` page table (space 12). `f` fades out the ring at its edge. :observed
+- The ring rows, the height texture's mapping (`cb7[29]`) and `cb7[28].x` are scene constants written by the engine, and
+  the clipmap is the near-field ground the engine writes at run time ([Near-field ground](/engines/forzatech/terrain/near-field-megatexture/)),
+  so the blend's colour, its height source and its overall factor are not in any file. :observed The material holds
+  only `MegaSkirtHeight`, `MegaSkirtHeightMin`, `MegaSkirtHeightMax`, `MegaSkirtHeightStrength`, the normal limits
+  `MegaSkirtNormalMin` and `MegaSkirtNormalMax` (read by the normal channels) and `MegaSkirtUseVariationOnOff`. :observed
+
 ## Signage
 
 `signage_*` families (the `*_CM` permutations) colour a one-channel or RGBA mask atlas of `AtlasImages.zw` (columns, rows)

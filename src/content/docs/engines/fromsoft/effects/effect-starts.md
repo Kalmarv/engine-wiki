@@ -25,10 +25,11 @@ A census reads every effect binder (`/sfx/*.ffxbnd.dcx`), every event file of th
 inside object, part and asset binders), every map layout, every event script and every param table of the install, and counts
 an effect file as reached when one of these names it:
 
-- a param field that names effects by its values: at least three distinct values of 1,000 or more in the field are effect
-  files, and they are at least half of its distinct values of 1,000 or more (94 fields in Elden Ring, among them all fifteen of
-  `HitEffectSfxParam`; 96 in Sekiro). The rule reads no field name, so it leaves the enumerations, sizes, flags and dummy
-  polygons whose names say `sfx` and whose small values match low effect ids;
+- a param field whose name or its table's says `sfx` or `ffx` (the community's paramdef names) and whose values agree: at
+  least three distinct values of 1,000 or more in the field are effect files, and they are at least half of its distinct
+  values of 1,000 or more (82 fields in Elden Ring, among them all fifteen of `HitEffectSfxParam`; 87 in Sekiro). The values
+  leave the enumerations, sizes, flags and dummy polygons whose names say `sfx` and whose small values match low effect
+  ids; the name leaves fields whose values match effect ids by chance (below);
 - an animation event field the community template names `FFX ID` (events 96, 118 and 120 hold effect ids; see below);
 - a map SFX or wind SFX region ([type 5 and 6](/engines/fromsoft/world/msb/#effect-regions-type-5));
 - an event-script argument the instruction table names `SFX ID`, stored in the instruction or passed in by an initialiser that
@@ -39,21 +40,39 @@ an effect file as reached when one of these names it:
 | Effect files reached | Elden Ring | Sekiro | Confidence |
 |---|---:|---:|---|
 | effect files (distinct ids) | 11,912 | 2,669 | :proven[every member of every effect binder] |
-| by params | 5,905 | 1,114 | :observed |
-| by animation events | 2,777 | 825 | :observed |
-| by a reached effect's spawn | 1,424 | 260 | :observed |
-| by map layouts | 127 | 142 | :observed |
+| by params | 5,851 | 1,101 | :observed |
+| by animation events | 3,300 | 825 | :observed |
+| by a reached effect's spawn | 1,460 | 258 | :observed |
+| by map layouts | 159 | 142 | :observed |
 | by event scripts | 153 | 32 | :observed |
-| by any of them | 9,058 (76.0%) | 2,067 (77.4%) | :observed |
-| by none | 2,854 | 602 | :observed |
+| by any of them | 9,571 (80.3%) | 2,058 (77.1%) | :observed |
+| by none | 2,341 | 611 | :observed |
 
-The counts hold for the rules above over every record of both installs, except three of Sekiro's param tables the census does
-not read (the two behaviour banks' defaults and the menu colour table, whose headers carry format flags 1 and 2).
-:observed[every record of both installs] The largest single routes are params alone (4,935 effects in Elden Ring, 881 in
-Sekiro) and animation events alone (2,308 and 722). :observed Of the effects none of them reaches, Elden Ring's
-`commoneffects` binder holds 963, `commoneffects_dlc02` 325, the map binders 1,124 (`m60` 260, `m19` 116, `m21` 113), the
-character binders 475 and the mimic binders 150; Sekiro's `commoneffects` holds 371 and its map binders 253 (`m11` 142); an
-effect held by two binders counts in each. :observed What starts these (the game's code, an id computed from another, a
+The counts hold for the rules above over every record of both installs (Elden Ring's with the Shadow of the Erdtree
+archive, `DLC.bhd`), except three of Sekiro's param tables the census does not read (the two behaviour banks' defaults and
+the menu colour table, whose headers carry format flags 1 and 2). :observed[every record of both installs] The effect files
+are the same with and without the DLC archive: its effect binders are in the base archives. Without it, Elden Ring has 935
+map layouts against 1,347 with it, and 1,088 animation event files against 1,299. :observed The largest single routes are
+params alone (4,893 effects in Elden Ring, 874 in Sekiro) and animation events alone (2,794 and 726). :observed Of the
+effects none of them reaches, Elden Ring's `commoneffects` binder holds 994, `commoneffects_dlc02` 255, the map binders 1,002
+(`m60` 260, `m19` 116, `m21` 76), the character binders 121 and the mimic binders 150; Sekiro's `commoneffects` holds 380
+and its map binders 253 (`m11` 142); an effect held by two binders counts in each. :observed
+
+The values alone mark fields whose names say they hold something else. In Elden Ring 12 fields pass the value test but
+have no `sfx` or `ffx` in the table or field name, among them `EquipParamAccessory.sellValue` (3 of its 4 values of 1,000
+or more are effect ids), `BonfireWarpTabParam.sortId` (11 of 18), `AtkParam_Npc.throwTypeId` (5 of 6) and
+`WeatherParam.SoundId` (3 of 3). In Sekiro there are 9, among them `CharaInitParam.equip_Helm` (3 of 5) and the four
+`HitEffectSeHitWallParam` sound fields (4 of 4 each). Without the name test they reach 32 effect files in Elden Ring and 9
+in Sekiro that nothing else does. :observed[every field of every param of both installs] That these are coincidences is
+read from their names. :inferred
+
+Held to Smithbox's Elden Ring param meta, the fields it marks as effect files (an `ExtRefs` to an `.fxr` path) agree with
+the rule. Of the meta's effect fields in the tables read, 61 are taken. 215 hold no value of 1,000 or more, 54 hold at most
+two effect ids, and `RoleParam.sosSignSfxId` holds 4 among 9. :observed[the meta at Smithbox fdde3225 against every row of
+the install] The rule finds 21 effect fields the meta does not mark, each with every value of 1,000 or more an effect id:
+the fifteen of `HitEffectSfxParam` (179 distinct ids each), `MapMimicryEstablishmentParam.mimicrySfxId0` to `2` (41, 41
+and 40) and `WeatherParam.SfxId`, `SfxIdOutdoor` and `WindSfxId` (13, 6 and 3). :observed Sekiro's meta marks no field as
+an effect file. :observed[every file of Smithbox's SDT meta] What starts these (the game's code, an id computed from another, a
 record no rule here reads) is not known. :unknown
 
 Event scripts name more effects through their arguments than in their instructions: Elden Ring's "Create Asset-following SFX"
@@ -62,7 +81,7 @@ names an effect file in 349 instructions directly and in 589 initialiser calls t
 installs]
 
 :::open[What starts the effects no record names?]
-A quarter of the effect files of each game are named by none of the records above.
+A fifth of Elden Ring's effect files and a quarter of Sekiro's are named by none of the records above.
 :::
 
 ## Spells, bullets and items

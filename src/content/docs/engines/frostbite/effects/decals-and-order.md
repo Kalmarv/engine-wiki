@@ -46,6 +46,30 @@ pairs, the same key in 41); both sides of every such pair write depth. :observed
 In game, two bit-identical opaque copies of the same triangles do not flicker, but which material shows differs
 between builds: at equal depth the later draw wins. A re-triangulated coplanar copy fights in bands. :observed
 
+## Blended surfaces without a stencil test
+
+Not every blended stock surface is a decal. Reading the LOD 0 sections of every stock MeshSet in every superbundle TOC
+(126,599 sections; 35,433 distinct sections among those with a program row, 2,335 with none) and the render states of
+each section's program row: :observed
+
+- **Effects.** 50 sections of 48 meshes have only programs that blend, write no depth and test no stencil. 47 are under
+  `effects/` (smoke columns, light shafts, contrails, objective tubes, UI effects); the others are two vista glow sections
+  of `world/terrain/ftue_bamvista_02` and one community-park wall. :observed Testing no stencil, they draw over
+  whatever is behind them, opaque or not. :inferred Of nine such blend-only rows whose programs were decoded, seven test
+  depth GreaterEqual with no bias and blend with the same factors as the decal programs (the premultiplied pair);
+  `[2142, 2589]` blends with the glass rows' factors below, and `[49, 651]` has a second program with depth bias −10
+  and other factors. :observed
+- **An opaque base with a blended pass.** 257 sections have a row that holds both an opaque, depth-writing,
+  stencil-marking program and a blending program with no stencil test: emissive lamps (`CMN_LGT_Emissive_M` and kin on
+  `world/lighting` fixtures), vehicle brake, signal and head lights, screens, signage, stained and dirty glass, and water.
+  :observed The blending program of the glass, lamp and screen rows writes no depth and uses a different blend record
+  from the decals', the same factor for source and destination. :observed That record is additive (One, One), so the
+  pass adds light on top of the opaque surface: stock glass is an opaque surface with a glow on top, not a pane that
+  shows the scene through it. :inferred
+
+Effect rows such as `[1384, 1655]` read the same vertex elements as the stock decal row 1444 (position, UV0 and tangent
+space), but the position as Half4 where row 1444 reads Float3. :observed
+
 ## Stock program properties
 
 | Programs | Property | Confidence |

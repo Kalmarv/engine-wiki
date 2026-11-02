@@ -48,6 +48,14 @@ the stock LED donor, program 1138. The compiled material writes
 `RadiosityMaterial.EmissiveIntensity = 683 * emission_strength`, and LED section vertices have Color0 zero.
 There is no ToD condition on those emission fields. :observed
 
+Stock content barely uses `EmissiveIntensity`: of the 161,109 `RadiosityMaterial` objects in the EBX documents of every
+superbundle TOC, 161,085 hold 0. The other 24 are all in `bam_levelroot` and the `dingolevel_sdm` interiors:
+`Glass_Opaque_01_2x2m_WSDark_M` (200 and 1,200), `Glass_Stained_01_2x2m_M_Interior` (250 to 45,000 over several
+variants), `lambert4` (30,000 and 45,000), `Signage_Electronic_Wave_01_1x1_M` (10,000) and `DEV_ProxyGrid` (1,500).
+:observed Stock emissive lamps, screens and signs therefore get their glow some other way, through their programs' own
+emission and the blended passes described under
+[decals](/engines/frostbite/effects/decals-and-order/#blended-surfaces-without-a-stencil-test). :inferred
+
 Studio's available map domains are surface, decal, foliage, ocean and glass_opaque. No unlit world program is
 identified in the inspected stock material/program set, and ReSkate's merge retains base programs. Black base
 colour plus emission is an available material arrangement; a general unlit map-shader route is not established.

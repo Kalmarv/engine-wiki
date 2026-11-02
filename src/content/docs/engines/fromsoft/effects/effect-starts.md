@@ -74,8 +74,9 @@ the fifteen of `HitEffectSfxParam` (179 distinct ids each), `MapMimicryEstablish
 and 40) and `WeatherParam.SfxId`, `SfxIdOutdoor` and `WindSfxId` (13, 6 and 3). :observed Sekiro's meta marks no field as
 an effect file. :observed[every file of Smithbox's SDT meta]
 
-The effects a field names do not all sit in one binder. Of the distinct ids of each `HitEffectSfxParam` field, 168 are in
-`sfxbnd_commoneffects` and 11 in `sfxbnd_commoneffects_dlc02`. `mimicrySfxId0` to `2` each name one effect of the common
+The effects a field names do not all sit in one binder (counted below as distinct ids over all rows, the -1 and 0 that name
+nothing left out). Of the distinct ids of each `HitEffectSfxParam` field, 168 are in `sfxbnd_commoneffects` and 11 in
+`sfxbnd_commoneffects_dlc02`. `mimicrySfxId0` to `2` each name one effect of the common
 binder (302604, 302605 and 302606), and every other id they hold is in a binder of its own named for it
 (`sfxbnd_mimic000302607` holds 302607; 302756 is in two). `WeatherParam.SfxId` names 8 effects of the common binder, one of
 the DLC's and four of the area binders `m11`, `m28` and `m61`; `SfxIdOutdoor` one of the common binder, one of the DLC's and

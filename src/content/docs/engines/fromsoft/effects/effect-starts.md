@@ -148,6 +148,14 @@ start nothing) and asks the file loader for the file of that number where the ta
 executable's event dispatcher, effect module, instance and manager of one build] The handler reads no parameter and no state
 of the character or the weapon. :observed[the same code] That the 3,009 events start nothing for lack of a file is therefore
 what the code and the files show; what the loader does with a number that names no file is not decoded. :inferred
+The event's flag bytes reach the effect's slot: byte 12 ("Ignore Dummy Poly Angle"), byte 13 ("Follow Dummy Poly") and byte 14
+("Restrict to Dummy Poly") of a type 96 event are kept with the slot, and the effect follows its dummy polygon through an object
+that gives the effect its matrices. :observed[decompilation of the handler, the slot and that object, Elden Ring 1.17.3] With
+the ignore-angle byte set, that object rebuilds each matrix from the dummy polygon's position and its Z axis alone: the Y axis is
+world up `(0, 1, 0)`, the X axis the normalised cross product of up with the dummy's Z axis, and the Z axis the cross product of X
+with up, so the effect keeps the dummy's heading on the ground plane and drops its pitch and roll (a Z axis exactly vertical gives
+the world's axes). :observed[the same decompilation and the constants it reads in the running image]{games="elden-ring"} With the
+byte clear the effect takes the dummy polygon's full rotation. :inferred
 The family files are reached by type 118. A blade event (type 118) is 16 bytes: the effect number (32 bits), the dummy polygon
 source (16 bits at byte 4), the base polygon (16 bits at byte 6), the tip polygon (byte 8) and the slot (byte 10).
 :observed[the handler's reads and 2,723 events] Its handler adds to the effect number a number the character's data keeps for

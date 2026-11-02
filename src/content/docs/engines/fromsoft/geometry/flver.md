@@ -195,9 +195,15 @@ meshes that share one material, so a mesh's sidedness comes from its own face se
 the same row its [texture level](/engines/fromsoft/textures/tpf/#which-form-is-drawn) reads. The row holds a border
 `B` and a play distance `P` for each of the five boundaries between levels 0 and 5 (`lv01` at offsets 0 and 4, `lv12` at
 8 and 12, `lv23` at 16 and 20, `lv34` at 24 and 28, `lv45` at 32 and 36), and `s` scales every border: the entry of row
-`lodType` (the row's byte at 80, rows 0 to 10) of the load balancer's draw-distance scale param at its current level,
-1.0 where the row is missing (texture borders take rows 100 to 110 instead). The view distance `d` is the eye's
-distance to the model's world box times a factor of the view. :observed[read from the executable's code]{games="elden-ring"}
+`lodType` (the row's byte at 80, rows 0 to 10) of `LoadBalancerDrawDistScaleParam` at the load balancer's current
+level (below 21), 1.0 where the row is missing (texture borders take rows 100 to 110 instead). The view distance `d` is
+the eye's distance to the model's world box times a factor of the view. :observed[read from the executable's code]{games="elden-ring"}
+The function that fills the scales takes another param index only when a check returns 0, and the check returns a word
+it sets to 1 when it finds 0, which no other code or data of the executable refers to; that index is also past the
+end of the game's table of param names, so `LoadBalancerNewDrawDistScaleParam_win64` is not read for these scales.
+:observed[read from the executable's code and its references]{games="elden-ring"} Which level of the scale param
+applies is the load balancer's state while the game runs; for each of the 679 placements of `m60_42_36_00`, the row
+of its LOD type holds one scale at every level or is absent, so its borders do not depend on that state. :observed[one area read]{games="elden-ring"}
 That factor sits in the view at the same place relative to the eye as the texture switch's field-of-view factor, so it
 is `tan(fovY / 2) / tan(21.5°)`. :inferred{games="elden-ring"}
 

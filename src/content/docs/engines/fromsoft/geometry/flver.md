@@ -198,8 +198,8 @@ the same row its [texture level](/engines/fromsoft/textures/tpf/#which-form-is-d
 `lodType` (the row's byte at 80, rows 0 to 10) of `LoadBalancerDrawDistScaleParam` at the load balancer's current
 level (below 21), 1.0 where the row is missing (texture borders take rows 100 to 110 instead). The view distance `d` is
 the eye's distance to the model's world box times a factor of the view. :observed[read from the executable's code]{games="elden-ring"}
-The function that fills the scales takes another param index only when a check returns 0, and the check returns a word
-it sets to 1 when it finds 0, which no other code or data of the executable refers to; that index is also past the
+The function that fills the scales takes another param index only when a check returns anything but 1, and the check
+returns a word it sets to 1 when it finds 0, which no other code or data of the executable refers to; that index is also past the
 end of the game's table of param names, so `LoadBalancerNewDrawDistScaleParam_win64` is not read for these scales.
 :observed[read from the executable's code and its references]{games="elden-ring"} Which level of the scale param
 applies is the load balancer's state while the game runs; for each of the 679 placements of `m60_42_36_00`, the row

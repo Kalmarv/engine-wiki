@@ -33,6 +33,13 @@ program checked as well. It does not assign a surface meaning merely because a t
 Both games' writers encode a world normal as `n * 0.5 + b`, where `b` has float bits `0x3F002008`
 (approximately 0.50048876). The lighting path decodes with `x*2-1` and normalizes. :observed
 
+Elden Ring's target 0 normal is in the map's left-handed frame, not the view's and not a Z-reflected one. In one frame at
+the Stormveil gate, normals rebuilt from the depth target with the frame's own projection and view matrix (the scene
+constants), turned into world space, agree with the decoded target 0 normal to a median of 0.2° about the vertical over
+2.18 million steep pixels; the view-space normals differ by a median of 10.75°, the camera's yaw from the world being
+10.55°, and against the Z-reflected world normals the median dot product is −0.08. :observed[one frame, the targets read
+back before the directional light draw]{games="elden-ring"}
+
 No pass keeps the normal map's variance. Each G-buffer program that reads a normal map decodes its red and green as
 `2t - 1`, rebuilds `z = sqrt(1 - saturate(dot(xy, xy)))`, normalizes the result of the tangent frame and writes that, and
 `dot(xy, xy)` has no other use: no Toksvig- or LEAN-style roughness term. :observed[every use of the self-dot in the 42

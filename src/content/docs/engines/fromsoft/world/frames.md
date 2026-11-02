@@ -17,6 +17,11 @@ The source coordinate frame is left-handed, with +Y up and distances in metres. 
 changes it into a right-handed frame. :sourced[Soulstruct Blender] Sekiro model comparisons preserve positions,
 normals and tangent directions under that reflection, including both tangent handedness signs. :observed{games="sekiro"}
 
+The frame's own constants show the same handedness: the view matrix is a rotation (determinant +1) into a view whose
+projection takes w = +z, a left-handed view, so the frame it turns from is left-handed as well, and the G-buffer's world
+normals are in it (see [the G-buffer](/engines/fromsoft/shaders/gbuffer/#normal-gloss-and-reflectance)).
+:observed[one recording at the Stormveil gate]{games="elden-ring"}
+
 The game's shader programs compute in this left-handed frame, not a reflected one: the asset and map-piece G-buffer
 programs take a draw's instance matrices as the placements in the map's frame (see [the physics and render frames](/engines/fromsoft/world/frames/#the-physics-and-render-frames)
 below). :observed[40 draws of one recording]{games="elden-ring"} A program's result therefore changes under the reflection

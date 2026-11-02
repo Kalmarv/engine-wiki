@@ -229,6 +229,16 @@ established.
 
 ## Elden Ring
 
+### Draw distance and the shadow cut
+
+A placed model's `PartsDrawParam` row also ends its drawing by distance. Each frame and view the model gets an opacity
+of 1 below `drawDist` (offset 52) times the scale of the row's `LBDrawDistScaleParamID` (offset 109), falling to 0 over
+`drawFadeRange` (offset 56); shadow views use `shadowDrawDist` and `shadowFadeRange` (offsets 60 and 64) instead. A
+model whose opacity is 0 is not drawn. :observed[read from the executable's code]{games="elden-ring"} Each drawn
+instance also keeps a shadow level beside its texture level: it turns on beyond `shadowDrawDist` plus a band and back
+off below it minus the band, `shadowDrawDist` replaced by a per-instance value where the instance sets one.
+:observed[read from the executable's code]{games="elden-ring"}
+
 ### Part visibility-related structure
 
 ```layout

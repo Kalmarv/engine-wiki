@@ -189,6 +189,38 @@ face sets of a mesh in every mesh of both installs, motion-blur and coarser-LOD 
 It is not decided by the material: in Sekiro the byte takes both values among meshes of one material class, and among
 meshes that share one material, so a mesh's sidedness comes from its own face sets. :observed{games="sekiro"}
 
+### Which level is drawn
+
+:only[elden-ring] A placed model draws one LOD level at a time, chosen per view each frame from its `PartsDrawParam` row,
+the same row its [texture level](/engines/fromsoft/textures/tpf/#which-form-is-drawn) reads. The row holds a border
+`B` and a play distance `P` for each of the five boundaries between levels 0 and 5 (`lv01` at offsets 0 and 4, `lv12` at
+8 and 12, `lv23` at 16 and 20, `lv34` at 24 and 28, `lv45` at 32 and 36), and `s` scales every border: the entry of row
+`lodType` (the row's byte at 80, rows 0 to 10) of the load balancer's draw-distance scale param at its current level,
+1.0 where the row is missing (texture borders take rows 100 to 110 instead). The view distance `d` is the eye's
+distance to the model's world box times a factor of the view. :observed[read from the executable's code]{games="elden-ring"}
+That factor sits in the view at the same place relative to the eye as the texture switch's field-of-view factor, so it
+is `tan(fovY / 2) / tan(21.5°)`. :inferred{games="elden-ring"}
+
+- When bit 0 of the row's word at 48 (`enableCrossFade`) is set, the level is the largest `k` from 0 to 5 with
+  `d >= s × B + P` for the boundary below it, and between `s × B` and `s × B + P` the model is faded toward the next
+  level by `(d − s × B) / P`. No earlier level is involved. :observed[read from the executable's code]{games="elden-ring"}
+- Otherwise the level moves with hysteresis from the one remembered: the boundary above the current level is crossed at
+  `s × B + P`, the boundary below it at `s × B − P`, and every other boundary at `s × B`; the play distance is not
+  scaled. From level 4 the `lv01` border is compared unscaled. The level remembered between frames is its low two bits
+  (the model's flag word, bits 5 and 6), kept for the main view only, so a model at level 4 or 5 is next evaluated
+  from level 0 or 1. :observed[read from the executable's code]{games="elden-ring"}
+- Shadow views add the row's signed byte at 81 (`shadowDrawLodOffset`) to the level, floored at 0, and measure their
+  own distance; four view kinds take a fixed distance from a table instead. :observed[read from the executable's code]{games="elden-ring"}
+
+The level is handed to each mesh of the model as it is drawn; that a mesh then draws its face sets of that LOD level
+(`(flags >> 24) & 7`) is the reading of the face-set flags, not followed in the code. :inferred{games="elden-ring"}
+
+:::open[Does the drawn face set follow the level the row gives?]
+The level reaches each mesh's draw; whether every mesh then draws exactly its face sets of that level, and what a model
+whose meshes lack a level draws, is not traced; the rule above is read from the code and not compared with frames of
+the running game.
+:::
+
 ### Face counts in the header
 
 The total face count (offset 68) equals the number of triangles in all of a model's face sets, degenerate and motion-blur

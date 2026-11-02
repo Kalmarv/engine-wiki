@@ -240,6 +240,30 @@ earlier release between it and the previous one. Nine params exist only from a l
 `MapNameTexParam_m61`, `MapPieceTexParam_m61`, `MimicryEstablishmentTexParam_m61`, `SignPuddleSubCategoryParam`,
 `SignPuddleTabParam` and `WeatherLotTexParam_m61`. :observed{games="elden-ring"}
 
+### Magic and Bullet
+
+A spell's Magic row names its effects and its projectiles. `castSfxId`, `fireSfxId` and `effectSfxId` are effect ids
+(FXR files of the effect binders), and the pairs `refIdN` and `refCategoryN` (N = 1 to 10) name what the spell
+launches, with the category 0 an attack, 1 a bullet and 2 a special effect (`BEHAVIOR_REF_TYPE`). :sourced[Paramdex]
+An animation's event 2 with `Attack Index` n takes pair n + 1. :inferred{games="elden-ring"} Over the Magic rows of the installed regulation, 739 of the 746 references
+counted resolve to a Bullet row with category 1. :observed{games="elden-ring"} A Bullet row names the effect that flies
+(`sfxId_Bullet`), the one at its hit (`sfxId_Hit`) and further bullets it makes on hit (`HitBulletID`) or along its
+path (`intervalCreateBulletId`), each -1 when unset. :sourced[Paramdex]
+
+Comet Azur (Magic row 4200) shows the chain: its `castSfxId` is 526250 and its `effectSfxId` 526255, and its
+references 1 and 2 are the Bullet rows 10420000 and 10420002. Bullet 10420000 flies effect 526251 with no hit effect,
+10420002 flies 526252 and hits with 526253, 10420004 flies 526254, and 10420001 flies none. Their `hitRadiusMax` is
+-1. :observed[the rows of the installed regulation]{games="elden-ring"}
+
+`BehaviorParam_PC`, which resolves the player's weapon-art and other non-spell launches, does not key its rows by the
+event's fields: the row id equals `variationId × 1000 + behaviorJudgeId` in 1 of its 13,865 rows.
+:proven[every row of the installed regulation]{games="elden-ring"}
+
+:::open[How does the game pick a BehaviorParam_PC row?]
+The id is not `variationId × 1000 + behaviorJudgeId`, so the step from an event 2's `Behavior Judge ID` and the
+weapon's variation to a row is not established.
+:::
+
 ### WorldMapLegacyConvParam
 
 `WORLD_MAP_LEGACY_CONV_PARAM_ST` (data version 2) has 48-byte rows and 196 rows in the installed 1.17.3 regulation. Each

@@ -207,6 +207,21 @@ effect 600030 (at polygon 10301) of `a050_300000`. :observed{games="sekiro"} Att
 `a050_300000` has three, two of them with the states 358 and 940. :observed{games="sekiro"} The trail of a light attack comes from
 the weapon, not from an effect event (see [weapon trails](/engines/fromsoft/effects/fxr/#weapon-trails)).
 
+## Spell and item events
+
+:only[elden-ring] Events 114 and 115 (`Spawn FFX [Goods and Magic]`) start the effect of the spell or item the character
+has equipped, and carry no effect number: their fields are a `Param Type` (0 the Magic param, 1 `EquipParamGoods`), an
+`SFX Index ID` of 0, 1 or 2, and a dummy polygon with its source (body, left or right weapon) and whether the effect
+follows it. :sourced[Smithbox] The effect is then the equipped row's `castSfxId`, `fireSfxId` or `effectSfxId`, by that
+index. :inferred{games="elden-ring"} 780 of the player's animations hold events 114 or 115. :observed{games="elden-ring"}
+
+Event 2 (`Bullet Behavior`) launches a projectile: it carries a dummy polygon, an `Attack Index`, a `Behavior Judge ID`,
+a `State Info` and the hand it comes from. :sourced[Smithbox] For a spell the projectile is a Bullet row named by the
+spell's Magic row (see [Magic and Bullet](/engines/fromsoft/data-model/params/#magic-and-bullet)). :inferred{games="elden-ring"}
+Weapon arts and enemy attacks resolve the event through `BehaviorParam_PC` and `BehaviorParam`. :inferred{games="elden-ring"}
+The player's `BehaviorParam_PC` row ids do not follow from the event's judge id and the weapon's variation by the
+obvious rule (same section). :proven{games="elden-ring"}
+
 ## Event 715
 
 Event 715 stores a u8 selector, three zero bytes, four s32 dummy-polygon ids and a further s32. Community templates name

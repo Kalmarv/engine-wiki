@@ -72,6 +72,40 @@ constants used) shows lane x alone changing the albedo in 36 (30 `Mb2`, 1 `Mb3`,
 2 `Mb2`), lanes x, y and z in `M[AMSN_V][Mb4]` and lane z alone in 2 `Mb4` programs: the plain families with n layers
 use n - 1 lanes. :observed{games="elden-ring"}
 
+### The albedo and the instance palette
+
+Read as value graphs specialised with each material's own constants, the G-buffer programs of the 62 `Mb2`, `Mb3` and
+`Mb4` materials of one Stormveil region (11 of them ColorAdjust) all compute the albedo as `saturate(Over) × F`. `Over` is
+a chain of blends `lerp(below, L_i, w_i)`, one per layer, each weight `w_i` made of sums, products, saturates, minima and
+maxima of vertex lanes (`TEXCOORD4.xy` and `.w`, `TEXCOORD7.x`, `TEXCOORD0.w`) and mask texels. :observed[62 materials of
+one region of `m10_00_00_00`]{games="elden-ring"} A layer's value `L_i` takes one of three forms:
+
+| Layer value | Where | Confidence |
+|---|---|---|
+| `texel × C`, with `C` at most 1 | the plain `Mb2` and `Mb3` layers | :observed{games="elden-ring"} |
+| `lerp(texel, C, f)` | ColorAdjust; `f` between 0 and 1 (`lerp(texel, white, 0.3)`) in 4 of the 11 ColorAdjust materials | :observed{games="elden-ring"} |
+| `texel × C`, with `C` up to 1.47 | ColorAdjust; the blended colour can then pass 1, so the outer `saturate` changes it | :observed{games="elden-ring"} |
+
+`F` is a colour of the drawing instance's palette: `aColor[13 × r + 9 + FC_ColorSlotNo]` of `cbInstanceData` (`b4`), the
+four colours at byte 144 of the 208-byte record `r`, as the [SpeedTree leaf](/engines/fromsoft/vegetation/speedtree/#leaf-colour)
+program reads them. The pixel program's record `r` arrives as `NORMAL0.w`,
+which is no vertex stream here: every `Mb` vertex program writes it from the instance table, at
+`VC_InstanceIdxOffset + SV_InstanceID`, bounds-checked. :observed[the vertex programs of every Mb material of the same
+region]{games="elden-ring"}
+
+In the recorded frames of two sessions at the Stormveil gate (2,076 draws of 26 `Mb` pixel programs, 1,476 of them
+with `b4` recorded), every record an instance can address (2,474 records, among them 1,299 drawn by `Mb3_ColorAdjust`,
+26 by `Mb2_ColorAdjust` and 16 by `Mb4_ColorAdjust`) holds the same palette, four slots of (1, 1, 1, 1), so `F` is white
+there. :observed[two recorded sessions, one area]{games="elden-ring"} The records past the instance count hold world-matrix
+rows, zeros and non-numbers: stale buffer space, not palettes. :observed{games="elden-ring"} That instance `i` reads
+record `i` is inferred from the addressed records being well formed (a valid `mWorld` in rows 0 to 2); the instance
+table itself is not recorded. :inferred{games="elden-ring"}
+
+:::open[Is the instance palette white everywhere?]
+The palette is white over every addressed record of the Stormveil captures. Whether other areas, or other material
+families than `Mb`, draw with a coloured palette, and what fills it, is not established.
+:::
+
 ### Masked blends and overlays
 
 The inspected `M[AMSN][Mb2][Ov_AN]_Gbuf.ppo` uses

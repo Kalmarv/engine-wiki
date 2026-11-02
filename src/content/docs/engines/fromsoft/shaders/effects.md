@@ -2,6 +2,10 @@
 title: Effect shader programs
 description: "The effect shader bundles of Sekiro (399 DXBC programs) and Elden Ring (488 DXIL programs): stages and families, the vertex inputs and render targets of the effect draws, the constant buffers and resources they read, the programs of the particles that live on the GPU, and what Sekiro's engine binds for the effect draws of a running session."
 games: [sekiro, elden-ring]
+sources:
+  - title: fxr
+    url: https://github.com/EvenTorset/fxr
+    note: "the effect file's action fields and their documented values (MultiTextureBillboardEx's unk_ds3_f2_10)"
 ---
 
 Every effect draw of [an FXR file](/engines/fromsoft/effects/fxr/) is shaded by a program from one bundle, separate from the
@@ -75,12 +79,73 @@ near and far fade ranges, soft-sprite parameters, the irradiance volume matrices
 the domain programs `DSCommonBuffer` (736 bytes, the same kinds of values), the hull programs `HSCommonBuffer` (80 bytes), and
 the lit variants `PSEnvLightBuffer` and `VSDSEnvLightBuffer` (576 bytes each). :observed{games="sekiro"}
 
+## How the multi-texture draws compose their layers
+
+A multi-texture billboard ([action 604](/engines/fromsoft/effects/fxr-actions/)) draws three textures on one quad. The pixel
+program samples each layer's texture at its own coordinates (`g_multiTexture0` at `TEXCOORD0.xy`, `g_multiTexture1` at
+`TEXCOORD0.zw`, `g_multiTexture2` at `TEXCOORD1.xy`) and composes the three into one colour before the particle's colour applies.
+:observed[the disassembly of the pixel program]{games="elden-ring"}
+
+Each texel's alpha has `TEXCOORD2.z` added and is clamped to 0..1; the texel's colour is then multiplied by its layer's colour
+(the first layer's red, green and blue from `TEXCOORD4`, which has no alpha read; the second's and third's colour and alpha from
+`TEXCOORD5` and `TEXCOORD6`), and with `g_ps_bPreAlphaMult` above 0 also by the layer's own opacity.
+:observed[the disassembly of the pixel program]{games="elden-ring"}
+
+The first layer gives the colour and the opacity. The second and third each change one of the two, chosen by
+`g_ps_TexBlendType`, by an operation chosen by `g_ps_TexBlendType2` (the second layer) and `g_ps_TexBlendType3` (the third),
+weighted by the layer's own opacity `w`. With `b` the value the layer changes and `l` the layer's colour (for the colour) or its
+brightness, the mean of its red, green and blue clamped to 0..1 (for the opacity):
+
+| Word | Value | Effect |
+|---|---|---|
+| `g_ps_TexBlendType` | 0 | both layers change the colour |
+| | 1 | both layers change the opacity |
+| | 2 | the second layer changes the opacity, the third the colour |
+| `g_ps_TexBlendType2`, `g_ps_TexBlendType3` | 0 | `b * (1 + (l - 1) * w)` (multiply) |
+| | 1 | `b + l * w` (add) |
+| | 2 | `b + (overlay(b, l) - b) * w`, where `overlay(b, l)` is `2 b l` for `b` below 0.5 and `1 - 2 (1 - b) (1 - l)` otherwise |
+| | any other | the layer changes nothing |
+
+Running Elden Ring's `GXFfxtessellateMultiTexture` pixel program (lifted from its module and executed on the CPU) with one
+texel per layer, every value 0 to 2 of `g_ps_TexBlendType`, every value 0 to 3 of the two operation words, both premultiply
+settings and eight sets of texels and layer colours gives this rule on all 768 pixels, to within 1e-4, with the particle
+colour not applied (`g_ps_ColorBlendType` 1), unlit, unfogged and at an exposure of 1.
+:proven[that program, the inputs stated]{games="elden-ring"} The other multi-texture pixel programs (the `Soft`, `GlowD`,
+`2Sampler`, `Bump` and `Blend` variants) are not run. The program then clamps the opacity to 0..1 and the colour to at least 0.
+:observed[the disassembly of the pixel program]{games="elden-ring"}
+
+The particle's colour (`COLOR0`) applies by `g_ps_ColorBlendType`: with 0 the composed colour is multiplied by its direction
+`n = COLOR0.rgb / |COLOR0.rgb|`, squared and scaled by `|COLOR0.rgb|` and `g_vColorScale.rgb`; with 2 the composed colour
+times its opacity is overlaid with `n` and then squared and scaled the same way; with any other value it does not apply. The
+opacity is multiplied by `COLOR0.a` and `g_vColorScale.a` with 0 and 2. :observed[the disassembly, not run]{games="elden-ring"}
+
+In the effect files, the multi-texture billboard's layer word (`unk_ds3_f2_10` in the fxr project's naming) holds 0, 1 or 2 in
+all 13,852 of Elden Ring's multi-texture billboards (1,375, 2,411 and 10,066), as do the two words after it (`unk_ds3_f2_11`
+and `unk_ds3_f2_12`), and the fourth (`unk_ds3_f2_13`) holds 0 or 2 (13,429 and 423). :proven[every multi-texture billboard
+of the install's effect binders]{games="elden-ring"} The fxr project documents the layer word's three values as the table
+above gives `g_ps_TexBlendType`'s. :sourced[fxr] That the four words are `g_ps_TexBlendType`, `g_ps_TexBlendType2`,
+`g_ps_TexBlendType3` and `g_ps_ColorBlendType` follows from the documented first, the value sets and the order. :inferred
+
+:::open[Do the words reach the constants unchanged?]
+The mapping of the effect file's words to the program's constants is read from their values and order, not from a capture of
+the constants the engine binds for a known effect.
+:::
+
+:::open[How are the layers' coordinates made?]
+The coordinates arrive in the vertices: the vertex and domain programs pass them through, so the engine computes each layer's
+scroll, offset and scale before the draw. Whether a scale is about the corner or the centre of the quad, and whether the
+atlas cell applies to every layer, is not established.
+:::
+
 ## Elden Ring's bundle
 
 `/shader/gxffxshader.shaderbnd.dcx` holds 488 members: 279 pixel, 77 compute, 41 vertex, 39 domain, 27 geometry and 25 hull
 programs. :observed{games="elden-ring"} Every member is a container of the DXBC wrapper that holds a Shader Model 6 module (a `DXIL`
-part, a root signature, pipeline-state and signature parts), not Shader Model 5 code, and none has a reflection part, so the
-names of the constant buffers and their variables are not stored. :observed[every member's part list]{games="elden-ring"} 381 of
+part, a root signature, pipeline-state and signature parts), not Shader Model 5 code, and none has a reflection part.
+:observed[every member's part list]{games="elden-ring"} The module itself still names its constant buffers' variables in its
+type annotations: `GXFfxtessellateMultiTexture.ppo` names every field of its `PSCommonBuffer` (832 bytes, `g_color` at 0 to
+`g_dynamicResolution_UVScale` at 816) and of `PSEnvLightBuffer`, with the same names as Sekiro's.
+:observed[that program's module]{games="elden-ring"} 381 of
 the 488 member names occur in Sekiro's bundle, 107 are new and 18 of Sekiro's are absent (the `LightShaft` programs, the
 `DistortionTracer` and `SoftTracer` variants of the tessellated family and the seven `SparkParticle` level-of-detail programs).
 :observed The new ones are the GPU billboard programs (`CS_GpuBillboard`, `CS_GpuBillboard_Emit`, the `CS_GpuClearEmitCounter` and

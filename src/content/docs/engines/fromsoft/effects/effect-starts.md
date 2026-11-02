@@ -72,7 +72,18 @@ two effect ids, and `RoleParam.sosSignSfxId` holds 4 among 9. :observed[the meta
 the install] The rule finds 21 effect fields the meta does not mark, each with every value of 1,000 or more an effect id:
 the fifteen of `HitEffectSfxParam` (179 distinct ids each), `MapMimicryEstablishmentParam.mimicrySfxId0` to `2` (41, 41
 and 40) and `WeatherParam.SfxId`, `SfxIdOutdoor` and `WindSfxId` (13, 6 and 3). :observed Sekiro's meta marks no field as
-an effect file. :observed[every file of Smithbox's SDT meta] What starts these (the game's code, an id computed from another, a
+an effect file. :observed[every file of Smithbox's SDT meta]
+
+The effects a field names do not all sit in one binder. Of the distinct ids of each `HitEffectSfxParam` field, 168 are in
+`sfxbnd_commoneffects` and 11 in `sfxbnd_commoneffects_dlc02`. `mimicrySfxId0` to `2` each name one effect of the common
+binder (302604, 302605 and 302606), and every other id they hold is in a binder of its own named for it
+(`sfxbnd_mimic000302607` holds 302607; 302756 is in two). `WeatherParam.SfxId` names 8 effects of the common binder, one of
+the DLC's and four of the area binders `m11`, `m28` and `m61`; `SfxIdOutdoor` one of the common binder, one of the DLC's and
+four of `m61`; `WindSfxId` three of the common binder (808004 also in the binders of characters 5210 and 5250).
+:observed[every row of the three params against every effect binder of the install] Four sibling fields hold too little to
+tell by their values: `mimicryBeginSfxId0` to `2` and `WeatherParam.SfxIdInoor` hold -1 in every row, `mimicryEndSfxId0` to
+`2` hold 302603 in every row and `WeatherParam.GroundHitSfxId` holds 1004010 in 46 rows (-1 in the rest), both effects of the
+common binder. :observed[every row of the two params] What starts these (the game's code, an id computed from another, a
 record no rule here reads) is not known. :unknown
 
 Event scripts name more effects through their arguments than in their instructions: Elden Ring's "Create Asset-following SFX"

@@ -111,6 +111,35 @@ far assets by prefix just as `_01` and `_02` do: 1,190 and 2,388 parts carry the
 `_10` tiles. 28 of the 32 `_10` tiles have an EMEVD script of their own, none of the 14 `_11` and `_12` tiles has one,
 and neither has any `_01` or `_02` tile; 342 of the 581 `_00` tiles do. :proven{games="elden-ring"}
 
+### Parents' parts and their small tile
+
+A parent tile's drawn parts each belong to one small tile, which their tile-load word names (the `+152` slot; see
+[map words](#map-words)). Over the 828 `m60` layouts of the install, none of the 145,834 map pieces and assets of the
+`_00` and `_10` tiles stores a tile-load map, and every one of the 76,859 of the `_01`, `_02`, `_11` and `_12` tiles
+stores one. :proven{games="elden-ring"} The parents hold two kinds of drawn part:
+
+| Parents' parts | Count | Tile-load map | Where they are held | Confidence |
+|---|---:|---|---|---|
+| Assets named `<small tile>-<part>` | 75,053 | the tile of the prefix, in every case | one level each: 23,983 by a level-1 parent, 51,070 by a level-2 parent; 6 place a model the small tile's own layout also places | :proven{games="elden-ring"} |
+| Map pieces without a prefix | 903, each placed twice | the small tile | both its level-1 and its level-2 parent, the same model and tile-load map in each (850 in `_01` and `_02`, 53 in `_11` and `_12`) | :proven{games="elden-ring"} |
+
+The prefixed assets are thus the small tile's own content, which only a parent places. Each unprefixed map piece stands
+where a map piece of its small tile's own layout stands: within 1 cm for 1,800 of their 1,806 placements, the offsets of
+the [grid](#open-world-grid) applied (the other 6 name `m60_42_40_10` and `m60_47_42_10`, which the install lacks).
+:proven{games="elden-ring"} They are named after the small tile (`m10334000` and `m11334100` in `m60_08_10_02` and
+`m60_16_20_01` for `m60_33_40_00` and `m60_33_41_00`, standing on its map pieces `m334000` and `m334100`).
+:observed{games="elden-ring"} They are a coarse form of the small tile's ground, placed once per parent level, so drawing
+every layout that covers a place would draw its ground up to three times. :inferred{games="elden-ring"} That the game
+draws a parent's part only while its small tile is not drawn at a finer level, by the tile-load word, is the reading the
+files support (the word is the only field of a part that names the small tile); the runtime test is not established by
+the files. :inferred{games="elden-ring"}
+
+:::open[How does the game choose the level a small tile is drawn at?]
+The layouts fix which parts stand for which small tile and at which level, not the distances at which the game moves
+from a `_00` tile to its `_01` and `_02` parents, nor whether it hides a parent's part by its tile-load word or by
+another rule.
+:::
+
 ### Overlay layouts ending in `_99`
 
 One Sekiro layout (`m89_00_00_99`) and 25 Elden Ring layouts end in `_99`: the `_99` layout of each of `m10_00`,

@@ -60,12 +60,15 @@ increments the count, without checking it against the 512 pages. :observed
 
 The registration at `Skate+0x4ebecc9` pops a cull id for an object that has none (`Skate+0x489db30`) and appends one
 record to this array for it, so the array grows with the cull ids the owner hands out. It holds 65,536 records.
-The 65,537th append reads the allocator pointer at `+0x1330` as page 512 and writes the record through it. :observed
+Appends at counts 65,536 to 65,663 take the allocator pointer at `+0x1330` as page 512 and write their records over the
+allocator object; the append at count 65,664 takes the qword at `+0x1338` (the count, with the next `u32` above it) as page 513.
+:observed ReSkate's patch tables at 2.1.2 change neighbouring functions' page shifts but no instruction of
+`Skate+0x4eeff50`. :sourced[ReSkate source]
 
 In one Studio level loaded under ReSkate 2.1.2, objects needing 100,777 cull ids (one per object per 200 m cell
 the object's box meets) faulted 1 s after the level became active. The fault was at `Skate+0x4ebecf0`, the write of
-the first appended record. The returned record address was the allocator value itself, with a zero record offset,
-as an append at count 65,536 produces. The same level with 49,410 cull ids loaded. So the raised cull-id list does
+an appended record, through the page pointer `0x400010080` with a zero record offset: the count `0x10080` (65,664)
+with `4` above it, read as page 513, as the overflow produces. The same level with 49,410 cull ids loaded. So the raised cull-id list does
 not raise the level's capacity: the record array still limits a level to 65,536 cull ids, less what stock resident
 content in the same owner holds. :observed
 

@@ -119,6 +119,17 @@ The particle's colour (`COLOR0`) applies by `g_ps_ColorBlendType`: with 0 the co
 times its opacity is overlaid with `n` and then squared and scaled the same way; with any other value it does not apply. The
 opacity is multiplied by `COLOR0.a` and `g_vColorScale.a` with 0 and 2. :observed[the disassembly, not run]{games="elden-ring"}
 
+No step after a sample converts its colour (no power or curve applies to a texel), so the texels are used as the texture's
+view gives them. :observed[the disassembly of `GXFfxtessellateMultiTexture` and `GXFfxtessellateSoftMultiTextureGlowD`]{games="elden-ring"}
+After fog (the colour times the fog's transmittance, plus its in-scatter times `g_ps_invPreExposure`), the glow variant
+`GXFfxtessellateSoftMultiTextureGlowD` multiplies the colour by `g_ps_preExposure` unless `g_ps_BlendingMode` is 4; with
+`g_ps_BlendingMode` 1 or 2 an opacity above 1 multiplies the colour and is then clamped to 1; and with
+`g_transductionAlphaToColorScale` `s` below 1 it keeps the colour up to 1 and scales what exceeds 1 by `s²`, the opacity by
+`s`. Its second target takes `g_psGlowScale.rgb` times the colour (with the same pre-exposure) and `g_psGlowScale.a` times the
+opacity. :observed[the disassembly, not run]{games="elden-ring"} The frame's pre-exposure is off in every recorded frame
+([frame](/engines/fromsoft/lighting/frame/#pre-exposure)), so an effect's colour lands in the frame's own light units and the
+scene exposure and tone curve apply to it as to the rest of the frame. :inferred{games="elden-ring"}
+
 In the effect files, the multi-texture billboard's layer word (`unk_ds3_f2_10` in the fxr project's naming) holds 0, 1 or 2 in
 all 13,852 of Elden Ring's multi-texture billboards (1,375, 2,411 and 10,066), as do the two words after it (`unk_ds3_f2_11`
 and `unk_ds3_f2_12`), and the fourth (`unk_ds3_f2_13`) holds 0 or 2 (13,429 and 423). :proven[every multi-texture billboard

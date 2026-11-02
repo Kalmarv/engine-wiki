@@ -11,6 +11,9 @@ sources:
   - title: UXM Selective Unpack
     url: https://github.com/Nordgaren/UXM-Selective-Unpack
     note: archive lists (EldenRingGameInfo.xml), public keys (ArchiveKeys.cs) and path dictionaries
+  - title: Smithbox (Andre.IO's ArchiveBinderVirtualFileSystem)
+    url: https://github.com/vawser/Smithbox
+    note: an archive file system over every pair; file dictionaries
 implementations:
   - name: fromsoft-formats (bhd.rs)
     url: https://github.com/Kalmarv/fromsoft-formats/blob/main/src/bhd.rs
@@ -51,6 +54,8 @@ the game reads them from, it gets the same file. :inferred{games="elden-ring"}
 :::open[Which pair does the game read a hash from when two pairs list it?]
 The five repeats on the installed expansion hold the same bytes, so they cannot tell. Whether a later pair overrides an
 earlier one, or the first listing wins, decides what the game reads only if two listings ever hold different bytes.
+UXM's unpacker and Smithbox's archive file system both walk the pairs in the order `Data0` to `Data3`, `DLC`, `sd/sd`,
+`sd/sd_dlc02` and keep the first copy of a path, skipping a later one; that is their choice, not a statement of the game's.
 :::
 
 Sekiro's five indexes list 8,765 files, of which UXM's path dictionary names 8,752. :proven{games="sekiro"}

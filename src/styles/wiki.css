@@ -104,6 +104,36 @@
 .sl-markdown-content .open-question__title { font-weight: 600; color: var(--lv-inferred); }
 .sl-markdown-content .open-question__title::before { content: 'Open question · '; font-weight: 400; }
 
+/* Pictures (:::slides, :::pass): a figure is the picture and its caption */
+.sl-markdown-content figure.pic { margin: 0; }
+.sl-markdown-content figure.pic img { display: block; width: 100%; height: auto; border-radius: 0.25rem; background: var(--sl-color-gray-6); }
+.sl-markdown-content figure.pic figcaption { margin-top: 0.4rem; font-size: var(--sl-text-sm); color: var(--sl-color-gray-2); }
+.sl-markdown-content .pic-slides__title,
+.sl-markdown-content .pic-pass__title { font-weight: 600; margin-bottom: 0.5rem; }
+/* A slider: without JavaScript its pictures stand one under another; with it (MarkdownContent.astro), one at a time */
+.sl-markdown-content .pic-slides { margin: 1.5rem 0; }
+.sl-markdown-content .pic-slides__track { display: grid; gap: 1.25rem; }
+.sl-markdown-content .pic-slides--live .pic-slides__track > figure[hidden] { display: none; }
+.sl-markdown-content .pic-slides--live:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 0.25rem; }
+.sl-markdown-content .pic-slides__bar { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
+.sl-markdown-content .pic-slides__bar input[type='range'] { flex: 1; accent-color: var(--sl-color-accent); }
+.sl-markdown-content .pic-slides__bar button {
+  font: inherit; font-size: 1.15em; line-height: 1; padding: 0.3rem 0.7rem; border-radius: 0.25rem; cursor: pointer;
+  border: 1px solid var(--sl-color-gray-5); background: var(--sl-color-gray-6); color: var(--sl-color-white);
+}
+.sl-markdown-content .pic-slides__bar button:disabled { opacity: 0.4; cursor: default; }
+.sl-markdown-content .pic-slides__count { font-size: var(--sl-text-sm); color: var(--sl-color-gray-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* A pass: its inputs, an arrow, its result; stacked on a narrow screen */
+.sl-markdown-content .pic-pass { margin: 1.5rem 0; display: grid; grid-template-columns: minmax(0, 2fr) auto minmax(0, 3fr); gap: 1rem; align-items: center; }
+.sl-markdown-content .pic-pass__title { grid-column: 1 / -1; margin-bottom: 0; }
+.sl-markdown-content .pic-pass__inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 0.75rem; }
+.sl-markdown-content .pic-pass__arrow { font-size: 2rem; color: var(--sl-color-gray-3); }
+.sl-markdown-content .pic-pass > * + * { margin-top: 0; }
+@media (max-width: 50rem) {
+  .sl-markdown-content .pic-pass { grid-template-columns: minmax(0, 1fr); }
+  .sl-markdown-content .pic-pass__arrow { justify-self: center; transform: rotate(90deg); }
+}
+
 /* Sources and implementations under a page */
 .page-refs { margin-top: 3rem; border-top: 1px solid var(--sl-color-hairline); padding-top: 1rem; }
 .page-refs__note { color: var(--sl-color-gray-3); }

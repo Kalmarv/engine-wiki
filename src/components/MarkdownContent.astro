@@ -136,3 +136,54 @@ const bySystem = systems
     </footer>
   )
 }
+
+<script>
+  // :::slides (markdown.mjs): one picture at a time, stepped with the buttons, the range or the arrow keys. Without
+  // JavaScript the pictures stand one under another.
+  for (const box of document.querySelectorAll<HTMLElement>('.pic-slides')) {
+    const pics = [...box.querySelectorAll<HTMLElement>(':scope > .pic-slides__track > figure')];
+    if (pics.length < 2) continue;
+    const button = (text: string, label: string) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = text;
+      b.setAttribute('aria-label', label);
+      return b;
+    };
+    const prev = button('‹', 'Previous picture');
+    const next = button('›', 'Next picture');
+    const range = document.createElement('input');
+    range.type = 'range';
+    range.min = '1';
+    range.max = String(pics.length);
+    range.setAttribute('aria-label', 'Picture');
+    const count = document.createElement('span');
+    count.className = 'pic-slides__count';
+    const bar = document.createElement('div');
+    bar.className = 'pic-slides__bar';
+    bar.append(prev, range, next, count);
+    box.append(bar);
+    let at = 0;
+    const show = (i: number) => {
+      at = Math.max(0, Math.min(pics.length - 1, i));
+      pics.forEach((p, k) => (p.hidden = k !== at));
+      range.value = String(at + 1);
+      count.textContent = `${at + 1} / ${pics.length}`;
+      prev.disabled = at === 0;
+      next.disabled = at === pics.length - 1;
+    };
+    prev.addEventListener('click', () => show(at - 1));
+    next.addEventListener('click', () => show(at + 1));
+    range.addEventListener('input', () => show(Number(range.value) - 1));
+    box.tabIndex = 0;
+    box.addEventListener('keydown', (e) => {
+      if (e.target === range) return; // the range steps itself
+      if (e.key === 'ArrowLeft') show(at - 1);
+      else if (e.key === 'ArrowRight') show(at + 1);
+      else return;
+      e.preventDefault();
+    });
+    box.classList.add('pic-slides--live');
+    show(0);
+  }
+</script>

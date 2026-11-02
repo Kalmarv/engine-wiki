@@ -151,6 +151,42 @@ It is 0 or 1 in every index; nothing seems to depend on it.
 :::
 ```
 
+## Pictures
+
+Pictures of what a game draws (a pass's render targets, a frame's stages) go in a folder beside the page whose name
+starts with `_` (`_frames/`), as web-sized files (webp, jpg, png or avif, under 600 KB each). Never put game files there:
+no textures, models or shader bytecode, only pictures rendered from a frame. Each picture is a paragraph: the image,
+linked relatively with alt text, then its caption, which says what is shown and how it was made displayable (the
+tone-mapping operator for HDR, how depth was linearised, how packed channels are shown).
+
+`:::slides` steps through pictures one at a time (the buttons, the range or the arrow keys; without JavaScript they
+stand one under another). `:::pass` shows a pass's inputs, a `---` line, then its result:
+
+```md
+:::slides[The G-buffer, target by target]
+![Albedo](./_frames/gbuffer-albedo.webp)
+Target 0, RGBA8 sRGB: albedo, shown as stored.
+
+![Normals](./_frames/gbuffer-normal.webp)
+Target 1, RGB10A2: normals, mapped from -1..1 to 0..1.
+:::
+
+:::pass[The lighting pass]
+![Albedo](./_frames/gbuffer-albedo.webp)
+Albedo.
+
+![Depth](./_frames/depth.webp)
+Depth, linearised.
+
+---
+
+![Lit](./_frames/lit.webp)
+The lit HDR result, tone-mapped with the stated operator.
+:::
+```
+
+A picture with no alt text or caption, a missing file, or one over 600 KB fails the check.
+
 ## Links
 
 Link to other pages with absolute site paths: `[DCX](/engines/fromsoft/archives/dcx/)`. Relative links and links to

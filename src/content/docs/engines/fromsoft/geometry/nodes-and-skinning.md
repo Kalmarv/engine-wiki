@@ -165,9 +165,9 @@ byte-for-byte copy of the first). :observed[five captured frames]{games="sekiro"
 once and written whole, one of the two each frame, alternately, by `Map` with discard on the deferred contexts that run
 before any draw. :observed[five captured frames]{games="sekiro"} Their positions are still in model bind space, not
 skinned: they differ from the file's by up to 0.18 units on the face and 0.19 on the body, and the two buffers of a mesh
-differ from each other by 0.0002 to 0.0053 units. :observed[four captured frames]{games="sekiro"} In the fifth frame the
-buffer not written that frame holds positions up to 500 units from the model's, some of them not finite, though it is
-bound like the others; why is not known. :observed[one captured frame]{games="sekiro"} The game therefore
+differ from each other by 0.0002 to 0.0053 units. :observed[four captured frames]{games="sekiro"} (The fifth capture's copy of
+the buffer not written in its frame was taken at a later point and is marked so by the capture, so its contents are left
+out.) The game therefore
 deforms these meshes on the CPU (facial expression and body shape, by where they differ) before skinning them on the
 GPU. :inferred{games="sekiro"} The objects `o113100`, `o113110` and `o113120`, whose meshes have two vertex buffers, have their first
 buffer replaced in the same way, by one buffer written each frame, and move by up to 3 units from the stored positions.

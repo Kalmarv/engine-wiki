@@ -16,17 +16,17 @@ program checked as well. It does not assign a surface meaning merely because a t
 | Target/lane | Sekiro | Elden Ring | Confidence |
 |---|---|---|---|
 | 0 RGB | Biased world normal | Biased world normal | :observed |
-| 0 A | Meaning not established | Meaning not established | :unknown |
+| 0 A | Not read | Meaning not established | :observed[one captured frame]{games="sekiro"} :unknown{games="elden-ring"} |
 | 1 R | Gloss | Metallic | :observed |
 | 1 G | Diffuse wrap term, used where positive | Gloss | :observed |
-| 1 B | Meaning not established | Read multiplied by 10; meaning not established | :unknown |
-| 1 A | Meaning not established | Meaning not established | :unknown |
+| 1 B | Read once, into a screen-space occlusion target; meaning not established | Read multiplied by 10; meaning not established | :unknown |
+| 1 A | Subsurface-scattering profile | Meaning not established | :observed[one captured frame]{games="sekiro"} :unknown{games="elden-ring"} |
 | 2 RGB | Albedo | Albedo | :observed |
-| 2 A | Meaning not established | Read as an integer after multiplication by 255; meaning not established | :unknown |
+| 2 A | Subsurface-scattering strength | Read as an integer after multiplication by 255; meaning not established | :observed[one captured frame]{games="sekiro"} :unknown{games="elden-ring"} |
 | 3 RGB | Square root of reflectance F0 | Meaning not established | :observed{games="sekiro"} :unknown{games="elden-ring"} |
 | 3 A | Light-group selector | Meaning not established | :observed{games="sekiro"} :unknown{games="elden-ring"} |
 | 4 RGB | Emission radiance | Emission radiance | :observed |
-| 4 A | Meaning not established | Meaning not established | :unknown |
+| 4 A | Weight of the emission written to a second target | Meaning not established | :observed[one captured frame]{games="sekiro"} :unknown{games="elden-ring"} |
 
 ## Normal, gloss and reflectance
 
@@ -96,6 +96,25 @@ In a frame at the Ashina Castle gate, of the 1,695,266 pixels with geometry, 1,5
 yet tied to the light sets' file IDs. :observed[one frame, the target read back]{games="sekiro"}
 The target-1 green value modifies the diffuse wrap term with factors 10 and 20 where it is positive.
 :observed{games="sekiro"}
+
+### Who reads each lane
+
+In a frame at the Ashina Castle gate, 14 pixel programs read the five targets after the G-buffer pass. The lanes each
+keeps from its reads (the destination masks of every `sample` and `ld` of the target) are: :observed[one captured
+frame]{games="sekiro"}
+
+| Target | Lanes read |
+|---|---|
+| 0 | RGB, by 9 programs in 61 draws |
+| 1 | R, by 5 programs in 55 draws, among them the 42 draws that accumulate the lights; R and G, by 2 programs; B, by one program, which writes it scaled and offset by its constants beside the screen-space ambient occlusion into a full-resolution target; A, by 2 programs that name the register `g_SSSProfileIDTexture` |
+| 2 | RGBA, by the program that multiplies the irradiance by the albedo (its target has no alpha); A, by the same 2 programs as target 1's alpha, as `g_SSSStrengthTexture` |
+| 3 | RGB, by 4 programs; A, by one of them |
+| 4 | RGBA, by one program, which writes `max(irradiance + specular + emission, 0)` to the lit image and `emission × A` to a second target |
+
+No program reads target 0's alpha. :observed[one captured frame]{games="sekiro"} That target 1's and target 2's alphas
+are a subsurface-scattering profile and strength rests on the names the two programs give the registers they read them
+at. :observed[one captured frame]{games="sekiro"} The light combine's second target is drawn into by later passes as
+well and was not followed further. :observed[one captured frame]{games="sekiro"}
 
 ## Elden Ring
 

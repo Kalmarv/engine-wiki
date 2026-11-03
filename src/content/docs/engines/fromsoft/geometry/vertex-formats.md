@@ -169,8 +169,33 @@ example `M[m10_00]_Translucency_Pivot_Parent1.mtd`); in Elden Ring 319 of 12,974
 `AEG001_251.matxml` at index 3. No definition's meshes store a Half4 member and another type at the same semantic
 index; 6 Elden Ring and 4 Sekiro definitions store `0x12` beside `0x13` at index 1. :proven[the same models]
 
+### What the game binds
+
+:only[sekiro] Sekiro draws a model from its FLVER's vertex buffers as stored: each draw binds the file's data block
+([one GPU buffer](/engines/fromsoft/geometry/flver/#the-data-block-on-the-gpu)) at a vertex buffer's offset, with an input
+layout whose elements sit at the members' offsets. Each member type arrives in one Direct3D format, whatever the draw:
+:observed[every layout member of the 5,357 model draws of five frames at the Ashina Castle gate]{games="sekiro"}
+
+| Type | Semantics bound | Direct3D input format | Program input | Confidence |
+|---|---|---|---|---|
+| `0x02` Float3 | position (`POSITION0`, and `POSITION1` of the third stream of skinned meshes) | `R32G32B32_FLOAT` | float | :observed{games="sekiro"} |
+| `0x11` UByte4 | normal, tangent, bitangent (`BINORMAL`), bone indices | `R8G8B8A8_UINT` | uint, unpacked by the program | :observed{games="sekiro"} |
+| `0x13` UByte4Norm | colour (`COLOR1`), UV indices 1 to 6, bone weights | `R8G8B8A8_UNORM` | float | :observed{games="sekiro"} |
+| `0x15` Short2 | UV 0 and 1 | `R16G16_SINT` | int | :observed{games="sekiro"} |
+| `0x16` Short4 | UV 0 (two coordinate pairs) | `R16G16B16A16_SINT` | int | :observed{games="sekiro"} |
+
+The other types of the table above do not occur in these frames' meshes. :observed{games="sekiro"} The vertex programs
+unpack the integers as the table above has it: the normal and tangent as `(u - 127) * 0.007874` (each lane, the
+tangent's W too), the UV as `itof(s) * scroll.xy * 0.000488 + scroll.zw` with the
+[texture scroll](/engines/fromsoft/materials/texture-scroll/) vector of its set, and the normal's W as an integer that,
+added to the instance's `matricesData` word, selects the object matrix (three rows of `cbObjMatrix`) a static mesh's vertex follows.
+:observed[the vertex programs of the frames' static and skinned meshes]{games="sekiro"} The skinning programs divide the
+four weights by their sum (at least 0.001) before blending; the stored weight bytes of the frames' skinned meshes sum to
+252 to 255, so the weights as decoded are not exactly normalised. :observed[236,561 vertices of the skinned meshes of one
+frame]{games="sekiro"}
+
 :::open[Does every declared member type have a consumer-verified meaning?]
-No exhaustive shader-consumer check establishes every type/semantic combination. The table deliberately separates
-sampled decoding from community enum descriptions; the name Half4 alone does not establish half-float decoding for
+Sekiro's input layouts confirm the five types above in the semantics listed; the other types, and every type in Elden Ring,
+have no consumer check beyond the program readings above. The name Half4 alone does not establish half-float decoding for
 every semantic. :unknown
 :::

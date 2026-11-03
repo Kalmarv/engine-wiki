@@ -145,6 +145,17 @@ fields:
   - {at: 28, size: 4, type: u32, name: buffer offset, level: proven, note: Relative to the header data offset.}
 ```
 
+### The data block on the GPU
+
+:only[sekiro] Sekiro uploads a model's data block (the header's data offset and length) as one immutable GPU buffer, as
+stored, and binds it as both the index buffer, at offset 0, and each vertex buffer, at the buffer's offset: the contents
+of 129 of the 238 vertex, index and shader-resource buffers a frame at the Ashina Castle gate uses are byte for byte the data
+blocks of map, object, character and part FLVERs, and every indexed draw of those buffers (1,063 in that frame, 5,357 in
+five frames) starts at a face set's first index and draws that whole face set. :observed[five captured frames]{games="sekiro"}
+A face set's indices therefore reach the GPU as stored, relative to its mesh's vertex buffer. :observed{games="sekiro"}
+The skinned meshes are the exception for their vertex streams, not their indices: see
+[skinning](/engines/fromsoft/geometry/nodes-and-skinning/#skinned-vertex-streams-at-run-time). :observed{games="sekiro"}
+
 ## Face sets
 
 ```layout
@@ -153,7 +164,7 @@ size: 32
 fields:
   - {at: 0, size: 4, type: u32, name: flags, level: proven}
   - {at: 4, size: 1, type: bool, name: triangle strip, level: proven}
-  - {at: 5, size: 1, type: bool, name: cull backfaces, level: sourced}
+  - {at: 5, size: 1, type: bool, name: cull backfaces, level: observed, note: "Sekiro draws a face set with it set with back-face culling and one without it with culling off"}
   - {at: 6, size: 2, type: i16, name: unknown 06, level: unknown, note: "1 on 85,996 of Sekiro's 110,365 face sets and 149,048 of Elden Ring's 277,113; up to 371 and 285 elsewhere"}
   - {at: 8, size: 4, type: u32, name: index count, level: proven}
   - {at: 12, size: 4, type: u32, name: indices offset, level: proven, note: Relative to the header data offset.}
@@ -221,10 +232,16 @@ is `tan(fovY / 2) / tan(21.5°)`. :inferred{games="elden-ring"}
 The level is handed to each mesh of the model as it is drawn; that a mesh then draws its face sets of that LOD level
 (`(flags >> 24) & 7`) is the reading of the face-set flags, not followed in the code. :inferred{games="elden-ring"}
 
+:only[sekiro] Sekiro draws one face set of one level per mesh draw. Over the 5,357 model draws of five frames at the
+Ashina Castle gate, 3,086 draw a level 0 face set, 1,140 level 1 and 1,131 level 2, and none draws a motion-blur face set,
+though 1,380 of the drawn meshes hold one. :observed[five captured frames]{games="sekiro"} What picks Sekiro's level per
+draw was not read.
+
 :::open[Does the drawn face set follow the level the row gives?]
-The level reaches each mesh's draw; whether every mesh then draws exactly its face sets of that level, and what a model
-whose meshes lack a level draws, is not traced; the rule above is read from the code and not compared with frames of
-the running game.
+The level reaches each mesh's draw in Elden Ring; whether every mesh then draws exactly its face sets of that level, and
+what a model whose meshes lack a level draws, is not traced; the rule above is read from the code and not compared with
+frames of the running game. Sekiro's frames show one whole face set of one level per draw, but no Elden Ring frame has
+been tied to its face sets.
 :::
 
 ### Face counts in the header
@@ -255,8 +272,11 @@ frame (see [coordinate frames](/engines/fromsoft/world/frames/)) therefore makes
 side without reordering indices. :inferred
 
 About 8,200 non-shadow Sekiro meshes, 19.4 million triangles, have face sets with the cull-backfaces flag clear;
-they include roofs, walls and the `AMSN_light_e` light geometry. Read with the flag's meaning, the game draws them
-two-sided. :observed{games="sekiro"}
+they include roofs, walls and the `AMSN_light_e` light geometry. The game draws them two-sided: in the G-buffer pass
+of five frames at the Ashina Castle gate, the 692 draws of face sets with the flag clear have culling off and the 2,391
+with it set cull back faces, with no exception. :observed[five captured frames]{games="sekiro"} The shadow-map passes
+follow the flag too, except for 95 draws of face sets with it set that are drawn without culling. :observed[five captured
+frames]{games="sekiro"}
 
 ## Order of the file
 

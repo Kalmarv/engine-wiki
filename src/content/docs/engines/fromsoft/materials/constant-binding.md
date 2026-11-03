@@ -55,9 +55,14 @@ In Elden Ring's character G-buffer programs that read it, the amount blends the 
 decal sampled from `g_DecalDiffuseTexture`: `amount * ((decal.a * v - v) + decal.rgb) + v`. At 0 the surface is
 unchanged. :observed[the lifted value graphs of nine Stormveil materials' programs: `C[DetailBlend]` 0 and 13, two `M[AMSN]` `_Skin_PaintDecal` programs and `CS[c4750][VA_Frame]_Flag`]{games="elden-ring"}
 
+:only[sekiro] In five frames at the Ashina Castle gate, every drawn character material carries its definition's
+`g_BloodAmount` there unchanged (1 on 760 draws, 0.9 on 5, 0 on 15), and every map and object material 0 (it has no such
+parameter). None of the pixel programs those draws use reads the member: their reflection marks it unused.
+:observed[five captured frames, 780 character and 2,225 map and object draws whose material buffer holds the word]{games="sekiro"}
+
 :::open[What amount does a character carry at run time?]
-The value an unhurt character's instance carries, and how the engine raises and lowers it, are not observed: no frame
-capture has been read at that word. Sekiro's programs declare the same member; how they read it is not observed.
+The recorded Sekiro frames hold the authored value and no program reads it; whether damage changes the word, and which
+programs read it, needs a frame of a wounded character. No Elden Ring frame has been read at the word.
 :::
 
 ## Sekiro
@@ -79,11 +84,36 @@ live texture-tiling rows. Examples include colour `(1,1,0.86274517)` at intensit
 `(0.289773375,0.191887334,0.144408002)`. These distinguish gamma-before-intensity from both raw multiplication
 and gamma-after-intensity; they are not a census of every material. :observed{games="sekiro"}
 
+Over five frames at the Ashina Castle gate, with each draw tied to its FLVER mesh and material through the mesh buffer
+(the buffer is the FLVER's data block as stored), the definition's values reach `cbMtdParam` as follows: 43,417 float
+parameters as stored, bit for bit; 3,515 colours whose RGB is `pow(c, 2.2) * i` and not `c * i`, none the other way, and
+7,891 that cannot tell the two apart (0 or 1), alpha as stored in all of them. :observed[five captured frames]{games="sekiro"}
+The sky dome's material `m[sky]_skydome_night` is the exception: 9 of its colours and 9 of its floats hold other values
+than its definition's in every frame, so the engine writes them at run time. :observed[five captured frames]{games="sekiro"}
+
+The definition's alpha reference `g_AlphaRef` (two integers `a`, `b`) reaches `FC_AlphaRef` converted:
+`x = (a - 0.0001) / 255`, or `-100` when `a` is 0, and `y = b / 255`. :observed[3,989 draws of five frames, bit for bit for
+a = 64, 70, 96, 100 and 128 and b = 128 and 192]{games="sekiro"} The pixel programs discard where the tested alpha is below
+`x` ([alpha inputs](/engines/fromsoft/materials/texture-scroll/#alpha-and-fade-inputs)), so `-100` is no test and
+the small offset keeps a texel of exactly `a / 255`. :inferred{games="sekiro"} Raising `x` to 2 in a replay of one of the G-buffer
+pass's depth-only draws (its colour writes masked off) leaves the depth it wrote in the game, 23.8% of the screen, unwritten.
+:observed[one replayed draw]{games="sekiro"}
+
 ### Texture groups and tiling
 
-Of 440 tied Sekiro tiling-buffer contents, the candidate precedence reproduces 301. Another 130 fit none of the
-tested orders; nine all-one contents conflict with the stated non-unit material scales. This is a partial
-binding rule, not a universal equivalence. :observed{games="sekiro"}
+With draws tied to their mesh and material through the mesh buffer, the `FC_TextureTilingScale` row of every material
+texture a pixel program samples, at its register, is `(u, v, (1-u)/2, (1-v)/2)`, centred, in all 17,040 rows of five
+frames at the Ashina Castle gate. :observed[five captured frames]{games="sekiro"} The scale comes from:
+
+| Case | Scale in the row | Rows | Confidence |
+|---|---|---:|---|
+| The FLVER binding of the texture's kind has a path | the FLVER binding's scale (all 203 rows where it is not 1 match it, and 438 rows whose definition scale is not 1 hold the binding's 1) | 641 | :observed{games="sekiro"} |
+| The binding's path is empty | the definition's texture scale (the two floats after its path) | 5,707 | :observed{games="sekiro"} |
+| The binding's path is empty and the definition's scale is 0 | 1 | 10 | :observed{games="sekiro"} |
+| The definition has `group_N_CommonUV-UVParam` parameters | one group's scale (240 rows), the definition's texture scale (20) or 1 (210, among them the character families' base textures) | 470 | :observed{games="sekiro"} |
+
+Which group each texture belongs to is the metaparam's and was not checked against these rows, so the last case is not
+yet a rule. :unknown{games="sekiro"}
 
 ## Elden Ring
 

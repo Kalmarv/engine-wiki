@@ -154,6 +154,42 @@ summing to `253/255` or `252/255` on 31,544 of its 140,330 vertices; those sums 
 Smithbox leaves a static mesh as stored when neither a normal W nor a valid NodeIndex supplies a bone.
 :sourced[Smithbox] The corresponding game behaviour is not established. :unknown
 
+### Skinned vertex streams at run time
+
+:only[sekiro] Sekiro draws most meshes from the FLVER's own vertex buffers, but replaces the position streams of the
+deformed ones with buffers it writes on the CPU. In five frames at the Ashina Castle gate, the player's face
+(`FC_M_0200`, 4 meshes) and body (`BD_M_9040`, 17 meshes) meshes, which have three vertex buffers, are drawn with the
+file's second buffer (bone indices, weights, colour and UVs) and, in place of the first and third, two buffers of
+20 bytes a vertex (position, normal, tangent; the file's first and third buffers have that layout, and the third is a
+byte-for-byte copy of the first). :observed[five captured frames]{games="sekiro"} The two are dynamic buffers created
+once and written whole, one of the two each frame, alternately, by `Map` with discard on the deferred contexts that run
+before any draw. :observed[five captured frames]{games="sekiro"} Their positions are still in model bind space, not
+skinned: they differ from the file's by up to 0.18 units on the face and 0.19 on the body, and the two buffers of a mesh
+differ from each other by 0.0002 to 0.0053 units. :observed[four captured frames]{games="sekiro"} In the fifth frame the
+buffer not written that frame holds positions up to 500 units from the model's, some of them not finite, though it is
+bound like the others; why is not known. :observed[one captured frame]{games="sekiro"} The game therefore
+deforms these meshes on the CPU (facial expression and body shape, by where they differ) before skinning them on the
+GPU. :inferred{games="sekiro"} The objects `o113100`, `o113110` and `o113120`, whose meshes have two vertex buffers, have their first
+buffer replaced in the same way, by one buffer written each frame, and move by up to 3 units from the stored positions.
+:observed[five captured frames]{games="sekiro"} The other three-buffer meshes (the Sculptor `c1010`) are drawn from the file's three buffers.
+:observed[one captured frame]{games="sekiro"}
+
+The motion-vector pass's vertex program skins the first stream (`POSITION0`) with the object matrices at register 5
+(`cbObjMatrix`) and the first view-projection of `cbMatrixWVP`, and the third (`POSITION1`) with register 6
+(`cbPrevObjMatrix`) and the second, so the third stream is meant as the previous frame's positions.
+:observed[the DXBC of that program]{games="sekiro"} Yet in 282 of the 315 draws of these 21 meshes in the five frames'
+shadow-map, G-buffer and motion-vector passes, the buffer bound at the third slot is the one the frame has just written,
+and the one at the first slot the one the frame before wrote; the motion-vector pass binds them so in all five frames. The exceptions are the G-buffer pass of 12 body
+meshes in one frame and the shadow pass of all 21 in another, which bind them the other way round.
+:observed[five captured frames]{games="sekiro"}
+
+:::open[Which of a deformed mesh's two position buffers holds the newer positions?]
+The CPU writes the buffer bound as the previous frame's, by the order of the frame's commands, and the passes do not
+agree in every frame. Whether the data written in a frame is the previous frame's deformation (one frame of latency),
+or the binding swaps on some other count, is not established; the differences between the two are small enough that the
+motion vectors they produce were not checked.
+:::
+
 ## Dummy attachment points
 
 ```layout

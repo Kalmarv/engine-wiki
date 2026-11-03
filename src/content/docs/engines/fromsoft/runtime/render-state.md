@@ -117,6 +117,27 @@ A capture of that frame replayed offline matches the game on all 146 targets, bi
 dispatches' outputs are taken from what the game's GPU wrote instead of recomputed. :observed[one captured frame, three
 replays]{games="sekiro"}
 
+### Object matrices and skinning palettes
+
+Register 5 of the drawn model vertex programs is `cbObjMatrix`, an array of 3-row matrices; the motion-vector programs also
+bind the previous frame's at register 6 (`cbPrevObjMatrix`), of the same size. :observed[the reflection of the drawn
+programs]{games="sekiro"} The bound size is a power of two, from 2 to 256 matrices (96 to 12,288 bytes), and every
+matrix in it is nonzero: :observed[five captured frames]{games="sekiro"}
+
+| Draw | Matrices bound | Confidence |
+|---|---|---|
+| Map pieces and objects drawn instanced | The smallest power of two of at least 2 that holds one matrix per instance | :observed[five captured frames]{games="sekiro"} |
+| Skinned characters | Fewer than the model's bones: `FC_M_0200` has 425 bones and binds 64 | :observed[five captured frames]{games="sekiro"} |
+
+No drawn vertex's bone index reaches past the bound palette. :observed[five captured frames]{games="sekiro"}
+
+### Engine textures
+
+At its first frame the game creates three 1×1 `B8G8R8A8_UNORM` textures: white, opaque black and transparent black.
+The transparent black one is bound at `t58` on every draw; white and opaque black stand in for the textures materials
+leave empty (see [FLVER bindings](/engines/fromsoft/materials/flver-bindings/)). :observed[five captured
+frames]{games="sekiro"}
+
 ### G-buffer
 
 In a frame at the same spot (1,500 draws), 601 consecutive draws write five 1920×1080 colour targets at once, with a
@@ -168,8 +189,9 @@ captured 256-matrix binding therefore does not imply a per-mesh table of 256 bon
 :observed{games="elden-ring"}
 
 :::open[What selects the palette allocation for every draw?]
-The bound sizes vary. The observed maximum is not a proven global engine limit, and Sekiro's texture-scroll capture
-does not measure its skinning-palette size.
+The bound sizes vary. The observed maximum is not a proven global engine limit. Sekiro's frames fit a power-of-two
+rule (see [Sekiro's palettes](#object-matrices-and-skinning-palettes)); Elden Ring's sizes of 64 and 256 are powers of
+two as well, but no Elden Ring draw has been compared with its mesh's bone indices.
 :::
 
 ### Material identity and dynamic constants

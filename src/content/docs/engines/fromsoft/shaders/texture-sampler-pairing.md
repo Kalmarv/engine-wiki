@@ -102,7 +102,22 @@ point-sampled read is at the interpolated texture coordinate and the linear read
 `GXScreenSpaceCascadedShadow_Soft` programs the shadow map is read four times as plain depth and sixteen times by comparison.
 :observed
 
-:::open[What do the anisotropic registers bind?]
-The recorded frames give the states of `s6` to `s9` and `s12`, not those of the anisotropic samplers. Whether `SS_WrapAniso` (Sekiro, `s10`) and `SS_ClampAniso` (Elden Ring, `s11`) are two registers of one table, each seen in only
-one game's programs, is not established.
+:only[sekiro] Sekiro binds the anisotropic registers with the others, as one table: every draw and dispatch of five
+frames at the Ashina Castle gate that binds samplers (12,914 bindings of each register, vertex, pixel, domain and compute
+programs) has `s10` and `s11` set, though no Sekiro program declares `s11`. :observed[five captured frames]{games="sekiro"}
+
+| Register | Outside the shadow maps | In the shadow-map passes | Confidence |
+|---|---|---|---|
+| `s5` | anisotropic filter (`0x55`), anisotropy 16, wrap | linear filter (`0x15`), wrap | :observed{games="sekiro"} |
+| `s10` | anisotropic filter (`0x55`), anisotropy 16, wrap | linear filter (`0x15`), wrap | :observed{games="sekiro"} |
+| `s11` | anisotropic filter (`0x55`), anisotropy 16, clamp | linear filter (`0x15`), clamp | :observed{games="sekiro"} |
+
+The states of `s6` to `s9` and `s12` are the same in these frames as in the table above, with no other state at those
+registers. :observed[five captured frames]{games="sekiro"} `SS_ClampAniso` at `s11` in Elden Ring's programs is
+therefore the second register of the same pair. :inferred The anisotropy of 16 may follow the game's graphics settings,
+which these frames do not vary. :inferred{games="sekiro"}
+
+:::open[What do the anisotropic registers bind in Elden Ring, and who reads them?]
+No Sekiro program drawn in the recorded frames declares `SS_WrapAniso`, so its reads are not observed; Elden Ring's
+recorded frames give no state for `s10` or `s11`.
 :::

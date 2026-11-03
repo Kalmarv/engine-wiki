@@ -85,14 +85,36 @@ that would fill them: `SYSTEX_Dummy_` with the suffixes `a`, `m`, `r`, `n`, `em`
 | `SYSTEX_Dummy_r` | sRGB | grey, sRGB 49 | :observed{games="sekiro"} |
 | `SYSTEX_Dummy_n` | BC7 | a normal map | :observed{games="sekiro"} |
 
-Which dummy the game binds to an empty Sekiro slot is read from the suffixes, by analogy with the names Elden Ring's
-metaparam gives (`systex_dummy_n` for a normal slot): `_a` for albedo, `_n` for normal, `_m` for metallic, `_r` for
-reflectance, `_em` for emissive. :inferred{games="sekiro"}
+A Sekiro pixel program names each material texture it samples `<family>_snp_<k>_Texture2D_<N>` in its reflection, at
+the register it reads it from, and the material definition names the same texture `<family>_snp_Texture2D_<N>_<role>`
+(`M_Multiple__snp_0_Texture2D_8` and `M_Multiple__snp_Texture2D_8_AlbedoMap_0`). Every texture with a path that the
+drawn materials of five frames at the Ashina Castle gate give their programs (the FLVER binding of that kind when its
+path is not empty, else the definition's) is bound at the register so named: 16,211 of 16,211.
+:observed[five captured frames, draws tied to their FLVER mesh and material by the mesh buffer]{games="sekiro"}
 
-:::open[What does Sekiro bind to an empty texture slot?]
-The suffix reading and the 4.55 detail gain of the
-[character detail programs](/engines/fromsoft/materials/detail-blend/) both point to the `SYSTEX_Dummy_*` textures,
-but no capture of a draw with an empty slot has compared the bound texture with them.
+What an empty slot gets depends on the material family. The character families bind a system texture of the slot's
+role; the layered map families bind one of two textures of one texel that the engine makes at start-up, not a file.
+:observed[829 empty slots of five captured frames]{games="sekiro"}
+
+| Family and role of the empty texture | Bound texture | Confidence |
+|---|---|---|
+| Character families (`Character_AMSN` and its `[DetailBlend]`, `SSS`, `[Cat_Eye]` and `AN_Blend_AMSN_[Fresnel]` variants, `Fur_NTC`): 510 slots; albedo | 16×16 BC1 sRGB whose bytes are `SYSTEX_Dummy_a`'s (the same bytes as `SYSTEX_Dummy`, `_em` and `_g`) | :observed{games="sekiro"} |
+| Character families, normal | `SYSTEX_Dummy_n` | :observed{games="sekiro"} |
+| Character families, metallic | 16×16 BC4 whose bytes are `SYSTEX_Dummy_m`'s (the same as `_1m`) | :observed{games="sekiro"} |
+| `Character_AMSN_SSS`, reflectance | 16×16 BC1 of zeros, the bytes of `SYSTEX_BLACK ` and `SYSTEX_Dummy_3m` (and of several maps' black textures) | :observed{games="sekiro"} |
+| Layered map families (`M[Multiple]`, `M[MultipleGround]`, `WallTest_dobei`): 313 slots of albedo, normal and mask | a 1×1 `B8G8R8A8_UNORM` texture of white (255, 255, 255, 255) | :observed{games="sekiro"} |
+| `MetallicTex`, metallic (6 slots) | a 1×1 `B8G8R8A8_UNORM` texture of opaque black (0, 0, 0, 255) | :observed{games="sekiro"} |
+
+The engine makes three such textures in its first frame: white, opaque black and transparent black (0, 0, 0, 0); the
+last is bound to every draw at register 58 of the vertex and pixel programs. :observed[resources created in frame 1 of the
+captured runs]{games="sekiro"} Where two system textures hold the same bytes, the bytes alone do not say which file the
+engine loaded; the dummies sit among the other `systex` textures in creation order. :inferred{games="sekiro"} The 4.55
+detail gain of the [character detail programs](/engines/fromsoft/materials/detail-blend/) is the reciprocal of the
+albedo dummy's 0.216, which these draws bind. :inferred{games="sekiro"}
+
+:::open[Which families take a file dummy and which an engine texture?]
+The frames show the character and layered map families above. Other families (effects, water, the GX fixed-function
+programs) had no empty slot in them, and the rule that picks between the two kinds is not read from the code.
 :::
 
 The `N` in `Texture2D_N` identifies a logical texture across material and program names. It is distinct from the

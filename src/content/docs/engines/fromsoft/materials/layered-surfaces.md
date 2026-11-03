@@ -34,6 +34,15 @@ The colour path is `lerp(lerp(base,layer2,w) * (1 + float_2*(UV3-1)), snowColour
 The snow branch uses its own mask constants and a normal-facing factor. These equations describe that permutation,
 not every member of the shader family. :observed{games="sekiro"}
 
+Permutation 27 (`M[Multiple]_27_Gbuf.ppo`) uses the tint as a mask as well as a colour. With `t = UV3.xyz`,
+`L = dot(1 - t, (0.29891, 0.58661, 0.11448))` and `m` a layer mask of the same form as above,
+`s = saturate((L - m*(1-L)) * (1 + cb[41].x))` and the albedo is `base * (1 + s*(t*cb[28].xyz - 1))`, where `cb` is
+the material's constant buffer. :observed[the program's code]{games="sekiro"} A zero tint gives `L = 1` and so `s = 1`
+whatever the mask, wherever `cb[41].x` is at least 0, and the albedo is black. A white tint gives `s = 0` for a
+positive mask and leaves the base unchanged. :inferred{games="sekiro"} Executing the program with
+`M[m11_02]_StoneWall1`'s constants (`cb[41].x = 3`, `cb[28] = (4.376, 3.577, 2.740)`) gives a mean albedo of 0 at
+tint 0, 88 at tint 1 and 106 at tint 0.498 (8-bit levels). :observed[one material]{games="sekiro"}
+
 `M[MultipleGround]` blends the snow albedo `m11_snow_01_a` by `dot(float3_5, normal) × UV5.y`, with no time-of-day
 or world-state input. Up-facing ground with a stored snow weight near 0.64 saturates to the snow colour (mean RGB
 about 228, 233, 243), so near-white ground in Ashina is authored snow. :observed{games="sekiro"}

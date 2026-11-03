@@ -137,6 +137,24 @@ The same frame's shadow depth targets are 16-bit, 4096×2048 and 4096×4096. :ob
 
 ## Elden Ring
 
+### Direct3D 12 loading and interface identifiers
+
+In the examined Elden Ring executable (file version `2.7.2.0`, SHA256
+`f9118fea2cfd8fa3901e8060bfadb1552cb2471771ded8a5b662c4e298ffb328`), the PE import table
+names `d3d12.dll` and `dxgi.dll` without paths as ordinary imports, not delay imports.
+:observed[PE import and delay-import directories]{games="elden-ring"} The Direct3D imports are
+`D3D12SerializeRootSignature`, ordinal 101 and ordinal 102; the DXGI imports are
+`CreateDXGIFactory1` and `CreateDXGIFactory`. :observed[the same executable's import directory]{games="elden-ring"}
+The executable exports neither `D3D12SDKVersion` nor `D3D12SDKPath`, and the examined game directory contains
+no `D3D12Core.dll`. :observed[export directory and recursive installed-file inventory]{games="elden-ring"}
+
+The executable contains GUID bytes for `ID3D12Device5`, `ID3D12GraphicsCommandList4`,
+`ID3D12PipelineLibrary1`, `ID3D12StateObject` and `ID3D12StateObjectProperties`, as well as the base
+device and graphics-command-list interfaces. :observed[whole-file GUID scan against Windows interface definitions]{games="elden-ring"}
+GUID presence alone does not establish which interfaces a particular scene requests or whether ray tracing is enabled.
+:inferred{games="elden-ring"}
+
+
 ### Skinning palettes
 
 The skinned vertex program's declared six matrix rows do not limit the bound resource to two matrices. Captured

@@ -84,7 +84,8 @@ four of `m61`; `WindSfxId` three of the common binder (808004 also in the binder
 :observed[every row of the three params against every effect binder of the install] Four sibling fields hold too little to
 tell by their values: `mimicryBeginSfxId0` to `2` and `WeatherParam.SfxIdInoor` hold -1 in every row, `mimicryEndSfxId0` to
 `2` hold 302603 in every row and `WeatherParam.GroundHitSfxId` holds 1004010 in 46 rows (-1 in the rest), both effects of the
-common binder. :observed[every row of the two params] What starts these (the game's code, an id computed from another, a
+common binder. :observed[every row of the two params] `HitEffectSfxParam` also has five `Neutral_*` fields named
+like the fifteen; they hold 0 in every row. :observed[every row of the param] What starts these (the game's code, an id computed from another, a
 record no rule here reads) is not known. :unknown
 
 Event scripts name more effects through their arguments than in their instructions: Elden Ring's "Create Asset-following SFX"

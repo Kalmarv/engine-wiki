@@ -49,7 +49,10 @@ others'. :proven{games="skatebird"}
 The colour space of the project decides how stored colours are read: the `PlayerSettings` of SkateBIRD, Sledding Game, PEAK and
 Big Walk all state a linear colour space (`m_ActiveColorSpace` 1), read as that one field (the Unity 6 players' whole object is
 longer than its published layout, see [type trees](/engines/unity/data-model/type-trees/#a-short-layout)) and the same from an
-independent reader. :observed{games="skatebird sledding peak big-walk"} Under URP, the pipeline converts the ambient sky, equator and ground
+independent reader. :observed{games="skatebird sledding peak big-walk"} SkateBIRD's player (Direct3D 11) writes its
+last draw of a title-screen frame into the 1920×1080 `R8G8B8A8_UNORM` back buffer through an `R8G8B8A8_UNORM_SRGB`
+render-target view, so the GPU encodes the linear result to sRGB as it writes it. :observed[one captured frame]{games="skatebird"}
+Under URP, the pipeline converts the ambient sky, equator and ground
 colours with `CoreUtils.ConvertSRGBToActiveColorSpace`, so the stored colours are sRGB-encoded whatever the project's colour
 space; decoding is per channel like `Color.linear`, unclamped above 1. :sourced[Universal Render Pipeline source]
 `m_AmbientIntensity` applies only to the skybox ambient source; trilight and flat colours are HDR colours used as they are.

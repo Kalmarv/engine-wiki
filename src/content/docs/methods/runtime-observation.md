@@ -20,6 +20,19 @@ buffers and blend state, and can copy render targets and buffers back for inspec
 A capture is one frame of one scene. What it shows holds for what was drawn: :observed, or :proven for a mechanism
 (a blend state, a pass order) that does not depend on the scene.
 
+The layer can be a stand-in `d3d11.dll` and `dxgi.dll` placed beside the executable that forward every call to the
+system's own runtime, so the game draws on the real driver. It has to hand the game its own objects wherever the game can
+reach the runtime's: a game that finds its swap chain's factory through the device's `IDXGIDevice` otherwise creates the
+swap chain where the layer does not see it ([Sekiro](/engines/fromsoft/runtime/render-state/#deferred-contexts)).
+
+A capture is checked by replaying it: every recorded call is run again offline from the recorded contents of the resources
+it uses, and each render target is compared with what the game's GPU wrote, bit for bit. A replay that matches on every
+target shows the capture holds everything the frame's drawing depends on. Compute programs that reserve output slots with
+an atomic add write their records in an order that changes from run to run, so the replay takes those dispatches' outputs
+from the game rather than recomputing them ([order-dependent programs](/engines/fromsoft/runtime/render-state/#compute-programs-whose-output-depends-on-thread-order)).
+With that, a Sekiro frame matches on all 146 targets and a SkateBIRD title frame on all 33, on three replays each.
+:observed[one frame of each game]
+
 ## Memory snapshots
 
 When a game's executable is protected so that its code cannot be read from disk, a snapshot of the memory of a virtual

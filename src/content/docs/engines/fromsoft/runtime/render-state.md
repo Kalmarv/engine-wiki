@@ -2,6 +2,9 @@
 title: Runtime render state
 description: Direct3D capture observations and the limits of deriving runtime bindings from static files.
 sources:
+  - title: DXVK
+    url: https://github.com/doitsujin/dxvk
+    note: Direct3D 9-11 on Vulkan; a replacement d3d11.dll and dxgi.dll
   - title: me3
     url: https://me3.help/en/latest/
     note: mod loader for FromSoftware games; its option that disables the Arxan protection
@@ -38,6 +41,9 @@ The observed Sekiro renderer submits draws on deferred D3D11 contexts. Capturing
 those draws. Constant-buffer observations must therefore follow the context and the bound constant range.
 :observed{games="sekiro"}
 
+Recorded at the runtime itself, every draw of 460 consecutive frames outdoors in Ashina (648,028 draws, 1,400 to
+1,470 a frame) came from a deferred context, and none from the immediate one. :observed[one recording]{games="sekiro"}
+
 Each deferred context has its own function table, so a capture layer has to hook every context the device creates,
 not only the immediate one. Constants written into a deferred context cannot be read back from the GPU; a capture
 keeps its own copy of what each `Map`/`Unmap` and `UpdateSubresource` writes. :observed{games="sekiro"}
@@ -52,13 +58,21 @@ runtime rewrote, calling the runtime's new function from then on; a Sekiro run n
 Launched under RenderDoc, Sekiro 1.06 exits silently about five seconds after RenderDoc's library loads, so the
 executable's protection stops a standard capture tool. :observed[launch attempts]{games="sekiro"} A proxy of
 `dinput8.dll`, which the game loads before its code is unpacked, can wait for `d3d11.dll` and hook the device and its
-contexts from there; that capture runs. :observed{games="sekiro"}
+contexts from there; that capture runs. :observed{games="sekiro"} The game also runs with `d3d11.dll` and
+`dxgi.dll` beside the executable replaced by another Direct3D 11 implementation (DXVK 3.1.1, which reports an AMD
+adapter on NVIDIA hardware by default): it stayed up past the first minute and played through world load and the
+quit menu. :observed[five launches]{games="sekiro"}
 
 The castle-interior capture records 222,552 draws using 180 pixel programs. :observed{games="sekiro"}
 
 In a castle-interior capture of layered G-buffer draws, vertex slot 11 supplies a 64-byte `cbTexScroll`: four
 `[1,1,0,0]` vectors. The sampled draws use identity texture scroll. This does not establish the scroll state of
 animated objects or other scenes. :observed{games="sekiro"}
+
+Outdoors in Ashina, every layered draw of 460 consecutive frames (384,131 draws, 822 to 863 a frame, 42 vertex
+programs) has `cbTexScroll` bound at its first constant with the same four `[1,1,0,0]` vectors. Each value was
+written on the same deferred context that drew with it. :observed[one recording]{games="sekiro"} The same 42 programs
+and value appear there on the native runtime. :observed[one recording]{games="sekiro"}
 
 ## Elden Ring
 

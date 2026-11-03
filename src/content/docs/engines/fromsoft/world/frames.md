@@ -122,7 +122,14 @@ characters land exactly (to 0.000 m) on MSB Enemy parts of the map (`c0000_9035`
 0.16 m from the Player part `c0000_9017`. :observed[every run started in that state]{games="elden-ring"} A run that started
 elsewhere, with the player at about (−216, 45.7, 17.6) in the map's frame, has every module shifted by (+128, −24, 0): an offset
 of (−216, 40, 16). :observed[one run]{games="elden-ring"} Both offsets are the player's starting position truncated toward zero to
-multiples of 8 m. :inferred[two runs]{games="elden-ring"} A map-local point written as a physics position, unconverted, puts the
+multiples of 8 m. :inferred[two runs]{games="elden-ring"}
+
+The local player also keeps its position in its map block's own frame: `PlayerIns + 0x6C0` is the position (a `float3`),
+`+0x6CC` the heading in radians and `+0x6D0` the block's id as a packed map id (`0x3C2A2400` for `m60_42_36_00`). In a full
+memory snapshot of a run standing on that overworld tile, that position less the physics position (the module's `+0x70`
+above) is (−8, 88, −56): whole multiples of 8 m again, and a pure translation. Sixteen 4 × 4 matrices on the heap hold the
+same (−8, 88, −56) as their translation row under an identity rotation; what they belong to is not established.
+:observed[one memory snapshot]{games="elden-ring"} A map-local point written as a physics position, unconverted, puts the
 character outside the scene and it falls out of the map. :observed{games="elden-ring"}
 
 The renderer draws in such a frame too. In a frame captured at the Stormveil gate the light records' positions (see
@@ -135,7 +142,10 @@ In the scene constants (`cbSceneParam`, `b8`) the camera position is at byte 48,
 projection at 256 and the camera-to-world rows at 320; the asset and map-piece G-buffer programs take a draw's instance
 matrices from `b5`, 3 × 4 row-major with a stride of 48 bytes, as many as the draw's instance count. With the stock offset, the
 instance matrices of 40 G-buffer draws at the Stormveil gate put every resolved placement on its layout part to under 1 cm.
-:observed[40 draws of one recording]{games="elden-ring"} The camera-to-world rows (bytes 320 to 367) are three rows of four,
+:observed[40 draws of one recording]{games="elden-ring"} Over a whole recorded frame of another run at the gate, the
+translation that puts the most of the translations of `b5`'s first instance matrix on layout parts is (−88, 16, 16) again:
+74 of the 151 distinct translations land on a part to 0.1 mm (the next-best translation puts 5 there), and for 121 of the assets matched
+the heading `atan2(−m20, m00)` of the matrix rows equals the part's Y rotation to 0.1°. :observed[one recorded frame]{games="elden-ring"} The camera-to-world rows (bytes 320 to 367) are three rows of four,
 row-major, their translation the camera's position, and the view's forward is their third column (view +z): a render from that
 eye along that axis at the projection's 48° frames the scene as the game's picture does. :observed[two recordings at the Stormveil
 gate]{games="elden-ring"}

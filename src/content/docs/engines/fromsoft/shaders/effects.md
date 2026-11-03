@@ -165,7 +165,7 @@ programs]{games="elden-ring"} The three programs move the point differently:
 | Program | The moved point |
 |---|---|
 | `GXFfxdistortion` (stir) | along the direction at the angle `-TEXCOORD1.z - g_waveTime * TEXCOORD1.y + g_waveNum * r`, by the strength; the vertex program sets `TEXCOORD1.y` to 1 or -1 and `TEXCOORD1.z` to 0 or pi together, by one condition |
-| `GXFfxdistortionBump` (push) | by the strength times the normal texture's `xy * 2 - 1` (`g_normalTexture`, through the wrapping linear sampler), read at the sheet's coordinates scrolled by `g_waveTime` times `g_vNormalMapScrollDistance` and `g_hNormalMapScrollDistance` and scaled about the centre by `g_normalMapScrollScale` |
+| `GXFfxdistortionBump` (push) | by the strength times the normal texture's `xy * 2 - 1` (`g_normalTexture`, through the wrapping linear sampler), read at the sheet's coordinates scrolled by `g_waveTime` times the two scroll distances, `g_vNormalMapScrollDistance` added to u and `g_hNormalMapScrollDistance` taken from v, and scaled about the centre by `g_normalMapScrollScale` |
 | `GXFfxdistortionRotation` (twist) | turned about the sheet's projected centre (`TEXCOORD6`) by the strength in radians, in the view's coordinates (not its pixels, so the turn is not round on a view that is not square) |
 
 :observed[the disassembly of the pixel programs]{games="elden-ring"} The point is the pixel's own place in the view (from

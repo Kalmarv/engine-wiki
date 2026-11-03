@@ -161,6 +161,21 @@ mantissa bits), rounded to the nearest multiple of `2¹¹` units in the last pla
 square root, or the table of one current processor, leaves some hundreds of bits per million wrong. :observed[every named collision binder]
 That table is a fit to the bits, not a copy of the table of the machine that made the files. :inferred
 
+The counts above are without Elden Ring's `DLC` archive pair. With it, the same pass reproduces every bit of every mesh but
+two keys of one file, `l28_00_00_00_000000.hkx` of `m28_00_00_00`: the triangles of keys 196954 and 196956 share an edge
+that is convex for both, and their weights come out exactly equal (`0x41699B3E`, 14.600401) and sort with 196954 first, so
+the pass sets 196954; the stored bits set 196956 and not 196954. :observed[every named collision binder, the `DLC` pair included]{games="elden-ring"}
+The sort is not what goes wrong there: of the 90,889 pairs of triangles in both installs whose weights are exactly equal
+and whose order decides a bit, 90,887 come out as stored, among them 15,640 pairs that are not congruent triangles, and so
+do all of about 170,000 whose weights are 1 to 4 units in the last place apart. The other ways of computing `|n|` tried
+(the corner the cross product starts from, the order of the sum of squares, a fused multiply-add, the form of the square
+root) either give the same result or leave more bits wrong, from 235 to 186,074 keys in the variants run. :observed[every named collision binder, the `DLC` pair included]{games="elden-ring sekiro"}
+
+:::open[Why does the bake order the `m28_00_00_00` pair the other way?]
+The two weights are equal under every way of computing them tried that keeps the other bits; the bake must have
+weighed them at least one unit in the last place apart, or met them in another order. Which is not established.
+:::
+
 The source vertex indices of the games' own layer are in the `triangleDataArray` of the shape's `pParam`
 (`fsnpCustomMeshParameter`), one entry per source triangle with `vertexIndexA`, `B`, `C`, `primitiveDataIndex` and
 `triangleDataIndex`. :observed{games="sekiro"}

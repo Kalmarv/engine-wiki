@@ -17,19 +17,23 @@ word that names the rule (a pair of local frames, a limit, a motor, a friction).
 Every `hknpConstraintCinfo` of the character, parts, object, asset and map collision binders of both installs points to
 one of the classes below. :proven[every constraint of both installs]
 
-| Class | Sekiro | Elden Ring |
-|---|---|---|
-| `hkpRagdollConstraintData` | 2,031 | 5,739 |
-| `hkpLimitedHingeConstraintData` | 439 | 1,260 |
-| `hkpHingeConstraintData` | 26 | 1 |
-| `hkpBallAndSocketConstraintData` | 0 | 681 |
-| `hkpFixedConstraintData` | 0 | 36 |
-| `hkpWheelConstraintData` | 0 | 48 |
-| `hknpBreakableConstraintData` | 3 | 169 |
+| Class | Sekiro | Elden Ring | Elden Ring's `DLC` pair |
+|---|---|---|---|
+| `hkpRagdollConstraintData` | 2,031 | 5,739 | 3,146 |
+| `hkpLimitedHingeConstraintData` | 439 | 1,260 | 478 |
+| `hkpHingeConstraintData` | 26 | 1 | 0 |
+| `hkpBallAndSocketConstraintData` | 0 | 681 | 101 |
+| `hkpFixedConstraintData` | 0 | 36 | 14 |
+| `hkpWheelConstraintData` | 0 | 48 | 0 |
+| `hknpBreakableConstraintData` | 3 | 169 | 110 |
 
-The counts are objects, each tagfile counted as often as a binder repeats it. :proven[every constraint of both installs]
-A breakable constraint wraps one of the others and adds a `threshold`: a ragdoll joint in all 3 Sekiro cases and in 152 of
-the 169 Elden Ring ones, a limited hinge in 16 and a ball and socket joint in 1. :proven[every constraint of both installs]
+The counts are objects, each tagfile counted as often as a binder repeats it; the Elden Ring column is the base game's
+archive pairs (`Data1` and `Data3` hold constraints), the last the expansion's `DLC` pair. The base game's counts are given
+alike by a reader that decodes the constraint classes and by a walk over the tagfiles' type tables that shares no code with
+it; the `DLC` pair's are the walk's, and the class reader reads the same 11,783 Elden Ring objects in all. :proven[every constraint of both installs, the `DLC` pair included]
+A breakable constraint wraps one of the others and adds a `threshold`: a ragdoll joint in all 3 Sekiro cases, in 152 of
+the 169 Elden Ring ones and 93 of the 110 in the `DLC` pair, a limited hinge in 16 of each Elden Ring set and a ball and
+socket joint in 1 of each. :proven[every constraint of both installs, the `DLC` pair included]
 
 ## Atoms
 
@@ -78,10 +82,13 @@ same ragdoll atoms without `setupStabilization`: the types 2, 19, 17, 15, 16, 16
 
 The transforms: an `hkTransform` is three rotation columns of four floats (x, y, z and a padding lane) and a translation
 of four. The rotation is orthonormal (the largest error of a column's length or of two columns' dot product is
-1.2 × 10⁻⁶) and right-handed in every stored transform. The padding lanes are not initialised: they are 0 in a minority of the
+1.2 × 10⁻⁶) and right-handed in every stored transform but one. The padding lanes are not initialised: they are 0 in a minority of the
 transforms and arbitrary in the others, and the translation's padding lane likewise. :proven[every constraint of both installs]
+The one exception is in the `DLC` pair: of its 7,494 transforms, the `transformB` of the ragdoll joint at index 12 of item 23
+of `c5320.hkx` (in `chr/c5320.chrbnd.dcx`) holds a quiet NaN (`0xFFC00000`) in all twelve lanes of its rotation, padding
+included; its translation is finite. :proven[every constraint of both installs, the `DLC` pair included]{games="elden-ring"}
 
-The integer members are constant per class in both games, wrapped or not:
+The integer members are constant per class in both games, wrapped or not, and the `DLC` pair's take the same values:
 
 - `isEnabled` is 1 for the friction, twist, cone, planes and angle limits and 0 for the two motor atoms.
 - `setupStabilization.enabled` is 1 for every constraint that is not wrapped in a breakable one and 0 for every wrapped one.
@@ -95,9 +102,17 @@ The integer members are constant per class in both games, wrapped or not:
 
 :proven[every constraint of both installs]
 
-Every `minAngle` is at most its `maxAngle` (twist, cone, planes and hinge limits). No float of any constraint is infinite
-or not a number; `setupStabilization` stores the largest finite floats and about 1.8 × 10¹⁹ for `maxAngle`.
-:proven[every constraint of both installs]
+Every `minAngle` is at most its `maxAngle` (twist, cone, planes and hinge limits), the 10,211 limits of the `DLC` pair
+among them, and no float of any constraint is infinite. :proven[every constraint of both installs, the `DLC` pair included]
+`setupStabilization` stores the largest finite floats and about 1.8 × 10¹⁹ for `maxAngle`. :proven[every constraint of both installs]
+Only one constraint holds a float that is not a number, none in Sekiro or the base game's pairs: the `c5320` ragdoll joint
+above, whose `transformB` rotation and whole `ragdollMotors.target_bRca` (all twelve lanes) are `0xFFC00000`; every other
+float of it is finite. :proven[every constraint of both installs, the `DLC` pair included]
+
+:::open[Does the game ever simulate the `c5320` joint with NaN frames?]
+A ragdoll joint whose frame in body B and motor target are not numbers cannot be solved as stored. Whether `c5320`'s ragdoll
+is ever made active (its character's ragdoll settings, or the engine replacing such a frame) is not established.
+:::
 
 The motors are `hkpPositionConstraintMotor` objects (`type`, `minForce`, `maxForce`, `tau`, `damping`,
 `proportionalRecoveryVelocity`, `constantRecoveryVelocity`). A ragdoll's three motor pointers are all set in 1,961 of

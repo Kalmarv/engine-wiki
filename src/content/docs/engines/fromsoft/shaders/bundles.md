@@ -169,6 +169,31 @@ materials carrying `g_GX_bDisableDepthWrite`. Matched `g_BlendMode = 2` forward 
 `SrcAlpha / InvSrcAlpha` colour blending and `One / Zero` alpha blending; G-buffer draws do not blend.
 The captured cull state follows the face set rather than a single material-wide value. :observed{games="sekiro"}
 
+Five frames at the Ashina Castle gate, the model draws tied to their materials, bind these states by pass and blend
+mode; depth is reversed throughout (`GreaterEqual`): :observed[five captured frames]{games="sekiro"}
+
+| Pass | `g_BlendMode` | Colour | Depth | Draws |
+|---|---|---|---|---:|
+| G-buffer | 0 | no blending | written | 2,736 |
+| G-buffer | 0 | not written | written | 151 |
+| G-buffer | 0 | no blending | tested `Equal`, not written | 151 |
+| G-buffer | 2 | `SrcAlpha / InvSrcAlpha`, RGB only | written | 45 |
+| lit image (two `R11G11B10_FLOAT` targets) | 0 | `SrcAlpha / InvSrcAlpha` | written | 10 |
+| lit image | 2 | `SrcAlpha / InvSrcAlpha` | written | 75 |
+| lit image | 2 | not written | written | 20 |
+| motion vectors (`R16G16_FLOAT`) | 0 | no blending | written | 320 |
+| motion vectors | 2 | no blending | written | 20 |
+| shadow maps | 0 | no colour target | written | 1,819 |
+| shadow maps | 2 | no colour target | written | 10 |
+
+The two sets of 151 are the same `M[MultipleGround]` ground: drawn first to depth alone, then again for its colour with
+an `Equal` depth test. :observed[five captured frames]{games="sekiro"} The decal meshes (`MetallicValue_MeshDecal`) are
+the G-buffer's blend-mode-2 draws: they blend into all five targets with the alpha lane masked off, so they leave each
+target's alpha as the surface under them wrote it. :observed[five captured frames]{games="sekiro"}
+Every shadow-map draw has a slope-scaled depth bias of −3 and every motion-vector draw one of 10 clamped at −0.005. In the
+G-buffer, 95 draws (decals, metallic, layered and translucent families) have a slope-scaled bias of 3 and 2,988 none;
+draws of one material occur both with and without it. :observed[five captured frames]{games="sekiro"}
+
 ## Elden Ring
 
 An `_[A]` program does not always test a surface alpha. The G-buffer programs
@@ -182,6 +207,7 @@ references over the Limgrave tile `m60_42_36_00`]{games="elden-ring"} Other alph
 discards match `alpha < reference` at every texel. :observed[same tile]{games="elden-ring"}
 
 :::open[What selects every runtime permutation and render state?]
-The material switch does not explain every instance-dependent pass choice. The cited capture does not establish
-blend modes 3–5 or a material field predicting every depth-bias change. :unknown{games="sekiro"}
+The material switch does not explain every instance-dependent pass choice. No captured Sekiro frame draws blend modes
+3–5, and the G-buffer's depth bias differs between draws of one material, so no material field predicts it.
+:unknown{games="sekiro"}
 :::

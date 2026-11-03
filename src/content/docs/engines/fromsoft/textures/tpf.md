@@ -253,6 +253,13 @@ archive of the install holds a texture of that name. A reader of that area has t
 | Foliage and sky albedo | DXGI 99, BC7 sRGB | 8 | :observed{games="sekiro"} |
 | `m11_00_water_v` | BC5 | 2 | :observed{games="sekiro"} |
 
+The game views each texture in the format its DDS header states, and creates the ones whose format is sRGB typeless:
+over the 2,569 file textures bound in five frames at the Ashina Castle gate (named by their contents), a header of
+DXGI 72 (BC1 sRGB) gives a `BC1_TYPELESS` texture viewed as 72, 99 (BC7 sRGB) a `BC7_TYPELESS` one viewed as 99, and 71,
+80, 95 and 98 a texture of that format viewed as it is, with no exception. :observed[five captured frames]{games="sekiro"}
+So a BC1 mask stored as `BC1_UNORM` is read as linear data, and the sRGB tag alone decides whether an albedo is decoded
+from sRGB. :observed{games="sekiro"}
+
 129 of Ashina Castle's 347 BC1 albedos use BC1's punch-through mode: in a three-colour block, index 3 is
 transparent black, so a decoder that ignores the mode loses their alpha. :observed{games="sekiro"}
 

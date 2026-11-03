@@ -11,6 +11,9 @@ sources:
   - title: dearxan
     url: https://github.com/tremwil/dearxan
     note: the Arxan neutraliser me3 integrates
+  - title: locum
+    url: https://github.com/Kalmarv/locum
+    note: a stand-in d3d11.dll and dxgi.dll that forward every call to the system runtime; per-draw capture
 implementations:
   - name: primase runtime palette binding model
     url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/passes/layer_bake/resolve.rs
@@ -45,8 +48,11 @@ Recorded at the runtime itself, every draw of 460 consecutive frames outdoors in
 1,470 a frame) came from a deferred context, and none from the immediate one. :observed[one recording]{games="sekiro"}
 
 Each deferred context has its own function table, so a capture layer has to hook every context the device creates,
-not only the immediate one. Constants written into a deferred context cannot be read back from the GPU; a capture
-keeps its own copy of what each `Map`/`Unmap` and `UpdateSubresource` writes. :observed{games="sekiro"}
+not only the immediate one. :observed{games="sekiro"} The constants a deferred-context draw sees can be kept on the
+CPU, from a copy of what each `Map`/`Unmap` and `UpdateSubresource` writes on that context, or on the GPU: a
+`CopySubresourceRegion` of the bound buffer into a staging buffer, recorded on the same deferred context just before
+the draw and read once its command list has run, holds the values that draw used. :observed[captures of single
+frames]{games="sekiro"}
 
 A context's function table is a copy inside the context object, one per context, and `d3d11.dll` rewrites its entries
 while the game changes state. A `Draw` entry replaced once on the immediate context is put back to the runtime's own
@@ -61,7 +67,15 @@ executable's protection stops a standard capture tool. :observed[launch attempts
 contexts from there; that capture runs. :observed{games="sekiro"} The game also runs with `d3d11.dll` and
 `dxgi.dll` beside the executable replaced by another Direct3D 11 implementation (DXVK 3.1.1, which reports an AMD
 adapter on NVIDIA hardware by default): it stayed up past the first minute and played through world load and the
-quit menu. :observed[five launches]{games="sekiro"}
+quit menu. :observed[five launches]{games="sekiro"} It also loads and plays with a `d3d11.dll` and `dxgi.dll` that
+wrap the system's own runtime and forward every call to it (locum). :observed[three launches]{games="sekiro"}
+
+Sekiro makes its swap chain from the factory it reaches through the device: it asks the device for `IDXGIDevice`,
+takes its adapter (`GetAdapter`) and the adapter's parent factory (`GetParent`), and calls `CreateSwapChain` there.
+The factories it makes itself with `CreateDXGIFactory` never create the swap chain. A wrapper that answers
+`IDXGIDevice` with the runtime's own object sees no swap chain, no present and no shader creation; one that answers
+it with its own object, whose adapter and factory are its own too, sees all three. :observed[one launch each
+way]{games="sekiro"}
 
 The castle-interior capture records 222,552 draws using 180 pixel programs. :observed{games="sekiro"}
 
@@ -73,6 +87,33 @@ Outdoors in Ashina, every layered draw of 460 consecutive frames (384,131 draws,
 programs) has `cbTexScroll` bound at its first constant with the same four `[1,1,0,0]` vectors. Each value was
 written on the same deferred context that drew with it. :observed[one recording]{games="sekiro"} The same 42 programs
 and value appear there on the native runtime. :observed[one recording]{games="sekiro"}
+
+One frame at the Ashina gate Sculptor's Idol on the native runtime has 1,464 draws, all recorded on deferred
+contexts in 84 command lists that the immediate context then executes. 868 of them are layered draws using 41 of
+those 42 vertex programs, each with `cbTexScroll` at vertex slot 11 from its first constant holding the four `[1,1,0,0]`
+vectors as the GPU read them. :observed[one captured frame]{games="sekiro"}
+
+Raising that first vector to `[8,8,0,0]` for the draws of the most-used of those programs makes the textures on
+their surfaces (the gate's walls and posts) repeat far more finely, so its first two components scale the texture
+coordinates. :observed[one frame each way]{games="sekiro"}
+
+### G-buffer
+
+In a frame at the same spot (1,500 draws), 601 consecutive draws write five 1920×1080 colour targets at once, with a
+32-bit float depth and 8-bit stencil target, read back where that pass ends: :observed[one captured frame]{games="sekiro"}
+
+| Target | Format | Contents at the end of the pass |
+| --- | --- | --- |
+| 0 | `R10G10B10A2_UNORM` | one colour per facing: floors green, walls blue or purple, with the textures' relief |
+| 1 | `R8G8B8A8_UNORM` | alpha 0 everywhere, blue 1 over most of the image; not identified |
+| 2 | `R8G8B8A8_UNORM_SRGB` | the scene's textures without light or shadow |
+| 3 | `R8G8B8A8_UNORM` | one grey (44/255) on most surfaces, brighter on metal (blades, fittings); alpha 1/255 or 3/255 |
+| 4 | `R16G16B16A16_FLOAT` | colour zero everywhere; alpha 0 or 1 |
+
+That targets 0 and 2 hold normals and unlit colour is read from their images, and that target 3 carries a metal or
+reflectance term from where it is bright. :inferred{games="sekiro"} Depth is larger for nearer surfaces (0.001 in
+the distance to 0.024 on the character), so the depth range is reversed. :observed[one captured frame]{games="sekiro"}
+The same frame's shadow depth targets are 16-bit, 4096×2048 and 4096×4096. :observed[one captured frame]{games="sekiro"}
 
 ## Elden Ring
 

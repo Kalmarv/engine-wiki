@@ -74,6 +74,27 @@ A nonempty FLVER texture path overrides the definition's fixed path for the matc
 metaparam can supply a system texture for an otherwise unbound numbered slot; captured uploaded mip hashes on
 Stormveil DetailBlend draws match those defaults. :observed
 
+:only[sekiro] Sekiro's definitions leave slots empty too, and `/other/systex.tpf.dcx` holds the system textures
+that would fill them: `SYSTEX_Dummy_` with the suffixes `a`, `m`, `r`, `n`, `em`, `g`, `d`, `v`, `1m` and `3m`, plus
+`SYSTEX_WHITE` and `SYSTEX_BLACK`. :observed{games="sekiro"}
+
+| Texture | Format | Contents | Confidence |
+|---|---|---|---|
+| `SYSTEX_Dummy_a` | BC1, sRGB | every texel sRGB 128 (about 0.216 linear) | :observed{games="sekiro"} |
+| `SYSTEX_Dummy_m` | BC4 (ATI1) | zero | :observed{games="sekiro"} |
+| `SYSTEX_Dummy_r` | sRGB | grey, sRGB 49 | :observed{games="sekiro"} |
+| `SYSTEX_Dummy_n` | BC7 | a normal map | :observed{games="sekiro"} |
+
+Which dummy the game binds to an empty Sekiro slot is read from the suffixes, by analogy with the names Elden Ring's
+metaparam gives (`systex_dummy_n` for a normal slot): `_a` for albedo, `_n` for normal, `_m` for metallic, `_r` for
+reflectance, `_em` for emissive. :inferred{games="sekiro"}
+
+:::open[What does Sekiro bind to an empty texture slot?]
+The suffix reading and the 4.55 detail gain of the
+[character detail programs](/engines/fromsoft/materials/detail-blend/) both point to the `SYSTEX_Dummy_*` textures,
+but no capture of a draw with an empty slot has compared the bound texture with them.
+:::
+
 The `N` in `Texture2D_N` identifies a logical texture across material and program names. It is distinct from the
 metaparam slot/register: Sekiro's DetailBlend base albedo `Texture2D_7` is at register 1, while detail albedo
 `Texture2D_2` is at register 7. :observed{games="sekiro"}

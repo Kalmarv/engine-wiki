@@ -66,6 +66,22 @@ Some terms depend on the base mask plus a bias, and some use a constant bias alo
 0, 13 and 6, the first detail has the mask-dependent term; switch 1 places it on the second detail.
 :proven[executed programs]{games="sekiro"}
 
+### Lining programs
+
+`Character_AMSN_[Lining][S2]_6_Gbuf` forms its albedo with the same gain and chain shape, over logical textures:
+`base = Texture2D_1 * cb1[24]`, then `lerp(base, Texture2D_10 * cb1[28], w1)` and
+`lerp(previous, Texture2D_4 * cb1[26], w2)`, multiplied by `Texture2D_7.rgb` and by 4.55. The result is then blended
+toward a further colour scaled by `cb1[29]`, by that colour's alpha, and saturated. `cb1[N]` is row `N` of constant
+buffer 1; `w1` and `w2` are alphas computed earlier in the program. :observed[static reading of one program]{games="sekiro"}
+`Texture2D_7` is the base albedo here as in DetailBlend; on `c7100`'s armour material it is `c7100_armor_a`, and
+`Texture2D_10` is `metal01`. :observed{games="sekiro"} That material gives no texture path for `Texture2D_1` or
+`Texture2D_4` in either the FLVER or its definition, so what those detail colours read is whatever the game binds to
+an unbound slot (see [FLVER material bindings](/engines/fromsoft/materials/flver-bindings/)). :observed{games="sekiro"}
+
+The gain fits a mid-grey detail: a texel stored as sRGB 128 is about 0.216 linear, and 0.216 × 4.55 ≈ 0.98, so an
+sRGB-grey detail leaves the base albedo almost unchanged. A linear 0.5 in the same place multiplies it by about 2.3 and
+saturates bright bases. :inferred{games="sekiro"}
+
 ## Elden Ring
 
 Elden Ring's inspected `C[DetailBlend]` family uses a different slot assignment: slot 7 is base albedo, slot 0

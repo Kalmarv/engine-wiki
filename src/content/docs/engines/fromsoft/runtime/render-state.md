@@ -52,7 +52,8 @@ not only the immediate one. :observed{games="sekiro"} The constants a deferred-c
 CPU, from a copy of what each `Map`/`Unmap` and `UpdateSubresource` writes on that context, or on the GPU: a
 `CopySubresourceRegion` of the bound buffer into a staging buffer, recorded on the same deferred context just before
 the draw and read once its command list has run, holds the values that draw used. :observed[captures of single
-frames]{games="sekiro"}
+frames]{games="sekiro"} In the world the game fills about 6,300 constant buffers of default usage a frame with
+`UpdateSubresource`. :observed[one run at the Ashina gate]{games="sekiro"}
 
 A context's function table is a copy inside the context object, one per context, and `d3d11.dll` rewrites its entries
 while the game changes state. A `Draw` entry replaced once on the immediate context is put back to the runtime's own
@@ -81,7 +82,9 @@ The castle-interior capture records 222,552 draws using 180 pixel programs. :obs
 
 In a castle-interior capture of layered G-buffer draws, vertex slot 11 supplies a 64-byte `cbTexScroll`: four
 `[1,1,0,0]` vectors. The sampled draws use identity texture scroll. This does not establish the scroll state of
-animated objects or other scenes. :observed{games="sekiro"}
+animated objects or other scenes. :observed{games="sekiro"} That capture logs at most 800 layered draws of a frame
+(a frame at the Ashina gate has 822 to 863), so its 40,744 layered draws are a sample summed over frames, not a
+per-frame figure. :observed{games="sekiro"}
 
 Outdoors in Ashina, every layered draw of 460 consecutive frames (384,131 draws, 822 to 863 a frame, 42 vertex
 programs) has `cbTexScroll` bound at its first constant with the same four `[1,1,0,0]` vectors. Each value was
@@ -96,6 +99,23 @@ vectors as the GPU read them. :observed[one captured frame]{games="sekiro"}
 Raising that first vector to `[8,8,0,0]` for the draws of the most-used of those programs makes the textures on
 their surfaces (the gate's walls and posts) repeat far more finely, so its first two components scale the texture
 coordinates. :observed[one frame each way]{games="sekiro"}
+
+### Compute programs whose output depends on thread order
+
+Of the 9,680 shader programs the game creates in a run to the Ashina gate, 33 take an atomic operation's returned value:
+all are compute programs and all use `imm_atomic_iadd` (one to four times each), the pattern of a thread reserving the
+next free slots of an output list; none uses another returning atomic or `atomic_cmp_store`. :observed[the disassembly
+of every program created in one run]{games="sekiro"} Where a record lands therefore depends on the order the GPU runs
+the threads, which differs between two runs of the same frame. :inferred{games="sekiro"} Three of them run in a frame
+at the Ashina gate Sculptor's Idol: one dispatch of 60 x 34 groups just before the lighting pass, and two consecutive
+dispatches whose 176-byte records an indirect draw then draws. Re-run on the frame's recorded inputs, the first places
+its output runs elsewhere and the last writes the same records in another order. :observed[one captured frame, three
+re-runs]{games="sekiro"} By their buffers they are the lights' [tile lists](/engines/fromsoft/lighting/btl/#tile-lists)
+and the [GPU particles](/engines/fromsoft/shaders/effects/#the-particles-on-the-gpu). :inferred{games="sekiro"}
+
+A capture of that frame replayed offline matches the game on all 146 targets, bit for bit, on three replays, when those
+dispatches' outputs are taken from what the game's GPU wrote instead of recomputed. :observed[one captured frame, three
+replays]{games="sekiro"}
 
 ### G-buffer
 

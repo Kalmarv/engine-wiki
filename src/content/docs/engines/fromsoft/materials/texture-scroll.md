@@ -21,8 +21,11 @@ programs compute `uv = storedShortUV/2048 * scroll.xy + scroll.zw`; layered prog
 the inspected GXFlver programs use set 0. :observed
 
 The block occurs in 2,189 of 2,824 inspected GXFlver vertex programs. In the available castle capture, all
-40,744 layered draws have identity texture-scroll constants. This does not establish identity on water and
-other time-dependent families. :observed
+40,744 layered draws it logged (at most 800 a frame) have identity texture-scroll constants. Outdoors in Ashina every
+layered draw of 460 consecutive frames (384,131 draws) has the same four `[1,1,0,0]` vectors. This does not establish
+identity on water and other time-dependent families. :observed In the running game, raising the first vector to
+`[8,8,0,0]` for the draws of one layered program makes their textures repeat far more finely, so the first two
+components scale the coordinates as the formula has it ([runtime render state](/engines/fromsoft/runtime/render-state/#deferred-contexts)). :observed[one frame each way]
 
 Smithbox names GX20 through GX34 as per-texture-type U/V scroll speeds with a further float, and GX07 as a
 water-related record. :sourced[Smithbox]

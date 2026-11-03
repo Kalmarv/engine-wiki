@@ -198,6 +198,16 @@ entries with bit 31 set. :observed[disassembly of the forward `GXFlver_*_Fwd` pr
 to the counter (4,106, 5,069 and 6,481 among them), every entry's light index is below the frame's light count, and no entry has
 every slice bit set; on average the game culls 3.99 of 6, 16.52 of 19 and 28.82 of 32 lights per tile. :observed[7 frames]{games="sekiro"}
 
+The organise program reserves each tile's run of index entries with an atomic add on the entry counter, so the runs lie in
+`g_LightIndices` in the order the GPU happened to run the tiles, not in tile order. :observed[disassembly of the tile-list
+dispatch's program]{games="sekiro"} In one frame at the Ashina gate (60 x 34 groups dispatched) the 2,040 lookup records' first entries
+are all different and, sorted, each run ends where the next begins, 5,069 entries in all with no gap; the first tiles of the
+top row start at entries 582, 302, 273 and 438. Run again three times on the frame's recorded inputs, the program puts 2,022
+to 2,034 of the 2,040 runs at other entries and writes the same index entries in another order.
+:observed[one captured frame, three re-runs]{games="sekiro"} A tile's first entry is therefore not a property of the tile,
+and the two buffers differ from frame to frame even where the scene does not; what each tile's run holds is fixed.
+:inferred{games="sekiro"}
+
 ### Spot lights
 
 A spot light's record (192 bytes) holds the position and the range (the stored radius), the diffuse and specular colours as a point

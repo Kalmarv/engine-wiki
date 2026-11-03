@@ -331,6 +331,13 @@ position, move vector, rotation, scale and colour, its lifetime and its placemen
 `ccbForceFiledParam` (3,616 bytes) for the force fields. :observed{games="sekiro"} A particle is one element of a structured
 buffer, 176 bytes in the standard and 336 bytes in the spark programs. :observed{games="sekiro"}
 
+In a frame at the Ashina gate a compute dispatch writes 176-byte records into a list, each thread taking its slot with an
+atomic add, and an indirect instanced draw then draws from that list, blended additively into the 11-bit-float scene
+target. Run again on the frame's recorded inputs, the dispatch writes the same records in another order. :observed[one
+captured frame, re-runs of the dispatch]{games="sekiro"} The record size is the standard particle's, so this is the list of
+particles to draw, whose order changes from run to run; added in another order, a pixel of the scene target can round
+differently. :inferred{games="sekiro"}
+
 :::open[How does the engine fill these interfaces?]
 Which program a draw selects from its blend mode, soft-edge, glow and light flags, how the vertex buffers of the plain draws are
 built from an effect's properties (the order and meaning of the constants of `PSCommonBuffer` and `VSCommonBuffer`), the

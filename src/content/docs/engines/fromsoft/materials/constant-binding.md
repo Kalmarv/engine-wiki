@@ -40,6 +40,26 @@ For scale `(u,v)`, captured rows are `(u,v,(1-u)/2,(1-v)/2)`, giving
 | Metaparam default when no authored UV-group value exists | Plausible fallback, but the cited Sekiro captures do not distinguish it | :inferred{games="sekiro"} |
 | Elden Ring non-unit FLVER scale precedence | The install has 1,203 bindings with a FLVER texture scale, in 288 materials of 22 MATBINs, but no reliably identified captured draw uses one; `AEG006_031` to `AEG006_045` among them are placed in no MSB | :unknown{games="elden-ring"} |
 
+## The blood amount
+
+Both games' programs declare `FC_BloodAmount`, one float in the material buffer `cbMtdParam` (`b3`), under the same
+name and at a different byte offset in each game. :observed The name and the blood decal it blends in suggest the engine raises it
+per instance as a character takes damage, rather than taking it from the material definition. :inferred
+
+| Game | Programs that declare it | Byte offset in `cbMtdParam` | Confidence |
+|---|---|---|---|
+| Sekiro | 12,412 of the 21,304 programs of the shader bundles, 12,117 of them pixel programs; 48 more, none of them pixel programs, hold the name in no constant buffer's layout | 96 in every one | :proven[the reflection of every program of the shader bundles]{games="sekiro"} |
+| Elden Ring | 3,004 of 43,138 programs, 2,638 of them pixel programs | 48 in every one | :observed[the programs whose bytes hold the name, in the install with the Shadow of the Erdtree data, Steam build 25827938]{games="elden-ring"} |
+
+In Elden Ring's character G-buffer programs that read it, the amount blends the surface colour `v` towards the blood
+decal sampled from `g_DecalDiffuseTexture`: `amount * ((decal.a * v - v) + decal.rgb) + v`. At 0 the surface is
+unchanged. :observed[the lifted value graphs of nine Stormveil materials' programs: `C[DetailBlend]` 0 and 13, two `M[AMSN]` `_Skin_PaintDecal` programs and `CS[c4750][VA_Frame]_Flag`]{games="elden-ring"}
+
+:::open[What amount does a character carry at run time?]
+The value an unhurt character's instance carries, and how the engine raises and lowers it, are not observed: no frame
+capture has been read at that word. Sekiro's programs declare the same member; how they read it is not observed.
+:::
+
 ## Sekiro
 
 ### SAT positions and values

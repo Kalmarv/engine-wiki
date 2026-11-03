@@ -134,6 +134,19 @@ draws a parent's part only while its small tile is not drawn at a finer level, b
 files support (the word is the only field of a part that names the small tile); the runtime test is not established by
 the files. :inferred{games="elden-ring"}
 
+In the game's code, one function reads a part's tile-load word (keeping it unless it is `0xffffffff`), and each of its
+nine callers makes the map it names the part's own map for the entity machinery: a character's home map, the enemies a
+parent places for a small tile gathered for that tile, the map an entity handle resolves to, and a per-map registration
+of a geometry instance's ids when it is activated. None of them decides whether the part is drawn.
+:observed[read from the executable's code, eldenring.exe 1.17.3]{games="elden-ring"}
+
+An asset also stores a map word in its type data, at offset 0x11C: the type data's words at 0x68, 0x70, 0x78 and 0x80
+give the offsets 0x88, 0xC8, 0x108 and 0x148 of four blocks, and the word is +0x14 of the third. Smithbox names it the map
+whose loading disables the asset. :sourced[Smithbox's MSBE part metadata]{games="elden-ring"} It does not mark the
+parents' assets: of the 75,053 prefixed assets, 75,027 hold `0xffffffff` there and 26 hold 0; of the 144,934 assets of
+the `_00` and `_10` tiles, 144,855 hold `0xffffffff` and the other 79, all of models `AEG092_*`, hold other values (14 of
+them a map word of an `m00` map, the rest small numbers). :proven{games="elden-ring"}
+
 :::open[How does the game choose the level a small tile is drawn at?]
 The layouts fix which parts stand for which small tile and at which level, not the distances at which the game moves
 from a `_00` tile to its `_01` and `_02` parents, nor whether it hides a parent's part by its tile-load word or by
@@ -156,6 +169,8 @@ its origin is the centre of the level-2 tile `m60_10_08_02`, the point (10,624, 
 The other three, of class 92, sit at places of legacy maps: `m920811` exactly at the Academy of Raya Lucaria's place
 (below; 0.000 m), `m921112` 0.016 m from Leyndell's, `m920912` 7 m from `m39_20_00_00`'s. :observed{games="elden-ring"} That the game
 draws these layouts as a far-scenery overlay, and from where, is not established by the files. :inferred
+Every one of the 637 drawn parts of `m60_00_00_99` (86 map pieces, 551 assets) stores its draw-group and display-group
+masks with no bit set, and none stores a tile-load map, so no collision's groups and no tile select them. :proven{games="elden-ring"}
 
 The running game (1.17.2, offline) loads the `_99` layout together with its base map. A scan of its committed memory
 after the player respawned at the Stormveil main gate found the names `m10_00_00_99.msb` and

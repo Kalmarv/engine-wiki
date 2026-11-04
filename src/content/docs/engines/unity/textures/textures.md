@@ -107,10 +107,25 @@ textures, and on the signed decode on all but 0.04% of the samples. :observed{ga
 PEAK stores 123,848 BC6H textures and as many BC4 textures, all unnamed and with one level, in 25 sizes (132×276 is the most
 common, 53,272 of them). :proven{games="peak"} SkateBIRD and Sledding Game have none. :proven{games="skatebird sledding"}
 
-:::open[Nibble order of ARGB4444 and RGBA4444]
-No texture of the four installs uses id 2 or 13, so the order of the four-bit channels inside the 16-bit value is not
-established by data. Community decoders disagree about it.
+:::open[Nibble order of RGBA4444]
+No texture of the four installs uses id 2 or 13, and none of the four-bit textures of three further installs (below) is id 13,
+so the order of RGBA4444's channels is still not established by data. Community decoders disagree about it. No frame capture
+of any Unity game read (SkateBIRD on Direct3D 11 and 12, Hollow Knight on both, Lethal Company, ULTRAKILL, Risk of Rain 2)
+holds a texture in a four-bit Direct3D format (`B4G4R4A4`, DXGI 115) or one of the engine's four-bit textures at all, so what
+the GPU is given for them is not observed either.
 :::
+
+### ARGB4444 nibble order
+
+Hollow Knight, Lethal Company, ULTRAKILL and Risk of Rain 2 each hold ARGB4444 (id 2) textures: 32, 34, 34 and 34 of them, all
+in the engine's built-in `unity default resources` file (the IMGUI skin, the watermarks and `WarningSign`). :observed[four installs]
+Read as a little-endian 16-bit value, the nibble at bits 12 to 15 is alpha, the one at bits 0 to 3 is blue, and the ones at bits 8
+to 11 and 4 to 7 are red and green. In Hollow Knight's file the grey textures (`EscToExit_Text`, `box`, the scrollbars and
+sliders of the skin) have the nibbles at bits 8 to 11, 4 to 7 and 0 to 3 equal in every pixel and only the top one differing,
+which places alpha apart from the three colour channels; `WarningSign` (64², one level) has a blue nibble of 0 to 3, a top
+nibble that is 0 or 15 over almost all of its pixels, and decodes to the amber warning triangle (mean over its opaque pixels
+196, 149, 10) when bits 8 to 11 are red and bits 4 to 7 green, and to a lime green one when they are swapped. :observed[one install's file]
+The red and green positions rest on that colour alone. :inferred
 
 ### ARGB32 byte order
 

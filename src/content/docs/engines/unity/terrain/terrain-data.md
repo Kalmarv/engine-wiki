@@ -68,5 +68,9 @@ from the drawn ones. [Colliders](/engines/unity/collision/colliders/) describes 
 
 :::open[The terrain shader]
 The terrain material's shader and how the three layers blend with the base map in Sledding Game's URP terrain shader are not
-described here.
+described here. No frame capture of a Unity game holds a terrain draw: the captures of Hollow Knight (2D), SkateBIRD (no terrain
+in the player) and ULTRAKILL are of title or main-menu screens, and those of Lethal Company and Risk of Rain 2 of a launch-mode
+menu and a sign-in dialog, although the players of both hold `Terrain` components (6 in Lethal Company, 10 in Risk of Rain 2).
+:observed[the captures read] Sledding Game has no capture. A capture of a frame inside a level with a terrain in view would be
+needed.
 :::

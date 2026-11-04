@@ -80,8 +80,11 @@ amplifies that error near `z = 0` (the square root of an error `e` can be as lar
 difference measured is 3.9 × 10⁻⁴. :observed{games="sledding"}
 
 :::open[Skin weights of compressed meshes]
-A compressed mesh can also hold bone weights (`m_Weights` in the compressed mesh). The readers used here do not decode them,
-and no mesh of the installs measured is known to use them.
+A compressed mesh can also hold bone weights (`m_Weights` in the compressed mesh). The readers used here do not decode them.
+No compressed mesh found has any: reading every Mesh object of the installs of Hollow Knight (1,007 files), Lethal Company
+(43), ULTRAKILL (302) and Risk of Rain 2 (1,799) with an independent reader finds 33 compressed meshes (3 in Lethal Company,
+30 in Risk of Rain 2, none in the other two), and every one has an empty `m_Weights` and `m_BoneIndices` and no bind pose.
+:observed[the four installs] Whether weights decode as the other packed vectors do stays open, since none of the 33 is skinned.
 :::
 
 ## Indices and submeshes

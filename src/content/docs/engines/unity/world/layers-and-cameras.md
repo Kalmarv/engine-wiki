@@ -37,9 +37,19 @@ touches. Sledding Game and PEAK name layers for that purpose (`OnlyCollideWithPl
 SkateBIRD's `Post-Processing` layer (31) holds the post-processing volumes, see
 [post-processing](/engines/unity/effects/post-processing/). :inferred{games="skatebird"}
 
-:::open[The layer collision matrices]
-The matrices of the three games are not decoded here, so which layers collide with which is not described.
-:::
+## Layer collision matrices
+
+The `PhysicsManager` in `globalgamemanagers` stores `m_LayerCollisionMatrix`: 32 words, word *a* having bit *b* set when layers
+*a* and *b* collide. :observed{games="skatebird sledding peak"} Read in each of the three installs the matrix is symmetric over
+all 32 × 32 pairs. :observed{games="skatebird sledding peak"} (No frame captures it: it is a CPU setting.)
+
+| Game | Layers that collide with nothing else or everything | Layers with notable exclusions | Confidence |
+|---|---|---|---|
+| SkateBIRD | `Room Boundary Mesh` (17) and `Mini Map Markers` (28) collide with every layer | `Wheels`, `Board` and `Ragdoll` collide with none of layers 8 to 13 (themselves, each other, `Ghost`, `Ghost Listener`, `Clothing Collisions`); `Skate Zones` (15) and `Board-Interactive Deco` (16) collide only with a few layers (each with 16 or 14 layers excluded); `Default` excludes 11, 12, 13, 15 and 16 | :observed{games="skatebird"} |
+| Sledding Game | `Default`, `Default_HardCameraBlock` and `Terrain` collide with the same set | `Sled` does not collide with `Player` or `Ragdoll`; `PlayerHitCollider` collides only with layer 7 (`Sled`); `OnlyCollideWithPlayer` collides only with layer 8 (`Player`); `DefaultNoCollideWithRagdoll` is `Default` without `Ragdoll`; `UI World`, `Interactable`, `AudioCutoffBlocker` and `BillboardCamera` collide with no named layer, not even themselves| :observed{games="sledding"} |
+| PEAK | `InvisWall` and `MirrorHidden` exclude only layer 8; `Vines` and `SDF` only layers 8 and 9 | `Character` does not collide with layers 8, 11, 12, 13, 14, 16 or 17; `OnlyCollideWithCharacter` collides with `Character` (10), `Hazard` (14) and a few unnamed layers; `GhostCharacter` collides with only layers 3, 6, 7, 13 to 24 and 26 to 30 | :observed{games="peak"} |
+
+The full rows are in the install's `PhysicsManager`; the table summarises them.
 
 ## Culling masks in SkateBIRD
 

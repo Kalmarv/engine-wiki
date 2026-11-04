@@ -183,6 +183,8 @@ parameter block from elsewhere, is not traced in either game.
 :::
 
 :::open[Which strips do the other look-up IDs name?]
-Only `LutSourceId` 0 is tied to a strip, in one area of each game. How an ID becomes a texture name, and what happens between
-two keys that store different IDs, are not established.
+The look-up copy reads the same strip in all eight Elden Ring frames that keep contents (the gate at 7.9 to 8.2 h, the camera at
+five places): its 16 × 256 source texture has one content key throughout. :observed[8 frames]{games="elden-ring"} No frame
+shows another ID or a blend of two keys' strips. Only `LutSourceId` 0 is tied to a strip, in one area of each game. How an ID
+becomes a texture name, and what happens between two keys that store different IDs, are not established.
 :::

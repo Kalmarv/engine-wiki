@@ -537,10 +537,27 @@ maps. :sourced[Paramdex]{games="elden-ring"} It enables blending; it does not gi
 `EnvironmentConfig` group and no `Env Map:Editor` group, so they hold no state schedule either.
 :observed[the nine files, read from the archives]{games="elden-ring"}
 
+The ratio is a function of the hour. In the four frames whose `cbPerFrame` was recorded (`FC_TimeOfDay` 8.0744, 8.1172, 8.1267
+and 8.1294), the `g_envMapInterpRatio` of every region draw and the `lerpRate` of every `[Lerp]` dispatch is `(FC_TimeOfDay −
+6.5) / 4` (0.39361, 0.40424, 0.40660 and 0.40736), to within 7e-5. :observed[4 frames]{games="elden-ring"} It is the same in a frame's
+draws and dispatches except that one region draw or dispatch of three of the nine frames reads a value 7e-5 lower, so the game
+writes it again during the frame. :observed[9 frames]{games="elden-ring"} In the five frames without `cbPerFrame` the same
+formula gives hours of 7.92 to 8.03 from their ratios (0.3553 to 0.3829). :inferred{games="elden-ring"} The 6.5 is the offset of the
+file axis of 98 of the 102 draw-parameter files drawn at the gate ([looking up an hour](/engines/fromsoft/lighting/gparam/#looking-up-an-hour)),
+so the blend runs from 0 to 1 over the 4 hours after that axis's start; whether the pair of states changes at its end is not
+in any frame. :inferred{games="elden-ring"}
+
+The pair stays the same while the ratio moves. The textures bound to the region programs' environment slots (`t25` to `t34`)
+are the same contents in the three frames with ratios 0.3553 to 0.3829 (542 or 543 of 543) and in the three with 0.4042 to 0.4074
+(518 of 519), and 480 of them are in both groups; a ratio rising by 0.05 across them changes no cube or volume.
+:observed[7 frames with first-use contents, the cubes and volumes' content keys]{games="elden-ring"} The two states are therefore
+held while the ratio rises over this hour. :inferred{games="elden-ring"}
+
 :::open[What chooses Elden Ring's environment states and the blend?]
-The code that picks the two states and the ratio from the hour and the rule that picks a tier on PC are not established; the
-frame shows one choice, not the rule. The probe-group rule above fits Stormveil but has not been followed in the executable or
-checked on another map.
+The ratio at the gate follows `(hour − 6.5) / 4` (above). The code that picks the two states for an hour (which pair outside
+6.5 to 10.5 h, and where the ratio starts again), the rule that picks a tier on PC and where the formula's 6.5 and 4 come from
+are not established: all ten frames are within 7.9 to 8.2 h in one area. The probe-group rule above fits Stormveil but has not
+been followed in the executable or checked on another map.
 :::
 
 #### Far tiles
@@ -578,10 +595,16 @@ of the 14 `_02` tiles, whose terrain reaches 22 to 1,969 m. Letting the upper gr
 own gains 0.0008 and moves its bottom 38 m down, within the uncertainty of the stack.
 :observed[all 14 `_02` far tiles with two groups, at the shared placement above]{games="elden-ring"}
 
+None of the ten recorded frames holds a far tile's volume: of the BC7 3-D textures of each frame's resource list, none is 84 on
+all three sides, and the volumes the region draws bind are boxes of the area, at most 132 × 112 × 64.
+:observed[the resources of 10 frames at the Stormveil gate]{games="elden-ring"} A frame at the gate does not draw them, so the
+captures cannot show how a far tile's groups are placed or drawn. :observed{games="elden-ring"}
+
 :::open[How does the game place a far tile's environment groups?]
 The boxes above are fitted to the volumes' contents; the code that places these groups, whether the height range is one
 constant or depends on the tile, and whether they are drawn with the region programs, a fade, colour scales or a
-priority, is not traced. Which state blend and tier a far tile uses is the open question above.
+priority, is not traced. Which state blend and tier a far tile uses is the open question above. A frame that draws a far
+tile (at a place on the open world's tiles, not the Stormveil gate) is missing.
 :::
 
 ### Exposure
@@ -589,8 +612,18 @@ priority, is not traced. Which state blend and tier a far tile uses is the open 
 Elden Ring's exposure meter and the scale the CPU derives from it are on
 [exposure, tone curve and colour grading](/engines/fromsoft/lighting/tone-mapping/#exposure).
 
+In nine more recorded frames at the gate (the camera at five places, its height 5.74 to 8.19 m, looking from 20° below the
+horizon to 40° above it, at about 8 h) the shell's object matrix is again the identity rotation with x and z equal to
+`SC_CameraPos`'s bit for bit and y −16. :observed[9 frames; the tenth holds no constants]{games="elden-ring"} Of the 1,872 to 2,768
+draws of each frame that bind both `cbObjMatrix` and `cbSceneParam`, the shell is the only one whose matrix sits at the camera's
+x and z, and in every frame exactly one of the scene-constant contents bound has registers 18 and 26 zero.
+:observed[9 frames]{games="elden-ring"} None of the ten frames, the three that look up at the sky included, draws an `M[Sky9]`
+skysphere or another cloud layer: the fill and the shell are the whole sky at this hour and place. :observed[10 frames, the
+programs of every draw named]{games="elden-ring"}
+
 :::open[Do Elden Ring's other sky assets follow the camera?]
-The cloud shell `M[Clouds9]` follows the camera at a fixed height (above). Whether the skysphere `M[Sky9]` and the cloud
-layers drawn in night frames are placed the same way and take the same depth-0 scene constants, and how a weather's list
-combines with the `_99` map's own placements, are not established.
+The cloud shell `M[Clouds9]` follows the camera at a fixed height (above), in every frame that holds constants. Whether the
+skysphere `M[Sky9]` and the cloud layers drawn in night frames are placed the same way and take the same depth-0 scene
+constants is not shown: no recorded frame draws one (all ten are at the Stormveil gate at about 8 h). How a weather's list
+combines with the `_99` map's own placements is not established.
 :::

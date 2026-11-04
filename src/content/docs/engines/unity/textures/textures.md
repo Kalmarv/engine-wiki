@@ -172,3 +172,21 @@ pipeline, `_MainLightShadowmapTexture` in URP), reflection probe cubes (`unity_S
 `_GlossyEnvironmentCubeMap`), light-probe volumes, the camera depth and grab textures. SkateBIRD's programs name them in
 their texture tables; Sledding Game's URP shader objects keep a variant's textures in a per-variant parameter blob
 ([shader objects](/engines/unity/shaders/shader-objects/)), where they are named the same way. :observed{games="skatebird sledding"}
+
+## On Direct3D 12: reserved textures
+
+On Direct3D 12, SkateBIRD's Unity makes a large texture as a *reserved* resource (`CreateReservedResource`) whose
+64 KiB tiles it maps into heaps of its own, and a small one as an ordinary committed resource. In SkateBIRD (Unity
+2019.4.20f1, `-force-d3d12`), a capture of the title screen with locum held 72 reserved textures: every one a 2D BC1 or BC3 texture
+with a full mip chain, 512 (6), 1024 (26) or 2048 (40) texels wide; every mipped BC texture of 256 or less (11) was
+committed. One texture's tiles can come from two heaps (a 2048x2048 BC1 texture: 32 tiles in one, 11 in another), and
+the packed mips (the levels smaller than a tile) share one tile. All 2680 tiles of the 72 were mapped when the frame
+first used them, and the frame changed no mappings. :observed{games="skatebird"}
+
+A tool that reads a Unity D3D12 frame has to follow the tile mappings to read these textures: a reserved resource has
+no heap of its own to read. :inferred
+
+:::open[When does Unity map fewer tiles than a texture has?]
+The title frame had every tile of every reserved texture mapped. Whether mip streaming, or memory pressure in a larger
+scene, leaves levels unmapped (and which levels) has not been looked at.
+:::

@@ -207,8 +207,18 @@ In examined Elden Ring draws, one pixel program with identical texture bindings 
 constant buffers. Program and texture identity alone therefore does not identify a draw's complete material state.
 :observed{games="elden-ring"}
 
+The dynamic material constants (`cbMatDynParam`, `b2`) of 7,681 draws in ten Stormveil frames show which values the
+engine writes rather than the material. The dither value is 1, the blend mode 0, the subsurface id 0 and the emissive colour 0
+in every draw. :observed[ten captured frames]{games="elden-ring"} The translucency scale is 1.0 in some families, and
+`FC_ColorSlotNo` (a float at `c0.w`, converted with `fptoui` by the pixel program) is 0, 1 or 2 by family, so the palette
+slot is a runtime choice. :observed[ten captured frames]{games="elden-ring"} The textures at a material's slots are
+replaced by engine textures of one texel (white, black, flat normal, transparent) or by file dummies where the material has
+no texture. :observed[ten captured frames]{games="elden-ring"}
+
 :::open[Which runtime overrides replace authored defaults?]
 Captures establish the state bound at sampled draws. A match to a static material's default does not establish its
 identity when multiple materials share those defaults, nor does it establish how character creation, events,
-weather or per-instance overrides produced that state.
+weather or per-instance overrides produced that state. These frames give no join of a draw to its FLVER material or to the
+parameter defaults of its MATBIN, so which constants differ from the authored default is not compared, and the camera
+fade and instance palette values are runtime state whose source is not traced.
 :::

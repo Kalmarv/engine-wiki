@@ -131,9 +131,17 @@ rows, zeros and non-numbers: stale buffer space, not palettes. :observed{games="
 record `i` is inferred from the addressed records being well formed (a valid `mWorld` in rows 0 to 2); the instance
 table itself is not recorded. :inferred{games="elden-ring"}
 
+The palette is not white everywhere. The vertex program reads the record from `g_InstanceIndexBuffer` (`t25`) at
+`VC_InstanceIdxOffset` (`c0.x` of `b10`) plus the instance id, and that buffer is recorded, so the addressed record of each
+draw can be read. Over nine Stormveil frames, of 20,164 distinct (draw, record) pairs, 20,041 select a white palette and 123
+select a different one: the 14 instances a frame of the single `S[AMSN]_Glow_Gbuf` draw, whose four slots hold the same
+bright orange, about (18 to 19, 5.6 to 6.3, 1.2, 1). :observed[nine captured frames of one area]{games="elden-ring"} The
+unselected slots 1 and 2 of many `M[AMSN]` records hold (0.706, 0.706, 1, 1) and (0.706, 0.706, 0.392, 1), so the table holds
+values other than white that no addressed record of these frames selects. :observed[nine captured frames of one area]{games="elden-ring"}
+
 :::open[Is the instance palette white everywhere?]
-The palette is white over every addressed record of the Stormveil captures. Whether other areas, or other material
-families than `Mb`, draw with a coloured palette, and what fills it, is not established.
+Outside the Stormveil gate, whether other areas draw coloured palettes is not established, nor is what fills the table
+or which object the glow draw is.
 :::
 
 ### Masked blends and overlays

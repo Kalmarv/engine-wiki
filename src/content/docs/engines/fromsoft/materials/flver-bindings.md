@@ -112,9 +112,31 @@ engine loaded; the dummies sit among the other `systex` textures in creation ord
 detail gain of the [character detail programs](/engines/fromsoft/materials/detail-blend/) is the reciprocal of the
 albedo dummy's 0.216, which these draws bind. :inferred{games="sekiro"}
 
+Elden Ring's frames show both kinds too. Over the ten Stormveil frames the textures of 16 by 16 texels or fewer that drawn
+programs read at their `Texture2D_N` registers fall into two groups. :observed[ten captured frames, 3,000 to 3,600 bindings of
+`Texture2D_N` registers a frame]{games="elden-ring"} The first holds the same bytes as Sekiro's file dummies: a BC1 texture of
+`SYSTEX_Dummy_a`'s bytes in 16×16 (five mips) or 4×4 (three mips) form, a zero BC4 texture of `SYSTEX_Dummy_m`'s bytes,
+a BC7 normal map of `SYSTEX_Dummy_n`'s bytes in 8×8 or 4×4 form, and the `_3m` and `_BlackAlpha_a` textures. The bound bytes are the
+same in the Sekiro frame and the Elden Ring frames, and each one is bound only at slots whose metaparam default texture
+has that file's name (`Dummy_a` at the albedo slots, `Dummy_n` at the normal slots, and so on).
+:observed[Elden Ring frames m10 to m17 and the Sekiro idol frame, content keys compared]{games="elden-ring sekiro"} The
+4×4 forms are the same file resident with its first two mips dropped. :inferred{games="elden-ring"} The second group is a
+1×1 `R8G8B8A8_UNORM` texture of white (255, 255, 255, 255); the frame also holds 1×1 textures of opaque black, of flat normal
+(128, 128, 255, 255) and of transparent black, the same four engine textures as Sekiro's three plus the normal.
+:observed[ten captured frames]{games="elden-ring"} The white one is bound at the `Mask1Map` slot of `M[AMSN_V]_Grass2` (61 of
+101 bindings) and `P[ChrCustomize][FaceHair]` (30 of 30), while the same `Mask1Map` slots of other families (`M[AMSN]`,
+`M[AMSN_V][Mb3][Ov_N2_T]`) take the file dummy `Dummy_1m`, so the default's name does not decide which kind a slot gets.
+:observed[ten captured frames]{games="elden-ring"} Elden Ring's layered map families (`M[AMSN_V][Mb2]`, `[Mb3]`, `[Mb4]`
+and `[Ov_*]`) bind the file dummies (`Dummy_n`, `c80_SYSTEX_RED` and others) where Sekiro's `M[Multiple]` binds white.
+:observed[ten captured frames]{games="elden-ring"} Sekiro's idol frame draws 24 material families; the 14 that bind a texture of
+16 texels or fewer are those of the tables above, and the other 10 (landscape, sky, emissive, translucency and mesh-decal
+families) bind only textures of 64 texels or more, so they show no empty slot. :observed[one captured frame]{games="sekiro"}
+
 :::open[Which families take a file dummy and which an engine texture?]
-The frames show the character and layered map families above. Other families (effects, water, the GX fixed-function
-programs) had no empty slot in them, and the rule that picks between the two kinds is not read from the code.
+Whether a small texture is an empty slot filled in or a small texture the material names cannot be told from a frame
+alone: the FLVER binding of each draw's mesh is not joined to the Elden Ring draws, so the 1×1 white at `Mask1Map` of
+grass and face hair may be the engine's fill or a texture the material binds. The rule that picks between the kinds is
+not read from the code.
 :::
 
 The `N` in `Texture2D_N` identifies a logical texture across material and program names. It is distinct from the
@@ -122,14 +144,15 @@ metaparam slot/register: Sekiro's DetailBlend base albedo `Texture2D_7` is at re
 `Texture2D_2` is at register 7. :observed{games="sekiro"}
 
 :only[elden-ring] Elden Ring's captured tiling rows are likewise indexed by the metaparam slot, not by `N`.
-:observed{games="elden-ring"} A reading of Elden Ring's G-buffer programs instead equates `N` with the MATBIN sampler's register.
-:inferred{games="elden-ring"}
-
-:::open[Is Texture2D_N a register number in Elden Ring?]
-The tiling rows separate `N` from the metaparam slot, as in Sekiro. The program reading that equates `N` with the
-sampler's register comes with no comparison against the registers bound at a draw, so which register carries a
-given `N` is not settled for Elden Ring.
-:::
+:observed{games="elden-ring"} Its programs are named the same way, and the register a program reads `Texture2D_N` from is
+the `slot register` byte of the [metaparam](/engines/fromsoft/materials/metaparam/#textures-and-render-passes) texture whose
+name holds that `N`, not `N` itself. In the ten recorded Stormveil frames every texture register of every drawn program that
+names a `Texture2D_N` (117 to 122 programs and 426 to 449 textures a frame) equals the metaparam slot of that `N` in the
+program's own bundle, with no exception, while `N` equals the register for only 122 of the 442 textures of one frame
+(`Texture2D_7` is at `t10`, `Texture2D_11` at `t2`). :observed[ten captured frames at the Stormveil gate, each drawn program's
+reflection against its bundle's metaparam]{games="elden-ring"} Reading `N` as the register, as an earlier reading of the
+G-buffer programs did, is wrong for Elden Ring. :observed{games="elden-ring"} Sekiro's frame at the Ashina idol is alike: `N`
+equals the register for 42 of the 273 textures of its 60 programs. :observed[one captured frame]{games="sekiro"}
 
 The FLVER record layouts below are checked in the whole-install model population: 14,459 Sekiro files
 and 22,050 reference-readable Elden Ring files. The reference refuses another 119 Elden Ring SpeedTree files;

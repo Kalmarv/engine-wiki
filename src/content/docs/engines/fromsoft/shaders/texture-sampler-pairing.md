@@ -117,7 +117,17 @@ registers. :observed[five captured frames]{games="sekiro"} `SS_ClampAniso` at `s
 therefore the second register of the same pair. :inferred The anisotropy of 16 may follow the game's graphics settings,
 which these frames do not vary. :inferred{games="sekiro"}
 
+Elden Ring binds the same three registers with the others: every draw and dispatch that binds samplers in ten Stormveil
+gate frames has `s5`, `s10` and `s11` set, in vertex, pixel and compute stages. :observed[ten captured frames]{games="elden-ring"}
+Outside the shadow and depth passes (render targets of 2048², 4096² and 64² texels) `s5` and `s10` hold the anisotropic wrap
+state and `s11` the anisotropic clamp state, with the same filter (`0x55`), anisotropy 16 and border colour (0.5, 0.5, 0.5, 0)
+as Sekiro's; inside those passes all three hold the linear filter (`0x15`). :observed[ten captured frames]{games="elden-ring"}
+No drawn Elden Ring program declares `s5` or `s10`, and one declares `s11`: `M[AMSN_V][Mb4][3Mask][Ov_N2]_Gbuf`, one to four
+draws a frame, which reads `Texture2D_0` (`Mask3Map`, `t0`) and `Texture2D_7` (`NormalMap_0`, `t10`) through
+`SS_ClampAniso`. :observed[ten captured frames]{games="elden-ring"}
+
 :::open[What do the anisotropic registers bind in Elden Ring, and who reads them?]
-No Sekiro program drawn in the recorded frames declares `SS_WrapAniso`, so its reads are not observed; Elden Ring's
-recorded frames give no state for `s10` or `s11`.
+The state of the three registers is read from the frames, and the one drawn reader of `s11` is named. No drawn program
+reads `s5` or `s10`, so their readers, if any, are not in these frames, and no frame varies the graphics settings that may
+set the anisotropy of 16.
 :::

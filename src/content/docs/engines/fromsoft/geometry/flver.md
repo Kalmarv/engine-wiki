@@ -156,6 +156,15 @@ A face set's indices therefore reach the GPU as stored, relative to its mesh's v
 The skinned meshes are the exception for their vertex streams, not their indices: see
 [skinning](/engines/fromsoft/geometry/nodes-and-skinning/#skinned-vertex-streams-at-run-time). :observed{games="sekiro"}
 
+:only[elden-ring] Elden Ring uploads a model's data block as stored too, into a buffer of the block's length rounded up to a
+multiple of 256 bytes, and binds the index buffer at offset 0 over the block's length and each vertex buffer at its offset
+for its length. In one frame, 176 of the 251 buffers the frame used hold FLVER bytes found this way: in 165 of them the
+index binding's range is the whole data block of an asset, part, character or map FLVER, each in a buffer exactly the block
+rounded up to 256 bytes, and the vertex ranges are the file's vertex buffers. :observed[one captured frame, the keys of the
+bound ranges against those of every FLVER of the asset, part, character, m60 and m10 map binders]{games="elden-ring"}
+Because of the padding, the buffer's contents as a whole are never the block's bytes, unlike Sekiro's; a bound range is.
+:observed{games="elden-ring"}
+
 ## Face sets
 
 ```layout

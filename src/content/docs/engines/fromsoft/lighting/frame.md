@@ -349,8 +349,11 @@ The shell follows the camera across the ground and keeps its height. Its object 
 `cbInstanceData[0].mWorld`) is the identity rotation at (camera x, −16, camera z): its x and z equal `SC_CameraPos`'s bit for
 bit in each frame, while the camera's height (5.74, 6.61 and 6.99) leaves its y at −16. :observed[three frames]{games="elden-ring"}
 This is Sekiro's sky-map placement (translation (camera x, 0, camera z) times the part's own transform) with the part's own
-height. :inferred{games="elden-ring"} The shell's size is that of the largest skyspheres above; which `AEG096` model it is
-was not matched to the files. :inferred{games="elden-ring"}
+height. :inferred{games="elden-ring"} The shell is `AEG096_603`: the draw's vertex range (53,680 bytes at offset 22,816 of a
+76,544-byte buffer) and its index binding (offset 0, 76,496 bytes) are byte for byte that model's first vertex buffer and its
+whole [data block](/engines/fromsoft/geometry/flver/#the-data-block-on-the-gpu), which no other of the 82 sky binders holds; its
+6,336 indices are its first face set, which two other sky models share. :observed[one frame, the same vertex and index bytes as
+the three above; the bound ranges' keys against every sky FLVER's]{games="elden-ring"}
 
 Which show depends on the weather: `WeatherAssetReplaceParam` (1,007 rows) lists, for a `_99` map and a weather id, the
 assets drawn; every one of `m60_00_00_99`'s 38 sky assets is listed for some weather, and its 18 weathers list 1 to 27 of
@@ -588,6 +591,6 @@ Elden Ring's exposure meter and the scale the CPU derives from it are on
 
 :::open[Do Elden Ring's other sky assets follow the camera?]
 The cloud shell `M[Clouds9]` follows the camera at a fixed height (above). Whether the skysphere `M[Sky9]` and the cloud
-layers drawn in night frames are placed the same way and take the same depth-0 scene constants, which `AEG096` model the shell
-is, and how a weather's list combines with the `_99` map's own placements, are not established.
+layers drawn in night frames are placed the same way and take the same depth-0 scene constants, and how a weather's list
+combines with the `_99` map's own placements, are not established.
 :::

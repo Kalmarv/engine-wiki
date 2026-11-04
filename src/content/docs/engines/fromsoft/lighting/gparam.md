@@ -199,7 +199,8 @@ Elden Ring's scripts call `2001:4` (Set Current Time) 9 times in the 544 event s
 a clock the game starts with: `common.emevd` events 703 (23:45) and 910 (22:30), `m10_01` event 50 (23:45), `m18_00` events
 18000021 and 18000022 (10:30), `m60_42_36_00` event 1042360710 (22:30), `m60_51_36_00` event 1051362220 and `m60_52_38_00` event
 1252382860 (3:30), and `m61_46_40_00` event 2046402500 (8:00). :proven[every event script of the install]{games="elden-ring"} So no
-data of the game states the hour a map is entered at. :inferred{games="elden-ring"} The hour reaches Elden Ring's sky programs as
+data of the game states the hour a map is entered at. :inferred{games="elden-ring"} The clock in four captures at the Stormveil gate spawn reads 8.08 to 8.13 h, fitted from the sun's direction and colour
+([below](#from-the-light-set-to-the-lighting-constants)). :observed{games="elden-ring"} The hour reaches Elden Ring's sky programs as
 `FC_TimeOfDay`, which Sekiro's programs do not read (see [what forward programs read](/engines/fromsoft/shaders/bundles/#what-forward-programs-read-from-the-frame)).
 
 The game keeps this state in `CSWorldSceneDrawParamManager`: per area block an object holding two weather ids, an
@@ -467,15 +468,55 @@ computed in `f32` bit for bit, for up (0.5695, 0.5294, 0.6078, 0.7) and down (0.
 ambient comes from the environment volumes instead ([rendered frame](/engines/fromsoft/lighting/frame/#irradiance-volumes)).
 :observed[the operands of every forward program's disassembly]{games="sekiro"}
 
+The `FC_DirLight` the program declares is two sets (576 bytes in Sekiro's program), but the buffer it reads is a table of 225
+sets: 64,800 bytes in Sekiro (225 × 288) and 50,432 in Elden Ring (225 × 224, then 32 zero bytes), and the G-buffer selector
+indexes it. :observed[the buffers bound to the sun draw of one frame of each game]
+
+**Sekiro's frame at the idol** (18:00). Four sets hold data; the rest of the buffer is stale bytes. Sets 0, 1 and 2 hold the
+`LightSet` value ID 0 of the base file of each block of area 11 (`m11_00_0000`, `m11_01_0000`, `m11_02_0000`), at the 18:00
+key, on every field they share: `Vec_0` and `Vec_1` (the directions of `Angle0` and `Angle1`), `Col_0`, `Col_1`, `Spc_0` and
+`Spc_1`, and the hemisphere ambient's mean and slope; set 0 equals `m11_01_0020`'s value ID 0 on the same fields as well, so the
+join does not say which of the two files fills it. :observed[one frame, every `m11_00` to `m11_02` light-set file read]{games="sekiro"}
+`Vec_1` is not a stored key: the file keys `Angle1` at 0 h and 12 h only, and the set holds the slerp from the 12 h key back to
+the 0 h key at weight 0.5, which is the wrapping rule of [looking up an hour](#looking-up-an-hour) at 18 h.
+:observed{games="sekiro"} `Vec_2` and `Vec_3` of these three sets are the same in all three and no file stores them at value ID
+0 (the group's local-light angles are keyed at 100 and 120): they are the fields' reference values. :inferred{games="sekiro"}
+Set 3, the player's, holds value ID 100 of `m11_01_0000` at 18 h: `Vec_0`, `Vec_1`, `Col_0`, `Col_1`, `Col_2` and `Spc_0` to
+`Spc_3` are that ID's `Angle0`, `Angle1` and its diffuse, local-light and specular colours to float precision (nine of the
+twelve direction and colour rows; the file stores no `Col_3` at that ID), and `Vec_3` is its `LocalLight Angle2` turned about the
+vertical by the camera's yaw minus 180° (82.7904° against 82.7912° from the frame's view matrix). :observed[one frame]{games="sekiro"}
+`Vec_2` of set 3 is not any direction the file stores, turned or not. :unknown{games="sekiro"} So the game builds the table from the draw-parameter files of the area's blocks, one entry per block
+for the map and a second entry from the player's value ID, and the G-buffer's selector is that entry's index.
+:inferred{games="sekiro"}
+
+**Elden Ring's frames at the gate** hold their light sets in the same way. Set 0 equals value ID 0 (or 1000, whose values are the
+same) of `m10_00_0000` and set 3 equals value ID 100 (or 1100), on `Vec_0` including its `w`, which is the field `Sharpness0`
+(`Vec_1.w` is `Sharpness1`), on `Col_0`, `Col_1`, `Spc_0` and `Spc_1`; set 0 also on `Vec_1` (the file's `Angle1`) and set 3 also on
+`Col_3` and `Spc_3`. The colours go through the same transfer as in Sekiro, `(r²w, g²w, b²w, w²)`, and the directions through the
+same sine and cosine form. Of the nine `m10_00` files and the four `m00_00_0000` files, `m10_00_0000` matches seven of the twelve rows for each set and
+no other file more than three (set 0) or five (set 3, the `m00_00_0000_commonevent` file); the collision under the spawn names
+slot 0, as in [the experiments above](#collision-selectors). :observed[one frame]{games="elden-ring"} The directions and
+colours match with the key blended at an axis time of 1.6295 h, which is a clock hour of 8.1295: in four captures of the gate the
+clock reads 8.075, 8.117, 8.127 and 8.129. :observed[four captures, fitted from the sun's direction and colour, errors under 5e-5]{games="elden-ring"}
+No script sets the hour a map is entered at (see [time of day](#time-of-day)); the clock stands near 8 h at the gate in these
+sessions. :observed[four captures]{games="elden-ring"}
+`Vec_1` of set 3 (0.4211, 0.9063, 0.0357), its `Vec_3` and set 2 are not matched by any stored field or by a turn about the
+vertical of one; set 1's `Vec_0` equals the frame's `SC_VolumeFogLightDir`. :observed[one frame]{games="elden-ring"}
+
 :::open[How do the two light sets reach the pixels?]
-The program chooses a set per pixel by the [G-buffer](/engines/fromsoft/shaders/gbuffer/)'s light-group selector; which
-parts write which value, and what selects `_0020` beside `_0000` for the map, is not established. The second direction is
-not yet tied to a stored field.
+Established for the map's and the player's entries in both games (above): the game builds a table of 225 sets from the
+draw-parameter files and each pixel's G-buffer selector indexes it. Not established: how the other entries are chosen (Sekiro's
+set 2 is a neighbouring block's, set 4 holds four lights of `w` 50 and colour 1.5), where the camera-relative `Vec_3` is turned,
+and the source of Elden Ring's remaining directions (set 3's `Vec_1` and `Vec_3`).
 :::
 
 :::open[Which environment is active?]
-The selection from map, collision scene bytes, weather and events is not fully established. How the hours between keys are
-blended is read from the code ([looking up an hour](#looking-up-an-hour)).
+At the gate in Elden Ring the light of both entries is the `m10_00_0000` file's, at the clock hour fitted above, and in Sekiro
+at the idol the blocks' base files' at 18:00. So in these frames the slot-0 file of the map's own stem supplies the sun, and none
+of the `m00_00_0000` files matches as well. Not reached by the captures: another slot, a
+weather with a light set, an override, or a map that is changed during play, since every frame shows one place and one weather.
+How the hours between keys are blended is read from the code ([looking up an hour](#looking-up-an-hour)), and the sun's direction
+and colour in these frames agree with it.
 :::
 
 :::open[What selects local FogVolume sets?]

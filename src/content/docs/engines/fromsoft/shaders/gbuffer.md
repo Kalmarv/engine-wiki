@@ -121,6 +121,23 @@ in a 50,432-byte buffer of such sets. :observed{games="elden-ring"} In both game
 3: 167,082 Elden Ring pixels against 3,519,318 of set 0, and 77,973 Sekiro pixels against 1,994,835 of set 1.
 :observed[one frame of each game]
 
+What an instance is decides its light set, not its material: the value follows the kind of object, and one program family
+writes two values for two objects. In the 723 Elden Ring G-buffer draws of one Stormveil frame whose record is bound, the 641
+map-piece and asset draws write 0, the one draw of an `S[AMSN]_Glow` object 1, 33 draws of another character 2 (the named
+one is `c8100`) and 46 draws of the player's parts 3 (`am_m_1360` and the `wp_a_` weapons are the named ones); `C[DetailBlend]`
+programs write 2 for the character and 3 for the player. :observed[one frame, the record read from the bytes each draw's constant buffer held]{games="elden-ring"} Three other
+captures of the gate show the same four groups (0 for map pieces, 1 for the glow object, 2 for the character, 3 for the player's
+parts). :observed[captures m14 to m16]{games="elden-ring"} In Sekiro's frame the player's 64 draws (`bd_m_9040`, `am_m_9000`,
+`fc_m_0200`, `lg_m_9000` and the `wp_a_` weapons) write 3; a piece of `m11_02` writes 2; the 507 pieces and objects of the
+idol's area `m11_01` write 1; 22 write 0, ten of them pieces of `m11_00` and twelve
+the `m11_01` models 911120 and 911200. :observed[one frame, 594 draws whose program names the record]{games="sekiro"} The indices 0, 1 and 2 are the area's
+blocks: the light sets at those indices are the `_0000` files of `m11_00`, `m11_01` and `m11_02`, and 3 is a second set of the
+`m11_01_0000` file (see [the light sets of a frame](/engines/fromsoft/lighting/gparam/#from-the-light-set-to-the-lighting-constants)).
+:observed[one frame]{games="sekiro"} The record is written by one routine for every draw (one call stack for all 238 updates of
+the instance buffer in Sekiro's frame). :observed{games="sekiro"} Stencil references group the draws the same way: 80 and 88 are
+the player's parts in both games (88 on the skin below), 144 is the other character in Elden Ring's frame and pieces with
+selector 1 in Sekiro's, and the map's 16, 18, 48, 50, 146, 208, 210 and 242 carry selector 0 or 1. :observed[one frame of each game]
+
 :::slides[The light-set lane]
 ![Sekiro's target 3 alpha by a Sculptor's Idol in Ashina](./_frames/gbuffer-lightset-sekiro.png)
 Sekiro, target 3 alpha at the end of the G-buffer pass, the stored index times 80 (set 1 grey, set 3 white), at half
@@ -135,9 +152,25 @@ index as `int(x × 255)`,
 take 18 registers from it (`sssWidth` and a 17-tap `kernel`) in `cbSSS.g_profileArray`, and scale the blur's width by
 the strength lane. :observed Sekiro reads the index from target 1's alpha and the strength from target 2's; Elden Ring
 reads both from target 3, the index in green and the strength in red. :observed The index comes from the material's
-`FC_SSS_ID` over 255 in the programs that write it and is zero in the rest. :observed Neither frame has a nonzero
+`FC_SSS_ID` over 255 in the programs that write it and is zero in the rest. :observed No frame holds a nonzero
 index: in Sekiro's, `FC_SSS_ID` is 0 in all 59 draws of the 3 programs that write it, and Elden Ring's target 3 is zero
 on every pixel. :observed[one frame of each game]
+
+The blur reaches only the pixels the stencil selects. Both blur programs are drawn with stencil reference 8 and an `equal` test
+under a read mask (Sekiro 0x8, Elden Ring 0x28), and the only G-buffer draws whose stencil reference has bit 0x8 are those of
+skin, reference 88: Sekiro's four (three of the face part `fc_m_0200`, one of the arms `am_m_9000`, programs `Character_AMSN_SSS`,
+`Character_AMSN_AO_SSS` and the cat-eye material) and Elden Ring's six `P[ChrCustomize][Skin]` draws. :observed[one frame of each game]
+Sekiro's frame has 325 such texels (313 to 344 in six captures at the idol), by the character's neck and hands, all in light set
+3. On them the profile lane (target 1 alpha) is 0 in every capture, `FC_SSS_ID` is 0 in all four draws, and the strength lane
+(target 2 alpha) holds 0 to 31 (mean 12.7 of 255), computed from a single-channel texture's red and a diffuse alpha; everywhere
+else in the frame it is 255, written by the programs of the map as a `w` of the instance record. :observed[six captures]{games="sekiro"}
+So the profile index of skin is 0, and profile 0 is the one entry of `cbSSS` that holds a kernel in either frame: a 17-tap kernel
+at offsets -2 to 2 (weights summing to 1 per channel) whose bytes are the same in both games, with a first value of 0.0305 in
+Sekiro's frame and 0.0270 in Elden Ring's; the other 226 entries hold no kernel. :observed[one frame of each game]
+Elden Ring's six skin draws are in the frame but cover no pixel: the armour hides the skin, and no texel of any of the nine
+captures that hold the depth target's stencil has bit 0x8 set. :observed{games="elden-ring"} Its skin program writes the strength
+(target 3 red) as a product of texture channels and constants, not a constant, so skin there would not read zero; the range on
+skin is not measured. :observed[the program's dataflow]{games="elden-ring"}
 
 **Glow.** The light combine writes `max(irradiance + specular + emission, 0)` to the lit image and `emission × target
 4 alpha` to a second target that later forward passes add to; that target is the source of a chain of downsamples:
@@ -147,14 +180,16 @@ there. :observed In Sekiro's frame the lane is 1 on 9,108 pixels, most of them t
 emission is zero, and 0 elsewhere; Elden Ring's is zero on every pixel. :observed[one frame of each game]
 
 :::open[What chooses an instance's light set?]
-The light-set lane is the per-instance `envData` (Elden Ring's name; Sekiro's record has no field names), an index into
-the frame's buffer of light sets. Which map or parameter data sets it, and how the indices relate to the light sets'
-file IDs, is not established. :unknown
+The selector follows the kind of object: map pieces and assets, the player's parts, another character and a glow object
+take different values (above), and in Sekiro the map pieces take their area block's number. Not established: what in the
+map or parameter data sets it. The part's `Gparam.LightSetID` cannot be the whole answer: 5,327 of Sekiro's 5,855 parts in
+`m11_01` hold 0 (the rest 100, 110, 120 or -1), yet the idol's area draws with 1, and `m11_01` models 911120 and 911200, whose
+parts also hold 0, draw with 0. Which routine fills the record's `envData` from what is not traced. :unknown
 :::
 
 :::open[What do the subsurface-scattering lanes hold where skin is drawn?]
-Neither frame draws a surface with a nonzero profile index, so the captured values of the profile and strength lanes
-are all zero; their range on skin is not measured. :unknown
+Measured in Sekiro (above): profile 0, strength 0 to 31 of 255. Elden Ring's frames draw skin under armour only, so its
+strength lane on skin is unmeasured, and no frame holds a profile above 0 in either game. :unknown{games="elden-ring"}
 :::
 
 ## Sekiro

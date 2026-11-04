@@ -442,8 +442,10 @@ whose `Vec_0.w` is 1, with `Vec_1.w` to `Vec_3.w` at 0.12 or 0.15 or 1. The othe
 colour 1.5 whose every `w` is 50. :observed[nine recorded frames]{games="sekiro"} Elden Ring's forward lake program
 (`M[PlacidLake]_FwdSdw`) takes the sun's highlight with a smoothness of `sqrt(smoothness * (1 - 0.075 / Vec_0.w))`, so a
 larger `w` gives a sharper highlight and a `w` of 0 none that is a number. :observed[the installed program's DXIL]{games="elden-ring"}
-What the game writes to Elden Ring's `Vec_0.w`, and from which stored field, is not established: no recorded Elden Ring
-frame holds its `cbLight` (the forward water draws bind it at `b5` as a 50,432-byte view). :unknown{games="elden-ring"}
+Elden Ring's `Vec_0.w` is the light set's `Sharpness0` field, and `Vec_1.w` its `Sharpness1`: in frames at the Stormveil gate the
+sun program's `cbLight` (a 50,432-byte table of 225 sets) holds them equal to the stored values at the clock hour
+([light sets of a frame](/engines/fromsoft/lighting/gparam/#from-the-light-set-to-the-lighting-constants)).
+:observed[captures m14 to m17]{games="elden-ring"}
 
 In the recorded graphs `GXLightDeferredAOWithSsr` draws the two light targets first, and the sun program blends onto
 them; it reads the environment-map regions' targets, the reflections and the shadow mask. The sun program reads the shadow
@@ -462,8 +464,11 @@ pipeline states, recognised by their four targets' formats) set a stencil refere
 210 or 242; 473 of them replace the stencil under write mask 255 and 6 keep it. `GXRend_TileBasedLighting` and
 `GXLightComposite` test the stencil with mask `0x10` against reference 16, and `GXLightCmbAlbedo` draws with reference 255.
 These three draws have independent blending off, so target 0's blend state applies to every target they write.
-:observed[one frame]{games="elden-ring"} Which material or draw data chooses a draw's reference is not established.
-:unknown{games="elden-ring"}
+:observed[one frame]{games="elden-ring"} In Elden Ring and Sekiro the reference follows the kind of object: 88 on skin (the draws the subsurface blur
+selects, by the bit `0x8`), 80 on the player's other parts, and in the Stormveil frame 144 on the other character and 16 to 242 on
+the map (see [the light-set lane](/engines/fromsoft/shaders/gbuffer/#occlusion-translucency-light-sets-subsurface-scattering-and-glow)).
+:observed[one frame of each game]{games="elden-ring sekiro"} Which material or draw data chooses a draw's reference is not
+established. :unknown{games="elden-ring"}
 
 ### Environment-map regions
 

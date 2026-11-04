@@ -9,8 +9,8 @@ confidence.
 
 | Engine / game or class | Colour | Normal | Surface response and other outputs | Detail |
 |---|---|---|---|---|
-| FromSoftware / Sekiro | RT2 RGB albedo | RT0 RGB biased world normal | RT1 R gloss, G diffuse wrap; RT3 RGB square root of F0, A light-group selector; RT4 RGB emission | [Surface encoding](/engines/fromsoft/shaders/gbuffer/) |
-| FromSoftware / Elden Ring | RT2 RGB albedo | RT0 RGB biased world normal | RT1 R metallic, G gloss; RT4 RGB emission. RT1 B, RT2 A and RT3 semantics are not established | [Surface encoding](/engines/fromsoft/shaders/gbuffer/) |
+| FromSoftware / Sekiro | RT2 RGB albedo | RT0 RGB biased world normal | RT1 R gloss, G diffuse wrap, B occlusion, A subsurface profile index; RT2 A subsurface strength; RT3 RGB square root of F0, A light-set selector; RT4 RGB emission, A glow weight | [Surface encoding](/engines/fromsoft/shaders/gbuffer/) |
+| FromSoftware / Elden Ring | RT2 RGB albedo | RT0 RGB biased world normal | RT1 R metallic, G gloss, B translucency, A occlusion; RT2 A light-set selector; RT3 R subsurface strength, G subsurface profile index; RT4 RGB emission, A glow weight | [Surface encoding](/engines/fromsoft/shaders/gbuffer/) |
 | Anvil / Riders Republic, class 1 | o0 RGB base colour | o1 XYZ packs octahedral world normal and class | o0 W perceptual roughness, o1 W metalness, o2 XY motion, Z emissive scalar, o3 X AO | [Shading classes](/engines/anvil/shaders/gbuffer/) |
 | Anvil / Riders Republic, classes 3–5 | o0 RGB base colour | Same packed normal/class representation | o1 W AO rather than metalness; o2 Z specular occlusion, W translucency; o3 X is family-specific | [Shading classes](/engines/anvil/shaders/gbuffer/) |
 | RAGE / inspected GTA V Enhanced deferred programs | RT0 RGB diffuse, A draw-state byte | RT1 RGB usually `0.5*N + 0.5`; A supplies additional precision in some effects | RT2 R `sqrt(intensity)`, G `sqrt(falloff / 512)`, B Fresnel; RT3 carries AO and emission/16; RT4 RG screen displacement | [Deferred shading](/engines/rage/shaders/deferred-shading/) |
@@ -41,7 +41,9 @@ The inspected RAGE light reconstructs specular intensity as `RT2.x²` and fallof
 piecewise exponent. Those channels are not documented as metallic/roughness. See [specular reconstruction](/engines/rage/shaders/deferred-shading/).
 
 :::open[What do the remaining outputs mean?]
-Unresolved outputs stay scoped to their programs: [FromSoftware's remaining lanes](/engines/fromsoft/shaders/gbuffer/),
-[Anvil's fragment-recording consumer](/engines/anvil/shaders/gbuffer/), [Frostbite's semantic pairing](/engines/frostbite/shaders/measured-program-behaviour/)
+FromSoftware's lanes are all assigned, in both games, from the programs that write them and the programs that read them
+([surface encoding](/engines/fromsoft/shaders/gbuffer/)); what stays open there is scoped to that page: what data sets an
+instance's light-set selector and how far the subsurface lanes range on Elden Ring's skin. The other engines' outputs stay
+scoped to their programs: [Anvil's fragment-recording consumer](/engines/anvil/shaders/gbuffer/), [Frostbite's semantic pairing](/engines/frostbite/shaders/measured-program-behaviour/)
 and [ForzaTech's emissive distance compensation](/engines/forzatech/shaders/world-families/) are separate open questions.
 :::

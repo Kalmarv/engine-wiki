@@ -175,6 +175,13 @@ device and graphics-command-list interfaces. :observed[whole-file GUID scan agai
 GUID presence alone does not establish which interfaces a particular scene requests or whether ray tracing is enabled.
 :inferred{games="elden-ring"}
 
+### Command lists
+
+The frame's opening passes, the shadow maps and the G-buffer, all reach the queue in a single `ExecuteCommandLists` call
+of 36 Direct3D 12 command lists. The G-buffer's draws alone are spread over 13 to 15 of those
+lists, each list ending partway through the pass with the next one continuing on the same targets.
+:observed[captured frames at the Stormveil gate]{games="elden-ring"} That the lists are recorded on several threads at
+once, as Sekiro's deferred contexts are, fits the split but has not been measured. :inferred{games="elden-ring"}
 
 ### Skinning palettes
 

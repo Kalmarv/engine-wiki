@@ -3,6 +3,9 @@ title: "Scripting backends: Mono and IL2CPP"
 description: "How the games' code ships (Mono assemblies or IL2CPP native code with a metadata file), how to recover class and field layouts from each, and the traps in the IL2CPP dumps."
 games: [skatebird, sledding, peak, big-walk]
 sources:
+  - title: Unity Manual, Script serialization
+    url: https://docs.unity3d.com/Manual/script-serialization.html
+    note: which fields Unity serializes (public, or non-public with SerializeField)
   - title: Cpp2IL
     url: https://github.com/SamboyCoding/Cpp2IL
     note: generates dummy managed assemblies from GameAssembly.dll and global-metadata.dat
@@ -46,6 +49,16 @@ so a type tree generated from them comes out **4 bytes short** on types that ser
 `TrackedPeckState`, `PropHome` and `PlayerPose` (each has a serialized `ticket` field the dummies miss). Types from the
 Dissonance voice package do not dump. :observed{games="big-walk"}
 
+Cpp2IL's dummy assemblies carry no custom attributes unless its attribute processors run
+(`--use-processor attributeanalyzer,attributeinjector`), so a private field marked `[SerializeField]` looks like an
+ordinary private field and a type tree generated from them leaves it out; every serialized value after it is then read
+from the wrong offset. With the processors the attributes are restored and the same objects decode to plausible values.
+:observed[two Unity 2022.3 and 6000.2 IL2CPP players outside these games, metadata version 31] Unity serializes a
+non-public field only when it carries `[SerializeField]`, which is why the attribute decides it.
+:sourced[Unity Manual, Script serialization] That Big Walk's
+missing `ticket` fields are private `[SerializeField]` fields dropped this way fits the 4-byte gap but has not been checked by
+regenerating its assemblies with the processors. :inferred{games="big-walk"}
+
 The metadata alone is enough to confirm that a class exists: Big Walk's contains `HouseNetworkManager`, `NetworkMinder`,
 `PeckSwitch`, `TrackedPeckState`, `PeckManager`, `TicketOffice`, `ITicketed`, `PlayerGrease`, `CullingAgent`, `KcpTransport`,
 `HouseAuthenticator`, `WorldManager`, `DevSettings`, `PropHome` and `SaveManager`. :observed{games="big-walk"} Sledding Game's
@@ -58,6 +71,6 @@ A stripped IL2CPP player has no type tree for a script's fields either, so the s
 come from the generated assemblies (with the 4-byte caveat above) or from measuring the data. :observed
 
 :::open[A complete field recovery for IL2CPP scripts]
-Which serialized fields the dummy assemblies miss, and whether a rule (for example attributes the metadata does not keep)
-predicts them, is not established.
+Whether dummy assemblies generated with the attribute processors account for every serialized field (Big Walk's `ticket`
+fields included), or whether some fields are still missed for another reason, is not established.
 :::

@@ -1,6 +1,10 @@
 ---
 title: Shader bundles and permutations
 description: Shaderbdle containers, program stages, DXBC and DXIL, and material permutation selection.
+sources:
+  - title: UXM Selective Unpack
+    url: https://github.com/Nordgaren/UXM-Selective-Unpack
+    note: the path dictionary that names Elden Ring's shader binders
 implementations:
   - name: primase worlds/fromsoft (read/shaders.rs)
     url: https://github.com/Kalmarv/primase/blob/main/worlds/fromsoft/src/sekiro/read/shaders.rs
@@ -11,8 +15,11 @@ the family; its switches select programs within that family. :observed
 
 The main `/shader/shaderbdle.shaderbdlebnd.dcx` holds `<family>.shaderbdle` members. Each is itself a binder of
 programs and a `.metaparam`. :observed Elden Ring also has DLC bundle binders named
-`shaderbdle_dlc01.shaderbdlebnd.dcx`, `shaderbdle_dlc02.shaderbdlebnd.dcx`, and a separate
-`speedtree.shaderbdlebnd.dcx`, all under `/shader/`. :observed{games="elden-ring"}
+`shaderbdle_dlc01.shaderbdlebnd.dcx`, `shaderbdle_dlc02.shaderbdlebnd.dcx`, a separate
+`speedtree.shaderbdlebnd.dcx`, and a ray-traced binder beside each of the four: `shaderbdle_[rt]`, `Shaderbdle_DLC01_[RT]`,
+`Shaderbdle_DLC02_[RT]` and `speedtree_[rt]`, all under `/shader/`. :observed{games="elden-ring"} The renderer's own programs
+are in binders that hold programs directly, with no bundle level (`/shader/<name>.shaderbnd.dcx`, listed
+[below](#program-binders)). :observed
 
 | Property | Sekiro | Elden Ring | Confidence |
 |---|---|---|---|
@@ -34,6 +41,15 @@ bundles without a stage mismatch; Elden Ring's cited check is limited to one are
 | `.ppo` | Pixel | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
 | `.hpo` | Hull | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
 | `.dpo` | Domain | :proven[all 248 bundles]{games="sekiro"} :observed{games="elden-ring"} |
+| `.gpo` | Geometry | :observed{games="elden-ring"} |
+| `.cpo` | Compute, and DirectX Raytracing libraries | :observed{games="elden-ring"} |
+
+Elden Ring's three material binders (`shaderbdle`, `_dlc01`, `_dlc02`) hold only the first four kinds. Its 33 `.gpo`
+programs are all in the program binders, and of its 6,012 `.cpo` the program binders hold 179 and the bundles of the `[rt]` and
+`speedtree` binders the rest. Over all 50,283 programs read from its shader binders, the count of each extension equals the
+count of [containers](/concepts/d3d-shader-containers/) of the matching kind: 33 `.gpo` and 33 geometry programs, and
+6,012 `.cpo` against 1,731 compute programs plus 4,281 library containers. :observed[the counts of every program
+read]{games="elden-ring"}
 
 ## Samplers
 
@@ -195,6 +211,59 @@ G-buffer, 95 draws (decals, metallic, layered and translucent families) have a s
 draws of one material occur both with and without it. :observed[five captured frames]{games="sekiro"}
 
 ## Elden Ring
+
+### Program binders
+
+Each of these `/shader/<name>.shaderbnd.dcx` binders holds programs directly. Every one was read from the archives, with these
+members: :observed[every member of the nine binders]{games="elden-ring"}
+
+| Binder | `.ppo` | `.vpo` | `.hpo` | `.dpo` | `.gpo` | `.cpo` |
+|---|---:|---:|---:|---:|---:|---:|
+| `grass` | 8 | 2 | | | | |
+| `gxdecal` | 42 | 10 | | | | |
+| `gxffxshader` | 279 | 41 | 25 | 39 | 27 | 77 |
+| `gxflvershader` | 94 | 148 | | | | 6 |
+| `gxgui` | 14 | 3 | | | | |
+| `gxposteffect` | 173 | 8 | | | | 12 |
+| `gxrenderershader` | 165 | 21 | 1 | 1 | 6 | 70 |
+| `gxshader` | 20 | 6 | | | | |
+| `GXRayTracing` | | | | | | 14 |
+
+The bundle binders beside them hold `.shaderbdle` members: 750 in `shaderbdle_[rt]`, 87 in `Shaderbdle_DLC01_[RT]`, 120 in
+`Shaderbdle_DLC02_[RT]`, and 111 each in `speedtree` and `speedtree_[rt]`. :observed{games="elden-ring"}
+
+`GXRayTracing` holds ray-tracing shaders: 9 of its 14 programs are DirectX Raytracing libraries with one entry
+function each (3 ray generation, 2 miss, 2 closest-hit and 2 any-hit), and 5 are compute programs.
+:observed[all 14 members]{games="elden-ring"} That leaves 4,272 of the game's libraries, 2,136 any-hit and 2,136
+closest-hit, to the other binders; that they are the hit shaders of the `[rt]` material bundles is a reading of the binders'
+names, not a check. :inferred{games="elden-ring"}
+
+### Resource bindings
+
+Three independent readers, one of them Microsoft's DXC reflection, give the same resource bindings for every program of the 17
+shader binders above (the three material binders, the five other bundle binders and the nine program binders): 50,281 distinct
+programs, with each binding's name, class, register space, register and count equal and no program refused by any reader. Every
+binding is in register space 0, and no binding is an array of unstated size. :proven[every program of the 17 binders
+read]{games="elden-ring"}
+
+| | Material binders | The other 14 binders | Confidence |
+|---|---:|---:|---|
+| Distinct programs | 40,585 (22,945 pixel, 17,420 vertex, 110 hull, 110 domain) | 9,696 (2,236 `.ppo`, 1,349 `.vpo`, 6,012 `.cpo`, 40 `.dpo`, 26 `.hpo`, 33 `.gpo`) | :proven{games="elden-ring"} |
+| Bindings | 693,967 | 84,526 | :proven{games="elden-ring"} |
+| Constant buffers | 249,634 | 31,280 | :proven{games="elden-ring"} |
+| Shader resource views | 353,056 | 39,634 | :proven{games="elden-ring"} |
+| Samplers | 91,277 | 11,627 | :proven{games="elden-ring"} |
+| Unordered-access views | none | 1,985 | :proven{games="elden-ring"} |
+| Arrays (a count above 1) | none | 37 | :proven{games="elden-ring"} |
+
+No two of the 40,585 material programs have the same bytes, every one has at least one binding, and 12,625 have 20 or more.
+:proven[every program of the three material binders]{games="elden-ring"} So a material program binds each resource on its own
+register in space 0, and unordered-access views and arrays occur only in the other 14 binders.
+:proven[every program of the 17 binders read]{games="elden-ring"} The `.devpatch` binders that the archive dictionary also
+names under `/shader/` (`shaderbdle.shaderbdlebnd.devpatch.dcx` and others) were not read.
+:sourced[UXM Selective Unpack]{games="elden-ring"}
+
+### Alpha-tested programs
 
 An `_[A]` program does not always test a surface alpha. The G-buffer programs
 `M[AMSN_V][Mb4][3Mask][Ov_N2][beach]_Gbuf_[A]` and `M[AMSN_V][Mb2]_Gbuf_[A]` discard, besides two fade tests, when

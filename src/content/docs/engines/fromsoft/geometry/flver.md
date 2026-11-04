@@ -238,6 +238,12 @@ is `tan(fovY / 2) / tan(21.5°)`. :inferred{games="elden-ring"}
 - Shadow views add the row's signed byte at 81 (`shadowDrawLodOffset`) to the level, floored at 0, and measure their
   own distance; four view kinds take a fixed distance from a table instead. :observed[read from the executable's code]{games="elden-ring"}
 
+In nine frames at the Stormveil gate, the cross-fade is seen as two draws of the same meshes of one instance, with complementary
+fade alphas ([distance opacity](/engines/fromsoft/world/visibility/#distance-opacity-in-the-running-game)): 44 of 44 pairs of
+face sets add to 1, mostly with the larger alpha on the coarser set, and a model's instances are split into one draw per
+face set. :observed[six frames]{games="elden-ring"} The frames hold no place where the row's borders are known, so the `d >= s × B + P`
+test is not compared with them.
+
 The level is handed to each mesh of the model as it is drawn; that a mesh then draws its face sets of that LOD level
 (`(flags >> 24) & 7`) is the reading of the face-set flags, not followed in the code. :inferred{games="elden-ring"}
 

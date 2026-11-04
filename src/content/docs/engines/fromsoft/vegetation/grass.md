@@ -94,11 +94,6 @@ the right-hand cross product of the face's edges from its first vertex (cosine b
 faces and 7,797,867 of Elden Ring's 7,799,267; 532 and 674 faces store none), but it has unit length on only 88% and 94% of them
 (0.1 to 5 on the rest); what the length stands for is not known. :observed
 
-:::open[Which GrassTypeParam row does each of the six densities drive?]
-A part's grass configuration names six rows and the vertices store six densities; that the order is the same is likely and has not
-been checked against a rendering.
-:::
-
 ## Elden Ring
 
 ### Grass type references
@@ -128,8 +123,55 @@ Empty resource-name fields denote no named resource. The resource-field layout r
 this partial description does not assign meanings to the intervening fields or any appended bytes.
 :sourced[Paramdex]{games="elden-ring"}
 
+### Grass in the running game
+
+A frame at the Stormveil gate holds two kinds of grass draw. Placed grass models (the `AEG210` asset family, `Grass_` and `Grass2_`
+G-buffer programs) are ordinary one-instance indexed draws of 534 to 68,871 indices. Further away, `Grass2_LOD1` programs draw
+two tiny meshes (14 and 4 triangles) as GPU instances, 160 to 315 to a draw, from the draw's `cbInstanceData` records: 315 is
+what its 65,536-byte range holds of 208-byte records. :observed[one frame]{games="elden-ring"} The records are written by the
+CPU each frame; a record is a 3×4 world matrix (translation in the fourth column), a fade alpha, `forceNum` and `forceIndex`
+and a colour palette, the layout of every instanced model of the frame. :observed[one frame]{games="elden-ring"} That these
+clumps are the blades the grass configuration places is likely and not shown: no frame says which `GrassTypeParam` row made
+them. :inferred
+
+Placement in that frame, over the 825 clumps of the three draws of the larger mesh (61 to 129 m from the eye): positions are not
+on a grid (nearest-neighbour distance 0.15 to 3.6 m, median 0.84 m); the clump count per 8 m square runs from 1 to 83 and falls
+off smoothly towards the patch edge, so the density varies from place to place by more than the 0.9 to 1.1 scatter of the clumps;
+heading is uniform over all directions; horizontal scale is 0.9 to 1.1 (0.6 to 1.1 for the smaller mesh) and vertical scale
+independent of it, 0.55 to 1.2. Draws are batches by distance (61 to 91 m, 91 to 108 m, 105 to 129 m for the larger mesh; 142 to
+164 m and 175 to 210 m for the others), 315 clumps at most. :observed[one frame]{games="elden-ring"}
+
+#### How grass moves
+
+The `Grass2_LOD1` vertex program declares the structured buffer `g_forceParam` (`ForceParamStruct`, 96 bytes: a `uint4`
+`SystemParam`, then float4 `PosAndSquareForce`, `DirAndSineForce`, `WindParam`, `GustParam` and `GustTimeParam`) and the byte
+buffer `g_InstanceIndexBuffer`. :observed[the program's reflection]{games="elden-ring"} Its 256 records are filled by a buffer copy from the
+upload ring early in the frame, and only 8 or 9 are non-zero. :observed[five frames]{games="elden-ring"} In five frames at the gate, the
+non-zero records are the same six at the same positions and directions (in the frame's local coordinates, for example (-48.1, 48.5, 57.8)
+with direction (0.899, 0, 0.437)), each with `SystemParam` (1, 1, 0, 0), `GustParam` (1, 1, 1, 0), `GustTimeParam` (3, 5, 10, 60),
+`WindParam.x` 1 and `WindParam.w` 0.1, a per-record `WindParam.y` (123.8 to 179.6) that does not change between frames, and a
+`WindParam.z` shared by the six that grows from frame to frame (155.07, 161.50, 167.91, 169.35, 169.80), 1.696 to 1.698 times
+the frame clock `T` of [the SpeedTree wind](/engines/fromsoft/vegetation/speedtree/#wind-state-in-the-running-game).
+:observed[five frames]{games="elden-ring"} The fourth word of `PosAndSquareForce` and of `DirAndSineForce` is one shared number (12.7 to 14.2, a different one in each
+frame). One to three further records of each frame repeat some of those positions and directions with a `WindParam.z` of
+0.99 and a fourth word near 12.1. :observed[five frames]{games="elden-ring"}
+Two of the five frames also hold a record near the eye, at (3.7, 7.3, 10.0), with direction (-0.579, 0, -0.816),
+`WindParam` (0.8, 55.4, ·, 0.3), `GustTimeParam.x` 2 and a fourth word near 7.3, which the other three frames lack; a force at the
+player's place would fit. :inferred Each batch's instances carry `forceNum` and a `forceIndex` (2 and 1283 for the three
+larger-mesh batches, 1 and 5 for the 142 to 164 m batch, 1 and 1 for the 175 to 210 m one); that `forceIndex` is a start into
+the index buffer that names records of `g_forceParam` is the reading of the names, and the index buffer's contents at the start of
+the frame (identity) do not show it. :inferred How a program turns these words into a blade's motion is in the program's code and was not read here.
+
+:::open[Which GrassTypeParam row does each of the six densities drive?]
+A part's grass configuration names six rows and the vertices store six densities; that the order is the same is likely and has not
+been checked against a rendering. The frames show the result (the clump placement above) but not which row or density a clump came from:
+that needs the part's configuration, its `.grass` file and a frame taken where they are loaded, and the instances' positions put in the
+file's frame. Not done.
+:::
+
 :::open[How are individual grass blades placed and animated?]
-Density, spacing and row references do not specify a demonstrated placement algorithm. The sampled maps establish
-which resources are named, not the runtime distribution, random seed, interaction response or complete wind model.
-:unknown{games="elden-ring"}
+Narrowed: in the frames the far grass is a CPU-written set of clumps with random heading and scale, denser where the
+mesh says so, drawn in distance batches; its motion reads a table of wind and force records per frame whose clock is the
+SpeedTree frame clock times 1.7. Not known: the seed and the rule that turns density and spacing into positions, how a
+program uses the record words, and the near grass (the placed `Grass_` models), whose blades are in the model.
 :::

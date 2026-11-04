@@ -199,10 +199,29 @@ What the draw-parameter row and the level-of-detail row set is not read here. A 
 as a signed byte "level of detail" with a second byte beside it splits what is one u16 row ID (2046 is bytes 0xfe and
 0x07; on map pieces the IDs are 1000 on 2,481, 2046 on 247, 2060 on 173 and 2048 on 131). :proven{games="elden-ring"}
 
+### Distance opacity in the running game
+
+Each instanced draw's `cbInstanceData` record holds a fade alpha (`ditherFadeAlpha`, row 7 x of the 13-row record in Elden Ring, row 11 x of
+the 17-row record in Sekiro). In nine Elden Ring frames at the Stormveil gate it is below 1 on 117 of the 21,192 records of the G-buffer
+draws (5 to 29 in each of six frames, none in the last three); in Sekiro's three frames at the Ashina idol it is 1 on all 4,393 records.
+:observed[nine Elden Ring frames, three Sekiro frames]
+Where it is below 1 it is of two kinds. A model at 30 to 35 m (and two at 95 m) is drawn twice, once per face set of
+the same meshes, and the two draws' alphas add to 1: 44 of 44 pairs of six frames, 0.018 with 0.982, 0.229 with 0.771, 0.465 with 0.535, 0.645
+with 0.355; in 35 of them the larger alpha is on the face set with fewer indices and the larger start offset, in 9 on the other.
+:observed[44 pairs of six frames]{games="elden-ring"} This is the cross-fade between two levels of
+[which level is drawn](/engines/fromsoft/geometry/flver/#which-level-is-drawn), seen as two draws. Foliage draws (`Vesitation` programs) also appear
+alone, with an alpha falling from 0.739 at 72.1 m to 0.046 at 75.9 m and 0.030 at 76.3 m, the opacity ramp to 0 of the draw distance
+above; the alpha at one distance differs between models. :observed[four frames]{games="elden-ring"} Five records of 0.692 at 95.3 m have no
+complementary draw in the main G-buffer pass, so a model faded out by distance and a model crossing between levels are not told apart by the
+alpha alone. :observed{games="elden-ring"}
+
 :::open[What is the exact visibility predicate?]
-The presence of arrays and their community names do not establish bit intersections, collision activation,
-occlusion, camera dependence or LOD handoff. Nor is precedence established when shadow-only and cast-shadow
-controls appear contradictory. These bytes must not be collapsed into a single unconditional visibility flag.
+Narrowed: the distance term is visible in frames (above): an opacity from 1 to 0, and a two-draw cross-fade between levels.
+The group term is not: a frame holds neither the arrays nor the active display groups, so it shows only what was drawn, and
+nothing undrawn. The presence of arrays and their community names do not establish bit intersections, collision activation,
+occlusion or camera dependence. Nor is precedence established when shadow-only and cast-shadow controls appear contradictory.
+These bytes must not be collapsed into a single unconditional visibility flag. Missing: a frame of the running game with the
+test layouts above (groups zeroed or set to one bit), to list which draws are absent.
 :::
 
 ## Sekiro
@@ -224,7 +243,8 @@ A part that is not drawn is therefore not collided with either. :observed{games=
 
 :::open[Which of the three arrays makes a moved part drawn?]
 Copying all three draws it; whether the collision mask alone, or the display and draw groups alone, would do is not
-established.
+established. The Sekiro frames hold no moved part, so they do not bear on it. Missing: three launches with the part moved and one
+array copied each, captured at the idol.
 :::
 
 ## Elden Ring

@@ -48,6 +48,16 @@ The stored rest positions are in the model file's frame and line up with the ass
 `AEG801_258`, with the three exceptional meshes, is placed 194 times. :observed A SpeedTree model's binder also
 holds an ordinary FLVER, `<model>_1.flver`. :inferred
 
+## Level selection in the running game
+
+A draw of a SpeedTree model draws all its instances with one face set, so the instances of a model are split into one draw
+per face set. In the main-view G-buffer of four frames, nine models are drawn with two face sets in one frame. For eight of
+them no instance of the nearer set is farther from the eye than 76.0 m (the instance origin's distance, not the box's) and no instance
+of the farther set is nearer than 77.1 m; the ninth uses its nearer set out to 80.9 m and its farther one from 111.3 m. :observed[nine models of four frames]{games="elden-ring"}
+The instance stream's `TEXCOORD0.w` is 1 on every instance up to 54.6 m. It is below 1 on five instances of two models at 71.4 to
+83.0 m (0.706 at 71.4 m, 0.506 at 77.4 m, 0.468 at 80.9 m, 0.346 at 82.2 m and 0.330 at 83.0 m), where those instances still draw the
+nearer set; it falls with distance but not as one line for both models. :observed[two frames]{games="elden-ring"}
+
 ## Wind and billboard cards
 
 The checked wind-off input sets row 3, Y of `VC_SpeedTreeWind` to 1. All-zero wind constants can produce NaN,
@@ -71,7 +81,40 @@ reflection and its translated data flow]
 
 So a leaf's colour depends on two run-time inputs besides its texture; which code fills either is not traced. :unknown
 
+### Wind state in the running game
+
+`VC_SpeedTreeWind` is the constant buffer `cbSpeedTreeWind` of every SpeedTree vertex program: two records of the
+272-byte structure `sSpeedTreeWind` (544 bytes declared; a draw's range is 768 bytes). The record holds the wind direction
+and anchor, the global, two branch, two leaf and one frond sections, `u_fStrength`, an interaction direction at byte 256 and
+the interaction flag at byte 268. Each section starts with a time (`m_fTime`, `m_fBranchTime`, `m_fRippleTime`,
+`m_fFrondTime`; the leaf sections also carry a twitch time). :observed[the shader reflection; the records of nine frames at the Stormveil gate]{games="elden-ring"}
+
+In every frame, the records of the SpeedTree draws take one of four unit directions in the horizontal plane, (0.902, 0.432),
+(0.598, 0.801), (0.378, 0.926) and (0.133, 0.991); the same four occur in the nine frames, and in the last three
+captured all but one record share (0.902, 0.432). :observed[132 records of nine frames]{games="elden-ring"}
+Constant on every such record: height exponent 1.5, fudge grid size 8, branch twitch 0.75, twitch frequency scale 0.3, branch
+turbulence 0.7, `m_fSkip` 0 and the interaction flag 0. The second branch's distance is 5/11 of the first's (0.4545 on all records), its whip
+equals the first's, and the global direction adherence is exactly twice the first branch's direction adherence. :observed[132 records of nine frames]{games="elden-ring"}
+
+The times are not independent clocks. In the four frames whose records all belong to one wind set, each section's time equals
+`k × T + δ` for a frame value `T` that every record shares and a per-record offset `δ` between 0 and 0.96, with the same
+factors `k` in all four frames: 2 for the first branch, 8/3 for the second, 5.87 for leaf 1's ripple (4.69 on some records
+of one frame), 3.13 for leaf 1's twitch, 9.39 for leaf 2's ripple and 0.027 for leaf 2's twitch (agreeing to three digits
+between frames). `T` is 91.43, 98.88, 99.72 and 99.99 in the four frames, and `δ`, which is `m_fTime − T`, differs between the
+trees of one frame, so two trees of a frame are at different phases of one clock. :observed[four frames, 47 records]{games="elden-ring"} The grass force records ([grass](/engines/fromsoft/vegetation/grass/#how-grass-moves))
+of the same frames carry a clock 1.696 to 1.698 times `T`. :observed[four frames]{games="elden-ring"}
+
+Within a frame the amplitudes are shared by all records of a profile (a tree class: the records of one frame carry two to
+five distinct distance values). Between frames they move together by a few percent: the first branch's distance of the
+commonest profile is 0.450 to 0.469 over six frames, whip falls as direction adherence rises (0.339 at 0.068, 0.324 at 0.080),
+and `u_fStrength` takes one or two values per frame between 0.32 and 0.55. The profiles are scaled copies of each other: the
+ratio of the two commonest profiles' global distances is 1.1155 to 1.1160 in the eight frames that hold both. What sets the
+frame's amplitude (time of day, weather or area) is not seen: all nine frames are at the Stormveil gate.
+:observed[132 records of nine frames]{games="elden-ring"}
+
 :::open[How does the full wind state evolve?]
-The windless execution proves a neutral configuration only. The complete runtime meaning and update rules of
-the wind rows, and camera-dependent billboard reconstruction, remain outside that proof. :unknown
+The times follow one shared frame clock with fixed per-section rates and a per-tree phase offset, and the amplitudes are
+constant within a frame (above). Not known: what drives the amplitude between frames, how the interaction direction and flag
+(the flag is zero in every record seen) are filled, and the vertex program's use of each section; the frames are single captures, so the
+change between two consecutive frames of one run has not been seen, and camera-dependent billboard reconstruction is untouched.
 :::

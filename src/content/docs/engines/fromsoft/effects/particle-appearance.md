@@ -74,8 +74,18 @@ byte 0x170 times a factor is the field at structure byte 0x1e8, the offset where
 scale), but whose fields do not follow the order of the common buffers' variables, so it is not their image. :observed[the two
 functions' loads and stores, compared with the buffers' variable offsets] Which field of the effect file's actions each
 configuration byte comes from, and which draw-parameter field becomes which variable of the pixel and domain programs' common buffers,
-is not read: the function that writes the common buffers was not identified, and the values captured from a running game carry no
-record of which effect drew them. :unknown{games="sekiro"}
+is not read by code: the function that writes the common buffers was not identified. :unknown{games="sekiro"}
+
+What the captured draws say about the fields is on [the effect shader programs](/engines/fromsoft/shaders/effects/#what-the-engine-takes-from-the-file):
+a draw's textures tie it to the files that could have drawn it, and over a Sekiro frame and three Elden Ring frames the 160-byte
+(Sekiro) and 148-byte (Elden Ring) multi-texture vertex holds the layers' colours (`COLOR1` to `COLOR3`) as bytes inside the ranges of
+the file's `layer1Color` to `layer3Color`, the second colour (`COLOR4` there, `COLOR1` at byte 16 in the 112-byte vertex) as floats inside
+the range of the file's `color3` in every draw read (61 of 61 and 59 of 59), while `color2`'s range holds them in 34 and 40, so the second colour is
+the third colour property of the appearance and not the second. :observed{games="sekiro elden-ring"} The texture coordinates are the
+flipbook cell's corner and size (from `frameIndex`, `columns`), the next cell's corner, and per-layer offset and scale vectors that the
+domain program turns into the layers' coordinates. :observed{games="sekiro elden-ring"} For the constant buffers the integer words,
+`premultiplyAlpha`, `blendMode`, the lighting flag and the two multipliers reach the pixel constants as that page's table shows. The
+expression in the executable that computes each is still not read. :unknown{games="sekiro"}
 
 The appearances are made by factories that a single draw-system object registers in its constructor (one caller, an object of which the
 running engine keeps one); the constructor also creates four GPU buffers of 0x2b0, 0x2c0, 0x3c0 and 0x50 bytes, whose sizes are the

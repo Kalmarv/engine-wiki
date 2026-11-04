@@ -11,7 +11,8 @@ sources:
 Every effect draw of [an FXR file](/engines/fromsoft/effects/fxr/) is shaded by a program from one bundle, separate from the
 material bundles ([shader bundles](/engines/fromsoft/shaders/bundles/)). This page records what the programs of Sekiro's
 effect bundle read and write, as their own reflection data states it, so a renderer knows the interface of each family before it
-runs one. How the engine fills that interface from an effect's actions is not recorded here.
+runs one. How the engine fills that interface from an effect's actions is recorded for the multi-texture draws (below) and in part for
+the distortion draws; the rest is open.
 
 ## The bundle
 
@@ -137,16 +138,65 @@ of the install's effect binders]{games="elden-ring"} The fxr project documents t
 above gives `g_ps_TexBlendType`'s. :sourced[fxr] That the four words are `g_ps_TexBlendType`, `g_ps_TexBlendType2`,
 `g_ps_TexBlendType3` and `g_ps_ColorBlendType` follows from the documented first, the value sets and the order. :inferred
 
-:::open[Do the words reach the constants unchanged?]
-The mapping of the effect file's words to the program's constants is read from their values and order, not from a capture of
-the constants the engine binds for a known effect.
-:::
+### What the engine takes from the file
 
-:::open[How are the layers' coordinates made?]
-The coordinates arrive in the vertices: the vertex and domain programs pass them through, so the engine computes each layer's
-scroll, offset and scale before the draw. Whether a scale is about the corner or the centre of the quad, and whether the
-atlas cell applies to every layer, is not established.
-:::
+A draw does not name its effect, but its textures and vertices do. A multi-texture draw binds the three layers' textures
+(`g_multiTexture0` to `2`), which the files' `layer1` to `layer3` numbers name (`sfx/tex/s%05d`), and its vertices hold the layers'
+colours as bytes and the flipbook's cell size (the inverse of `columns`). The files whose multi-texture billboards have those textures
+and that column count, and whose layer colours (a constant, or the range of a keyframed curve) contain the vertex's, are the draw's
+candidates. In Sekiro's Ashina frame (25 multi-texture draws) and three Elden Ring frames of Stormveil's gate (21, 20 and 20 draws)
+every draw has candidates, from one to several hundred; Elden Ring's five draws of effect 810341 (2123 to 2126 and 2128 of one frame) and Sekiro's two of effect 839520 are
+tied to a single file. :observed[four frame captures, the files of the common and area effect binders]{games="sekiro elden-ring"}
+Comparing each draw's constants with its candidates:
+
+| File field | Reaches | Evidence |
+|---|---|---|
+| `unk_ds3_f2_10` to `_13` | `g_ps_TexBlendType`, `g_ps_TexBlendType2`, `g_ps_TexBlendType3`, `g_ps_ColorBlendType`, as the same integers | the constants equal the words of every candidate in 21 of Sekiro's 25 draws and 19 of the 61 Elden Ring draw records (three frames), and of at least one candidate in all the others; no draw's constants differ from all its candidates |
+| `premultiplyAlpha` | `g_ps_bPreAlphaMult` (1 for true) | every candidate agrees with the constant in all 25 Sekiro draws (true for texture 11634's files, false for 11633's) and in 34 of the 61 Elden Ring records, some candidate in the rest; no draw contradicts |
+| `blendMode` | `g_ps_BlendingMode` and the pipeline's blend: 6 gives 1 and source alpha against inverse source alpha, 4 and 7 give 2 and source alpha against one | Elden Ring: the single file of draws 2123 to 2126 and 2128 (mode 6) has 1, the files of draws 2087 and 2088 (9 and 6 candidates, all mode 4) have 2; Sekiro: the three draws with 2 have layer-2 scale values 0.202 to 0.796 (66 values), which fit the one candidate of mode 7 (scale 0.5 varied by up to 60 %, so 0.2 to 0.8) and not the mode 6 candidates (0.625 varied by up to 60 %, so 0.25 to 1.0), whose draws have 1 and values 0.253 to 0.998 (147) |
+| `rgbMultiplier`, `alphaMultiplier` | `g_vColorScale` = (`rgbMultiplier` × K, the same, the same, `alphaMultiplier`) | Sekiro: 1.4 gives 1.58285, 1.0 gives 1.13061, 1.8 gives 2.0351, 1.2 gives 1.35673 and 1.5 gives 1.69591, with the alphas 0.3, 0.2, 1.0, 0.9 and 0.5 as stored; Elden Ring: 20 gives 1.4956 and 10 gives 0.7478, with the alphas 10, 5, 2.5 and 1.25 as stored |
+| `lighting` | `g_ps_bEnableLighting`: -1 gives 0, -2 gives 1 | Elden Ring: the 48 records with 0 have only files with -1 and the 13 with 1 only files with -2; Sekiro has ten unlit draws whose only candidates hold -2 (four of them draws of texture 1001's files), so the field is not the whole rule there |
+| `depthBlend`, `bloom`, `interpolateFrames` | the program: `Soft`, `GlowD` and `Blend` | Elden Ring: no `Soft` record has a candidate set that is all `depthBlend` false; the 13 records of `GlowD` programs whose candidates agree on `bloom` have true, and the 13 of the program without `GlowD` have false; all 18 `Blend` records have `interpolateFrames` true in every candidate, while the records of programs without `Blend` have it false (13), true (15) or both (15) |
+
+:observed[the table's scopes: four frame captures]{games="sekiro elden-ring"} Only the first word takes several values in these frames
+(0, 1 and 2 in Elden Ring, 1 in Sekiro) and the other three are 0 in every draw, so the order of the four words is shown for the first
+alone and the other three are shown only at 0. A file that holds 2 in the fourth word is among the candidates of draws whose constant
+is 0: it is not the file those draws drew. :observed{games="sekiro elden-ring"}
+
+The factor K of `g_vColorScale` is 1 in every draw with `g_ps_bEnableLighting` 1 (the 34 lit effect draws of Sekiro's frame, the 6
+of one Elden Ring frame) and the same number in every draw without it within a frame, whatever its file: 1.13061 in Sekiro's 50
+unlit draws (ten different scales) and 0.07478 in Elden Ring's frames (0.07476 to 0.07478; 42 of the 48 unlit draws of one frame are
+a whole `rgbMultiplier` times it, the other 6 are 1.0). :observed{games="sekiro elden-ring"} The engine therefore folds a
+frame-wide factor into the multiplier of a draw whose pixel program does not light it; where the factor comes from is not read.
+:inferred
+
+### How the layers' coordinates are made
+
+The vertex holds each layer's offset and scale, and the domain program applies them to the corner of the sprite. The corner is the
+tessellation domain `(x, y)` (the octagon variants first trim its corners), taken as `c = (½ + x, ½ - y)`. From the control point's
+`TEXCOORD0` to `TEXCOORD4`, the domain program of `GXFfxtessellateSoftMultiTexture` computes:
+
+| Output | Value |
+|---|---|
+| layer 1 (`TEXCOORD0.xy`) | `TEXCOORD1.zw × (c - k) + k + TEXCOORD0.xy`, with `k` = `TEXCOORD4.x` |
+| layer 2 (`TEXCOORD0.zw`) | `(c - ½) × TEXCOORD2.xy + ½ + TEXCOORD0.zw` |
+| layer 3 (`TEXCOORD1.xy`) | `(c - ½) × TEXCOORD2.zw + ½ + TEXCOORD1.xy` |
+| the next flipbook cell (`TEXCOORD1.zw`) | `TEXCOORD1.zw × (c - k) + k + TEXCOORD3.xy` |
+
+:observed[the disassembly of the domain program, from the domain point to these outputs]{games="sekiro"} A layer's scale is therefore about
+the centre of the sprite's coordinate square, and the flipbook cell applies to the first layer alone (with its next cell, for frame
+interpolation): the second and third layers are not cells of the atlas. :observed{games="sekiro"} In every vertex read `TEXCOORD4.x`
+is 0, so `k` is 0; `TEXCOORD1.zw` is the inverse of the file's `columns` (0.125 for 8), `TEXCOORD0.xy` is a cell's corner (multiples
+of 0.125) and `TEXCOORD3.xy` is the next cell's (the cell index plus one, wrapping to the next row: (0.875, 0.625) then (0, 0.75) in
+one Sekiro vertex). :observed{games="sekiro elden-ring"}
+
+The scale and the offset arrive per particle. In Elden Ring's draw 2123 of effect 810341 (14 particles) `TEXCOORD2` is exactly
+(0.5, 0.5, 0.5, 0.5), the file's constant layer-2 and layer-3 scale, while `TEXCOORD0.zw` and `TEXCOORD1.xy` take 0.08 to 1.07: the
+file's offset is 0.5 varied by up to 100 % (0 to 1), and its speeds are 0.06 and 0.03 for layer 2 and 0.03 and 0.015 for layer 3.
+:observed{games="elden-ring"} In Sekiro's draws of the one mode 7 file `TEXCOORD2.xy` takes 0.202 to 0.796 over 33 particles, the file's
+scale of 0.5 varied by up to 60 %; those of the mode 6 files take 0.253 to 0.998 over 147, inside their 0.25 to 1.0. :observed{games="sekiro"}
+That a particle's offset is the file's offset plus its speed times its age is inferred from the excess over 1 (at most 0.07) being
+less than a speed times a second or two; it is not read from the code. :inferred
 
 ## How the distortion draws move the picture
 
@@ -221,19 +271,33 @@ are both 1 in 985 and both 0.5 in 267.
 :observed[every distortion action the effect reader types in Elden Ring's effect binders]{games="elden-ring"}
 
 :::open[Can an effect file's blend mode change a distortion's blend?]
-Action 607 stores a blend mode, as the billboards do, but no captured distortion draw is tied to its effect file, so whether a
-sheet of another mode draws with another blend is not read. The captures hold one pipeline per distortion program, which fits
-a fixed blend.
+All 20 sheets of the captured frames (2 in Sekiro, 6 in each of three Elden Ring frames) are drawn with one blend (source alpha
+against inverse source alpha, alpha written as source one and destination zero), `g_ps_BlendingMode` 1 and `g_ps_ColorBlendType` 0.
+:observed{games="sekiro elden-ring"} The distortion files whose normal map is the bound texture (6000 in Sekiro, 60012 in Elden Ring)
+number 27 and 217 actions in the binders read; 20 and 211 of them have blend mode 2 and 7 and 6 have 0. For 19 of the 20 sheets the pair of
+`g_waveStrength` and `g_color.a` is reproduced, at one age along the files' keyframes read as linear, only by mode 2 files; for the
+20th (Sekiro, 0.5 and 1.0) by both. :observed{games="sekiro elden-ring"} No sheet is tied to a file of another mode, so the captures
+show the blend of mode 2 files only. A multi-texture billboard's mode does change its pipeline's blend (above); whether a distortion's
+does needs a frame that draws a sheet of a mode 0 file (effect 30050 or 613215 in Sekiro, 523804 in Elden Ring). :unknown
 :::
 
 :::open[How does the engine set the strength and the stir from the file?]
-The per-particle record keeps the file's intensity unscaled, and the captured Bump sheets' strength of 10 is a constant
-intensity 51 actions store, but no captured draw is tied to its effect file, and the step from the record to
-`g_waveStrength` is not traced. The SoftBump sheets' strength follows their opacity: an intensity curve keyed with the
-colour's alpha fits that, and so would the engine multiplying the two, though the record holds the opacity only rounded to
-bytes and the strength follows it unrounded. Whether `g_clampDistanceInverse` is the inverse of `radius`,
-`g_normalMapScrollScale` the normal map's scale and the two scroll distances its offset plus its speed times the age (and
-which of them is u), and what `g_waveTime` holds for a stir, are not read either.
+`g_waveStrength` is the file's `intensity` at the particle's age, not multiplied by the colour's alpha. In both Sekiro sheets it is 0.5, the
+constant `intensity` of three candidate files, while `g_color.a` is 0.714 and 1.0. :observed{games="sekiro"} In Elden Ring the sheets
+come in threes (each drawn twice) of steps of about 4.03 in strength (1.667, 5.70, 9.733; 2.70, 6.733, 10.0; 2.0, 6.033, 10.0), with the
+alphas 0.169, 0.569, 0.973; 0.271, 0.675, 0.616; 0.2, 0.604, 0.965. The third sheets of the last two have strength exactly 10.0 with alpha
+0.616 and 0.965, so the strength saturates at 10 while the alpha does not: a product of a constant 10 and the alpha would give 6.2 and
+9.65, and the earlier fit of 10 times the alpha (above) was two curves rising together. :observed{games="elden-ring"} The file that drew
+them is not identified. :observed{games="elden-ring"}
+
+The two scroll distances are, by their values, the offset plus speed times age of the normal map's U axis (`g_vNormalMapScrollDistance`) and V axis (`g_hNormalMapScrollDistance`), named across: in
+both Sekiro sheets the candidates scroll along V alone (speed 0.25, U speed 0), and the distance `g_vNormalMapScrollDistance` is 0.6185
+and 0.6278, inside the 0 to 1 of the random offset, while `g_hNormalMapScrollDistance` is 0.8765 and 14.79, which only a V speed can reach.
+:inferred{games="sekiro"} All Elden Ring candidates have offset 0 and speed 0, matching the 0 and 0 captured, which tests nothing.
+`g_clampDistanceInverse` is 1 and `radius` 1 in every candidate but one, `g_normalMapScrollScale` is (1, 1) and `normalMapScaleU` and `V`
+1 in all, and `g_waveTime` is 1 and `g_waveNum` 0 in every sheet: the captured sheets are all of mode 1 (the normal-map push), so
+what the stir (mode 0) sets for `g_waveTime`, `g_waveNum` and the strength is not captured, nor whether `g_clampDistanceInverse` is
+the inverse of `radius`. :unknown
 :::
 
 ## Elden Ring's bundle
@@ -339,8 +403,16 @@ particles to draw, whose order changes from run to run; added in another order, 
 differently. :inferred{games="sekiro"}
 
 :::open[How does the engine fill these interfaces?]
-Which program a draw selects from its blend mode, soft-edge, glow and light flags, how the vertex buffers of the plain draws are
-built from an effect's properties (the order and meaning of the constants of `PSCommonBuffer` and `VSCommonBuffer`), the
-contents of the 176 and 336-byte particle records, and what the second render target holds are not recorded. :unknown{games="sekiro"}
+For the multi-texture draws the file fields that reach the pixel constants and the vertex are listed above (the four texture and colour
+words, `premultiplyAlpha`, `blendMode`, the two multipliers with a frame-wide factor, `lighting`, and the layers' colours, offsets, scales
+and flipbook cells); the second colour `COLOR4` (four floats) lies inside the range of the file's `color3` in all 61 Elden Ring records,
+and its range of `color2` in 34 of them, and the single-texture vertex's `COLOR1` (four floats at byte 16) inside `color3`'s range
+in all 59 Sekiro draws against `color2`'s in 40. :observed{games="sekiro elden-ring"} The Elden Ring vertex of these draws is 148 bytes
+(`COLOR0` to `COLOR3` bytes at 0, `COLOR4` at 16, `TEXCOORD0` to `TEXCOORD2` at 32, 48 and 64, `TEXCOORD3` at 80 as three floats,
+`TEXCOORD4` at 92 as two 16-bit fractions, `TEXCOORD5` at 96 as one float, `TEXCOORD6` to `TEXCOORD8` at 100, 116 and 132); Sekiro's is
+160 with a `POSITION` of four floats first. :observed[input layouts of the captured draws]
+Which program a draw selects from the other flags, the single-texture draws' fields, the source of the frame-wide factor, the float
+at `TEXCOORD5` (0.17 to 0.23 in some sheets, 12 to 31 in others) and `POSITION.w` (21 to 27), the contents of the 176 and 336-byte
+particle records, and what the second render target holds are not recorded. :unknown{games="sekiro"}
 The per-particle state the billboard appearance keeps before it draws is on [Particle appearances in the executable](/engines/fromsoft/effects/particle-appearance/).
 :::

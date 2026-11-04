@@ -454,9 +454,15 @@ x 1000 exist for 335, 209, 66 and 51 placed objects, and what chooses them is no
 :::open[Which way does an effect's spot light shine?]
 The spot light stores a near plane, a far plane and the extents of an elliptic base there, and no axis: the axis is the
 effect's own local direction, which the file does not name. The light object takes a transform from the effect's node, but
-which of its axes the renderer's cone follows was not read, and no effect spot light was captured. The code's cone angle
-(`2 * atan(radius / 2 / far)`, above) and the absence of a tenth on a spot's multiplier need one captured frame with a spot
-light to be proven.
+which of its axes the renderer's cone follows was not read. No effect spot light was drawn in any frame captured: in the six
+Sekiro frames at the Ashina idol the lighting stage's spot buffer was written by a map that stored no bytes, so it held no
+record, and in the Elden Ring frames of Stormveil's gate the buffer holds no record that parses as a light.
+:observed{games="sekiro elden-ring"} Sekiro's spot lights are in effects 811050, 811052, 811053 and 811420 (Ashina Castle's binder),
+825160 and 825161 (another area) and 670010, 800270, 800271 and 800311 (the common binder); Elden Ring's in 810200, 810203 and 810204
+(Stormveil's binder), 800031 and 800280 (common). :proven[the effect binders read]{games="sekiro elden-ring"} None is started by an SFX
+region of the map layout of Ashina Castle or Stormveil, so a frame that draws one needs the param row, event or asset that starts it.
+:observed The code's cone angle (`2 * atan(radius / 2 / far)`, above) and the absence of a tenth on a spot's multiplier need one
+captured frame with a spot light to be proven.
 :::
 
 :::open[What do the action's flag bytes and unknown word mean?]

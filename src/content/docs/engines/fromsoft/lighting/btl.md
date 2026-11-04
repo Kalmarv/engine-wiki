@@ -208,6 +208,19 @@ to 2,034 of the 2,040 runs at other entries and writes the same index entries in
 and the two buffers differ from frame to frame even where the scene does not; what each tile's run holds is fixed.
 :inferred{games="sekiro"}
 
+:only[elden-ring] Elden Ring's `GXLightOrganize8` builds the same lists. At 2560x1440 it is dispatched as 80 x 45 groups and
+writes 3,600 lookup records of 12 bytes at `u1` (`g_lightLookup`, a structured view of stride 12 over a 43,264-byte buffer,
+so 64 bytes follow the records), the index entries at `u0` (`g_wLightIndices`, 345,600 entries) and its counter at `u2`
+(`g_workData`). :observed[one captured frame's bindings]{games="elden-ring"} In one frame with 8 point lights and no spot
+lights (`g_lightCount` 8, `g_spotLightCount` 0), every one of the 3,600 records holds the first entry of its tile's run in its
+first word, the run's length in its second, and in its third the number of the run's entries with bit 31 set.
+:observed[one frame's outputs, all 3,600 tiles]{games="elden-ring"} With no spot lights in the frame, whether the second
+word splits into a point count and a spot count as Sekiro's does is not shown. :unknown{games="elden-ring"} The runs land in
+the order the GPU ran the tiles, as in Sekiro. Running the dispatch again on each frame's recorded inputs, on the GPU
+that captured it, put 3,590 of the 3,600 runs at other entries in one frame and 3,548 in another. Every run held the same
+entries in the same order, and the 64 bytes after the records were unchanged.
+:observed[two frames of two sessions, one re-run each]{games="elden-ring"}
+
 ### Spot lights
 
 A spot light's record (192 bytes) holds the position and the range (the stored radius), the diffuse and specular colours as a point

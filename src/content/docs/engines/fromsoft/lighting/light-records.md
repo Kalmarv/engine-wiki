@@ -214,6 +214,8 @@ bank]{games="elden-ring"} That the byte keeps a light out of the list fits every
 stored entry) only where `LightType` is 0.0 and the light reaches the tile's opaque depth range. It stores an entry whenever
 the mask is non-zero, so a shadowed light stays in the tile's list with its slice bits and the forward materials still light
 with it. The tile's lookup word 2 counts the entries with bit 31 set. :observed[the program's DXIL, read not run]{games="elden-ring"}
+In one frame's outputs it does on all 3,600 tiles ([Tile lists](/engines/fromsoft/lighting/btl/#tile-lists)).
+:observed[one frame]{games="elden-ring"}
 The unshadowed tiled pass visits only entries with bit 31 set and discards a tile whose word 2 is 0, so a shadowed light is
 left to its per-light pass. :observed[the programs' DXIL]{games="elden-ring"}
 

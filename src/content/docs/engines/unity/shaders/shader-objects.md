@@ -69,6 +69,14 @@ definition chunk** (RDEF), so their code names no resources; the names come from
 Shader Model 4.0 programs that keep an RDEF without the `RD11` block of the Shader Model 5 layout. :observed{games="sledding"}
 The container parts are described on [Direct3D shader containers](/concepts/d3d-shader-containers/).
 
+The container is, byte for byte, the bytecode the player creates its programs from (what it passes to
+`CreateVertexShader` and the like). Of the 93 programs a SkateBIRD (Unity 2019.4) title-screen frame created, as locum
+captured them, 90 have the XXH3-128 of a D3D11 variant's container in the game's Shader objects; the other three are the
+Steam overlay's two and a compute program, which a ComputeShader object holds, not a Shader. A Hollow Knight (Unity
+6000.0) menu frame gives 26 of 28, the other two the overlay's. :observed{games="skatebird"} So a captured program can be
+named, and its constants and resources too, from the variant with its key; locum does this (`index --programs`, fed by
+unity-formats' `program_keys`).
+
 ## Constant buffers and bind slots
 
 A variant's parameters list:
@@ -80,6 +88,13 @@ A variant's parameters list:
 | struct field | name, offset, array size, struct size, members (instancing's per-draw arrays) | :observed |
 | textures | name, slot (`t<n>`), sampler slot (none when it has its own sampler state), dimension (2 a 2D texture, 3 3D, 4 a cube) | :observed |
 | samplers | the packed sampler state and its slot (`s<n>`) | :observed |
+
+A texture's sampler slot is a sampler register the program declares: in the 50 of the 90 matched SkateBIRD programs
+above that declare samplers, every `s<n>` register the code declares is the sampler slot of one of the record's textures,
+and the states the frame bound there fit the texture (anisotropic and wrapping for `_MainTex` and `_BumpMap`, clamped for
+the screen-space `_ShadowMapTexture`). Ten textures shared nine registers in one Standard pixel program, `unity_SpecCube1`
+having none of its own. :observed{games="skatebird"} The records keep no sampler's name. In Unity's HLSL a texture's own
+sampler is `sampler` followed by the texture's name, as in `sampler_MainTex`. :inferred
 
 Bytes of a buffer that no stored field covers are not necessarily unused: a row-level census found that 249 of 565 such gaps
 in SkateBIRD's distinct programs and 309 of 523 in Sledding Game's overlap a row the program loads. Most are padding lanes

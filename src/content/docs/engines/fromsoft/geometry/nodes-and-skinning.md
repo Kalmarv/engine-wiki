@@ -183,11 +183,28 @@ and the one at the first slot the one the frame before wrote; the motion-vector 
 meshes in one frame and the shadow pass of all 21 in another, which bind them the other way round.
 :observed[five captured frames]{games="sekiro"}
 
-:::open[Which of a deformed mesh's two position buffers holds the newer positions?]
-The CPU writes the buffer bound as the previous frame's, by the order of the frame's commands, and the passes do not
-agree in every frame. Whether the data written in a frame is the previous frame's deformation (one frame of latency),
-or the binding swaps on some other count, is not established; the differences between the two are small enough that the
-motion vectors they produce were not checked.
+The buffer a frame writes holds the newer positions. In one captured Sekiro frame, for each of 27 written position
+buffers the other buffer of its pair was compared with the written buffer's contents at the start of the frame and with
+the bytes written during the frame: in 21 pairs the other buffer lies between the two, at a median 0.45 to 0.59 of the
+way from the start contents to the written bytes, with 99.7 to 100 % of the displaced vertices between 0.1 and 0.9; the
+remaining 6 pairs are 57-vertex buffers whose two members are 6.8 units apart. So the pair alternates, one buffer holding
+the previous frame's deformation and the other the frame before that, and each frame overwrites the older one.
+:observed[one captured frame, 27 pairs]{games="sekiro"} Which slot the written buffer is bound to varies with the
+command list: in the 24 recorded list instances of one frame, 18 bind the written buffer as the previous-frame stream
+(`POSITION1`) and 6 as the current stream, so a draw's `POSITION1` is not by itself the older buffer.
+:observed[one captured frame]{games="sekiro"}
+
+:only[elden-ring] Elden Ring's cloth meshes use the same two-stream layout, with a current and a previous position
+vertex buffer. In ten captured frames, 190 cloth draws bind a pair of which the frame copied new positions into one
+buffer, from the upload ring, with a GPU buffer copy; all 190 bind the copied buffer at `POSITION0`, and 9 further
+draws use a pair no copy touched. The copied slice differs from the two buffers' contents at the start of the frame by
+at most 0.0022 units (mean 0.0004 against the older buffer), so the stream written in the frame is the newer one.
+:observed[ten captured frames]{games="elden-ring"}
+
+:::open[Does the written buffer of a pair stay the newer one in the next frame?]
+Within a frame the buffer written holds the newest positions, and the other buffer holds the position of one frame
+earlier. That the roles alternate every frame, rather than a buffer staying "current" until some other condition flips
+the binding, needs two consecutive frames of the same object, and each capture covers a single frame. :unknown
 :::
 
 ## Dummy attachment points

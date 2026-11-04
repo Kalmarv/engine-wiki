@@ -195,11 +195,19 @@ The examined `c3000` model has empty per-mesh bone-index tables and uses skeleto
 captured 256-matrix binding therefore does not imply a per-mesh table of 256 bones or a skeleton of that size.
 :observed{games="elden-ring"}
 
-:::open[What selects the palette allocation for every draw?]
-The bound sizes vary. The observed maximum is not a proven global engine limit. Sekiro's frames fit a power-of-two
-rule (see [Sekiro's palettes](#object-matrices-and-skinning-palettes)); Elden Ring's sizes of 64 and 256 are powers of
-two as well, but no Elden Ring draw has been compared with its mesh's bone indices.
-:::
+The bound palette size is never smaller than the draw's largest joint index plus one. In 906 skinned and
+single-joint draws of three frames, read vertex by vertex through the bone-index element with weights above zero, no
+draw uses an index at or past its bound matrix count; the bound counts are 10, 16, 32, 64, 128, 256, 512 and 1,024
+matrices. :observed[three captured frames]{games="elden-ring"} The count is not the next power of two above the
+part's largest joint, and not the skeleton's node count: the same model binds 128-matrix windows whose largest used
+index is 54 to 113. :observed[three captured frames]{games="elden-ring"} Many windows hold non-zero matrices beyond the
+indices their draws use, so a window is not zero-filled past the used joints. :observed[three captured frames]{games="elden-ring"}
+
+For instanced draws, the window is a power of two at least as large as the instance count times the model's palette
+length, the number of matrices one instance's joint set occupies (the difference between consecutive instance
+records' `matricesData.x` bases). This holds in 5 of the 5 multi-instance windows of one frame; the palette length is 141 matrices for `c3000` and 122 for
+`aeg099`. :observed[one captured frame, 5 windows]{games="elden-ring"} What sets a model's palette length (it is not
+the largest joint index of any mesh checked) is not established. :unknown
 
 ### Material identity and dynamic constants
 

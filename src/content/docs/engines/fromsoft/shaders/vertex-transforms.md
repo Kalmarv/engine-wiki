@@ -57,7 +57,33 @@ Sekiro's programs declare the cloth-cancel palette only in `parts_AMSN_clothmatc
 The runtime buffer extent can exceed the shader's declared extent. The captured c3000 draws and their 256-matrix
 palette are described under [nodes and skinning](/engines/fromsoft/geometry/nodes-and-skinning/).
 
-:::open[What are the remaining transform forms?]
-The camera-relative/absolute proof applies only to programs classified by that experiment. It does not establish
-the behaviour of programs with additional position deformation or missing runtime inputs. :unknown
+## Census of the forms in use
+
+Tracing the clip position (`SV_Position`) of every vertex program bound by the draws of ten Elden Ring frames (191
+programs) back to the inputs it depends on, the programs fall into these forms. :observed[191 programs of ten captured frames]{games="elden-ring"}
+
+| Form | Programs |
+| --- | --- |
+| Joint index from the normal's W, object palette, camera-relative view-projection | 78, plus 15 that add time or a force parameter, and 3 more that add a texture fetch |
+| Skinned, object palette | 23 |
+| Skinned, cloth-cancel then object palette | 15 |
+| Joint from the normal's W, cloth-cancel then object palette | 7 |
+| Skinned or rigid with a world matrix (`VC_World`) | 7 |
+| SpeedTree, wind constants added | 11 (plus a billboard with view-projection only) |
+| Clip position from the vertex, no matrix (full-screen) | 13 |
+| Own matrix constants (volume and effect programs) | 7 |
+| Clip position passed through as `SV_Position` input | 6 |
+| No clip position in the program (a later stage writes it) | 8 |
+
+In six Sekiro frames (79 programs) the same trace gives: joint from the normal's W, object palette, camera-relative
+view-projection 25; skinned, object palette 19; world matrix 9; full-screen 8; pass-through 7; own matrices 8; clip
+position written by a later stage 3. :observed[79 programs of six captured frames]{games="sekiro"}
+In Elden Ring, 15 of the joint-from-normal programs add time, a force parameter or a texture fetch to the position
+(by name: grass, vegetation, sway, flag and bird programs). :observed[191 programs of ten captured frames]{games="elden-ring"}
+
+:::open[Which transform forms remain unclassified?]
+The camera-relative or absolute test of the previous section covers programs of matrix-times-world form; the census
+above adds the forms the draws of these frames use but does not rerun that test on them. The order in which the
+`VC_World` programs apply the world matrix and the palette, and which stage writes the clip position where the program
+has none, are not established, and programs not bound by these frames are not covered. :unknown
 :::

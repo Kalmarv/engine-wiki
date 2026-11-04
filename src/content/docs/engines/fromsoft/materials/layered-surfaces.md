@@ -163,6 +163,10 @@ The [detail-blend equations](/engines/fromsoft/materials/detail-blend/) describe
 family, including Sekiro's different slot assignment and reflectance encoding.
 
 :::open[Which equations generalize across permutations?]
-Family and switch names do not prove an identical blend graph. The formulas above remain scoped to the inspected
-programs; runtime snow, instance colour and secondary UV inputs require their own bindings. :unknown
+Family and switch names do not prove an identical blend graph, and the disassembly of one frame says the same: its 12 `Mb` and `ColorAdjust` G-buffer
+pixel programs have 12 distinct bodies, and among the 118 depth, motion-vector and G-buffer programs of that frame the only shared bodies are depth-only and motion-vector programs of the
+same family's switches, the cloth variants of `C[DetailBlend]` and `C[Fur]`, and the SpeedTree wind variants: no G-buffer program of the `Mb` and ColorAdjust families matches
+another. :observed{games="elden-ring"} So each permutation's weight graph has to be
+read for itself; the formulas above stay scoped to the programs they were derived from, and snow, instance colour and secondary UV inputs still need their
+own bindings. :unknown
 :::

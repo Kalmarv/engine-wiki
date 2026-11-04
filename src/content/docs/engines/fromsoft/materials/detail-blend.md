@@ -27,10 +27,22 @@ With `f = saturate(chain(reflectanceTerm_i))`, Sekiro's checked form writes
 `albedo = C*colour` and metallic `f`, leaving the lighting program to form its F0.
 :observed
 
+In one Stormveil frame the pixel programs of the `C[DetailBlend]` family fall into groups by their disassembly. `C[DetailBlend]_cloth_1_Gbuf_[A]` is
+instruction for instruction the program `C[DetailBlend]_1_Gbuf_[A]` (the files differ only in the debug name), as are `C[Fur]_cloth_0_Gbuf_[A]` and
+`C[Fur]_0_Gbuf_[A]`, so the cloth variants share the plain equation exactly and `VC_isEnableCloth` only changes the vertex stage. Switches 0, 1, 6, 13 and the
+cloth variant share one depth-only program body and one motion-vector body (`_DptA`, `_Velo_[A]`); the `[S2]` motion-vector programs of switches 0, 1 and 6
+share another. :observed{games="elden-ring"} The 16 G-buffer programs of the family have 15 distinct bodies; no two switches share one. Every one of
+them writes the same 14 colour lanes and reads `SV_IsFrontFace`. The textures that feed the albedo grow with the switch as the plain equation's chain does:
+registers t2 and t11 for switch 0, one more for switch 13 (t5) and 1 (t10), two for 6 (t5, t13); `[Rich]` 1 reads the same registers as plain 1; `[S2]` programs
+add t4, t14 and t15 (and t13 or t5/t16 by switch) and feed the alpha lane from t0 and t1, which the plain programs do not. :observed{games="elden-ring"}
+That fits the plain equation for the plain switches and the cloth variants, and shows the `[S2]` programs to be built on other inputs; the instruction counts of
+`[Rich]` (766 operations against plain 1's 720) and `[S2]` 1 (848) say they add terms to the chain rather than replace it, which the disassembly was
+not read far enough to prove. :inferred{games="elden-ring"}
+
 :::open[Which other families share this equation?]
-The demonstrated form does not cover every DetailBlend-labelled program. Elden Ring's S2 variant has an
-alpha-driven overlay and a back-face branch, and SSS variants write an additional subsurface lane; neither is
-established by the plain-family equation. :observed{games="elden-ring"}
+Only the cloth variants are shown to share the plain-family equation, and only by identical programs. The `[Rich]` and `[S2]` programs add instructions to
+the same texture set or to a larger one; their equations (the S2 variant's alpha-driven overlay, the back-face branch, and any subsurface lane) were not
+derived, and `C[Fur]` reads other textures (t1 and t5 for the albedo) so is not this equation.
 :::
 
 ## Sekiro

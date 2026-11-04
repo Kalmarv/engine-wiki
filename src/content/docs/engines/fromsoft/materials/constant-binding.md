@@ -60,9 +60,17 @@ unchanged. :observed[the lifted value graphs of nine Stormveil materials' progra
 parameter). None of the pixel programs those draws use reads the member: their reflection marks it unused.
 :observed[five captured frames, 780 character and 2,225 map and object draws whose material buffer holds the word]{games="sekiro"}
 
+In Elden Ring every character material carries 1 there: across seven Stormveil sessions, all 1,318 reads of the word by pixel programs of the `C[...]` families (`DetailBlend` in all its permutations, `AMSN`, `Fur`) and the `P[ChrCustomize]` hair, skin and body-hair programs are 1.0, and the 28 reads by `P[ChrCustomize][Eye]` and 7 by `P[ChrCustomize][EyeAO]` are 0.0. :observed[seven captured sessions]{games="elden-ring"}
+Of the 62 distinct G-buffer pixel programs of one frame, 25 read it as a value of an output lane: every `C[...]` program, the `P[ChrCustomize]` skin and eye programs, `M[AMSN]_Skin_PaintDecal`, `M[AMSN][Ov_N]_Skin_PaintDecal` and `S[AMSN]_Glow`. :observed[traces of one frame]{games="elden-ring"}
+Map and object materials hold 0 in most draws (all 191 of `M[AMSN_V][Ov_N]_Gbuf`), but a few programs read other values from the word (for
+example 1, 10 and 0.706 in `M[AMSN_V]_Gbuf`), which these captures do not explain. :observed{games="elden-ring"} That every character
+material holds exactly 1 (and the eyes 0) in seven sessions of one walk suggests a definition value or an engine default, not a damage measure;
+the sessions did not record the character's health. :inferred{games="elden-ring"}
+
 :::open[What amount does a character carry at run time?]
-The recorded Sekiro frames hold the authored value and no program reads it; whether damage changes the word, and which
-programs read it, needs a frame of a wounded character. No Elden Ring frame has been read at the word.
+Sekiro's recorded frames hold the authored value and no drawn program reads it; Elden Ring's character programs read a word that is 1 in all
+seven undamaged sessions. Whether damage changes the word in either game needs a frame of a wounded character, and the Elden Ring
+definition's own `FC_BloodAmount` value (to tell a stored 1 from an engine-written one) is not read here.
 :::
 
 ## Sekiro
@@ -112,8 +120,12 @@ frames at the Ashina Castle gate. :observed[five captured frames]{games="sekiro"
 | The binding's path is empty and the definition's scale is 0 | 1 | 10 | :observed{games="sekiro"} |
 | The definition has `group_N_CommonUV-UVParam` parameters | one group's scale (240 rows), the definition's texture scale (20) or 1 (210, among them the character families' base textures) | 470 | :observed{games="sekiro"} |
 
-Which group each texture belongs to is the metaparam's and was not checked against these rows, so the last case is not
-yet a rule. :unknown{games="sekiro"}
+Which group each texture belongs to is the metaparam's. Read from the rows instead, in the 121 rows of two Ashina frames whose texture has no
+FLVER path and whose material has group parameters, `Character_AMSN_[DetailBlend]` textures 1 and 6 take `group_2`, textures 2 and 5 take
+`group_3` and textures 10 and 12 take `group_4`, each with no row that contradicts it (the other group's non-unit scale never appears
+in them), while textures 0, 3 and 7 (the base colour, normal and mask) take no group: their rows are 1 whichever scale a group holds.
+:observed[121 rows of two captured frames]{games="sekiro"} Each pair is a detail colour with its normal map. :inferred{games="sekiro"}
+A comparison with the metaparam's own table, which is not read here, would make it a rule.
 
 ## Elden Ring
 
@@ -166,7 +178,10 @@ draws that have one, and its textures tie equally to the `c9506` eye and the `FG
 :observed{games="elden-ring"}
 
 :::open[Which runtime inputs account for unmatched tiling and eye words?]
-Unexplained Sekiro tiling contents remain. Elden Ring's non-unit FLVER scale precedence has no decisive capture;
-placed assets whose two scales disagree would decide it, such as `AEG004_805` in `m60_42_37_00` (FLVER scale 2, UV
-group scale 1) and `AEG007_200` in `m60_23_19_01` (160 against 30). The eye constants could reflect a runtime override, but that explanation is not established. :unknown
+Sekiro's tiling rows are all explained (above), the group case by the inferred membership. Elden Ring's non-unit FLVER scale precedence has no
+decisive capture; placed assets whose two scales disagree would decide it, such as `AEG004_805` in `m60_42_37_00` (FLVER scale 2, UV
+group scale 1) and `AEG007_200` in `m60_23_19_01` (160 against 30). The eye program is `P[ChrCustomize][Eye]_Gbuf`, the character-creator
+family: its two draws per frame (one with the boolean set) hold the same words, colour 100/255 and scalar 0.024705887 among them, in seven
+sessions, so nothing in the frames tells a stored value from one set at run time. The family name makes a customisation override likely, but
+a frame with a different appearance chosen would decide it. :unknown
 :::

@@ -60,7 +60,23 @@ The alpha-test permutation can also read `FC_isDitherAlpha`, `FC_DitherEnable` a
 the camera-fade flag and `FC_isDitherAlpha` are always zero; `FC_DitherEnable` is one on 99 draws and zero on
 the rest. A set enable word alone therefore does not prove an active fade. :observed
 
+Sekiro's Ashina Castle frames draw 19 meshes whose materials carry GX20 scroll records (GX20, GX22, GX24 and GX26 together on
+the `M[ARSN]` ones, GX14 and GX20 on three `M[A]`), and every one uploads the identity `cbTexScroll`. :observed[one frame; 859 draws with
+the block]{games="sekiro"} The record's payload is not in a capture, so whether those authored speeds are zero was not read; the whole-install
+scan above finds nonzero values only on four map pieces, none of them among these. :inferred{games="sekiro"} Elden Ring's
+`cbTexScroll` is the identity in all 4,325 draws that bind it in five Stormveil sessions, among them the `M[Water][ocean4]` and
+`M[Water][ocean_Horizon]` water draws, whose pixel and domain programs read `FC_GlobalTime`: the ocean's motion comes from the program's
+time, not from a scroll upload. :observed[five captures]{games="elden-ring"}
+
+Moving surfaces that do not use `cbTexScroll` carry their motion in other constants. Sekiro's effect-water pixel program (`PSCommonBuffer`) takes
+`g_vNormalMapScrollDistance` and `g_hNormalMapScrollDistance` in `c6.xy`: three draws per frame, each pair different (for example 0.6185 and
+0.8765 in one draw, 0.628 and 14.79 in the next) and different again in each of six sessions at the same spot. :observed[six Sekiro
+frames of one spot]{games="sekiro"} A value that changes between sessions is not a material value, so the game writes it at run time. :inferred{games="sekiro"} Elden Ring's fog volumes carry `scrollSpeed` and `scrollScale` in `cbRendering.g_renderingDensity` (for
+example speed (0.2, -0.05, 0.3) on one volume and (0, -4, -10) on the others), not in a material buffer. :observed{games="elden-ring"}
+
 :::open[Which GX values generate each scroll constant?]
-The named records and nonzero authored values identify candidates, but the complete runtime upload rule, time
-origin and meaning of each extra float are not established by the available capture. :unknown
+No captured frame holds a surface with a nonzero authored GX scroll: every `cbTexScroll` of Sekiro and Elden Ring frames is the identity, so
+the upload rule, the time origin and the meaning of each extra float are still not shown. A frame of a river or the water material `GX07`
+describes (the whole-install scan names `m20_00_00_00_920000` and `m25_00_00_00_300010`), ideally two frames about a second apart, would decide
+it. :unknown
 :::

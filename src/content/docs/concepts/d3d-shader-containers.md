@@ -113,6 +113,18 @@ in every one (the record sizes of the Shader Model 5.0 layout). :observed{games=
 sizes, a 28-byte header, 32-byte bindings, 24-byte buffers and variables and 16-byte types, with every name inside the part
 and every variable inside its buffer. The other 4,838 programs have no `RDEF`. :observed{games="sledding"}
 
+A Shader Model 5.1 target writes another tag and a longer binding record. fxc 10.0.26100.0, compiling one pixel program
+for `ps_5_0` and for `ps_5_1`, writes `RD11` and the sizes 60, 24, 32, 40, 36, 12 for 5.0, and for 5.1 the bytes
+`13 13 44 25` (the word `0x25441313`) at byte 28 and the sizes 60, 24, 40, 40, 36, 12: the binding record grows from 32 to
+40 bytes, and the two words it gains are the register space and the resource's id, the number the 5.1 token stream names
+the resource by. The ids count from 0 within each register class (`b`, `t`, `s`, `u`). A texture array of four takes one
+5.1 record with a register count of 4, and an array with no stated size a count of 0; the 5.0 build of the same source,
+which indexes the array with a constant, has one record for the element it reads (`detail[2]` at t6). Bit 0 of the
+binding flags (`D3D_SIF_USERPACKED`) is set on all four bindings of the 5.0 build, each of which has an explicit register;
+in the 5.1 build it stays set on the constant buffer and is clear on the sampler and the two textures. In both layouts the fourth word of a variable record is the variable's flags,
+and bit 1 (`D3D_SVF_USED`) is set on exactly the variables the pixel program reads. :observed[test compilations: a pixel
+program for both targets and a compute program with every kind of binding for 5.1]
+
 `STAT` in a Shader Model 4 or 5 container is an array of 32-bit counters: 37 words (148 bytes) in the Shader Model 5.0 containers
 of Sekiro and 29 words (116 bytes) in the 16 Shader Model 4.0 containers of Sledding Game. Word 0 is the number of instructions
 (declarations not counted) and word 1 the register count of `dcl_temps`, in all 448 containers; word 20 equals the number of
@@ -160,6 +172,16 @@ immediate constant buffer, up to 258 words) is longer than 32 words. There is no
 `dcl_function_body` or `dcl_function_table`, no 64-bit immediate, no register-space word (Shader Model 5.1) and no extended
 operand other than the modifier kind. The `Input` operand has two index dimensions in the 47 uses in Riders Republic's hull
 programs and the 43 in its geometry programs; the nine domain programs use no plain `Input` operand. :observed
+
+Shader Model 5.1 adds an index to the operands of resources. A texture, sampler or unordered-access view operand has two
+indices, the declaration's id and the register (`T1[r1.x + 4]` reads register 4 plus `r1.x` of the range declared with
+id 1), and a constant buffer operand three: the id, the register and the row (`CB1[r0.w + 0][0]`). A binding
+declaration's operand has three indices, the id and the first and last register of its range, the last `0xffffffff` for
+an array with no stated size (`T0[0:*]`), and the declaration ends in one more word, the register space. A constant
+buffer declaration states its row count in a word of its own before the space, where 5.0 states it as the operand's
+second index. `NonUniformResourceIndex` marks the texture operand with an extended operand token of the modifier kind
+whose bit 17 is set. :observed[test compilations of a pixel and a compute program, read against fxc's disassembly of
+them]
 
 Every instruction has the operand count its opcode's format gives it. The formats are the table of destination and source operands that vkd3d's reader and DXVK's decoder both publish, whose
 counts agree for each of the 166 opcodes both list; the 3,415,319 instructions of the 7,729 programs have the stated count, with none left over.

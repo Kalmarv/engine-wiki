@@ -168,5 +168,6 @@ pixel programs have 12 distinct bodies, and among the 118 depth, motion-vector a
 same family's switches, the cloth variants of `C[DetailBlend]` and `C[Fur]`, and the SpeedTree wind variants: no G-buffer program of the `Mb` and ColorAdjust families matches
 another. :observed{games="elden-ring"} So each permutation's weight graph has to be
 read for itself; the formulas above stay scoped to the programs they were derived from, and snow, instance colour and secondary UV inputs still need their
-own bindings. :unknown
+own bindings. Settling it needs no new capture for the weight graphs (execute each program as for `Mb2` and `Mb3`); runtime snow and instance colour need a frame in a
+snowfield or area with a coloured palette, which the Stormveil frames lack. :unknown
 :::

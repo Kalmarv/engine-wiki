@@ -42,7 +42,8 @@ not read far enough to prove. :inferred{games="elden-ring"}
 :::open[Which other families share this equation?]
 Only the cloth variants are shown to share the plain-family equation, and only by identical programs. The `[Rich]` and `[S2]` programs add instructions to
 the same texture set or to a larger one; their equations (the S2 variant's alpha-driven overlay, the back-face branch, and any subsurface lane) were not
-derived, and `C[Fur]` reads other textures (t1 and t5 for the albedo) so is not this equation.
+derived, and `C[Fur]` reads other textures (t1 and t5 for the albedo) so is not this equation. No new capture settles it: the frames already hold these programs and their draws, and what remains is executing
+each `[Rich]` and `[S2]` program on designed samples as the Sekiro switches were; a capture of a character in the back-facing pose would only confirm the branch.
 :::
 
 ## Sekiro

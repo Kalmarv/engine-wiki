@@ -37,7 +37,7 @@ Ring 1.17.2 at 2560x1440 at night at the Stormveil gate. Programs are named by m
 | 9 | Point and spot lights: `GXLightOrganize<N>` (compute, tile lists) then a tiled light pass | `GXLightOrganize16`, `GXRend_TileBasedLighting` | `GXLightOrganize8` and `GXRend_TileBasedLighting`, and `GXLightAcc_DPointLightShadowed1` for a shadowed point light | :observed |
 | 10 | `GXLightCmbAlbedo`, `GXSssBlurX` / `Y`, `GXLightComposite` | into R11G11B10F | then `OutputColor` | :observed |
 | 11 | Volumetric fog: `GXVolumetricFog_DirLightShadowReproj`, `_WriteInScatteringPreShadowed`, a dispatch per local light, `_SolveVolumetricFog`, `_SceneComposite` | froxels 120x72x16 | 144x88x36, plus `_DirLightShadowPostFilter`; then `GXFogVolume_*` fog volumes at half resolution | :observed |
-| 12 | Sky and forward surfaces | the sky's materials (below), depth-only and blended material draws | | :observed |
+| 12 | Sky and forward surfaces | the sky's materials (below), depth-only and blended material draws | before pass 11: an `OutputColor` fill and the sky shell at depth 0 (below), among forward draws | :observed |
 | 13 | Effects, distortion, half-resolution particles with `SampleBilateralDepthBlurTwo` | | | :observed |
 | 14 | Motion vectors `MotionBlurWriteCMBVelocity`, then `StencilAndMotionVectorPreprocess`, `TempAA[StencilMask]`, `SharpenFilter` | | | :observed |
 | 15 | Glow: `EmissiveToGlowPS`, `Sample13Weight` down, `GlowCompositeSinglePS` up | 6 levels | 7 levels | :observed |
@@ -282,11 +282,6 @@ A map's `_farmodel` param (`FAR_MODEL_PARAM_ST`) names placed parts by parts gro
 The dome and the far mountains follow the camera across the ground and keep their height: their object matrices are
 the identity rotation at the camera's horizontal position and height 0. :observed{games="sekiro"}
 
-:::open[Where is the rest of Elden Ring's sky drawn in the frame?]
-Forward draws into the light targets come before the volumetric fog in the Elden Ring frame, among them the cloud shell
-`M[Clouds9]`; where the skysphere itself and the other cloud layers are drawn is not established.
-:::
-
 The moon follows the light: in both frames its quad's object matrix places it 25.0 units from the camera exactly along the
 light set's direction towards its first directional light (0, 0.4226, −0.9063), with its rotation built from the same
 direction so that it faces the camera. :observed{games="sekiro"} The quad is 10 by 10 units (corners at ±5 in its own x
@@ -315,10 +310,47 @@ Stormveil gate set:
 | `M[Sky9]_FwdSdw` | off | on | :observed[three recorded draws]{games="elden-ring"} |
 | `M[Clouds5]_FwdSdw` | source alpha, one minus source alpha; alpha One, Zero | on | :observed[three recorded draws]{games="elden-ring"} |
 | `M[DistantClouds]_001_FwdSdw` | the same | off | :observed[three recorded draws]{games="elden-ring"} |
+| `M[Clouds9]_FwdSdw` | the same as `M[Clouds5]` | on, at depth 0 (below) | :observed[three draws of three other frames]{games="elden-ring"} |
 
 The materials of `Field_Skysphere_10`, `Clouds400`, `Clouds410` and `Clouds411` state the matching
 [blend mode](/engines/fromsoft/materials/mtd/#blend-mode-and-alpha-reference) (0 for `M[Sky9]`, 2 for the two cloud families)
 and, for the distant clouds, a flag that turns depth writes off. :observed[those four materials]{games="elden-ring"}
+
+### The sky in the frame
+
+The sky is drawn where nothing else is: into the pixels whose depth is still 0 after the G-buffer, the far end of the
+reversed depth. In three recorded frames at the Stormveil gate at about 8 h (the camera at three places up to 9.3 m apart,
+2560x1440), the sky is two draws between `GXLightComposite` and the volumetric fog's composite:
+:observed[three frames]{games="elden-ring"}
+
+1. `OutputColor` (vertex program `ScreenSpaceQuadShaderZ`), one full-screen triangle at the depth `cbVtxParam.g_vtxParam.x`,
+   0, with the depth test `GreaterEqual`, no depth write and no blending, right after the composite: it writes
+   `cbColor.g_fillColor`, (0.013840831, 0.013840831, 0.013840831, 0.5019608) in all three frames, into the scene target
+   wherever the depth is 0. :observed[three frames]{games="elden-ring"}
+2. Among the forward draws, one draw of the cloud shell `M[Clouds9]` (6,336 indices over 1,220 vertices; the same vertex and index bytes in all
+   three frames), a dome ±43,104 m across and −8,000 to 18,076 m high in its own frame. :observed[three frames]{games="elden-ring"}
+
+The shell lands exactly on the sky's pixels: its draw changes every one of the 197,950 pixels at depth 0 and no other pixel of
+the scene target, and leaves the depth target as it was. :observed[one frame, the targets read back before and after the draw]{games="elden-ring"}
+It does so through its own copy of `cbSceneParam`, whose depth rows (register 18, `FC_MatrixProj`'s, and register 26,
+`VC_MatrixViewProj`'s) are 0; every other register of its 2,016 bytes equals the next forward draw's. Its vertex program
+writes `SV_Position = VC_MatrixViewProj × (world − SC_CameraPos)`, so every vertex has depth 0 and passes the `GreaterEqual`
+test only where nothing was drawn. Among the 641 to 870 draws of each frame that bind `cbSceneParam` at `b8`, it is the only one
+with those rows 0. :observed[three frames, and the vertex program's DXIL]{games="elden-ring"} The shell therefore needs no
+real distance and never hides scenery, whatever its size. :inferred{games="elden-ring"}
+
+None of these frames draws an `M[Sky9]` skysphere or another cloud layer, in the G-buffer or forward: the fill colour and
+the shell are the whole sky. :observed[three frames]{games="elden-ring"} After them the volumetric fog's composite and the
+half-resolution fog volumes change almost every sky pixel (197,701 and 192,634 of the 197,950), then the half-resolution
+effects' composite (`SampleBilateralDepthBlurTwo3`) and the temporal anti-aliasing, whose sharpened result
+(`SharpenFilter`) is written back; no other material (`M[…]`) draw writes them. :observed[one frame, the scene target read back after each pass]{games="elden-ring"}
+
+The shell follows the camera across the ground and keeps its height. Its object matrix (`cbObjMatrix[0]`, repeated as
+`cbInstanceData[0].mWorld`) is the identity rotation at (camera x, −16, camera z): its x and z equal `SC_CameraPos`'s bit for
+bit in each frame, while the camera's height (5.74, 6.61 and 6.99) leaves its y at −16. :observed[three frames]{games="elden-ring"}
+This is Sekiro's sky-map placement (translation (camera x, 0, camera z) times the part's own transform) with the part's own
+height. :inferred{games="elden-ring"} The shell's size is that of the largest skyspheres above; which `AEG096` model it is
+was not matched to the files. :inferred{games="elden-ring"}
 
 Which show depends on the weather: `WeatherAssetReplaceParam` (1,007 rows) lists, for a `_99` map and a weather id, the
 assets drawn; every one of `m60_00_00_99`'s 38 sky assets is listed for some weather, and its 18 weathers list 1 to 27 of
@@ -554,7 +586,8 @@ priority, is not traced. Which state blend and tier a far tile uses is the open 
 Elden Ring's exposure meter and the scale the CPU derives from it are on
 [exposure, tone curve and colour grading](/engines/fromsoft/lighting/tone-mapping/#exposure).
 
-:::open[Do Elden Ring's skyspheres follow the camera?]
-How a weather's list combines with the `_99` map's own placements, and whether the skyspheres move with the camera as
-Sekiro's sky map does, are not established.
+:::open[Do Elden Ring's other sky assets follow the camera?]
+The cloud shell `M[Clouds9]` follows the camera at a fixed height (above). Whether the skysphere `M[Sky9]` and the cloud
+layers drawn in night frames are placed the same way and take the same depth-0 scene constants, which `AEG096` model the shell
+is, and how a weather's list combines with the `_99` map's own placements, are not established.
 :::

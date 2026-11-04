@@ -112,7 +112,8 @@ No texture of the four installs uses id 2 or 13, and none of the four-bit textur
 so the order of RGBA4444's channels is still not established by data. Community decoders disagree about it. No frame capture
 of any Unity game read (SkateBIRD on Direct3D 11 and 12, Hollow Knight on both, Lethal Company, ULTRAKILL, Risk of Rain 2)
 holds a texture in a four-bit Direct3D format (`B4G4R4A4`, DXGI 115) or one of the engine's four-bit textures at all, so what
-the GPU is given for them is not observed either.
+the GPU is given for them is not observed either. What would settle it: a frame of any Unity game on Direct3D 11 that draws an
+RGBA4444 texture (id 13) next to the file's bytes for it, which needs a game that ships one; none of the seven installs read has any.
 :::
 
 ### ARGB4444 nibble order

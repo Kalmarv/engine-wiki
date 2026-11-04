@@ -71,6 +71,7 @@ The terrain material's shader and how the three layers blend with the base map i
 described here. No frame capture of a Unity game holds a terrain draw: the captures of Hollow Knight (2D), SkateBIRD (no terrain
 in the player) and ULTRAKILL are of title or main-menu screens, and those of Lethal Company and Risk of Rain 2 of a launch-mode
 menu and a sign-in dialog, although the players of both hold `Terrain` components (6 in Lethal Company, 10 in Risk of Rain 2).
-:observed[the captures read] Sledding Game has no capture. A capture of a frame inside a level with a terrain in view would be
-needed.
+:observed[the captures read] Sledding Game has no capture. What would settle it: a Direct3D 11 frame of Lethal Company or Risk of Rain 2 taken
+inside a level with a terrain in view (the draw's shader, its splat-map and layer textures and constants); the captured frames
+so far reach no level.
 :::

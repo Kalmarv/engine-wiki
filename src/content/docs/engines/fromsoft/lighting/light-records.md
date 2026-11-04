@@ -173,6 +173,32 @@ Of Sekiro's nine read-back frames, all 148 records (142 point,
 6 spot) hold 0 at the flag: 54 of them (51 point, 3 spot) stand on lights of the area's bank `m11_01` whose cast-shadows byte
 is 0, and 94 on no light of it. :observed[nine frames of three sessions]{games="sekiro"} No record of either game holds a value
 other than 0 and 1. :observed[the read-back records]{games="sekiro elden-ring"} Sekiro's recorded bank, `m11_01`'s, holds no shadow-casting light, so its records add nothing on the shadowed side. :observed{games="sekiro"}
+Sekiro's frame by the Ashina Castle idol lists 19 point lights and no spot lights, all with 0 at the flag.
+:observed[one frame]{games="sekiro"}
+
+### Which bank lights are listed
+
+The list does not hold every bank light that reaches what is on screen, and a shadow-casting bank light left out of it is
+drawn with no shadow: in the frames below every shadowed per-light pass draws a listed light and the atlas holds that light's
+regions alone. :observed[4 frames, 4 sessions, one camera]{games="elden-ring"}
+
+At the Stormveil gate, four frames from four sessions with one camera list 22 point lights (15 in one) and no spot lights.
+Two records stand on lights of bank `m10_00_00_00_0000` in every frame: light 32, the only listed light whose bank sets its
+cast-shadows byte, which holds 1.0, and light 116, which holds 0. :observed[4 frames, 4 sessions]{games="elden-ring"}
+The bank's shadow-casting light 35, a point light of radius 6.5 that stands 6.6 m from light 32, is in none of them, though
+its sphere lies inside the view frustum about 36 m from the camera and reaches visible surfaces. :observed[4 frames, 4
+sessions]{games="elden-ring"} Reaching was measured against the depth buffer as one frame began (the previous frame's, the
+camera unchanged): of 230,400 surface points sampled on a 4-pixel grid, 620 lie within light 35's radius, 237 within light
+32's, 2,629 within light 116's and 38,389 within that of light 127, a light that casts no shadow and is not listed either; no
+other point light of the bank reaches a sampled point. :observed[one frame's depth]{games="elden-ring"}
+
+The four bank lights that reach the picture split on the byte at bank record `0xC0` (see
+[BTL light banks](/engines/fromsoft/lighting/btl/)): the two listed lights have 0 there and the two omitted lights 1.
+:observed[4 lights, one view]{games="elden-ring"} The five bank lights listed in another Stormveil session (13, 14, 115, 117
+and 142) also have 0. :observed[one session]{games="elden-ring"} In the bank, 161 of the 216 lights have 1 at `0xC0`
+(the four bytes from `0xC0` read `01 01 00 01` on 159 of them); among its nine shadow casters, lights 26, 28, 31 and 35 have
+1, and 32, 97, 133, 136 and 137 have 0. :proven[every light of the bank]{games="elden-ring"} That the byte keeps a light out
+of the list fits these lights but rests on four. :inferred
 
 ### Effects on the tile lists
 
@@ -196,6 +222,10 @@ fields. :observed[the declarations]{games="elden-ring"}
 In the recorded frames the pass follows a depth-only render into a 4096x4096 R16 target, the local-light shadow atlas, with
 the shadow casters drawn into 64x64 regions; it runs once in 2 of 7 frames, after 31 caster draws in five regions, and not at
 all in the other five. No frame runs a shadowed organize or shadowed tiled program. :observed[7 frames]{games="elden-ring"} See also [the rendered frame](/engines/fromsoft/lighting/frame/).
+In five further frames at the Stormveil gate, each from its own session with the same camera, the pass runs once in every
+frame, after 31 caster draws into the same five regions; in the four of them whose constants were kept, its `b1` holds light
+32's record. :observed[5 frames, 5 sessions]{games="elden-ring"} Sekiro's frame by the Ashina Castle idol runs no shadowed per-light pass and draws nothing
+into 64-texel regions. :observed[one frame]{games="sekiro"}
 
 ## Where a shadowed light's shadow is placed
 
@@ -241,10 +271,17 @@ dispatches hold non-zero bytes unrelated to the light (`-inf`, 2250, matrix-like
 No program reads these bytes where the flag is 0. :observed[code read]
 
 :::open[Does the game shadow every listed light whose bank casts shadows?]
-Only one shadow-casting light has been read back. Bank `m10_00_00_00_0000` has nine shadow-casting point lights and the area's
-effects five shadowing lights; none of the others appears in a read-back record. A read-back of the organize program's buffers
-and of every shadowed per-light pass's `b1` in one frame, with two or more of them in view, would show whether a listed
-shadow-casting light can hold 0 (a budget or a distance rule).
+Only one listed shadow-casting light has been read back, light 32, and it is shadowed in every frame that lists it. A
+shadow caster can be left out of the list altogether (light 35, above), so the question is about the listed ones: whether a
+listed caster can hold 0 (a budget or a distance rule). Bank `m10_00_00_00_0000` has nine shadow-casting point lights and the
+area's effects five shadowing spot lights. A frame that lists two or more of them would settle it: the organize program's
+buffers and every shadowed per-light pass's `b1`. Lights 97 and 133, 4.7 m apart with 0 at `0xC0`, are such a pair.
+:::
+
+:::open[What does the byte at bank record 0xC0 do?]
+In the one view measured, it separates the bank lights the game lists from those it leaves out (above). Whether it is a
+switch the game reads, which state sets it, and what the bytes at `0xC1` to `0xC3` do, is not established. A frame where a
+light with 1 there reaches the picture and is listed would refute the rule.
 :::
 
 ### How the atlas faces are drawn
@@ -266,6 +303,10 @@ uses `.zw` as its filter step. :observed[one frame; the program's DXIL]{games="e
 
 :::open[Where does a second shadowed light go in the atlas?]
 Light 32's six regions sit at (0, 0), (128, 0), (0, 128), (128, 128), (256, 0) and (384, 0): the first six cells of a grid of
-128 texels in Morton order. :observed[1 light]{games="elden-ring"} Whether further lights take the next cells, and whether
-every light's region is 64 texels, needs a frame with two shadowed lights. :inferred
+128 texels in Morton order. :observed[1 light]{games="elden-ring"} The record holds the same six offsets in four frames of
+four sessions; in the two of them whose atlas contents as the frame began were kept (what the frame before left there), the
+atlas holds depth in five of those cells and nowhere else, so the frame before shadowed no second light either.
+:observed[4 frames; 2 atlases]{games="elden-ring"} Whether
+further lights take the next cells, and whether every light's region is 64 texels, needs a frame with two shadowed
+lights. :inferred
 :::

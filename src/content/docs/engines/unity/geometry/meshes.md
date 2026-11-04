@@ -107,7 +107,8 @@ times stride, without the padding before the next stream), and its index buffer 
 submesh's indices as stored. In a title-screen frame of SkateBIRD on Direct3D 11, 183 of the 209 buffers the frame uses hold
 those bytes of a stored mesh: 76 first streams, 11 second and 10 third streams (the 11 meshes of more than one stream in the
 frame, each stream in its own buffer, none bound with the streams together) and 86 index buffers. The rest match no stored
-mesh. :observed{games="skatebird"}
+mesh. The same title screen on Direct3D 12 (`-force-d3d12`) uploads the same bytes: the same 183 of 209 buffers, by
+stream and index buffer alike. :observed{games="skatebird"}
 
 ## Non-finite values
 

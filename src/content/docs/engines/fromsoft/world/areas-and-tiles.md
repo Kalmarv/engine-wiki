@@ -147,10 +147,21 @@ parents' assets: of the 75,053 prefixed assets, 75,027 hold `0xffffffff` there a
 the `_00` and `_10` tiles, 144,855 hold `0xffffffff` and the other 79, all of models `AEG092_*`, hold other values (14 of
 them a map word of an `m00` map, the rest small numbers). :proven{games="elden-ring"}
 
+Seven frames of the running game at the Stormveil gate (a legacy map placed in tile `m60_39_40_00`) draw no part of any `m60`
+tile: the index and vertex ranges every indexed draw binds, matched against the data blocks, vertex buffers and face sets of
+2,792 `m60` map-piece FLVERs (850 each of `_00`, `_01` and `_02` tiles, 50 `_10`, 53 `_11`, 53 `_12` and 86 of the `m60_00_00_99`
+layout), name only files of `m10_00_00_00` (up to 79 FLVERs a frame), its overlay `m10_00_00_99` (up to 9), assets, parts and
+characters. :observed[seven captured frames, 175 to 270 named buffers each]{games="elden-ring"} The frames therefore hold nothing of the
+choice between a `_00` tile and its parents.
+
 :::open[How does the game choose the level a small tile is drawn at?]
 The layouts fix which parts stand for which small tile and at which level, not the distances at which the game moves
 from a `_00` tile to its `_01` and `_02` parents, nor whether it hides a parent's part by its tile-load word or by
-another rule.
+another rule. The Stormveil frames draw no `m60` tile, so they cannot say. A capture would: the open world with the camera
+at several distances from one tile boundary (at least three positions, from standing in a `_00` tile to well outside the
+distance at which its `_01` or `_02` parent stands for it), each frame with every pass's targets and the constants as each draw
+read them, so that each draw's `m60` piece, its distance to the tile and which of a tile's `_00` parts and its parents' parts
+are drawn can be read.
 :::
 
 ### Overlay layouts ending in `_99`

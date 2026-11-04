@@ -35,7 +35,20 @@ The sampled Sekiro `M[LandScape]_Mountain` material family also appears among un
 all-one buffer contents conflict with the non-unit scale stated by the matching material candidates. This is
 not evidence of a universal landscape-specific scale rule. :observed{games="sekiro"}
 
+## What the Elden Ring frames draw
+
+In a frame at the Stormveil gate, the draws of the layered ground materials (vertex programs of the `[Mb2]`, `[Mb3]` and further `[Mb<n>]`
+families, 659 of the frame's 2,734 indexed draws: 336 from `m10_00_00_00` map pieces and 323 from assets) draw one face set of
+an ordinary FLVER each, from the model's own index and vertex ranges, and none of them has a hull or domain program.
+:observed[one captured frame]{games="elden-ring"} The only hull and domain programs of the frame are those of
+effect billboards and ribbons (`GXFfxtessellate`) and of the ocean surface (`M[Water][ocean4]`, drawn from face set 2 of the
+asset `AEG097_000`, 63,354 indices). :observed[one captured frame]{games="elden-ring"} The frame draws no open-world tile (no `m60`
+map piece, see [map areas](/engines/fromsoft/world/areas-and-tiles/#parents-parts-and-their-small-tile)), so it shows how
+a legacy map's ground is drawn and not the terrain of the overworld. :observed{games="elden-ring"}
+
 :::open[Is there a separate terrain geometry representation?]
 The ground-material observations do not establish a separate heightfield format, terrain tessellation algorithm,
 or complete terrain LOD hierarchy. Material blend weights alone do not settle those geometry questions. :unknown
+The Stormveil frames show no tessellated or heightfield ground; an open-world frame (the tile capture asked for under
+[map areas](/engines/fromsoft/world/areas-and-tiles/)) is needed to see how an `m60` tile's ground is drawn.
 :::

@@ -225,7 +225,7 @@ end of the game's table of param names, so `LoadBalancerNewDrawDistScaleParam_wi
 applies is the load balancer's state while the game runs; for each of the 679 placements of `m60_42_36_00`, the row
 of its LOD type holds one scale at every level or is absent, so its borders do not depend on that state. :observed[one area read]{games="elden-ring"}
 That factor sits in the view at the same place relative to the eye as the texture switch's field-of-view factor, so it
-is `tan(fovY / 2) / tan(21.5°)`. :inferred{games="elden-ring"}
+is `tan(fovY / 2) / tan(21.5°)`. :inferred{games="elden-ring"} Frames of the running game fit a factor of 1.0 better than this (below).
 
 - When bit 0 of the row's word at 48 (`enableCrossFade`) is set, the level is the largest `k` from 0 to 5 with
   `d >= s × B + P` for the boundary below it, and between `s × B` and `s × B + P` the model is faded toward the next
@@ -245,18 +245,47 @@ face set. :observed[six frames]{games="elden-ring"} The frames hold no place whe
 test is not compared with them.
 
 The level is handed to each mesh of the model as it is drawn; that a mesh then draws its face sets of that LOD level
-(`(flags >> 24) & 7`) is the reading of the face-set flags, not followed in the code. :inferred{games="elden-ring"}
+(`(flags >> 24) & 7`) is the reading of the face-set flags, not followed in the code. :inferred{games="elden-ring"} The frames below show it.
 
 :only[sekiro] Sekiro draws one face set of one level per mesh draw. Over the 5,357 model draws of five frames at the
 Ashina Castle gate, 3,086 draw a level 0 face set, 1,140 level 1 and 1,131 level 2, and none draws a motion-blur face set,
 though 1,380 of the drawn meshes hold one. :observed[five captured frames]{games="sekiro"} What picks Sekiro's level per
 draw was not read.
 
-:::open[Does the drawn face set follow the level the row gives?]
-The level reaches each mesh's draw in Elden Ring; whether every mesh then draws exactly its face sets of that level, and
-what a model whose meshes lack a level draws, is not traced; the rule above is read from the code and not compared with
-frames of the running game. Sekiro's frames show one whole face set of one level per draw, but no Elden Ring frame has
-been tied to its face sets.
+:only[elden-ring] In four frames of the running game at the Stormveil gate (2,734, 1,979, 2,562 and 1,850 indexed draws,
+9,125 in all), every indexed draw binds the index buffer over a model's data block and draws exactly one face set: its start
+index, index count and index width equal those of one face set of one FLVER, found by the keys of the bound ranges against
+every FLVER of the asset, part, character, `m60` and `m10` map binders. :observed[four captured frames, every indexed draw]{games="elden-ring"}
+Of the 9,125, 8,446 draw a level 0 face set, 247 level 1, 420 level 2 and 12 level 3; none draws a motion-blur face set or a
+level 4 or 5 one. :observed[four captured frames]{games="elden-ring"}
+
+Whether the level drawn is the one the row gives was tested on the 494 main-view G-buffer draws of assets that place one
+instance, with the instance's world matrix and the camera read from the draw's constants and the distance taken from the eye
+to the FLVER header's box posed by the instance matrix. With the border `B` and play `P` of the asset's row
+(`AssetEnvironmentGeometryParam` row `ggg × 1000 + mmm`, its `refDrawParamId`) and `s` of 1.0 (rows 0 to 10 of the scale param
+hold 1.0 at all 21 levels), 470 of the draws are of a level the rule allows at that distance (inside a cross-fade band either
+neighbouring level, for a hysteresis row the band `B ± P`). :observed[four captured frames, 494 single-instance draws]{games="elden-ring"}
+Nine more draw level 0 of a model whose face sets are all level 0 where the rule gives level 2: a model with no face set of
+the level draws the coarsest one it has. :observed{games="elden-ring"} Of the 15 that differ, eight are level 0 draws 0.1 to
+0.9 m past the end of a cross-fade band with a fade alpha of 0.05 to 0.46 still on (the header box is not the placed model's
+box), and seven are not explained: six draws of `AEG030_578` at level 1, 72 to 75 m away where its row's borders are 10 and
+40 m, and one of `AEG004_133`. :observed{games="elden-ring"} The distance factor that fits is 1.0: from 0.85 to 1.13 the draws in range
+number 446, 455, 459, 478 (0.98), 470 (1.0), 467, 463, 452 and 443, and 1.13 is what `tan(fovY / 2) / tan(21.5°)` gives for
+the frames' projection (`P11` 2.246, a vertical field of view of 48.3°). :observed{games="elden-ring"} So the view factor is not that
+formula taken from the frame's projection matrix, and what it is is not settled. :observed{games="elden-ring"}
+
+A model in a cross-fade band is drawn at both neighbouring levels: the level 0 and level 1 face sets of one instance are
+separate draws whose instance `ditherFadeAlpha` values add to 1 (0.7585 and 0.2414, 0.0543 and 0.9456, 0.4645 and 0.5354, the
+three instances found in a band, all of rows with `enableCrossFade`); every other draw has alpha 1.
+:observed[four captured frames]{games="elden-ring"} A mesh draws only a face set of the instance's level: of the 1,230 pairs of a
+placed model drawn at one level and one of its meshes, 730 of the 1,188 whose mesh holds a face set of that level are drawn at
+it (the other 458 are not drawn in any pass counted, which hidden or culled parts also explain), and none of the 42 whose mesh
+lacks one is drawn at another level. :observed[four captured frames, placed models with one instance]{games="elden-ring"}
+
+:::open[What sets the view factor of the mesh-level distance, and which instances of a draw does it apply to?]
+The tested draws place one instance, with the model's header box; draws of several instances (a batch shares one level) were
+not tested, and the factor that fits the frames (1.0) differs from the one the field of view of their projection gives (1.13).
+Seven single-instance draws follow no row.
 :::
 
 ### Face counts in the header

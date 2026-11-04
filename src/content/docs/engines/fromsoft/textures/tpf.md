@@ -322,14 +322,38 @@ by hashing the first 64 KiB of their top level against every `aet` texture of bo
   all 38 counted.
 - A slot an asset binds to another group's textures (an `aetNNN` whose number is not the asset's) is the `_l` form in all 20
   unambiguous slots of five asset draws, even in draws whose own textures are full; map pieces' slots all follow the level
-  (164 of 164). What makes the foreign slots low is not established.
+  (164 of 164). Four later frames do not repeat this, below.
 - Right after a load almost everything is `_l` (30,663 low slots against 270 full in the first frame recorded); about 3.5 s
   later each frame holds about 3,500 full and 4,500 low slots, and stays so.
 
 The projection in these draws is reverse Z: clip `z = −5e−6 × z + 0.050067`, `w = z` (near plane 0.05 m), so a depth `D` is
 at `0.050067 / (D + 5e−6)` m. :observed{games="elden-ring"}
 
-:::open[Why are another group's textures always low?]
-An asset that binds textures of another `aet` group draws them in the `_l` form whatever its own level. The code path that
-does this is not traced.
+Four frames at the Stormveil gate (the textures of each bound resource named by the key of its contents against the first
+mip chain of every texture of the 16,769 `aet` packages, and kept where every package that holds those bytes is of one
+group and one form: 461 to 581 of each frame's 1,288 to 1,375 used textures) tell a different story for assets that place one
+instance. For the main-view G-buffer draws of such assets, the form each slot has is compared with the one the instance's
+`tex_lv01` row gives at the instance's distance (the same distance as the mesh level, with a factor of 1.0, outside the band
+`B ± P`; rows with `B` of 0 or 9999 left out): :observed[four captured frames]{games="elden-ring"}
+
+| Slots of the draws | Slots compared | In the form the row gives |
+|---|---:|---:|
+| the asset's own group (`aetNNN` of `AEGNNN_mmm`) | 2,336 | 2,159 (92.4 %) |
+| another group, apart from the three packages below | 540 | 505 (93.5 %) |
+| `aet003_347`, `aet098_004`, `aet099_522` | 235 | 41 (17.4 %) |
+
+So a slot of another group is not always `_l`: it follows the drawing instance's own distance as an own slot does, and the
+same package is `_l` for an instance at 63 m and full for one at 8 m in one frame (`aet210_002`, drawn by `AEG218_050` and
+`AEG219_050`). :observed[four captured frames]{games="elden-ring"} The three packages are shared by assets of many groups and do
+not follow the instance: every foreign slot of `aet003` (209 slots, all `aet003_347`) is full, even at 80 to 100 m, every one of
+`aet098_004` (114) is `_l`, even at 4 m, and `aet099_522` is `_l` for instances 19 to 27 m away and full for those 66 to 90 m
+away. :observed[four captured frames]{games="elden-ring"} Every package of the three has the twin of the other form. :observed[the `aet` packages the path dictionary names]{games="elden-ring"}
+The other groups that appear only as foreign slots (`aet000` to `aet002`, `aet005`, `aet007`, `aet220`, `aet652`, `aet693`,
+`aet821`: 2 to 79 slots each) are full in every slot. :observed[four captured frames]{games="elden-ring"}
+
+:::open[What decides the form of the shared packages that ignore the instance?]
+`aet003_347` is full, `aet098_004` `_l` and `aet099_522` full for far and `_l` for near instances in the frames, where every
+other texture follows the drawing instance. Which object's level they follow, and whether it is the placed assets of their own
+group, is not established; instances that place several models in one draw were not tested, and the earlier reading that
+foreign slots are always `_l` is not reproduced.
 :::

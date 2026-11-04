@@ -12,6 +12,8 @@ sources:
 implementations:
   - name: unity-formats (mesh.rs)
     url: https://github.com/Kalmarv/unity-formats/blob/main/src/mesh.rs
+  - name: unity-formats (mesh_keys example, keys of each stream and index buffer)
+    url: https://github.com/Kalmarv/unity-formats/blob/main/examples/mesh_keys.rs
 ---
 
 A **Mesh** (class 43) holds the vertices of one or more submeshes. Each submesh is a run of indices into the shared
@@ -25,7 +27,8 @@ A mesh has up to 14 channels, always in this order of the `m_Channels` table: `V
 `TexCoord0` to `TexCoord7`, `BlendWeight`, `BlendIndices`. :sourced[Unity scripting reference]
 Each channel names the **stream** it lives in, its **offset** in a vertex of that stream, a **format** and a
 **dimension**. A stream's stride is the sum of its channels' sizes; the streams follow one another in the vertex data, each
-starting on a 16-byte boundary. :observed
+starting on a 16-byte boundary. :observed Every one of SkateBIRD's 7,491 stored meshes, 45 of them with more than one
+stream, ends where its vertex data ends when laid out so. :proven[every stored mesh of the player]{games="skatebird"}
 
 | Format id | Name | Bytes per component | Confidence |
 |---|---|---|---|
@@ -96,6 +99,15 @@ ignores it reads the wrong vertices for any submesh whose base vertex is not 0. 
 | Points | 5 | | :observed |
 
 A submesh without indices draws nothing. A mesh none of whose submeshes has indices has no geometry. :observed
+
+## On the GPU
+
+Unity uploads a mesh one stream to a buffer: each vertex buffer a draw binds holds exactly one stream's bytes (vertex count
+times stride, without the padding before the next stream), and its index buffer holds the mesh's whole `m_IndexBuffer`, every
+submesh's indices as stored. In a title-screen frame of SkateBIRD on Direct3D 11, 183 of the 209 buffers the frame uses hold
+those bytes of a stored mesh: 76 first streams, 11 second and 10 third streams (the 11 meshes of more than one stream in the
+frame, each stream in its own buffer, none bound with the streams together) and 86 index buffers. The rest match no stored
+mesh. :observed{games="skatebird"}
 
 ## Non-finite values
 

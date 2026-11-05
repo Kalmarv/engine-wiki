@@ -376,6 +376,31 @@ speed -3) move back and the newest, still carried forward by the emitter, moves 
 :inferred[from the one particle whose axis is reversed]{games="elden-ring"}
 In which order the three rotations apply is not shown by these frames: the rotation about Y is 0 in both nodes.
 
+### How a model particle's colour is drawn
+
+A Model (605) particle whose model's material is `S[A]_add_GXFlver` (program `GXFlver_Col`) adds the texture's colour times
+the particle's colour (`mulCol`) times the draw's `FC_DynamicDiffuseColor`, and its opacity is the texture's alpha times the
+particle's alpha times the alpha of the model's vertex colour indexed 1 (`COLOR1.w`); the vertex colour's RGB is not read.
+:observed[a pixel trace of one draw of model 83050 in a captured frame of effect 523022]{games="elden-ring"}
+`FC_DynamicDiffuseColor` is (20, 20, 20) in those draws: the material binary's `g_DiffuseColor` (1, 1, 1) times its
+`g_DiffuseColorPower` (20). :observed[the constants of the frame's model draws and the material binary]{games="elden-ring"}
+Model 83050 stores that colour as (1, 0, 1, a), its alpha 0 at 10 of its 64 vertices and 0.41 to 1 at the rest, so the model
+fades out at its edges. :observed[the draw's vertex buffer]{games="elden-ring"}
+
+The particle's colour in those draws is the action's colour and `rgbMultiplier` times the same frame-wide factor K the frame's
+unlit billboards carry in `g_vColorScale` (see [the effect draws](/engines/fromsoft/shaders/effects/)): the ratio
+of `mulCol` to the colour the action's curves give at each particle's age is the same in all the frame's model draws, and
+its alpha equals the action's. :inferred[the curves evaluated by a reading of the action, not by the game]{games="elden-ring"}
+Against the effect's billboards a model of this material is therefore 20 times as bright as its colour alone would make it.
+
+A RichModel (10015) particle of the same effect, model 84016 with the material `S[ShiningStone]` (program `S[AMSN]_Glow`),
+is drawn with blending off, its back faces culled and depth written, and lit: its pixel program reads the environment's
+image-based light and the irradiance volumes. Its textures are the material binary's samplers' (albedo `s34050_a`,
+metallic `s00003_m`, normal `s00005_n`, emissive `s00007_em`); the model's own texture paths are empty.
+:observed[the draw's state and a pixel trace in two captured frames]{games="elden-ring"}
+The material binary's `g_BlendMode` is 0. That the RichModel's blend is the material's, the action naming none, fits this
+draw; no other RichModel has been captured. :inferred{games="elden-ring"}
+
 ## Property curves
 
 The functions of a keyframed property and how their keyframes are stored are on the [FXR page](/engines/fromsoft/effects/fxr/#properties).
@@ -505,6 +530,11 @@ index is which, and what sets it, is not read.
 A model particle turned along its travel follows the particle's movement in the world in the one capture measured, but only
 one particle distinguishes that from the emitter's heading. A capture of a model particle that turns, or one left behind by
 an emitter that stops, would settle it, and would show the order of the rotations.
+:::
+
+:::open[Does a RichModel always draw as its material states?]
+The one RichModel captured draws opaque and lit, as its material binary's blend mode 0 and program have it. A capture of a
+RichModel whose material blends would show whether the action's words ever choose the blend.
 :::
 
 :::open[Why does one game hold a random delta and the other a random range?]

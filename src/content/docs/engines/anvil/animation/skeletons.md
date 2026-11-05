@@ -1,7 +1,7 @@
 ---
 title: "Skeletons and bone identity"
 description: "Bone trees, name hashes, stored poses and root transforms."
-games: ["riders-republic"]
+games: ["riders-republic", "shaun-white-skateboarding"]
 sources:
   - title: RRAssetStudio v3
     url: https://www.nexusmods.com/ridersrepublic/mods/5
@@ -9,6 +9,8 @@ sources:
 implementations:
   - name: "anvil-formats (skeleton.rs)"
     url: https://github.com/Kalmarv/anvil-formats/blob/main/src/skeleton.rs
+  - name: "anvil-formats (shaunwhite/skeleton.rs)"
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/shaunwhite/skeleton.rs
 ---
 
 Skeleton (`0x24AECB7C`) stores a bone hierarchy and local/global transforms. All 1,138 Skeleton resources present in the six-archive inventory consume exactly with the checked grammar, with no refusals; their 54,925 bones are keyed by CRC-32 name hashes, matching [Animation mappings](/engines/anvil/animation/clips/). :proven[grammar coverage] :observed[name mapping]
@@ -42,3 +44,52 @@ Stored bones and bind transforms do not establish IK, Reflex constraint executio
 :::
 
 The full inventory has 1,138 Skeleton entries, all in the four DataPC/USNAT base and patch archives; both WhiteRoom archives contain none. The exact-end check therefore covers every installed Skeleton despite not opening WhiteRoom patch. :proven
+
+## Shaun White Skateboarding
+
+:only[shaun-white-skateboarding]
+
+Shaun White Skateboarding's Skeleton keeps the bone tree and the four bind transforms of each bone with 32-bit ids, and adds orientation constraints, pose groups, IK and centre-of-mass data and mirror pairs; it has no own transform, BodyPartMapping, LookAt or Reflex fields. Every Skeleton of the 33 data forges reads with the layout below to its exact end: 521 Skeletons holding 17,405 bones. :proven{games="shaun-white-skateboarding"}[every Skeleton of the install]
+
+```layout
+title: "Skeleton body"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian. n is the bone count. All 521 Skeletons of the install."
+fields:
+  - {"at": 0, "size": 1, "type": "u8", "name": "managed", "value": "1", "level": "proven"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "proven"}
+  - {"at": 5, "size": 4, "type": "u32", "name": "class", "value": "0x24AECB7C", "level": "proven"}
+  - {"at": 9, "size": 4, "type": "u32", "name": "unknown", "level": "unknown", "note": "0 or 2"}
+  - {"at": 13, "size": 4, "type": "u32", "name": "bone count n", "level": "proven"}
+  - {"at": 17, "size": "variable", "type": "bones", "name": "bones", "level": "proven", "note": "n Bone records (below), each parent before its children"}
+  - {"at": "variable", "size": 5, "type": "reference", "name": "root", "level": "proven", "note": "tag 2 and the first bone's id"}
+  - {"at": "variable", "size": 4, "type": "u32", "name": "unknown", "level": "unknown"}
+  - {"at": "variable", "size": "variable", "type": "objects", "name": "pose groups", "level": "proven", "note": "u32 count; each id, class 0xC8F8ABFF, u32 count of poses; a pose is id, class 0x209CF072, u32, u32 count of pose bones; a pose bone is id, class 0x071CEE50, bone name CRC, position f32 × 4, rotation f32 × 4"}
+  - {"at": "variable", "size": "variable", "type": "pointer", "name": "IK data", "level": "proven", "note": "tag 3 none, or 0, id, class 0x9A33101E and a u32 count of bone name CRCs"}
+  - {"at": "variable", "size": "variable", "type": "pointer", "name": "centre-of-mass data", "level": "proven", "note": "tag 3 none, or 0, id, class 0x9A67179A and two f32 × 4"}
+  - {"at": "variable", "size": 4, "type": "u32", "name": "unknown", "level": "unknown"}
+  - {"at": "variable", "size": "variable", "type": "object", "name": "mirror data", "level": "proven", "note": "id, class 0xE96B19A5, u32 count of pairs; a pair is id, class 0xE03CA1FD, two bone name CRCs and two bytes; the body ends here"}
+```
+
+```layout
+title: "Bone record"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian. All 17,405 bones of the install."
+fields:
+  - {"at": 0, "size": 1, "type": "u8", "name": "pointer tag", "value": "0", "level": "proven"}
+  - {"at": 1, "size": 1, "type": "u8", "name": "managed", "value": "1", "level": "proven"}
+  - {"at": 2, "size": 4, "type": "u32", "name": "id", "level": "proven"}
+  - {"at": 6, "size": 4, "type": "u32", "name": "class", "value": "0x95741049", "level": "proven", "note": "Bone"}
+  - {"at": 10, "size": 4, "type": "u32", "name": "name", "level": "observed", "note": "CRC-32 of the bone's name, the key Animation mappings use"}
+  - {"at": 14, "size": "1 or 5", "type": "reference", "name": "parent", "level": "proven", "note": "tag 3 none (the root), or 2 and the id of a bone read before"}
+  - {"at": "variable", "size": 73, "type": "object", "name": "BoneInitialTransforms", "level": "proven", "note": "tag 0, id, class 0x6350E5A6, then global position, global rotation, local position, local rotation, f32 × 4 each"}
+  - {"at": "variable", "size": "variable", "type": "objects", "name": "orientation constraints", "level": "proven", "note": "u32 count; each tag 0, id, class 0x75116750, bone reference (itself), u8, u32 count of targets (tag 0, id, class 0xDF638110, bone reference, f32), u8 and a quaternion"}
+  - {"at": "variable", "size": 1, "type": "u8", "name": "index", "level": "proven", "note": "the bone's position in the list"}
+  - {"at": "variable", "size": 1, "type": "u8", "name": "bones below", "level": "proven", "note": "its descendant count"}
+```
+
+A position is x, y, z and 0, a rotation a unit quaternion x, y, z, w. On every one of the 16,884 bones that have a parent, the global transform is the parent's global composed with the bone's local transform (rotation `q_parent · q_local`, position `p_parent + q_parent · p_local`) to within 1e-3; a root's global equals its local. :proven{games="shaun-white-skateboarding"}[every bone of the install]
+
+A skinned mesh's MeshBone matrices hold the inverse of the bind: their rotation equals the inverse of the bone's global bind rotation on 7,126 of 8,403 checked mesh bones, while their translations match on only 240, the others differing by a per-mesh scale mostly between 1.02 and 1.10. Which bind the renderer skins with is not established. :observed{games="shaun-white-skateboarding"}[the meshes and skeletons loaded up to the second level] :unknown[the bind the renderer uses]

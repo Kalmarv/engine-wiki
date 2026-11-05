@@ -359,6 +359,23 @@ project names, and no such parameter is animated (each is a constant, or the zer
 
 :proven
 
+### A model turned along its travel
+
+With orientation 2 (ParticleDirection), the game draws a Model (605) particle with its model's Y axis on the line the
+particle travels, and a RichModel (10015) particle with its Z axis on it; the action's rotation about Z turns the model
+about that line. :observed[two frames drawing effect 523022: 26 Model draws and 2 RichModel draws]{games="elden-ring"}
+In the captured frames the effect flies along the game's -Z. Node 11 (Model, model 83050, rotation about X 180 degrees,
+random rotation about Z, speed -3 along the flight, partly following the emitter) is drawn with the model's +Y axis
+pointing forward along the flight in 25 draws and back in the newest particle of one frame, its X and Z axes at random
+angles across the flight. Node 8 (RichModel, model 84016, moving forward with the emitter, random rotation about Z) is
+drawn with its +Z axis pointing forward along the flight and its X and Y axes at random angles across it.
+
+Which way the axis points fits a model whose +Y (Model) or +Z (RichModel) is first turned onto the particle's movement in
+the world, then by the action's rotation: the 180 degrees about X reverse the Model's axis, the older Model particles (at
+speed -3) move back and the newest, still carried forward by the emitter, moves forward.
+:inferred[from the one particle whose axis is reversed]{games="elden-ring"}
+In which order the three rotations apply is not shown by these frames: the rotation about Y is 0 in both nodes.
+
 ## Property curves
 
 The functions of a keyframed property and how their keyframes are stored are on the [FXR page](/engines/fromsoft/effects/fxr/#properties).
@@ -482,6 +499,12 @@ default, zero or something else is not established.
 :::open[What are the external values?]
 The external-value modifiers (3,577 in Elden Ring) and the operands of the state conditions name external values by index; which
 index is which, and what sets it, is not read.
+:::
+
+:::open[What is a model particle's direction of travel?]
+A model particle turned along its travel follows the particle's movement in the world in the one capture measured, but only
+one particle distinguishes that from the emitter's heading. A capture of a model particle that turns, or one left behind by
+an emitter that stops, would settle it, and would show the order of the rotations.
 :::
 
 :::open[Why does one game hold a random delta and the other a random range?]

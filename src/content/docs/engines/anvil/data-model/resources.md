@@ -102,7 +102,9 @@ fields:
 
 The first object of a cell is its `GridCellDataBlock`, and its id is the entry's index id. :observed
 
-`Animation` (`0x0FA3067F`) and `NavMeshManager` (`0x0B4CE0E0`) are block-allocator classes: they have no NUL after the name, their body begins with the words `0x201` and `k`, and a table of `8 + 12·k` bytes follows the declared body. :observed
+`Animation` (`0x0FA3067F`) and `NavMeshManager` (`0x0B4CE0E0`) are block-allocator classes: the byte after the name is 1 instead of the NUL, and the bytes after it begin `02 00 00` and a u32 row count `k` (read with the 1 as one word, `0x201`, then `k`). :observed
+
+On an Animation the table comes first: the `02 00 00`, the u32 `k` and `k` rows of 12 bytes, then the managed object. The declared body size counts from the byte after the 1 but omits the table, so the object runs exactly `7 + 12·k` bytes past the declared body, to the end of its directory size. This holds on all 80,466 Animation objects of the install; the [Animation layout](/engines/anvil/animation/clips/) reads from the table's first byte. :proven{games="shaun-white-skateboarding"}[every Animation of the install] The same arrangement on NavMeshManager is not checked. :unknown
 
 The body of a class derived from `ManagedObject` begins `[managed u8][id u32][class u32]` and then the fields. The id equals the directory id and the class equals the header class on every top-level object; the managed byte is 0 or 1 (1 on 5,581 and 0 on 1,562 decoded components). Classes that are not managed objects start `[id][class]`. :observed[level 01]
 

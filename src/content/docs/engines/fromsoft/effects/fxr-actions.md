@@ -384,8 +384,8 @@ particle's alpha times the alpha of the model's vertex colour indexed 1 (`COLOR1
 :observed[a pixel trace of one draw of model 83050 in a captured frame of effect 523022]{games="elden-ring"}
 `FC_DynamicDiffuseColor` is (20, 20, 20) in those draws: the material binary's `g_DiffuseColor` (1, 1, 1) times its
 `g_DiffuseColorPower` (20). :observed[the constants of the frame's model draws and the material binary]{games="elden-ring"}
-Model 83050 stores that colour as (1, 0, 1, a), its alpha 0 at 10 of its 64 vertices and 0.41 to 1 at the rest, so the model
-fades out at its edges. :observed[the draw's vertex buffer]{games="elden-ring"}
+Model 83050 stores that colour as (1, 0, 1, a), its alpha 0 at 35 of the 175 vertices the draw reads and 0.016 to 1 at the
+rest, so the model fades out at its edges. :observed[the draw's vertex buffer, each vertex once]{games="elden-ring"}
 
 The particle's colour in those draws is the action's colour and `rgbMultiplier` times the same frame-wide factor K the frame's
 unlit billboards carry in `g_vColorScale` (see [the effect draws](/engines/fromsoft/shaders/effects/)): the ratio

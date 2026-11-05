@@ -44,15 +44,18 @@ Three of its four stored maps fit four bytes per pixel, but the codec is not est
 
 :only[shaun-white-skateboarding]
 
-Shaun White Skateboarding's `TextureMap` format codes are a smaller set than the later engine's. Over the 6,461 textures of level 01 and the extra forge: :observed
+Shaun White Skateboarding's `TextureMap` format codes are a smaller set than the later engine's. The table gives, for each code, how its levels are stored (every TextureMap of the 33 data forges fills its pixels exactly so), how many TextureMaps of the install use it, and the Direct3D 9 format the game's own renderer creates its textures with. The created formats are those of every texture of the code the game loaded from a new game to the start of the level-02 load, each level of which it uploaded byte for byte from the stored level.
 
-| Code | Codec | Textures | Evidence |
-|---:|---|---:|---|
-| 2 | BC1 | 3,675 | Stored sizes and an independent block decoder agree |
-| 3 | BC1 | 31 | As code 2 |
-| 4 | BC2 | 250 | As code 2 |
-| 5 | BC3 | 2,461 | As code 2 |
-| 12 | BC3-sized storage of a normal map | 44 | Stored sizes; neutral blocks decode to green and alpha 128 and red and blue 255 and 0 |
+| Code | Storage | TextureMaps | Created as | Confidence |
+|---:|---|---:|---|---|
+| 0 | 4 bytes per texel | 10 | not loaded on the traced route | storage :proven, codec :unknown |
+| 2 | 8-byte blocks | 21,402 | `D3DFMT_DXT1` (436 textures, 4,219 levels; 154 linear and 282 sRGB) | storage :proven, format :observed |
+| 3 | 8-byte blocks | 401 | `D3DFMT_DXT1` (4 textures, 20 levels) | storage :proven, format :observed |
+| 4 | 16-byte blocks | 2,126 | `D3DFMT_DXT3` (32 textures, 325 levels) | storage :proven, format :observed |
+| 5 | 16-byte blocks | 14,931 | `D3DFMT_DXT5` (555 textures, 1,372 levels) | storage :proven, format :observed |
+| 12 | 16-byte blocks | 1,981 | `D3DFMT_DXT5` (10 textures, 88 levels): a BC3 normal map | storage :proven, format :observed |
+
+The gamma field does not change the created format: sRGB and linear textures of the same code are created alike, so the conversion is not part of the texture's format. :observed The stored sizes and an independent block decoder agree on codes 2 to 5 and 12 over level 01 and the extra forge. :observed[level 01 and the extra forge]
 
 Code 12 is not the one-byte format that the same code means in Riders Republic. Reading it as a four-float format would not fit the stored sizes. :observed
 

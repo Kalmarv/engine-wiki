@@ -10,6 +10,8 @@ implementations:
     url: https://github.com/Kalmarv/anvil-formats/blob/main/src/texture.rs
   - name: anvil-formats Anvil mip reader
     url: https://github.com/Kalmarv/anvil-formats/blob/main/src/mip.rs
+  - name: anvil-formats Shaun White Skateboarding texture reader
+    url: https://github.com/Kalmarv/anvil-formats/blob/main/src/shaunwhite/texture.rs
 ---
 
 A **TextureMap** describes an image and its mip chain. Larger levels can live in separate **CompiledMip** resources, while smaller levels remain in the parent body. :observed{games="riders-republic"}
@@ -19,41 +21,47 @@ Breakpoint also uses TextureMaps and TextureSets, supports separately stored hig
 
 :only[shaun-white-skateboarding]
 
-A Shaun White Skateboarding texture is one `TextureMap` object that holds its whole mip chain inline: there are no separate high-resolution mip resources. A `CompiledTextureMap` is embedded in the same body. Width, height, depth, format, dimension, gamma, mip count and the address and filter modes are stored twice, once outside and once inside the compiled part, and the two copies agree. :observed{games="shaun-white-skateboarding"}[level 01 and the extra forge]
+A Shaun White Skateboarding texture is one `TextureMap` object that holds its whole mip chain inline: there are no separate high-resolution mip resources. A `CompiledTextureMap` is embedded in the same body. Width, height, depth, format, dimension, gamma, mip count and the address and filter modes are stored twice, once before the pixels and once after them, and the two copies agree. A strict reading of every one of the 40,851 TextureMaps of the 33 data forges of the PC build reads the body below to its exact end, with the two copies equal on every texture. :proven{games="shaun-white-skateboarding"}[every TextureMap of the install]
 
 ```layout
 title: "TextureMap body (Shaun White Skateboarding)"
-size: "var"
+size: "93 + P + 56"
 games: [shaun-white-skateboarding]
-note: "Little-endian. Body offsets, with the managed byte at 0. No trailing byte follows the compiled part."
+note: "Little-endian. Body offsets, with the managed byte at 0. The body ends with the compiled copy on all 40,851 TextureMaps of the install."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "managed", "value": "1", "level": "observed"}
-  - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "observed"}
+  - {"at": 0, "size": 1, "type": "u8", "name": "managed", "value": "1", "level": "proven", "note": "1 on every TextureMap"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "proven", "note": "the object's id in its entry's directory"}
   - {"at": 5, "size": 4, "type": "u32", "name": "class", "value": "0xA2B7E917", "level": "proven", "note": "CRC-32 of TextureMap"}
-  - {"at": 9, "size": 4, "type": "u32", "name": "width", "level": "observed"}
-  - {"at": 13, "size": 4, "type": "u32", "name": "height", "level": "observed"}
-  - {"at": 17, "size": 4, "type": "u32", "name": "depth", "level": "observed"}
-  - {"at": 21, "size": 4, "type": "u32", "name": "pixel format", "level": "observed", "note": "see the format table"}
-  - {"at": 25, "size": 4, "type": "u32", "name": "dimension", "level": "observed", "note": "1 flat, 2 cube"}
-  - {"at": 29, "size": 4, "type": "u32", "name": "gamma", "level": "observed", "note": "0 linear, 1 sRGB"}
-  - {"at": 33, "size": 4, "type": "u32", "name": "mip count", "level": "observed", "note": "0 means one level"}
+  - {"at": 9, "size": 4, "type": "u32", "name": "width", "level": "proven", "note": "level 0's width; the game creates its texture with it"}
+  - {"at": 13, "size": 4, "type": "u32", "name": "height", "level": "proven", "note": "level 0's height"}
+  - {"at": 17, "size": 4, "type": "u32", "name": "depth", "value": "1", "level": "observed", "note": "1 on every TextureMap; no volume texture is stored"}
+  - {"at": 21, "size": 4, "type": "u32", "name": "pixel format", "level": "proven", "note": "codes 0, 2, 3, 4, 5 and 12 occur; see the format codes page"}
+  - {"at": 25, "size": 4, "type": "u32", "name": "dimension", "level": "proven", "note": "1 flat, 2 cube (created as a cube texture); only these occur"}
+  - {"at": 29, "size": 4, "type": "u32", "name": "gamma", "level": "observed", "note": "0 linear, 1 sRGB; both are created with the same Direct3D format"}
+  - {"at": 33, "size": 4, "type": "u32", "name": "mip count", "level": "proven", "note": "levels per face; 0 means one level"}
   - {"at": 37, "size": 12, "type": "u32[3]", "name": "address U, V, W", "level": "observed"}
   - {"at": 49, "size": 12, "type": "u32[3]", "name": "magnification, minification and mip filters", "level": "observed"}
   - {"at": 61, "size": 4, "type": "u32", "name": "map type", "level": "observed"}
   - {"at": 65, "size": 4, "type": "u32", "name": "category", "level": "observed"}
   - {"at": 69, "size": 3, "type": "u8[3]", "name": "flags", "level": "unknown", "note": "the first byte takes the values 0, 1, 2, 4 and 5"}
   - {"at": 72, "size": 4, "type": "u32", "name": "user category", "level": "observed"}
-  - {"at": 76, "size": 1, "type": "u8", "name": "compiled pointer", "value": "0", "level": "observed", "note": "inline object follows"}
-  - {"at": 77, "size": 4, "type": "u32", "name": "compiled id", "level": "observed"}
+  - {"at": 76, "size": 1, "type": "u8", "name": "compiled pointer", "value": "0", "level": "proven", "note": "0 on every TextureMap: the compiled object follows inline"}
+  - {"at": 77, "size": 4, "type": "u32", "name": "compiled id", "level": "proven", "note": "the inline CompiledTextureMap's id"}
   - {"at": 81, "size": 4, "type": "u32", "name": "compiled class", "value": "0x13237FE9", "level": "proven", "note": "CRC-32 of CompiledTextureMap"}
-  - {"at": 85, "size": 4, "type": "u32", "name": "pixel byte length P", "level": "observed"}
-  - {"at": 89, "size": "P", "type": "bytes", "name": "pixels", "level": "observed", "note": "levels largest first; cube maps hold six complete mip chains face by face"}
-  - {"at": "89+P", "size": 60, "type": "u32[15]", "name": "compiled copy", "level": "observed", "note": "platform 2, SDK 32, width, height, depth, mips, format, dimension, gamma, address U V W, three filters"}
+  - {"at": 85, "size": 4, "type": "u32", "name": "pixel byte length P", "level": "proven"}
+  - {"at": 89, "size": "P", "type": "bytes", "name": "pixels", "level": "proven", "note": "levels largest first; a cube map holds six complete chains face by face, in Direct3D's +X, -X, +Y, -Y, +Z, -Z order"}
+  - {"at": "89+P", "size": 4, "type": "u32", "name": "platform", "value": "2", "level": "proven", "note": "2 on every TextureMap"}
+  - {"at": "93+P", "size": 4, "type": "u32", "name": "SDK version", "value": "32", "level": "proven", "note": "32 on every TextureMap"}
+  - {"at": "97+P", "size": 52, "type": "u32[13]", "name": "compiled copy", "level": "proven", "note": "width, height, depth, mip count, format, dimension, gamma, address U V W and the three filters again, equal to the fields above on every TextureMap"}
 ```
+
+Each level is its format's size for its dimensions (blocks round each axis up to four texels), and the levels of every TextureMap of the install fill its pixels exactly, with no byte before, between or after them. :proven{games="shaun-white-skateboarding"}[every TextureMap of the install]
+
+The game uploads each level's stored bytes unchanged. On the game's own loader and renderer run from a new game to the start of the level-02 load, each of the 6,024 levels of the 1,037 TextureMaps it created a texture from was copied into the texture's locked level byte for byte, at the same face and mip, with the width and height above; no texture is converted, swizzled or re-encoded on the way. :observed{games="shaun-white-skateboarding"}[every texture the game loaded on that route]
 
 The texture reached from a material is a `TextureMapSpec` object whose last `u32` is the `TextureMap` id. :observed
 
-The level cells of level 01 hold 6,413 TextureMaps and the 48 standalone texture-spec entries of the extra forge hold 48, with 2,434 unique TextureMap ids. They include 55 cube maps (2,484 unique faces), and their 13,019 decoded mip levels decode to the same pixels as an independent block decoder. :observed[level 01 and the extra forge]
+The 40,851 TextureMaps of the install comprise 21,402 of code 2, 401 of code 3, 2,126 of code 4, 14,931 of code 5, 1,981 of code 12 and 10 of code 0; 330 of them are cube maps (100 of code 2, 99 of code 4, 131 of code 5). :proven{games="shaun-white-skateboarding"}[every TextureMap of the install] The 13,019 mip levels of level 01 and the extra forge decode to the same pixels as an independent block decoder. :observed[level 01 and the extra forge]
 
 Graphical interface textures keep their rows upside down. The loading screens of the extra forge are 1280 by 720 block-compressed images stored this way. :observed
 

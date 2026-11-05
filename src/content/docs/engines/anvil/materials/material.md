@@ -124,6 +124,8 @@ The stored selector and defaults are established. The complete runtime precedenc
 
 Every drawn surface of Shaun White Skateboarding uses the material class `SKGenericMaterial` (`0xB71F6261`). It holds its texture references and colour controls inline in one fixed-size body: 647 bytes in each of the 3,843 material objects of level 01. Textures are reached through `TextureMapSpec` objects, whose last `u32` (offset 28 of its 32-byte body) is the id of a `TextureMap` in the same cell. :observed{games="shaun-white-skateboarding"}[level 01]
 
+The size is not the same everywhere: of the 3,024 material objects the game loads from start-up into level 02, 3,023 have the 647-byte body and one has a body of 663 bytes, in an object of 697 bytes. :observed{games="shaun-white-skateboarding"}[the objects of one run into level 02] What the 16 further bytes hold is not established. :unknown{games="shaun-white-skateboarding"}
+
 A material class has no shader-template id and no template descriptor: which program draws a surface follows from the combination of stored slots and switches, resolved by the [SDB2 shader bundles](/engines/anvil/shaders/sdb2/) the game ships. :observed
 
 ```layout

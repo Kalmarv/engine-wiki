@@ -4,7 +4,9 @@ description: "How Shaun White Skateboarding stores its text: the LocalizationPac
 games: ["shaun-white-skateboarding"]
 ---
 
-The game's text is in `LocalizationPackage` objects (`0x6E3C9C6F`, the CRC-32 of the class name). The English package is entry 10 of `DataPC.forge` in the base install and entry 26 holds the manual text; the Russian-language copy of the data examined carries its own language's package instead. :observed{games="shaun-white-skateboarding"}
+The game's text is in `LocalizationPackage` objects (`0x6E3C9C6F`, the CRC-32 of the class name). The English package is entry 10 of `DataPC.forge` in the base install and entry 26 holds the manual text; the Russian-language copy of the data examined carries its own language's packages instead. :observed{games="shaun-white-skateboarding"}
+
+In the Russian copy (the patched copy on the game's page) the text is in three packages named for the language: the name records of `DataPC.forge` hold `LocalizationPackage_Russian`, `LocalizationPackage_Russian_Subtitles` and `LocalizationPackage_Russian_eManual`, and no forge of that copy holds another language's text. The text a copy can show is therefore the language its data was released in. Spoken audio is not limited the same way: that copy also carries the streamed-sound forges of six languages (see the [game's files](/games/shaun-white-skateboarding/#the-patched-build)). :observed[the patched copy, which is Russian]
 
 The package follows the layout of the Assassin's Creed II generation. Unlike the rest of the game's data its indexed text block is big-endian, starting at body offset 73. :observed
 

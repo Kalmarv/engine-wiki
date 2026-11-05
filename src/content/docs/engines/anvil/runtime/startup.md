@@ -185,6 +185,36 @@ the load settles, the game holds about 190.5 MB of resource bytes in 9,286 Direc
 - 538 vertex shaders, 3,273 pixel shaders and 2,048 occlusion queries.
 
 On the title screen it is about 67 MB. :observed[a native run of the port through New Game, counting live resources]
+
+On the same way in, from start-up through New Game into level 02, the game reads 334 forge entries. Decompressed, they
+hold 50,949 top-level objects of 244 classes, 852,251,348 bytes in all. Animation and sound make up 40% of those bytes,
+textures almost half:
+
+| Class | Objects | Bytes | Share of the bytes | Confidence |
+|---|---:|---:|---:|---|
+| `TextureMap` | 4,936 | 404,211,895 | 47.4% | :observed |
+| `Animation` | 14,363 | 240,262,349 | 28.2% | :observed |
+| `SoundBao` | 8,670 | 105,803,074 | 12.4% | :observed |
+| `Mesh` | 1,736 | 74,877,845 | 8.8% | :observed |
+| `Entity` | 3,050 | 8,196,349 | 1.0% | :observed |
+| `SKGenericMaterial` | 3,024 | 2,080,652 | 0.2% | :observed |
+| `MeshShape` | 566 | 1,816,638 | 0.2% | :observed |
+| 237 other classes | | 15,002,546 | 1.8% | :observed |
+
+The counts come from mapping the game's file reads in one such run onto the entries of the forges, decompressing each entry
+it read and counting the objects in it by class. :observed[one run into level 02] The largest of the other classes are
+`FireData` (47 objects, 2.07 MB), `WorldLightingData` (2, 2.06 MB), `ActionBlock` (426, 1.91 MB) and `NavMeshManager` (68,
+1.02 MB); `AnimSet` has 1,854 objects in 0.48 MB and `Skeleton` 106 in 0.39 MB. :observed[one run into level 02] Of the
+`SoundBao` bytes, 85 MB are in `DataPC_02.forge`. :observed[one run into level 02]
+
+In the world frames that follow, most draws go to two targets. A 1280 × 720 `A8R8G8B8` target, drawn with a second colour
+target bound beside it and a depth surface of its own, takes 54 to 127 draws a frame; a 2048 × 1024 `R32F` target takes 34
+to 44. The few remaining draws go to targets of 512 × 256, 1130 × 360 and 320 × 180 (`A8R8G8B8`) and to one 1280 × 720 `R32F`
+target. :observed[seven world frames of level 02 in one run, by the render target bound at each draw] What the 2048 × 1024
+target holds is not established; one float channel at that size fits a shadow map. :inferred
+
+The game sets the 2048 × 1024 `R32F` target as render target 0 while the 1280 × 720 `D24S8` depth-stencil surface is still
+set, so for a time the depth surface is smaller than the colour target it is bound with. :observed[the first world frames after New Game, in one run]
 The texture loader does not check `CreateTexture`'s result. The call at `0xC9E205` that receives `D3DERR_OUTOFVIDEOMEMORY`
 goes on with a NULL texture, and the game faults reading address 0 at `0xCA1440`. :observed[the port with a 192 MiB
 resource budget]

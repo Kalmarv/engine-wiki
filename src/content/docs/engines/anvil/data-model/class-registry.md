@@ -17,7 +17,7 @@ implementations:
     url: https://github.com/Kalmarv/primase/blob/main/worlds/anvil/src/components/component_types.rs
 ---
 
-The inspected runtime image contains class-registration strings and field metadata absent from the packed executable's disk image. A registration string whose CRC-32 matches the id corroborates a class name; an arbitrary matching word does not. :observed
+The inspected runtime image contains class-registration strings and field metadata absent from the packed executable's disk image. A registration string whose CRC-32 matches the id corroborates a class name; an arbitrary matching word does not. :observed{games="riders-republic"}
 
 The registration table is built while the game starts. A guest-memory snapshot taken at the main menu holds the plaintext class names, and their CRC-32 values name 604 of the 607 forge type ids that no tool or dictionary had named; a snapshot about 50 seconds after process start, at the splash screen, holds none of them. :observed
 
@@ -118,7 +118,9 @@ The names below were checked by computing the CRC-32 of each name and comparing 
 | `VertexLightData` | `0x37542FA0` | Per-instance baked vertex colours | :proven |
 | `CompositeLightingStaticComponent` | `0x95DC9CD6` | Baked spherical-harmonic lighting | :proven |
 
-The name of the class `0x3C6C77C8` (the box that begins every component), the surface-object classes other than `SWCollisionMaterial`, `0x9C878790` and `0x4497D578` are not known. :unknown
+The executable is not packed (its `.text` section is stored whole on disk), and its disk image carries the class names as plain strings. Of the 244 classes of the objects the game loads from start-up into level 02 (see [start-up](/engines/anvil/runtime/startup/)), 242 have an id equal to the CRC-32 of a string of three or more characters in the executable; `0xE4365B9B` and `0x824A23BA` match none. :observed[the strings of the recorded executable against the classes of one run into level 02]
+
+The executable's strings also include field and property names, so a string match names a class less surely than the class's registration does. By such matches `0x3C6C77C8` (the box that begins every component) is `ActiveSlots`, `0x9C878790` is `TransformationShape` and `0x4497D578` is `MeshShapeScalable`. :inferred[one matching string each] The surface-object classes other than `SWCollisionMaterial` are not known. :unknown
 
 The material class name is present in the game executable; the CRC-32 of the name does not match the property hashes the material's fields use, which are separate hashes of qualified names such as the `InfluenceHidePixelMode` property (`0x7DACF81C`). :observed
 The role of each class is read from the contents of its objects in the cells. :observed

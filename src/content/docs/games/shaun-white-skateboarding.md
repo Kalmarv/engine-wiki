@@ -30,7 +30,7 @@ Beside the executable are also the shader bundles `ekshadersPChigh.bin`, `ekshad
 
 A patched copy of the game (executable dated 2011-08-23, forges dated 2010-10-27) differs from the recorded build in its
 data. :observed It holds 40 forges: the same 33 `DataPC*` data forges plus seven `DataPC_StreamedSounds*.forge`.
-:observed[one patched copy]
+:observed[one patched copy] The sound forges are `DataPC_StreamedSounds.forge`, with no language in its name, and one for each of six languages: `Eng`, `Fre`, `Ger`, `Ita`, `Rus` and `Spa` (`DataPC_StreamedSoundsEng.forge` and so on). :observed[one patched copy] Its text is Russian only: its `DataPC.forge` holds the Russian [text packages](/engines/anvil/gameplay/localization/) and no other language's. :observed[one patched copy]
 
 | | Recorded build | Patched build | Confidence |
 |---|---|---|---|

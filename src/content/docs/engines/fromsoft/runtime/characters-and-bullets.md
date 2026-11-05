@@ -80,10 +80,18 @@ effect's tracers, which keep a point every 1/120 s.
   1.195 s, too late for the samples seen inside the 1.25 s life. So the zeroed fields, among them the four 1.0
   floats at `+0x30`, change the flight. :inferred
 
-:::open[Does a constructed request start at initVellocity?]
-The constructed shard's frames were captured too late in its flight to show its first 0.27 s. A start at 13 m/s
-(initVellocity) and one at 6 m/s with no hold both fit what was seen. Settling it needs a frame of known age after
-the launch, with the launch point known in that frame.
+- **The constructed request holds initVellocity for accelTime, then accelerates to maxVellocity.** In the frame whose
+  tracers reached 25 m/s, the caster's root (the first object matrix of its skinned draws) stands on the bullet's line
+  of flight at z 0.209, 1.5 m below it. :observed[one captured frame] Fitting the tracers' points with 13 m/s for
+  0.32 s, then 40 m/s² up to 25 m/s, puts the launch at z 0.21, the caster's own z. A start at 6 m/s with no hold puts
+  it at z 0.79. :inferred The bullet's widest tracer reaches back to its first speeds: steps of 12.7, 14.3, 15.4 and
+  16.6 m/s, each 1.33 m/s faster than the one before, which is 40 m/s² over 1/30 s. :observed[the same frame]
+
+:::open[What stops the shard's two spinning tracers before the bullet ends?]
+By that law the frame is 1.09 s after the launch. The effect's two thin tracers that spin around the line of flight
+end 5.7 m behind the bullet (0.23 s of its flight), while its widest tracer and its model particles reach the bullet.
+In a frame of a second launch, 1.20 s after it, neither spinning tracer is drawn. The effect file declares no life
+for those tracers' particles, and its one state ends the effect only when external value 0 reaches 1.
 :::
 
 ## The executable's data

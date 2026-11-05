@@ -612,6 +612,33 @@ priority, is not traced. Which state blend and tier a far tile uses is the open 
 tile (at a place on the open world's tiles, not the Stormveil gate) is missing.
 :::
 
+### Glow
+
+The glow pass (15 above) spreads the effects' second target. Every effect draw whose node blooms writes a 2560 × 1440
+R11G11B10_FLOAT target beside the colour ([effect shader programs](/engines/fromsoft/shaders/effects/#the-glow-target)), and
+after the effects four programs turn it into light the tone map adds: :observed[18 frames of 4 sessions at 2560 × 1440, the
+programs translated and their constants read]{games="elden-ring"}
+
+| Step | Program | What it does | Constants |
+|---|---|---|---|
+| 1 | `EmissiveToGlowPS` | to 1280 × 720: one bilinear tap at each texel's centre (the mean of the four under it), colour times alpha (1, the target having none); a texel with a NaN channel is 0 | none |
+| 2 | `Sample13Weight`, 7 passes | halves each level, the size rounded up, down to 10 × 6 (640 × 360, 320 × 180, 160 × 90, 80 × 45, 40 × 23, 20 × 12, 10 × 6): 13 bilinear taps, each offset in texels of the level written, times its weight | `g_avSampleOffsets` below, the same in every pass |
+| 3 | `GlowCompositeSinglePS`, 6 passes | from 10 × 6 up to 640 × 360, each level adds its bilinear upsample of the level below times `g_GlowScaleOffset.x` (blend one + one) | 1.2 |
+| 4 | `GlowCompositeSinglePS`, last pass | the 1280 × 720 level is replaced (no blend) by the 640 × 360 level's upsample times `g_GlowScaleOffset.x` | 0.38711962 |
+| 5 | `ToneMap_BloomCompositeSinglePS` | adds the 1280 × 720 level to the glare buffer times `g_vBloomFinalColor`, which is the scene exposure `g_ToneMapSceneLumScale` in this draw (9.49 to 17.93 in these frames, equal in each) and 0.05 in the draw that adds the bright-pass bloom | |
+
+The 13 taps (x, y in texels of the level written, weight), the weights summing to 1: (0, 0, 0.0982), (±0.5, 0.7071, 0.0675),
+(±1, 0, 0.0596), (±0.5, −0.7071, 0.0675), (±0.5, 0.2357, 0.0843), (0, 0.4714, 0.0879), (±0.5, −0.2357, 0.0843),
+(0, −0.4714, 0.0879). :observed[`cbSampleOffset` of every `Sample13Weight` draw in 18 frames]{games="elden-ring"} The constants
+1.2 and 0.38711962 are the same in all 18. :observed{games="elden-ring"}
+
+0.38711962 is 5 / (1 + 1.2 + … + 1.2⁶), so a glow target of one even value v comes out as 5 v, the largest levels weighing most
+(the 10 × 6 level 1.156 of it, the 640 × 360 level 0.387). :inferred[the arithmetic fits to 8 digits]{games="elden-ring"}
+`ToneMap_TabledToneMapLUTPS` takes the scene times the scene exposure plus the glare buffer times `g_GlareLuminance.x` (1), so the
+glow lands in the scene's own light units, added after exposure is metered: the meter (`ToneMap_DownSample2x2PS` and the
+luminance passes) and the bright pass read the scene target without it. :observed[the programs' code and bindings in one
+frame; the factor equal to the scene exposure in all 18]{games="elden-ring"}
+
 ### Exposure
 
 Elden Ring's exposure meter and the scale the CPU derives from it are on

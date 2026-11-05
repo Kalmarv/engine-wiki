@@ -198,6 +198,29 @@ scale of 0.5 varied by up to 60 %; those of the mode 6 files take 0.253 to 0.998
 That a particle's offset is the file's offset plus its speed times its age is inferred from the excess over 1 (at most 0.07) being
 less than a speed times a second or two; it is not read from the code. :inferred
 
+## The glow target
+
+An effect node that blooms is drawn by a `GlowD` program, which writes a second target beside the colour: its final colour times
+`g_psGlowScale.rgb` and its opacity times `g_psGlowScale.a` (see [the layers](#how-the-multi-texture-draws-compose-their-layers)).
+:observed[the disassembly of `GXFfxtessellateTracerTextureGlowD` and `GXFfxtessellateSoftMultiTextureGlowD`]{games="elden-ring"}
+One blend state applies to both targets: of the frame's 72 `GlowD` draws, 45 add (source alpha and one) and 27 blend over
+(source alpha and its inverse), on every target alike. :observed[the blend states of every `GlowD` draw of one
+frame]{games="elden-ring"} An additive draw thus adds its colour times its glow colour times the glow's alpha to the glow
+target, and a draw that does not glow leaves it as it is. :inferred{games="elden-ring"} The target is R11G11B10_FLOAT at the frame's size, cleared before the effects, and the
+[glow chain](/engines/fromsoft/lighting/frame/#glow) spreads it into the picture. :observed{games="elden-ring"}
+
+`g_psGlowScale` is the node's bloom colour (`bloom_color`, four floats beside the `bloom` flag in the fxr project's naming) as
+stored, and the flag picks the program: :observed[one frame drawing effect 523022, its draws matched to its nodes by
+texture]{games="elden-ring"}
+
+| Nodes of effect 523022 | Draws |
+|---|---|
+| 7 tracers, `bloom` true, colour (0.5, 0.75, 1, 0.1) | 7 `GXFfxtessellateTracerTextureGlowD` draws holding (0.5, 0.75, 1, 0.1) |
+| 2 point sprites, `bloom` true, colour (0.5, 0.75, 1, 0.25) | 2 `GXFfxtessellatePointSpriteGlowD` draws holding (0.5, 0.75, 1, 0.25) |
+| 1 billboard, `bloom` false, colour (0.5, 0.75, 1, 0.05) | the frame's one `GXFfxtessellateSoftMultiTexture` draw (no `GlowD`), its `g_psGlowScale` still the node's colour |
+
+The frame's 72 `GlowD` draws hold eight distinct values, with alphas from 0.05 to 0.5. :observed[one frame]{games="elden-ring"}
+
 ## How the distortion draws move the picture
 
 A distortion sheet ([action 607](/engines/fromsoft/effects/fxr-actions/)) draws the picture already drawn behind it, sampled at

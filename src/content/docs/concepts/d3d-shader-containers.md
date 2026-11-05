@@ -1,6 +1,6 @@
 ---
 title: Direct3D shader containers (DXBC and DXIL)
-description: "How five games wrap compiled Direct3D shaders: the container digest and part sets, the signature, reflection and feature parts, and the pipeline-state record of Shader Model 6 programs, measured over the extracted programs."
+description: "How five games wrap compiled Direct3D shaders: the container digest and part sets, the signature, reflection, statistics, feature and level 9 parts, and the pipeline-state record of Shader Model 6 programs, measured over the extracted programs."
 games: [sekiro, elden-ring, riders-republic, skate, sledding]
 sources:
   - title: Microsoft fxc (Effect-Compiler Tool), Windows SDK 10.0.26100
@@ -143,6 +143,59 @@ not zero and equal no count of the decoded instructions that was tried (all `mov
 in the 466 of the 469 containers the decoder reads. :observed Shader Model 4.0 and 4.1 targets (including the level 9
 targets) write 29 words (22 containers) and Shader Model 5.0 targets 37 (447). :observed[469 containers] In a hull program word 1 is the largest
 `dcl_temps` of its phases, not their sum. :observed[the hull fixtures of two compilations]
+
+Five more words describe how the program runs. Word 28 is 1 in a pixel program that runs once per sample (one that
+interpolates an input per sample or reads the sample index) and 0 otherwise. Word 30 is a hull program's output control
+points and a domain program's input control points. Word 31 is a hull program's tessellator output primitive
+(`D3D_TESSELLATOR_OUTPUT_PRIMITIVE`: 1 point, 2 line, 3 clockwise triangles, 4 counter-clockwise triangles). Word 32 is its
+partitioning (`D3D_TESSELLATOR_PARTITIONING`: 1 integer, 2 power of two, 3 odd fractional, 4 even fractional). Word 33 is the
+tessellator domain of a hull or domain program (`D3D_TESSELLATOR_DOMAIN`: 1 isoline, 2 triangle, 3 quad). `D3DDisassemble`
+(`d3dcompiler_47` 10.0.26100.4654) prints its tessellation tables and its "Pixel Shader runs at sample frequency" note from
+these words. A listing written from them is identical to Microsoft's for every test compilation: hull and domain programs
+over the isoline, triangle and quad domains, every partitioning and every output primitive, and pixel programs with and
+without per-sample inputs. :observed[test compilations]
+
+## Feature level 9 part (`Aon9`)
+
+A program compiled for a Direct3D 9 feature level (`ps_4_0_level_9_1`, `vs_4_0_level_9_3` and the like) carries an `Aon9`
+part. It holds a Shader Model 2 program, which the runtime runs on level 9 hardware in place of the Shader Model 4 token
+stream, and tables that map the Shader Model 4 program's constant buffers, samplers and resources onto Direct3D 9
+registers. :observed[test compilations] All offsets below are bytes from the start of the part, and every count and
+offset is a `u16` pair: the count, then the offset of the table.
+
+| Word | Field | Confidence |
+|---|---|---|
+| 0 | The part's size in bytes | :observed[test compilations] |
+| 1 | A Direct3D 9 version token: the program's version at the feature level's minimum (`vs_2_0` for a `vs_2_x` program) | :observed[test compilations] |
+| 2 | The Direct3D 9 program's size in bytes | :observed[test compilations] |
+| 3 | The program's offset in the part | :observed[test compilations] |
+| 4 | Constant buffer ranges copied into float constants: 12-byte rows | :observed[test compilations] |
+| 5 | Constant buffer components copied into int constants (`i#`): 8-byte rows | :observed[test compilations] |
+| 6 | Constant buffer components copied into bool constants (`b#`): 8-byte rows | :observed[test compilations] |
+| 7 | Sampler mappings: 4-byte rows | :observed[test compilations] |
+| 8 | Constants the runtime fills: 4-byte rows | :observed[test compilations] |
+
+The rows of the tables:
+
+- A constant buffer range is four `u16`s: the buffer (`cb#`), its first register, the register count and the first
+  float constant (`c#`) it goes to. Then come four bytes, one per component x to w, that say how the component
+  converts: 0 float, 1 bool, 2 int, 3 uint. :observed[test compilations]
+- An int or bool row is four `u16`s: the buffer, its register, the component (0 to 3 for x to w) and the `i#` or `b#`
+  register it goes to. :observed[test compilations]
+- A sampler row is four bytes: the Shader Model 4 resource (`t#`), the Shader Model 4 sampler (`s#`), the Direct3D 9
+  sampler register, and a byte that is 0 in every row. :observed[test compilations]
+- A runtime row is two `u16`s: the kind and the float constant it fills. Kind 0, the only kind seen, is what
+  `D3DDisassemble` calls the "Vertex Shader position offset". :observed[test compilations]
+
+The layout was read from fxc 10.0.26100.4654 builds that cover every combination the tables have:
+- no constants;
+- float, int, uint and bool constants from several buffers;
+- loops over int constants and branches on bool constants;
+- several texture and sampler pairs;
+- vertex and pixel programs at levels 9_1 and 9_3.
+
+For every build, the tables and the program written from this layout are identical to `D3DDisassemble`'s listing.
+:observed[test compilations]
 
 `SFI0` is a 64-bit mask of the shader features the program needs. The 20 Sledding Game containers whose mask is `0x10` all have
 bit 5 of `dcl_global_flags` set (minimum precision) and `ISG1`/`OSG1` parts. The one whose mask is `0x2` declares a raw or

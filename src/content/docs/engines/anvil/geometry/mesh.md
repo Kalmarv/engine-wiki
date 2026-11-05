@@ -19,23 +19,23 @@ Breakpoint also stores primitives with material assignments and several packed v
 
 :only[shaun-white-skateboarding]
 
-A drawable mesh is a `Mesh` object that holds a `CompiledMesh` inline: the vertex and index buffers, the draw ranges, the bone palettes and the list of material ids are all in the mesh's own body. The 33 data forges of the PC build hold 16,149 Mesh objects. A strict reading reads 15,928 of them to their exact end with the layouts below; the other 221 keep raw `SubMesh` objects ahead of their bones and are not read here. :proven{games="shaun-white-skateboarding"}[15,928 of the install's 16,149 meshes; 221 refused]
+A drawable mesh is a `Mesh` object that holds a `CompiledMesh` inline: the vertex and index buffers, the draw ranges, the bone palettes and the list of material ids are all in the mesh's own body. 221 meshes also keep their raw `SubMesh` objects, the mesh as authored, ahead of their bones. The 33 data forges of the PC build hold 16,149 Mesh objects, and a strict reading reads every one to its exact end with the layouts below. :proven{games="shaun-white-skateboarding"}[all 16,149 meshes of the install]
 
 ```layout
 title: "Mesh body (Shaun White Skateboarding)"
 size: "variable"
 games: [shaun-white-skateboarding]
-note: "Little-endian. Body offsets; n is the bone count, L the compiled data's length, m the material count. Read to its exact end on the 15,928 meshes without raw sub-meshes."
+note: "Little-endian. Body offsets for a mesh without SubMeshes; n is the bone count, L the compiled data's length, m the material count. A mesh with SubMeshes stores them at 18, and every later offset moves by their length."
 fields:
   - {"at": 0, "size": 1, "type": "u8", "name": "managed", "value": "1", "level": "proven", "note": "1 on every mesh"}
   - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "proven", "note": "the object's id in its entry's directory"}
   - {"at": 5, "size": 4, "type": "u32", "name": "class", "value": "0x415D9568", "level": "proven", "note": "CRC-32 of Mesh"}
   - {"at": 9, "size": 4, "type": "u32", "name": "Category", "level": "observed", "note": "enum"}
   - {"at": 13, "size": 1, "type": "u8", "name": "Generated", "level": "observed"}
-  - {"at": 14, "size": 4, "type": "u32", "name": "SubMeshes count", "level": "proven", "note": "0 on 15,928 meshes; not 0 on 221 (1 to 5 in those examined), whose SubMesh objects (class 0x5755DE7F, CRC-32 of SubMesh) follow here and are not described"}
+  - {"at": 14, "size": 4, "type": "u32", "name": "SubMeshes count s", "level": "proven", "note": "0 on 15,928 meshes; 1 to 5 on 221. When it is not 0, s SubMeshes follow here, each a pointer tag 0 (inline) and a SubMesh object (below), before the bone count"}
   - {"at": 18, "size": 4, "type": "u32", "name": "Bones count n", "level": "proven"}
   - {"at": 22, "size": "76n", "type": "MeshBone[n]", "name": "bones", "level": "proven", "note": "see the MeshBone layout"}
-  - {"at": "22+76n", "size": 11, "type": "bytes", "name": "unknown", "level": "unknown", "note": "a byte 0 (13,978 meshes) or 1 (1,950), a byte 1, then nine zeros, on every mesh read"}
+  - {"at": "22+76n", "size": 11, "type": "bytes", "name": "unknown", "level": "unknown", "note": "a byte 0 (14,199 meshes) or 1 (1,950), a byte 1, then nine zeros, on every mesh"}
   - {"at": "33+76n", "size": 4, "type": "u32", "name": "CompiledMesh class", "value": "0xFC9E1595", "level": "proven", "note": "CRC-32 of CompiledMesh"}
   - {"at": "37+76n", "size": 4, "type": "u32", "name": "Data length L", "level": "proven"}
   - {"at": "41+76n", "size": "L", "type": "bytes", "name": "Data", "level": "proven", "note": "the compiled buffers, below"}
@@ -61,10 +61,10 @@ fields:
 title: "CompiledMesh data"
 size: "L"
 games: [shaun-white-skateboarding]
-note: "Little-endian. Offsets relative to the start of Data. Every relation in the notes holds on all 15,928 meshes read."
+note: "Little-endian. Offsets relative to the start of Data. Every relation in the notes holds on all 16,149 meshes."
 fields:
   - {"at": 0, "size": 4, "type": "u32", "name": "version", "value": "16", "level": "proven", "note": "16 on every mesh"}
-  - {"at": 4, "size": 4, "type": "u32", "name": "extra stream count s", "level": "proven", "note": "0 on every mesh read; 1 to 3 only on meshes with raw sub-meshes (morph targets)"}
+  - {"at": 4, "size": 4, "type": "u32", "name": "extra stream count s", "level": "proven", "note": "0 on every mesh without SubMeshes; 0 to 3 on meshes with SubMeshes, where it equals the most MorphChannels any of its SubMeshes holds (morph targets)"}
   - {"at": 8, "size": 4, "type": "u32", "name": "stride", "level": "proven", "note": "bytes per vertex: the vertex stride the game binds"}
   - {"at": 12, "size": 4, "type": "u32", "name": "vertex bytes V", "level": "proven", "note": "the bytes of one stream: the size of the game's vertex buffer"}
   - {"at": 16, "size": 4, "type": "u32", "name": "stride x (s + 1)", "level": "proven"}
@@ -81,7 +81,7 @@ fields:
   - {"at": "total+48", "size": "40A", "type": "bytes", "name": "palettes", "level": "proven", "note": "40 bytes per first-partition range, starting with one palette per range"}
 ```
 
-The game uploads a mesh's data unchanged. Running the game's own loader and renderer from a new game to the start of the level-02 load, 605 vertex and index buffers created for 516 meshes held exactly the stored stream-0 vertex bytes and index bytes, and every indexed draw used 16-bit indices. :observed{games="shaun-white-skateboarding"}[every mesh the game loaded on that route]
+The game uploads a mesh's data unchanged. Running the game's own loader and renderer from a new game to the start of the level-02 load, 615 vertex and index buffers created for 516 meshes held exactly the stored stream-0 vertex bytes and index bytes, and every indexed draw used 16-bit indices. :observed{games="shaun-white-skateboarding"}[every mesh the game loaded on that route]
 
 ```layout
 title: "Range (Shaun White Skateboarding)"
@@ -99,7 +99,7 @@ fields:
 
 Each range is one draw. On the traced route every draw of a level-02 mesh is one of its first-partition ranges exactly, with `MinIndex` the first vertex, `NumVertices` the vertex count, `StartIndex` the first index, `PrimitiveCount` the triangle count and a base vertex of 0, drawn as a triangle list. No draw on that route used a second-partition range. :observed{games="shaun-white-skateboarding"}[every draw of a level-02 mesh on that route]
 
-The first A ranges partition the index buffer one-to-one with the mesh's materials (range i uses material i), and the B ranges are a second partition of the same indices: in each, the triangles add up to the index count, and every range's vertices lie inside the vertex stream. :proven{games="shaun-white-skateboarding"}[every mesh of the install read] The second partition has as many ranges as the first on 10,203 meshes and fewer on 5,725 (often one range over all the indices). :proven[every mesh of the install read]
+The first A ranges partition the index buffer one-to-one with the mesh's materials (range i uses material i), and the B ranges are a second partition of the same indices: in each, the triangles add up to the index count, and every range's vertices lie inside the vertex stream. :proven{games="shaun-white-skateboarding"}[every mesh of the install] The second partition has as many ranges as the first on 10,344 meshes and fewer on 5,805 (often one range over all the indices). :proven[every mesh of the install]
 
 ```layout
 title: "Bone palette (Shaun White Skateboarding)"
@@ -107,22 +107,92 @@ size: "7 + n"
 games: [shaun-white-skateboarding]
 note: "One per first-partition range, back to back from the start of the palettes; the rest of the 40 bytes per range is left as stored."
 fields:
-  - {"at": 0, "size": 1, "type": "u8", "name": "marker", "value": "3", "level": "proven", "note": "3 on all 34,168 palettes"}
+  - {"at": 0, "size": 1, "type": "u8", "name": "marker", "value": "3", "level": "proven", "note": "3 on all 34,517 palettes"}
   - {"at": 1, "size": 1, "type": "u8", "name": "version", "value": "1", "level": "proven", "note": "1 on all palettes"}
   - {"at": 2, "size": 1, "type": "u8", "name": "entry count n", "level": "proven", "note": "0 on meshes without bones; at most 32"}
-  - {"at": 3, "size": 2, "type": "u16", "name": "unknown", "level": "unknown", "note": "the range's position on 25,302 of 34,168 palettes, another value on the rest"}
+  - {"at": 3, "size": 2, "type": "u16", "name": "unknown", "level": "unknown", "note": "the range's position on 25,532 of 34,517 palettes, another value on the rest"}
   - {"at": 5, "size": 2, "type": "u16", "name": "vertex count", "level": "proven", "note": "equal to the range's vertex count on every palette"}
   - {"at": 7, "size": "n", "type": "u8[n]", "name": "bones", "level": "inferred", "note": "indices into the mesh's bones, all below the bone count; the range's blend indices index this list"}
 ```
 
 The bytes after the palettes, up to 40 per range, are stored but follow no layout that is established; in the meshes examined they look like left-over index and vertex values. :unknown
 
-The 221 meshes with raw sub-meshes include every mesh with further vertex streams. They hold a CompiledMesh too, and the game draws from it: on the traced route it created buffers for 7 of them, each holding the stored stream-0 vertex and index bytes, and drew 5. :observed{games="shaun-white-skateboarding"}[the traced route]
+### SubMeshes
+
+A SubMesh is one part of the mesh as authored, before it is compiled: one material's triangles, with full-precision normals, every UV channel and the morph targets of that part. Each SubMesh owns a copy of itself that adds tangents and binormals and drops the morph targets. Each SubMesh corresponds to one first-partition range of the CompiledMesh, the one drawn with the SubMesh's material: the range holds the SubMesh's vertex positions bit for bit and the same triangles, in another vertex and triangle order, and the mesh's vertex count is the SubMeshes' vertex counts summed. :proven{games="shaun-white-skateboarding"}[all 349 SubMeshes of the 221 meshes] The ranges come in the SubMeshes' order on 214 of the 221 meshes. :proven[all 221 meshes]
+
+```layout
+title: "SubMesh (Shaun White Skateboarding)"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian, inline in the mesh body after its pointer tag. n is the vertex count (the positions' count), t the triangle count; every run is a u32 count and its elements. Offsets are from the managed byte; a variable-length run moves everything after it."
+fields:
+  - {"at": 0, "size": 1, "type": "u8", "name": "managed", "value": "1", "level": "proven", "note": "1 on every SubMesh"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "id", "level": "proven", "note": "the object's id"}
+  - {"at": 5, "size": 4, "type": "u32", "name": "class", "value": "0x5755DE7F", "level": "proven", "note": "CRC-32 of SubMesh"}
+  - {"at": 9, "size": 4, "type": "u32", "name": "unknown", "value": "0", "level": "unknown", "note": "0 on every SubMesh; the class has a TriangleType enumeration (TriangleStrip, TriangleList), and the indices are a triangle list"}
+  - {"at": 13, "size": "4 + 6t", "type": "u16 run", "name": "indices", "level": "proven", "note": "3t vertex indices, a triangle list: the triangles of the SubMesh's compiled range"}
+  - {"at": "17+6t", "size": "4 + 4n or 4", "type": "u32 run", "name": "source vertices", "level": "observed", "note": "n values, or none on the copy: vertices with equal values have equal positions, as if each named the authored vertex the vertex was split from"}
+  - {"at": "after the source vertices", "size": 4, "type": "u32", "name": "unknown", "value": "0", "level": "unknown", "note": "0 on every SubMesh"}
+  - {"at": "next", "size": "4 + 4t", "type": "u32 run", "name": "face words", "level": "unknown", "note": "t values, one per triangle: bit masks such as 1, 2, 4 and 8 (smoothing groups are a candidate)"}
+  - {"at": "next", "size": "4 + t", "type": "u8 run", "name": "face bytes", "level": "unknown", "note": "t values, one per triangle: 3 on most, 0 to 7 in all"}
+  - {"at": "next", "size": "4 + 12n", "type": "float3 run", "name": "positions", "level": "proven", "note": "equal bit for bit to the compiled range's positions"}
+  - {"at": "next", "size": "4 + 12n", "type": "float3 run", "name": "normals", "level": "observed", "note": "unit vectors; the compiled UBYTE4 normal is within one step of (n + 1) x 127 on 346 of the 349 SubMeshes"}
+  - {"at": "next", "size": "4 + 12n or 4", "type": "float3 run", "name": "tangents", "level": "observed", "note": "n unit vectors perpendicular to the normals on every copy, none on every original"}
+  - {"at": "next", "size": "4 + 12n or 4", "type": "float3 run", "name": "binormals", "level": "observed", "note": "n unit vectors perpendicular to the normals on every copy, none on every original"}
+  - {"at": "next", "size": "4 + 4n or 4", "type": "u32 run", "name": "colours", "level": "observed", "note": "n D3DCOLOR values (B, G, R, A), or none: on 372 of the 698 SubMeshes (copies counted), and on all 186 originals that hold it equal to the compiled vertices' COLOR0"}
+  - {"at": "next", "size": "4 + 4n or 4", "type": "u32 run", "name": "vertex words", "level": "unknown", "note": "n values or none; present on 16 of the 698 SubMeshes (8 originals and their copies)"}
+  - {"at": "next", "size": "4 + 4n or 4", "type": "u32 run", "name": "vertex words", "level": "unknown", "note": "n values or none; present on 26 of the 698 SubMeshes, all originals"}
+  - {"at": "next", "size": 4, "type": "u32", "name": "empty run", "value": "0", "level": "unknown", "note": "a count, 0 on every SubMesh (its elements' size is unknown)"}
+  - {"at": "next", "size": "4 + 4n", "type": "u32 run", "name": "vertex words", "level": "unknown", "note": "n values on all 698 SubMeshes, colour-like (such as 0xFF000000)"}
+  - {"at": "next", "size": 4, "type": "u32", "name": "empty run", "value": "0", "level": "unknown", "note": "a count, 0 on every SubMesh"}
+  - {"at": "next", "size": 4, "type": "u32", "name": "empty run", "value": "0", "level": "unknown", "note": "a count, 0 on every SubMesh"}
+  - {"at": "next", "size": "variable", "type": "UVChannel run", "name": "UV channels", "level": "proven", "note": "1 to 3 UVChannels (below); the first is the compiled vertices' TEXCOORD0; the compiled data keeps no further UV of a morph mesh"}
+  - {"at": "next", "size": 4, "type": "u32", "name": "unknown", "value": "0", "level": "unknown", "note": "0 on every SubMesh"}
+  - {"at": "next", "size": "variable", "type": "MorphChannel run", "name": "morph channels", "level": "proven", "note": "0 to 3 MorphChannels (below); only on the original, never on the copy"}
+  - {"at": "next", "size": 1, "type": "u8", "name": "has morphs", "level": "proven", "note": "1 when there are morph channels, else 0, on every SubMesh"}
+  - {"at": "next", "size": 4, "type": "u32", "name": "material id", "level": "proven", "note": "the material id the mesh's material list gives the SubMesh's range, on every SubMesh"}
+  - {"at": "next", "size": 2, "type": "u8[2]", "name": "unknown", "value": "1, 1", "level": "unknown", "note": "1 and 1 on every SubMesh"}
+  - {"at": "next", "size": "1 or 1 + a SubMesh", "type": "pointer", "name": "copy", "level": "observed", "note": "tag 0 and an inline SubMesh on every original, tag 3 (none) on every copy; the copy has the same indices, positions and material, as many UV channels, tangents and binormals added, no source vertices and no morph channels"}
+  - {"at": "next", "size": 4, "type": "u32", "name": "unknown", "level": "unknown", "note": "0 on 580 of 698 SubMeshes, hash-like values on the rest"}
+```
+
+```layout
+title: "UVChannel (Shaun White Skateboarding)"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian, inline in a SubMesh's run of UV channels. n is the SubMesh's vertex count."
+fields:
+  - {"at": 0, "size": 4, "type": "u32", "name": "id", "value": "0", "level": "unknown", "note": "0 on every channel"}
+  - {"at": 4, "size": 4, "type": "u32", "name": "class", "value": "0xBDAD8273", "level": "proven", "note": "CRC-32 of UVChannel"}
+  - {"at": 8, "size": 4, "type": "u32", "name": "unknown", "value": "0", "level": "unknown", "note": "0 on every channel; the class has a UVType enumeration (UV_Lightmap, UV_Layer, UV_Normal)"}
+  - {"at": 12, "size": 1, "type": "u8", "name": "unknown", "level": "unknown", "note": "0 on 750 of the 934 channels, other values on the rest"}
+  - {"at": 13, "size": "4 + 8n", "type": "float2 run", "name": "UVs", "level": "proven", "note": "n UVs; the first channel's equal the compiled TEXCOORD0 bit for bit on 347 of 349 SubMeshes"}
+  - {"at": "17+8n", "size": "4 + 4n or 4", "type": "u32 run", "name": "source", "level": "unknown", "note": "n values, or none (on the copy's channels)"}
+```
+
+```layout
+title: "MorphChannel (Shaun White Skateboarding)"
+size: "16 + 32n"
+games: [shaun-white-skateboarding]
+note: "Little-endian, inline in a SubMesh's run of morph channels. n is the SubMesh's vertex count."
+fields:
+  - {"at": 0, "size": 4, "type": "u32", "name": "id", "level": "proven", "note": "the object's id, not 0"}
+  - {"at": 4, "size": 4, "type": "u32", "name": "class", "value": "0xE70C5754", "level": "proven", "note": "CRC-32 of MorphChannel"}
+  - {"at": 8, "size": 4, "type": "u32", "name": "unknown", "level": "unknown", "note": "hash-like"}
+  - {"at": 12, "size": "4 + 12n", "type": "float3 run", "name": "positions", "level": "observed", "note": "absolute positions of the morph target: equal bit for bit to compiled stream k + 1 on 369 of 375 channels"}
+  - {"at": "16+12n", "size": "4 + 12n", "type": "float3 run", "name": "normals", "level": "observed", "note": "the morph target's normals"}
+  - {"at": "20+24n", "size": "4 + 8n", "type": "float2 run", "name": "UVs", "level": "observed", "note": "equal to the SubMesh's first UV channel on 293 of 375 channels"}
+```
+
+Channel k of a SubMesh is morph stream k + 1 of the CompiledMesh: on 369 of the 375 channels its positions equal that stream's positions at the matching vertices bit for bit, and the other six (of two meshes) differ from it in one coordinate. :observed{games="shaun-white-skateboarding"}[all 375 morph channels, vertices matched through the triangles]
+
+The game draws these meshes from their CompiledMesh. On the traced route it loaded 14 of them; for 7 it created a vertex buffer holding the stored stream-0 bytes and, as further vertex buffers, every morph stream's bytes unchanged, and it drew 5, binding stream 0 and the per-instance colour only. :observed{games="shaun-white-skateboarding"}[the traced route]
 
 The further vertex streams are shape morphs of the gameplay objects that grow or deform (the `InfGP` bump, vert and pool shapes). Of 26 morph meshes in level 01, 30 morph targets in all, eight further streams also change the UVs or colours. :observed[level 01]
 
-:::open[What do the raw SubMesh objects hold?]
-221 meshes store between one and five `SubMesh` objects after the sub-mesh count, each a run of 16-bit indices followed by further arrays, before their bones and their CompiledMesh. Their layout, and whether the game reads them, is not established. :unknown
+:::open[What do the SubMesh's unknown runs and words hold?]
+The per-triangle words and bytes, the three runs of per-vertex words after the colours, the source runs of the UV channels, the MorphChannel's word after its class and the SubMesh's last word are read as stored; their meaning is not established. Three counts are 0 on every SubMesh, so their elements' size is not known. Why each SubMesh keeps a copy that differs from it by tangents, binormals and the missing morph channels and source runs is not established. :unknown
 :::
 
 ## Riders Republic

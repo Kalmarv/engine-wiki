@@ -82,25 +82,29 @@ A vertex has an explicit stride, 24 to 48 bytes, and the flags word of the compi
 | Bone indices | `UBYTE4` `BLENDINDICES0`, into the range's bone palette | 4 | flag bit 1 or bit 2 | :observed |
 | Bone weights | `UBYTE4N` `BLENDWEIGHT0` | 4 | flag bit 1 or bit 2 | :observed |
 
-The elements follow each other in the table's order with no gaps. The stride less the sizes of the elements the flags select is 0 (no tangent), 4 (a tangent) or 8 (a tangent and a three-float first UV), and this rule fits the stride of every one of the 15,928 compiled meshes of the install read, the elements ending exactly at the stride. :proven{games="shaun-white-skateboarding"}[every mesh of the install read] The 44-byte vertices of the skinned characters with flags 65 are the declared case of the three-float first UV; the 40-byte vertices of flags 1 and the 48-byte vertices of flags 6 follow the same rule but none was drawn on the traced route. :observed
+The elements follow each other in the table's order with no gaps. The stride less the sizes of the elements the flags select is 0 (no tangent), 4 (a tangent) or 8 (a tangent and a three-float first UV), and this rule fits the stride of every one of the 16,149 compiled meshes of the install, the elements ending exactly at the stride. :proven{games="shaun-white-skateboarding"}[every mesh of the install] The 44-byte vertices of the skinned characters with flags 65 are the declared case of the three-float first UV; the 40-byte vertices of flags 1 and the 48-byte vertices of flags 6 follow the same rule but none was drawn on the traced route. :observed
 
-Bits 1 and 2 occur only on meshes with bones: 2,355 meshes with bit 1 and 161 with bit 2, all with bones, and no mesh without bones has either. What distinguishes the two bits is not established. :proven[every mesh of the install read]
+Bits 1 and 2 occur only on meshes with bones: 2,355 meshes with bit 1 and 161 with bit 2, all with bones, and no mesh without bones has either. What distinguishes the two bits is not established. :proven[every mesh of the install]
 
-| Flags | Stride | Meshes | Declared on the traced route |
-|---:|---:|---:|---|
-| 0 | 28 | 4,393 | yes |
-| 1 | 36 | 267 | no |
-| 1 | 40 | 153 | no |
-| 4 | 36 | 2,834 | yes |
-| 6 | 44 | 40 | yes |
-| 6 | 48 | 7 | no |
-| 64 | 32 | 1,903 | yes |
-| 65 | 40 | 145 | yes |
-| 65 | 44 | 1,790 | yes |
-| 68 | 40 | 4,282 | yes |
-| 70 | 48 | 114 | no |
+| Flags | Stride | Morph streams | Meshes | Declared on the traced route |
+|---:|---:|---:|---:|---|
+| 0 | 24 | 1 or 2 | 67 | yes |
+| 0 | 28 | 0 | 4,397 | yes |
+| 1 | 36 | 0 | 267 | no |
+| 1 | 40 | 0 | 153 | no |
+| 4 | 24 | 1 or 2 | 49 | yes |
+| 4 | 36 | 0 | 2,834 | yes |
+| 6 | 44 | 0 | 40 | yes |
+| 6 | 48 | 0 | 7 | no |
+| 64 | 28 | 1 or 2 | 65 | no |
+| 64 | 32 | 0 | 1,916 | yes |
+| 65 | 40 | 0 | 145 | yes |
+| 65 | 44 | 0 | 1,790 | yes |
+| 68 | 28 | 1 to 3 | 14 | no |
+| 68 | 40 | 0 | 4,291 | yes |
+| 70 | 48 | 0 | 114 | no |
 
-The counts are over the 15,928 meshes read. :proven[every mesh of the install read]
+The counts are over all 16,149 meshes of the install. :proven[every mesh of the install]
 
 The declarations of most world draws add a second vertex stream of four bytes per vertex, `D3DCOLOR` `TEXCOORD2`, which carries the baked vertex lighting and is not part of the mesh. :observed In level 01, the flags-68 mesh's 8-byte element holds two `f32` equal to the position's X and Y times 100 in the meshes examined. :observed[level 01]
 

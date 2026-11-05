@@ -174,7 +174,8 @@ skin is not measured. :observed[the program's dataflow]{games="elden-ring"}
 
 **Glow.** The light combine writes `max(irradiance + specular + emission, 0)` to the lit image and `emission × target
 4 alpha` to a second target that later forward passes add to; that target is the source of a chain of downsamples:
-Sekiro's from 960×540 to 15×9 and back, Elden Ring's through `EmissiveToGlowPS` into 1280×720, 640×360 and smaller.
+Sekiro's from 960×540 to 15×9 and back, Elden Ring's through `EmissiveToGlowPS` into 1280×720, 640×360 and smaller
+([glow and the glare](/engines/fromsoft/lighting/tone-mapping/#glow-and-the-glare)).
 :observed[one frame of each game] Programs of glowing materials write `FC_GlowScale.w` times the glow texture's alpha
 there. :observed In Sekiro's frame the lane is 1 on 9,108 pixels, most of them the player's hair and wrappings, whose
 emission is zero, and 0 elsewhere; Elden Ring's is zero on every pixel. :observed[one frame of each game]

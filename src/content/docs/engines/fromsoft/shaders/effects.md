@@ -127,7 +127,9 @@ After fog (the colour times the fog's transmittance, plus its in-scatter times `
 `g_ps_BlendingMode` 1 or 2 an opacity above 1 multiplies the colour and is then clamped to 1; and with
 `g_transductionAlphaToColorScale` `s` below 1 it keeps the colour up to 1 and scales what exceeds 1 by `s²`, the opacity by
 `s`. Its second target takes `g_psGlowScale.rgb` times the colour (with the same pre-exposure) and `g_psGlowScale.a` times the
-opacity. :observed[the disassembly, not run]{games="elden-ring"} The frame's pre-exposure is off in every recorded frame
+opacity. :observed[the disassembly, not run]{games="elden-ring"} That second target is the frame's glow target, which the
+glow chain blurs into the glare ([glow and the glare](/engines/fromsoft/lighting/tone-mapping/#glow-and-the-glare)).
+:observed[one frame's draws]{games="elden-ring"} The frame's pre-exposure is off in every recorded frame
 ([frame](/engines/fromsoft/lighting/frame/#pre-exposure)), so an effect's colour lands in the frame's own light units and the
 scene exposure and tone curve apply to it as to the rest of the frame. :inferred{games="elden-ring"}
 
@@ -156,9 +158,10 @@ Comparing each draw's constants with its candidates:
 | `blendMode` | `g_ps_BlendingMode` and the pipeline's blend: 6 gives 1 and source alpha against inverse source alpha, 4 and 7 give 2 and source alpha against one | Elden Ring: the single file of draws 2123 to 2126 and 2128 (mode 6) has 1, the files of draws 2087 and 2088 (9 and 6 candidates, all mode 4) have 2; Sekiro: the three draws with 2 have layer-2 scale values 0.202 to 0.796 (66 values), which fit the one candidate of mode 7 (scale 0.5 varied by up to 60 %, so 0.2 to 0.8) and not the mode 6 candidates (0.625 varied by up to 60 %, so 0.25 to 1.0), whose draws have 1 and values 0.253 to 0.998 (147) |
 | `rgbMultiplier`, `alphaMultiplier` | `g_vColorScale` = (`rgbMultiplier` × K, the same, the same, `alphaMultiplier`) | Sekiro: 1.4 gives 1.58285, 1.0 gives 1.13061, 1.8 gives 2.0351, 1.2 gives 1.35673 and 1.5 gives 1.69591, with the alphas 0.3, 0.2, 1.0, 0.9 and 0.5 as stored; Elden Ring: 20 gives 1.4956 and 10 gives 0.7478, with the alphas 10, 5, 2.5 and 1.25 as stored |
 | `lighting` | `g_ps_bEnableLighting`: -1 gives 0, -2 gives 1 | Elden Ring: the 48 records with 0 have only files with -1 and the 13 with 1 only files with -2; Sekiro has ten unlit draws whose only candidates hold -2 (four of them draws of texture 1001's files), so the field is not the whole rule there |
+| `bloomColor` | `g_psGlowScale`, as stored | Elden Ring: in a frame with a Great Glintstone Shard in flight, seven of the nine tracer draws on its tracers' textures hold (0.5, 0.75, 1, 0.1), the `bloomColor` of 13 nodes of its flight effect 523022 (all with `bloom` set), to the bit; the other two hold (1, 0.75, 0.5, 0.1), which 523022 does not store |
 | `depthBlend`, `bloom`, `interpolateFrames` | the program: `Soft`, `GlowD` and `Blend` | Elden Ring: no `Soft` record has a candidate set that is all `depthBlend` false; the 13 records of `GlowD` programs whose candidates agree on `bloom` have true, and the 13 of the program without `GlowD` have false; all 18 `Blend` records have `interpolateFrames` true in every candidate, while the records of programs without `Blend` have it false (13), true (15) or both (15) |
 
-:observed[the table's scopes: four frame captures]{games="sekiro elden-ring"} Only the first word takes several values in these frames
+:observed[the table's scopes: four frame captures, and one of the shard]{games="sekiro elden-ring"} Only the first word takes several values in these frames
 (0, 1 and 2 in Elden Ring, 1 in Sekiro) and the other three are 0 in every draw, so the order of the four words is shown for the first
 alone and the other three are shown only at 0. A file that holds 2 in the fourth word is among the candidates of draws whose constant
 is 0: it is not the file those draws drew. :observed{games="sekiro elden-ring"}

@@ -32,7 +32,10 @@ dump). The player's character instance is at `+0x1E508` of it, and equally the f
 `P+0x190` is the module table: its entry 0 is the character's data module and its `+0x68` the physics module.
 :sourced[The Grand Archives table] The physics position and the map-relative position differ by the map's origin:
 the same moment read `y` 5.81 in the physics frame and 45.81 on the map, and both changed by the same amount when
-the physics `y` was written. :observed
+the physics `y` was written. :observed The physics position is not a steady record of where the character is: after the
+player was raised 80 m and held there, the physics `y` read back the earlier height while the screen showed the player still
+high above the castle, so the map-relative position is the one to read. :observed[one run] The physics frame likely takes a
+new origin there. :inferred
 
 ## Launching a bullet
 

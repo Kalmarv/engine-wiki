@@ -255,6 +255,66 @@ references 1 and 2 are the Bullet rows 10420000 and 10420002. Bullet 10420000 fl
 10420002 flies 526252 and hits with 526253, 10420004 flies 526254, and 10420001 flies none. Their `hitRadiusMax` is
 -1. :observed[the rows of the installed regulation]{games="elden-ring"}
 
+Elden Ring's `BULLET_PARAM_ST` is revision 4 with rows of 272 bytes, 15,475 of them in regulation 11730034.
+:observed{games="elden-ring"} The fields that say how a bullet flies, what it starts and what it makes sit at these
+offsets:
+
+```layout
+title: BULLET_PARAM_ST row (revision 4), the flight, effect and child fields
+size: 272
+games: [elden-ring]
+note: Offsets and names are Paramdex's definition; a reader at these offsets matches a Paramdex-driven reader on every row.
+fields:
+  - {at: 4, size: 4, type: s32, name: sfxId_Bullet, level: sourced, note: "the effect that flies with the bullet; -1 none"}
+  - {at: 8, size: 4, type: s32, name: sfxId_Hit, level: sourced, note: "the effect at its hit"}
+  - {at: 12, size: 4, type: s32, name: sfxId_Flick, level: sourced, note: "the effect when it is deflected"}
+  - {at: 16, size: 4, type: f32, name: life, level: sourced, note: "seconds; -1 for ever"}
+  - {at: 20, size: 4, type: f32, name: dist, level: sourced, note: "the range: travel after which the out-of-range acceleration and gravity apply"}
+  - {at: 28, size: 4, type: f32, name: gravityInRange, level: sourced}
+  - {at: 32, size: 4, type: f32, name: gravityOutRange, level: sourced}
+  - {at: 36, size: 4, type: f32, name: hormingStopRange, level: sourced, note: "distance from the target at which homing stops"}
+  - {at: 40, size: 4, type: f32, name: initVellocity, level: sourced, note: "starting speed, m/s"}
+  - {at: 44, size: 4, type: f32, name: accelInRange, level: sourced}
+  - {at: 48, size: 4, type: f32, name: accelOutRange, level: sourced}
+  - {at: 52, size: 4, type: f32, name: maxVellocity, level: sourced}
+  - {at: 56, size: 4, type: f32, name: minVellocity, level: sourced}
+  - {at: 60, size: 4, type: f32, name: accelTime, level: sourced, note: "seconds before the acceleration starts"}
+  - {at: 64, size: 4, type: f32, name: homingBeginDist, level: sourced, note: "metres flown before homing begins"}
+  - {at: 84, size: 4, type: f32, name: hormingOffsetRange, level: sourced, note: "metres it aims off its target on each axis"}
+  - {at: 104, size: 4, type: s32, name: HitBulletID, level: sourced, note: "the bullet made on hit; -1 none"}
+  - {at: 130, size: 2, type: s16, name: homingAngle, level: sourced, note: "the turn per second, degrees"}
+  - {at: 154, size: 1, type: u8, name: FollowType, level: sourced, note: "the low three bits"}
+  - {at: 156, size: 1, type: u8, name: isEnableAutoHoming, level: sourced, note: "bit 4"}
+  - {at: 172, size: 4, type: s32, name: intervalCreateBulletId, level: sourced, note: "the bullet made along its path; -1 none"}
+  - {at: 176, size: 4, type: f32, name: intervalCreateTimeMin, level: sourced}
+  - {at: 180, size: 4, type: f32, name: intervalCreateTimeMax, level: sourced}
+  - {at: 188, size: 4, type: f32, name: intervalCreateWaitTime, level: sourced}
+  - {at: 195, size: 1, type: u8, name: isInheritSpeedToChild, level: sourced, note: "bit 0"}
+  - {at: 208, size: 4, type: f32, name: lifeRandomRange, level: sourced}
+  - {at: 212, size: 2, type: s16, name: homingAngleX, level: sourced, note: "-1 leaves it unchanged"}
+```
+
+A reader that takes these fields at these offsets gives the same value as a reader driven by Paramdex's definition for every
+field of all 15,475 rows, integers compared as integers and floats bit for bit. :proven[every row of regulation 11730034]{games="elden-ring"}
+The field meanings are Paramdex's: a bullet starts at `initVellocity` along its forward, does not accelerate before
+`accelTime`, then accelerates at `accelInRange` until it has flown `dist` and at `accelOutRange` after, its speed held between
+`minVellocity` and `maxVellocity`, with gravity likewise `gravityInRange` then `gravityOutRange`. :sourced[Paramdex]
+Of the rows, 5,458 have a `maxVellocity` of 0 or less, 8 of them with a positive `initVellocity` and 12 with a
+positive acceleration; 11 have a `minVellocity` above their `maxVellocity`; 25 have a negative `life` and 123 a `life` of 0; 8,681 name a
+`HitBulletID` and 1,091 an `intervalCreateBulletId`. :proven[every row of regulation 11730034]{games="elden-ring"} What the
+engine does with a maximum of 0 or a minimum above the maximum is not read. :unknown{games="elden-ring"}
+
+| | Glintstone Pebble | Great Glintstone Shard |
+|---|---|---|
+| `Magic` row, bullet | 4000, 10400000 | 4001, 10400100 |
+| `sfxId_Bullet`, `sfxId_Hit` | 523002, 523003 | 523022, 523023 |
+| `life` | 1.12 | 1.25 |
+| `initVellocity`, `accelInRange` / `accelOutRange`, `accelTime` | 13, 40 / 40, 0.32 | the same |
+| `minVellocity`, `maxVellocity`, `dist`, gravity | 6, 25, 12, 0 | the same |
+| `homingAngle`, `homingAngleX`, `hormingStopRange` | 35, -1, 0.4 | the same |
+
+:observed[the two rows of the installed regulation]{games="elden-ring"}
+
 `BehaviorParam_PC`, which resolves the player's weapon-art and other non-spell launches, does not key its rows by the
 event's fields: the row id equals `variationId × 1000 + behaviorJudgeId` in 1 of its 13,865 rows.
 :proven[every row of the installed regulation]{games="elden-ring"}

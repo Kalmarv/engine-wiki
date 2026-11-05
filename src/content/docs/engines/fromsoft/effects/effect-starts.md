@@ -108,6 +108,18 @@ the install does not hold. :observed The fields' meanings are their names'. :sou
 For example, Comet Azur (`Magic` 4200) names its cast effect 526250 and the effect 526255; its bullets 10420000 to 10420004
 name the flight effects 526251, 526252 and 526254 and the hit 526253. :observed
 
+:only[elden-ring] Glintstone Pebble's bullet 10400000 flies effect 523002 and hits with 523003; Great Glintstone Shard's
+10400100 flies 523022 and hits with 523023 ([their rows](/engines/fromsoft/data-model/params/#magic-and-bullet)).
+:observed{games="elden-ring"} The flight effect carries most of the spell's look, and most of it depends on motion: 523022
+holds 7 Tracer nodes (6 on texture `s26041`, 1 on `s26061`), which draw a band along the emitter's past positions, and 4
+EqualDistanceEmitter nodes, which by their name make particles at equal distances along the path, beside point sprites (`s10091`), billboards
+(`s10020`, `s10030`), a Model node (model 83050) and a RichModel node (model 84016). :observed[the effect file]{games="elden-ring"}
+In a frame with the shard launched by its id, its tracers are the frame's `GXFfxtessellateTracerTextureGlowD` draws on those
+textures and its point sprites the `PointSpriteGlowD` draws; every one of its draws is a `GlowD` program, writing the
+[glow target](/engines/fromsoft/lighting/tone-mapping/#glow-and-the-glare) beside the colour. :observed[one frame, the draws matched
+to the nodes by texture]{games="elden-ring"} Two frames of one launched bullet show the motion: while the bullet had not yet
+moved its tracers had no length, and once it flew they trailed 1.2 m behind its head. :observed[two frames]{games="elden-ring"}
+
 An item's use plays a player animation numbered `50000 + 10 × goodsUseAnim`: for 44 of the 68 distinct values of
 `EquipParamGoods.goodsUseAnim` (2,176 of its 2,329 rows) the player's `a00` event file holds that animation, and for 24 values
 (153 rows; among them 16, 26, 42, 254 and 255) it holds none. :observed[every goods row against the player's event files]

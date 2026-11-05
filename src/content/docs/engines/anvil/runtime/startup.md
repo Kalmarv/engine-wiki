@@ -176,6 +176,19 @@ it cropped and enlarged, not texel for texel; the image is stored with its V axi
 program turns. :observed[the title screen's recorded draws] Drawn 1:1 with the same programs and identity constants, the image
 gives at all 921,600 pixels the same RGB as an independent BC1 decoder. :proven[the title sprite's programs run on its texture]
 
+Loading the world New Game opens (`DataPC_02.forge`) creates far more Direct3D resources than the title screen does. Once
+the load settles, the game holds about 190.5 MB of resource bytes in 9,286 Direct3D objects:
+
+- 1,108 textures, most of them `D3DPOOL_MANAGED` DXT1 or DXT5 with full mip chains (the largest group is 148 textures of
+  512 × 512, DXT1, 10 levels);
+- 1,561 vertex buffers and 675 index buffers;
+- 538 vertex shaders, 3,273 pixel shaders and 2,048 occlusion queries.
+
+On the title screen it is about 67 MB. :observed[a native run of the port through New Game, counting live resources]
+The texture loader does not check `CreateTexture`'s result. The call at `0xC9E205` that receives `D3DERR_OUTOFVIDEOMEMORY`
+goes on with a NULL texture, and the game faults reading address 0 at `0xCA1440`. :observed[the port with a 192 MiB
+resource budget]
+
 :::open[What calls the frame function?]
 The loop that calls the frame function dispatches through a vtable, so following the direct calls does not find it.
 A breakpoint on the frame function in the running game would.

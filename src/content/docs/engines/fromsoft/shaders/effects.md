@@ -127,9 +127,8 @@ After fog (the colour times the fog's transmittance, plus its in-scatter times `
 `g_ps_BlendingMode` 1 or 2 an opacity above 1 multiplies the colour and is then clamped to 1; and with
 `g_transductionAlphaToColorScale` `s` below 1 it keeps the colour up to 1 and scales what exceeds 1 by `s²`, the opacity by
 `s`. Its second target takes `g_psGlowScale.rgb` times the colour (with the same pre-exposure) and `g_psGlowScale.a` times the
-opacity. :observed[the disassembly, not run]{games="elden-ring"} That second target is the frame's glow target, which the
-glow chain blurs into the glare ([glow and the glare](/engines/fromsoft/lighting/tone-mapping/#glow-and-the-glare)).
-:observed[one frame's draws]{games="elden-ring"} The frame's pre-exposure is off in every recorded frame
+opacity. :observed[the disassembly, not run]{games="elden-ring"} That second target is the frame's
+[glow target](/engines/fromsoft/shaders/effects/#the-glow-target). :observed[one frame's draws]{games="elden-ring"} The frame's pre-exposure is off in every recorded frame
 ([frame](/engines/fromsoft/lighting/frame/#pre-exposure)), so an effect's colour lands in the frame's own light units and the
 scene exposure and tone curve apply to it as to the rest of the frame. :inferred{games="elden-ring"}
 

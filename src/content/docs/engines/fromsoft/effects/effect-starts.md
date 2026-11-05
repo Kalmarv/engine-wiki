@@ -116,7 +116,7 @@ EqualDistanceEmitter nodes, which by their name make particles at equal distance
 (`s10020`, `s10030`), a Model node (model 83050) and a RichModel node (model 84016). :observed[the effect file]{games="elden-ring"}
 In a frame with the shard launched by its id, its tracers are the frame's `GXFfxtessellateTracerTextureGlowD` draws on those
 textures and its point sprites the `PointSpriteGlowD` draws; every one of its draws is a `GlowD` program, writing the
-[glow target](/engines/fromsoft/lighting/tone-mapping/#glow-and-the-glare) beside the colour. :observed[one frame, the draws matched
+[glow target](/engines/fromsoft/shaders/effects/#the-glow-target) beside the colour. :observed[one frame, the draws matched
 to the nodes by texture]{games="elden-ring"} Two frames of one launched bullet show the motion: while the bullet had not yet
 moved its tracers had no length, and once it flew they trailed 1.2 m behind its head. :observed[two frames]{games="elden-ring"}
 

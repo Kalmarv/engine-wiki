@@ -44,42 +44,14 @@ The HDR-output branch is a different path, not described here.
 :only[elden-ring] The glare Elden Ring adds in step 1 is the sum of two blurred images: the bloom of the scene's bright
 pixels and the glow that materials and effects write to a target of their own. The light combine writes emission times
 the [glow weight](/engines/fromsoft/shaders/gbuffer/#occlusion-translucency-light-sets-subsurface-scattering-and-glow) to it,
-and the effect programs with a `GlowD` variant write their [glow colour](/engines/fromsoft/shaders/effects/#what-the-engine-takes-from-the-file)
-there as their second target. The glow target is R11G11B10F at the frame's size, and the glow chain (pass 15 of the
-[pass list](/engines/fromsoft/lighting/frame/#the-passes)) blurs it: :observed[the programs' code and the constants of one
-frame at 2560 × 1440]{games="elden-ring"}
-
-1. `EmissiveToGlowPS` takes one bilinear sample of the glow target per texel of a half-size target (1280 × 720), unscaled: a
-   2 × 2 mean. It reads no constants.
-2. `Sample13Weight` halves it seven times, 640 × 360 down to 10 × 6. Each texel sums 13 bilinear taps of the level above, at
-   `uv + offset × g_vScreenSpaceTexCoordScale` (the reciprocal of the target's size, so the offsets are in target texels),
-   clamped half a source texel inside the edge, with the weights below; they sum to 1.
-3. `GlowCompositeSinglePS` climbs back: each level from 20 × 12 to 640 × 360 adds the level below it, sampled bilinearly
-   and multiplied by `g_GlowScaleOffset.x` = 1.2 (blend source alpha and one, the alpha written as 1). The last step
-   writes 0.38711962 times the 640 × 360 level into the 1280 × 720 target with blending off, replacing the half-size copy.
-4. `ToneMap_BloomCompositeSinglePS` adds the result into the 1280 × 720 glare target (`g_GlareAccTexture`) times
-   `g_vBloomFinalColor`, which for this draw is the scene exposure `g_ToneMapSceneLumScale`. The bloom is added to the same
-   target by the same program with `g_vBloomFinalColor` 0.05.
-5. `ToneMap_TabledToneMapLUTPS` forms `g_ToneMapSceneLumScale × scene + g_GlareLuminance.x × glare`, with
-   `g_GlareLuminance.x` 1.
-
-| Taps | Offset (target texels) | Weight |
-|---|---|---|
-| 1 | (0, 0) | 0.09818182 |
-| 2 | (±0.5, 0.707106) | 0.06747935 |
-| 2 | (±1, 0) | 0.059550285 |
-| 2 | (±0.5, −0.7071006) | 0.06747961 |
-| 4 | (±0.5, ±0.23570226) | 0.08427146 |
-| 2 | (0, ±0.47140452) | 0.08785695 |
-
-The weights, the scale 1.2 for the six additive steps and 0.38711962 for the last are the same in all 15 recorded frames that
-draw the chain, and the glow's `g_vBloomFinalColor` equals the frame's `g_ToneMapSceneLumScale` in the three read (16.357859,
-17.925539 and 11.043771). :observed[15 frames of three runs]{games="elden-ring"} With 1.2 per step, a flat glow `g` comes out of
-the climb as `g × (1 + 1.2 + … + 1.2⁶)` = 12.9159 `g`, and 0.38711962 is 5 divided by that sum: the chain returns five times a
-flat glow. :proven[arithmetic on the recorded constants]{games="elden-ring"} The glow is therefore exposed as the scene's light
-is, and neither the exposure meter (which reads the scene's own half-size copy) nor the bright pass of the bloom reads the
-glow target. :observed[the resources each draw of one frame reads]{games="elden-ring"} An effect's glow thus brightens the
-picture without lowering the exposure or feeding the bloom. :inferred{games="elden-ring"}
+and the effect programs with a `GlowD` variant write their [glow colour](/engines/fromsoft/shaders/effects/#the-glow-target)
+there as their second target. :observed{games="elden-ring"} The [glow chain](/engines/fromsoft/lighting/frame/#glow) blurs it
+and adds it to the glare target (`g_GlareAccTexture`) times the scene exposure, beside the bloom added at 0.05, and the final
+program forms `g_ToneMapSceneLumScale × scene + g_GlareLuminance.x × glare` with `g_GlareLuminance.x` 1.
+:observed[the programs' code and the constants of 18 frames]{games="elden-ring"} The glow is therefore exposed as the scene's
+light is, and neither the exposure meter (which reads the scene's own half-size copy) nor the bright pass of the bloom reads the
+glow target, so an effect's glow brightens the picture without lowering the exposure or feeding the bloom.
+:inferred{games="elden-ring"}
 
 ## The tone constants
 

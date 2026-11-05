@@ -627,10 +627,23 @@ programs translated and their constants read]{games="elden-ring"}
 | 4 | `GlowCompositeSinglePS`, last pass | the 1280 × 720 level is replaced (no blend) by the 640 × 360 level's upsample times `g_GlowScaleOffset.x` | 0.38711962 |
 | 5 | `ToneMap_BloomCompositeSinglePS` | adds the 1280 × 720 level to the glare buffer times `g_vBloomFinalColor`, which is the scene exposure `g_ToneMapSceneLumScale` in this draw (9.49 to 17.93 in these frames, equal in each) and 0.05 in the draw that adds the bright-pass bloom | |
 
-The 13 taps (x, y in texels of the level written, weight), the weights summing to 1: (0, 0, 0.0982), (±0.5, 0.7071, 0.0675),
-(±1, 0, 0.0596), (±0.5, −0.7071, 0.0675), (±0.5, 0.2357, 0.0843), (0, 0.4714, 0.0879), (±0.5, −0.2357, 0.0843),
-(0, −0.4714, 0.0879). :observed[`cbSampleOffset` of every `Sample13Weight` draw in 18 frames]{games="elden-ring"} The constants
-1.2 and 0.38711962 are the same in all 18. :observed{games="elden-ring"}
+Each tap is at `uv + offset × g_vScreenSpaceTexCoordScale`, the reciprocal of the written level's size, clamped half a texel of
+the level read inside its edge. :observed[the program's code]{games="elden-ring"} The 13 taps, their weights summing to 1:
+:observed[`cbSampleOffset` of every `Sample13Weight` draw in 18 frames]{games="elden-ring"}
+
+| Taps | Offset (texels of the level written) | Weight |
+|---|---|---|
+| 1 | (0, 0) | 0.09818182 |
+| 2 | (±0.5, 0.707106) | 0.06747935 |
+| 2 | (±1, 0) | 0.059550285 |
+| 2 | (±0.5, −0.7071006) | 0.06747961 |
+| 4 | (±0.5, ±0.23570226) | 0.08427146 |
+| 2 | (0, ±0.47140452) | 0.08785695 |
+
+The constants 1.2 and 0.38711962 are the same in all 18. :observed{games="elden-ring"} Steps 1 and 2 as described, run on the glow
+target read back from a captured frame, give the game's own half-size level and all seven halvings bit for bit, and the whole chain
+through step 4 gives the game's 1280 × 720 result with the median texel exact. :observed[one frame's targets, reproduced by an
+independent implementation]{games="elden-ring"}
 
 0.38711962 is 5 / (1 + 1.2 + … + 1.2⁶), so a glow target of one even value v comes out as 5 v, the largest levels weighing most
 (the 10 × 6 level 1.156 of it, the 640 × 360 level 0.387). :inferred[the arithmetic fits to 8 digits]{games="elden-ring"}

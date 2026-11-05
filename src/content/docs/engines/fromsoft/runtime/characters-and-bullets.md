@@ -88,9 +88,10 @@ effect's tracers, which keep a point every 1/120 s.
   16.6 m/s, each 1.33 m/s faster than the one before, which is 40 m/s² over 1/30 s. :observed[the same frame]
 
 :::open[What stops the shard's two spinning tracers before the bullet ends?]
-By that law the frame is 1.09 s after the launch. The effect's two thin tracers that spin around the line of flight
-end 5.7 m behind the bullet (0.23 s of its flight), while its widest tracer and its model particles reach the bullet.
-In a frame of a second launch, 1.20 s after it, neither spinning tracer is drawn. The effect file declares no life
+By that law the frame is 1.12 s after the launch. The effect's two thin tracers that spin around the line of flight
+end 6.5 m behind the bullet (0.26 s of its flight), while its widest tracer reaches the place its node stands, 0.75 m
+behind the bullet (the node is translated 0.75 m back), and its model particles and spinning sprites reach the bullet.
+In a frame of a second launch, 1.23 s after it, neither spinning tracer is drawn. The effect file declares no life
 for those tracers' particles, and its one state ends the effect only when external value 0 reaches 1.
 :::
 

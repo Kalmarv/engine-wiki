@@ -640,10 +640,13 @@ the level read inside its edge. :observed[the program's code]{games="elden-ring"
 | 4 | (±0.5, ±0.23570226) | 0.08427146 |
 | 2 | (0, ±0.47140452) | 0.08785695 |
 
-The constants 1.2 and 0.38711962 are the same in all 18. :observed{games="elden-ring"} Steps 1 and 2 as described, run on the glow
-target read back from a captured frame, give the game's own half-size level and all seven halvings bit for bit, and the whole chain
-through step 4 gives the game's 1280 × 720 result with the median texel exact. :observed[one frame's targets, reproduced by an
-independent implementation]{games="elden-ring"}
+The constants 1.2 and 0.38711962 are the same in all 18. :observed{games="elden-ring"} Every level is R11G11B10_FLOAT like the glow target, each
+store rounding toward zero. Run as described on the glow target read back from a captured frame, with the levels in that format,
+steps 1 and 2 give the game's half-size level and all seven halvings bit for bit; each climbing step, run on the game's own
+levels, is exact in the median texel and off by at most one R11G11B10 step; and the whole chain gives the game's 1280 × 720 result
+exact in the median texel, within 2.5 % at the 95th percentile and 99.8 % of its total. :observed[one frame's targets, reproduced
+pass by pass by an independent implementation]{games="elden-ring"} The same chain with half-float levels comes out 6 % brighter in
+red and green and 12 % in blue: the format's rounding is part of the result. :observed[the same frame]{games="elden-ring"}
 
 0.38711962 is 5 / (1 + 1.2 + … + 1.2⁶), so a glow target of one even value v comes out as 5 v, the largest levels weighing most
 (the 10 × 6 level 1.156 of it, the 640 × 360 level 0.387). :inferred[the arithmetic fits to 8 digits]{games="elden-ring"}

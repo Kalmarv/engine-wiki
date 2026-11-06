@@ -23,8 +23,14 @@ for header values, texture slots, passes and parameters. The texture word at off
 skips, remains unknown rather than an independently verified meaning. No Elden Ring metaparam is refused.
 :proven[all 1063 bundles]{games="elden-ring"}
 
-The version-6 layouts below cover those 232 Sekiro and 1,063 Elden Ring files; Sekiro's 16 version-4 files are
-excluded. :proven[version-6 bundle census]
+The version-6 layouts below cover those 232 Sekiro and 1,063 Elden Ring files. :proven[version-6 bundle census]
+
+Sekiro's other 16 metaparams are version 4: the 15 bundles named `<shader>_lightmap` and `sfx_AMSN_cloth`. Their shader
+ID word (offset 88) is 0 in all 16. Each `_lightmap` file is byte for byte its version-6 sibling, the bundle of the same
+name without the suffix, except at the version word (offset 8) and the shader ID (0 where the sibling has a non-zero ID),
+so version 4 has the version-6 layout. :proven[all 16 version-4 files of the 248 bundles]{games="sekiro"} `sfx_AMSN_cloth`,
+which has no sibling, reads with the same layout, and the 16 declare 201 textures, 80 render passes, 54 CAParams and one
+MtdParam between them. :observed{games="sekiro"}
 
 ## Header
 
@@ -34,7 +40,7 @@ size: 152
 fields:
   - {at: 0, size: 4, type: char, name: magic, value: 'SMD\0', level: proven}
   - {at: 4, size: 4, type: u32, name: reserved, value: 0, level: proven}
-  - {at: 8, size: 4, type: u32, name: version, value: 6, level: proven}
+  - {at: 8, size: 4, type: u32, name: version, value: 6, level: proven, note: "4 in 16 Sekiro files, which share this layout"}
   - {at: 12, size: 4, type: u32, name: texture count, level: proven}
   - {at: 16, size: 8, type: u64, name: unknown offset, level: unknown}
   - {at: 24, size: 8, type: u64, name: CAParam table offset, level: proven}
@@ -148,8 +154,3 @@ with RGBA and a fifth intensity component. These codes differ from MATBIN's para
 
 The override key is a CRC-32 of the UTF-16LE logical parameter name, or zero when there is no override; that logical
 name need not equal the shader field name. :observed
-
-:::open[What does version 4 change?]
-Sixteen Sekiro bundles use version 4, including older lightmap shaders and `sfx_AMSN_cloth`; the version-6 layouts
-above do not describe them. :observed{games="sekiro"}
-:::

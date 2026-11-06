@@ -6,6 +6,12 @@ sources:
   - title: GBX.NET
     url: https://github.com/BigBang1112/gbx-net
     note: version 2.5.0; its TMUnlimiter reader (CGameCtnChallenge.TMUnlimiterData) and the function enum of parameters
+  - title: TMUnlimiter wiki, AngelScript
+    url: https://github.com/tomek0055/TMUnlimiter/wiki/AngelScript
+    note: the script interface TMUnlimiter declares, including VehicleCarTuning's fields and their types
+  - title: AngelScript
+    url: https://www.angelcode.com/angelscript/
+    note: the scripting library; as_restore.cpp of version 2.37.0 writes and reads the saved bytecode
 ---
 
 TMUnlimiter is a community extension of TrackMania Nations Forever. A map made with it keeps its real content in chunks the
@@ -13,7 +19,8 @@ stock game skips, under class `CGameCtnChallenge` with the chunk numbers `0x3F00
 game a single stand-in block. :observed[61 downloaded maps]
 
 Everything here is measured on maps from TrackMania Exchange: the 61 TMUnlimiter maps of the 2026 top-downloads list (100 maps)
-that GBX.NET can read, each compared with it field by field with no difference. :observed[61 maps]
+that GBX.NET can read, each compared with it field by field with no difference, and the 10 it refuses, nine for their
+AngelScript bytecode and one for a parameter's value kind (below). :observed[71 maps]
 
 ## The chunks
 
@@ -37,7 +44,7 @@ load this challenge..."; the real blocks are in the extension chunk. :observed[6
 |---|---|---|
 | 1 | Flags, `u16` (below) | :observed |
 | 2 | Decoration offset and scale; absent when the visibility is 3 | :observed |
-| 3 | AngelScript modules | :observed |
+| 3 | AngelScript modules (below) | :observed |
 | 4 | Parameter sets | :observed |
 | 5 | Trigger groups | :observed |
 | 6 | Block groups | :observed |
@@ -79,7 +86,28 @@ A parameter's value kind follows from its function, an index into an enum of 467
 parameters store an inline `CFuncKeysReal`, a node with no node index (see
 [key functions](/engines/gamebox/animation/mediatracker/#key-functions)). :observed[61 maps]
 
-Nine of the maps hold AngelScript modules with bytecode, which neither reader decodes. :observed[the 100 maps]
+Two functions GBX.NET's table gives as `KeysReal` carry a plain `f32`: 124 `Vehicle_M4AccelFromSlipAngle` and 136
+`Vehicle_M4SteerRadiusCoefFromSlipAngle`. TMUnlimiter's script interface declares both as `float` fields of
+`VehicleCarTuning` (`m4AccelFromSlipAngle`, `m4SteerRadiusCoefFromSlipAngle`). :sourced[TMUnlimiter wiki, AngelScript] The one
+downloaded map that sets parameter 124 (operation Set) stores the single `f32` 10.0 there, not an inline `CFuncKeysReal`, and
+with the parameter read as an `f32` the map reads to its end. :observed[the one map of 100 that sets it]
+
+### AngelScript modules
+
+Each module begins with a flags byte: bit 0 marks an empty module, which stores nothing more, and bit 1 a module stored
+without a name; otherwise the module's name follows as a string. No other bit is set. :observed[71 maps] A module that is
+not empty holds AngelScript's saved bytecode, the stream `asIScriptModule::SaveByteCode` writes, directly after the name. The
+stream has no length of its own, so the next field starts where a walk of the stream in the reader's order ends. :observed[the
+9 maps of the 100 that have bytecode]
+
+The stream is AngelScript 2.37.0's. The 32-bit extension DLL contains every error text that version adds and none of those
+2.38.0 adds, the maps' type tokens are 2.37's numbers (`bool` 65, `void` 80, which 2.38 renumbered), and pointer operands in
+the bytecode are 32-bit words. :observed[the TMUnlimiter 2.0 DLL and the 9 maps] Read with 2.37.0's rules (encoded integers,
+strings by length or by an earlier string's index, data types and functions by reference to entries already read), every
+module of the 9 maps walks to its last byte with every instruction one the 2.37.0 writer emits; each map has one module
+with bytecode, and its bytes are found whole in GBX.NET's decompressed body. Read with the rules of earlier versions (2.31,
+or 2.33 to 2.35) no module walks to its end. :observed[the 9 maps] The modules declare enums, classes, funcdefs, typedefs,
+globals, functions and imports, and their string constants are UTF-16LE, the host's string type. :observed[the 9 maps]
 
 ## Chunk 0x3F001000
 
@@ -107,10 +135,4 @@ GBX.NET's view of these maps differs from the file in ways a comparison has to a
 - It counts inline nodes (a `CFuncKeysReal` in a parameter, a `CPlugIndexBuffer` in a visual), which have no node index.
 - It replaces the map's block list with the chunk's game blocks, so the block data chunk's count and first block differ from
   its dump.
-- It refuses AngelScript modules with bytecode and parameters whose value kind its switch gets wrong.
-
-:::open[Why does Vehicle_M4AccelFromSlipAngle store a plain number?]
-In one downloaded map the parameter `Vehicle_M4AccelFromSlipAngle` (enum index 124, a `KeysReal` by GBX.NET's table) with the
-operation Set stores a plain `f32` (10.0), not an inline `CFuncKeysReal`. Neither reader reads that map, so the rule for value
-kinds is not complete.
-:::
+- It refuses AngelScript modules with bytecode, and reads parameters 124 and 136 as keys.

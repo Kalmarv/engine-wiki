@@ -115,6 +115,13 @@ in every one (the record sizes of the Shader Model 5.0 layout). :observed{games=
 sizes, a 28-byte header, 32-byte bindings, 24-byte buffers and variables and 16-byte types, with every name inside the part
 and every variable inside its buffer. The other 4,838 programs have no `RDEF`. :observed{games="sledding"}
 
+In four of the 19 hull programs Sekiro creates at run time (recorded as the running game handed them to Direct3D 11), a
+constant buffer's struct variable `SAT_MtdParam` sits at offset 384 and is 160 to 720 bytes long, but the stored offsets of its
+members start at 384: they count from the buffer, where in every other struct of the 87 hull, domain and geometry programs
+recorded they count from the struct. `D3DDisassemble` adds the struct's offset to them all the same and lists the members
+from offset 768, outside the struct. Taken as offsets in the buffer, the members fill the struct's stated size exactly.
+:observed{games="sekiro"}[the 87 hull, domain and geometry programs recorded]
+
 A Shader Model 5.1 target writes another tag and a longer binding record. fxc 10.0.26100.0, compiling one pixel program
 for `ps_5_0` and for `ps_5_1`, writes `RD11` and the sizes 60, 24, 32, 40, 36, 12 for 5.0, and for 5.1 the bytes
 `13 13 44 25` (the word `0x25441313`) at byte 28 and the sizes 60, 24, 40, 40, 36, 12: the binding record grows from 32 to
@@ -362,12 +369,16 @@ The streams that carry the program's information:
 | 1, PDB info | the named stream map, which names the string table `/names` | :observed[test compilations and the 16 Sledding Game containers] |
 | 2, TPI | the variables' types | :observed[test compilations and the 16 Sledding Game containers] |
 | 3, DBI | the module list; the module's record names its stream and the sizes of its symbols and C13 line information | :observed[test compilations and the 16 Sledding Game containers] |
-| the module's stream | the symbols, then the C13 subsections: file checksums (`0xf4`, each naming a source path in `/names`), lines (`0xf2`, the line of each instruction's byte offset in the token stream) and inlinee lines (`0xf6`, the first line of each inlined function) | :observed[test compilations and the 16 Sledding Game containers] |
+| the module's stream | the symbols, then the C13 subsections: file checksums (`0xf4`, each naming a source path in `/names`), lines (`0xf2`, the line of each instruction's byte offset in the token stream) and inlinee lines (`0xf6`, the first line of each inlined function: signature 0, or signature 1 (`CV_INLINEE_SOURCE_LINE_SIGNATURE_EX`) where an inlined function has code from an `#include`d file) | :observed[test compilations and the 16 Sledding Game containers] |
 
 The symbols are a function (`S_GPROC32`), its inlined calls (`S_INLINESITE` and `S_INLINESITE_END`, whose binary
 annotations give the lines of the inlined instructions), its variables (`S_LOCAL`) and, after each variable, the
 ranges in which a register holds part of it (`S_DEFRANGE_HLSL`, `0x1150`). :observed[test compilations and the 16
-Sledding Game containers] The types the variables use include the HLSL leaves `LF_HLSL` (`0x1517`, an HLSL object type;
+Sledding Game containers] An inlined call's binary annotations make rows of code offset, length and line. The code length
+(op 4) moves the code offset past the row it ends, so the next row's code offset delta counts from there; the combined
+code length and offset (op 12) does not. Read otherwise, a call's rows overlap its caller's code and the caller's
+instruction takes the inlined function's line. :observed[test compilations with inlined calls two and three deep, from an
+included file, in a loop and with an else] The types the variables use include the HLSL leaves `LF_HLSL` (`0x1517`, an HLSL object type;
 kind `0x200` is an interface pointer of four words), `LF_VECTOR` (`0x151b`: element type, count, size), `LF_MATRIX`
 (`0x151c`: element type, rows, columns, major stride, bit 0 of the next byte row-major) and `LF_STRIDED_ARRAY`
 (`0x1516`: element type, index type, stride). :observed[test compilations]
@@ -394,15 +405,25 @@ fields:
   row that covers it, not the line table's. Unlike the Direct3D 9 comment, every change of line is printed.
 - Before that first instruction, the variables held in a register from the start: `// Initial variable locations:`,
   then a line for each run of locations in the same register, `//   r0.x <- c.x; r0.y <- c.y; `, the runs joined by
-  `; `.
+  `; `. Here a scope's nested scopes' variables come before its own; everywhere else the variables are in symbol order,
+  a scope's own before its nested scopes'.
 - After an instruction (not a declaration), the locations whose range or a gap's end is at the next instruction's
-  offset, `  // r1.x <- uv.x; r1.y <- uv.y`, after `else` as `  // Prior locations: ...`. Each names the register
-  and the variable with the member path its offset falls in, from the types: `.member`, `[n]`, `._mRC` for a matrix
-  element, `.x` to `.w` for a vector component. An indexable temp's array is named whole (`x0 <- arr`).
+  offset, `  // r1.x <- uv.x; r1.y <- uv.y`, after `else` as `  // Prior locations: ...`. A function's own variables
+  are written after any instruction; an inlined call's only after an instruction in the code the call spans, from its
+  first row to its last, its nested calls' code and the caller's code between its rows included, so never after the
+  caller's code that leads into the call. Each location names the register and the variable with the member path its
+  offset falls in, from the types: `.member`, `[n]`, `._mRC` for a matrix element, `.x` to `.w` for a vector component.
+  An indexable temp (`x#`) or `m#` register that holds the variable from its first byte is named by the variable alone
+  (`x0 <- arr`, `m0 <- vout`).
 - Flag `0x10` leaves all of it out.
 
 :observed[the listings of 92 test compilations with and without /Od under 23 flag words, and of the 16 Sledding
 Game containers]
+
+The same rules give Microsoft's listing, byte for byte, for 4,304 programs that fxc 10.0.26100.4654 compiles from the HLSL
+of four public shader test sets (DirectXShaderCompiler's tests, vkd3d's and vkd3d-proton's shader tests and MiniEngine),
+each built with `/Zi` and with `/Zi /Od`: all 8,608 listings under each of the 23 flag words. :observed[8,608 builds of
+outside programs]
 
 ## Shader Model 4 and 5 token streams
 

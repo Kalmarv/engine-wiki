@@ -61,6 +61,13 @@ fields:
   - {at: 80, size: 1, type: u8, name: IsUsedBySubMeshes, level: observed}
 ```
 
+Over the 29,174 meshes with bones in the six forges, 497,168 of their 497,194 bone records name a bone of some Skeleton by
+its CRC-32. The other 26 hold six ids, in the meshes of two front forks and two bike frames: two ids in each LOD of
+`MAD_CHR_CR_FrontFork_002_U` and two in each of `MAD_CHR_CR_FrontFork_002_U_A001`, one in the four LODs of
+`MAD_CHR_CG_Frame_001_U_A002` and one in `MAD_CHR_EN_Frame_007_U_A002_LODM`. No Skeleton of the six forges has a bone of those names
+and no bone-name list of a skeleton holds them. Each sits where the record's class says the bone name goes, so they are the
+data's own ids. :proven[every mesh bone record of the six forges]{games="riders-republic"}
+
 :::open[Which spherical vector reaches each pixel path?]
 The two kind-11 vectors have an established vertex decode, but their downstream roles need a per-permutation trace. :unknown
 :::

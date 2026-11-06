@@ -344,6 +344,64 @@ or of a constant buffer as `scope::name` (`twist::v`, `C::k`), and a local or a 
 :observed[test compilations: 10 vs_2_0 to ps_3_0 programs and the Direct3D 9 programs of 16 level 9 containers, with
 and without /Od, under every flag word]
 
+## Debug information in Shader Model 4 and 5 (`SPDB`)
+
+`fxc /Zi` stores a program database in an `SPDB` part: a PDB in Microsoft's multi-stream file format (MSF 7.00),
+the same container a C++ compiler's PDB uses. It says the source line of each instruction, the inlined calls, and
+which register component holds which part of each variable over which instructions. :observed[test compilations and
+the 16 Sledding Game containers] In every one the blocks are 512 bytes, the file has 16 streams and the DBI stream
+lists one module. :observed[92 test compilations and the 16 Sledding Game containers] Sixteen of Sledding Game's 4,854
+programs carry the part (see the part sets above); they hold no inlined calls. :observed{games="sledding"}
+
+The streams that carry the program's information:
+
+| Stream | What it holds | Confidence |
+|---|---|---|
+| 1, PDB info | the named stream map, which names the string table `/names` | :observed[test compilations and the 16 Sledding Game containers] |
+| 2, TPI | the variables' types | :observed[test compilations and the 16 Sledding Game containers] |
+| 3, DBI | the module list; the module's record names its stream and the sizes of its symbols and C13 line information | :observed[test compilations and the 16 Sledding Game containers] |
+| the module's stream | the symbols, then the C13 subsections: file checksums (`0xf4`, each naming a source path in `/names`), lines (`0xf2`, the line of each instruction's byte offset in the token stream) and inlinee lines (`0xf6`, the first line of each inlined function) | :observed[test compilations and the 16 Sledding Game containers] |
+
+The symbols are a function (`S_GPROC32`), its inlined calls (`S_INLINESITE` and `S_INLINESITE_END`, whose binary
+annotations give the lines of the inlined instructions), its variables (`S_LOCAL`) and, after each variable, the
+ranges in which a register holds part of it (`S_DEFRANGE_HLSL`, `0x1150`). :observed[test compilations and the 16
+Sledding Game containers] The types the variables use include the HLSL leaves `LF_HLSL` (`0x1517`, an HLSL object type;
+kind `0x200` is an interface pointer of four words), `LF_VECTOR` (`0x151b`: element type, count, size), `LF_MATRIX`
+(`0x151c`: element type, rows, columns, major stride, bit 0 of the next byte row-major) and `LF_STRIDED_ARRAY`
+(`0x1516`: element type, index type, stride). :observed[test compilations]
+
+```layout
+title: S_DEFRANGE_HLSL data (after the record's length and kind)
+size: variable
+fields:
+  - {at: 0, size: 2, type: u16, name: register type, level: observed, note: "the operand type of the token stream (0 r#, 1 v#, 2 o#, 3 x#, 16 m#, 25 vicp, ...)"}
+  - {at: 2, size: 2, type: u16, name: flags, level: observed, note: "bits 0 and 1: the number of register indices at the end (0 to 2)"}
+  - {at: 4, size: 2, type: u16, name: offset in the variable, level: observed, note: "the byte of the variable the register component holds"}
+  - {at: 6, size: 2, type: u16, name: size, level: observed}
+  - {at: 8, size: 4, type: u32, name: range start, level: observed, note: "the byte offset in the token stream of the first instruction the location holds for"}
+  - {at: 12, size: 2, type: u16, name: section, level: observed}
+  - {at: 14, size: 2, type: u16, name: range length, level: observed}
+  - {at: 16, size: "4 per gap", type: "(u16, u16)[]", name: gaps, level: observed, note: "start from the range start and length of each stretch where the register holds something else"}
+  - {at: "end - 4 per index", size: "4 per index", type: "u32[]", name: register indices, level: observed, note: "the first is the register times 16 plus the component times 4; for x# and m# the register alone; a second is the outer index (an indexable temp's array, a control point)"}
+```
+
+`D3DDisassemble` prints the part in the listing, and these rules give Microsoft's text byte for byte:
+- Before the first record whose byte offset has a line, `#line N "path"` with no blank line before it. After that,
+  where the line or the file changes, a blank line and `#line N`, with the path where the file changes or the
+  instruction is a `label`. An instruction inside an inlined call takes the line of the innermost call's annotation
+  row that covers it, not the line table's. Unlike the Direct3D 9 comment, every change of line is printed.
+- Before that first instruction, the variables held in a register from the start: `// Initial variable locations:`,
+  then a line for each run of locations in the same register, `//   r0.x <- c.x; r0.y <- c.y; `, the runs joined by
+  `; `.
+- After an instruction (not a declaration), the locations whose range or a gap's end is at the next instruction's
+  offset, `  // r1.x <- uv.x; r1.y <- uv.y`, after `else` as `  // Prior locations: ...`. Each names the register
+  and the variable with the member path its offset falls in, from the types: `.member`, `[n]`, `._mRC` for a matrix
+  element, `.x` to `.w` for a vector component. An indexable temp's array is named whole (`x0 <- arr`).
+- Flag `0x10` leaves all of it out.
+
+:observed[the listings of 92 test compilations with and without /Od under 23 flag words, and of the 16 Sledding
+Game containers]
+
 ## Shader Model 4 and 5 token streams
 
 Over the 7,729 Shader Model 4 and 5 programs of Sekiro, Riders Republic and Sledding Game, every instruction and declaration

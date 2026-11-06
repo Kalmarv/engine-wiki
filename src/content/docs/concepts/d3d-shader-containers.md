@@ -524,6 +524,7 @@ words for stream 0 (the geometry programs write one stream). A hull program adds
 | 1.5 | 36 bytes | 16 bytes | 10 Elden Ring |
 | 1.6 | 48 bytes | 24 bytes | 45,992 Elden Ring (67 without resources, which have no record size) |
 | 1.7 (dxc 1.7.2308) | 48 bytes | 24 bytes | 96 test compilations (7 without resources) |
+| 1.9 (dxc 1.9.2609) | 52 bytes | 24 bytes | 111 test compilations (15 without resources); the 18 libraries have no `PSV0` |
 | 1.10 | 52 bytes | 24 bytes | 19,240 skate. (86 without resources) |
 
 :observed{games="skate elden-ring"}

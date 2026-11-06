@@ -1,7 +1,7 @@
 ---
 title: Texture2D
 description: "How Unity stores a texture: format ids, the mip chain, row order, colour space, normal map usage modes, wrap and filter, streaming, and the engine's default textures."
-games: [skatebird, sledding, peak, big-walk]
+games: [skatebird, sledding, peak, big-walk, risk-of-rain-2, schedule-i]
 sources:
   - title: Universal Render Pipeline source
     url: https://github.com/Unity-Technologies/Graphics
@@ -12,6 +12,12 @@ sources:
   - title: UnityPy (Texture2DConverter)
     url: https://github.com/K0lb3/UnityPy
     note: reader used as the independent decoder
+  - title: Unity's crunch fork
+    url: https://github.com/Unity-Technologies/crunch
+    note: the crunch decoder (crn_decomp.h) Unity's crunched formats are written for
+  - title: texture2ddecoder
+    url: https://github.com/UniversalGameExtraction/texture2ddecoder
+    note: Rust port of that decoder, the one unity-formats' unpacker is written from
 implementations:
   - name: unity-formats (texture.rs)
     url: https://github.com/Kalmarv/unity-formats/blob/main/src/texture.rs
@@ -86,6 +92,50 @@ Crunched formats (Unity's own compression layer) need Unity's crunch decoder: Sl
 Big Walk's `Metal032_2K_Roughness` are the only two crunched textures in the four installs; SkateBIRD and PEAK have none.
 :proven{games="skatebird sledding peak big-walk"}
 
+### Risk of Rain 2 and Schedule I
+
+Every Texture2D of Risk of Rain 2 (its loose files and its Addressables bundles, 10,816 textures) and of Schedule I (3,104)
+has the name, format, size, level count and pixel byte count an independent type tree reader gives it, and its levels split
+to exactly those bytes. :proven{games="risk-of-rain-2 schedule-i"} The formats they hold, in textures:
+
+| Id | Format | Risk of Rain 2 | Schedule I |
+|---|---|---|---|
+| 1 | Alpha8 | 4,264 | 79 |
+| 2 | ARGB4444 | 34 | 34 |
+| 3 | RGB24 | 187 | 21 |
+| 4 | RGBA32 | 520 | 63 |
+| 5 | ARGB32 | 5 | 1 |
+| 9 | R16 | 1 | 0 |
+| 10 | DXT1 (BC1) | 1,766 | 899 |
+| 12 | DXT5 (BC3) | 3,925 | 1,921 |
+| 19 | RGFloat | 0 | 6 |
+| 20 | RGBAFloat | 0 | 4 |
+| 24 | BC6H | 0 | 2 |
+| 25 | BC7 | 79 | 72 |
+| 26 | BC4 | 2 | 0 |
+| 27 | BC5 | 1 | 0 |
+| 28 | crunched DXT1 | 2 | 2 |
+| 29 | crunched DXT5 | 30 | 0 |
+
+:proven{games="risk-of-rain-2 schedule-i"} Both games' 34 ARGB4444 textures are those of `unity default resources`, as in the
+installs above. :observed{games="risk-of-rain-2 schedule-i"}
+
+### Crunched DXT
+
+A crunched texture (id 28, 29; Unity 2017.3 and later) stores one crunch file in place of its levels: a header that begins
+`Hx` and names the block format, Huffman-coded palettes of endpoints and selectors, and per level a stream of tiles that
+index them. Unpacking gives the DXT1 or DXT5 blocks of every level. :sourced[Unity's crunch fork] An unpacker written from
+the Rust port of that decoder gives, for each of the 36 crunched textures of Risk of Rain 2 and Schedule I, a first level that
+decodes to the same RGBA as UnityPy's decoding of the crunch file, and every level the size the texture's format and
+dimensions give. :proven{games="risk-of-rain-2 schedule-i"} UnityPy's decoder is a build of the same fork, so the agreement
+shows the unpacker follows the fork, not that the fork is the engine's decoder. :inferred
+
+### Empty textures
+
+A texture of width or height 0 has no pixel data and no levels. Risk of Rain 2 holds 17 (`Font Texture`, a font's dynamic
+atlas, and a TextMeshPro `LiberationSans SDF Atlas`) and Schedule I 18 (all `Font Texture`), every one 0×0 with a level count
+of 1 and 0 bytes. :proven{games="risk-of-rain-2 schedule-i"}
+
 Against an independent decoder over the textures of Sledding Game's mountain scene,
 every texture's size, level count and colour space agree; level 0 decodes to the same RGBA8 for uncompressed formats and BC7
 exactly, and for DXT1 and DXT5 within 1: the difference is the rounding of the interpolated palette entries, which the two
@@ -109,7 +159,7 @@ common, 53,272 of them). :proven{games="peak"} SkateBIRD and Sledding Game have 
 
 :::open[Nibble order of RGBA4444]
 No texture of the four installs uses id 2 or 13, and none of the four-bit textures of three further installs (below) is id 13,
-so the order of RGBA4444's channels is still not established by data. Community decoders disagree about it. No frame capture
+(nor any texture of Schedule I), so the order of RGBA4444's channels is still not established by data. Community decoders disagree about it. No frame capture
 of any Unity game read (SkateBIRD on Direct3D 11 and 12, Hollow Knight on both, Lethal Company, ULTRAKILL, Risk of Rain 2)
 holds a texture in a four-bit Direct3D format (`B4G4R4A4`, DXGI 115) or one of the engine's four-bit textures at all, so what
 the GPU is given for them is not observed either. What would settle it: a frame of any Unity game on Direct3D 11 that draws an

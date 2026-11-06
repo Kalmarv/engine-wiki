@@ -1,7 +1,7 @@
 ---
 title: SerializedFile containers
-description: "The container behind globalgamemanagers, levelN and *.assets files: header versions 21 and 22, the type table, the object table, script references and external files."
-games: [skatebird, sledding, peak, big-walk]
+description: "The container behind globalgamemanagers, levelN and *.assets files: header versions 17, 21 and 22, the type table, the object table, script references, external files and managed references."
+games: [skatebird, sledding, peak, big-walk, enter-the-gungeon, risk-of-rain-2, schedule-i]
 sources:
   - title: UnityPy
     url: https://github.com/K0lb3/UnityPy
@@ -9,6 +9,9 @@ sources:
   - title: AssetRipper
     url: https://github.com/AssetRipper/AssetRipper
     note: documents the container versions and publishes the type tree package (TPK)
+  - title: AssetStudio
+    url: https://github.com/Perfare/AssetStudio
+    note: SerializedFile reader; the versions at which the metadata gains fields
 implementations:
   - name: unity-formats (serialized.rs)
     url: https://github.com/Kalmarv/unity-formats/blob/main/src/serialized.rs
@@ -20,8 +23,9 @@ scenes share). A file is a header, a block of metadata (which types occur, where
 files it points into) and the objects' bytes. Bulk data (texture pixels, vertex streams, audio) is not inside: objects
 name a range of a [`.resS` or `.resource` file](/engines/unity/archives/player-data-folder/) beside it. :proven{games="skatebird"}
 
-Two container versions occur in the games here. SkateBIRD (Unity 2019.4) writes version 21; Sledding Game, PEAK and Big
-Walk (Unity 6000.3) write version 22. :proven[every serialized file of each install]
+Three container versions occur in the games here. Enter the Gungeon (Unity 2017.4) writes version 17; SkateBIRD (Unity
+2019.4) writes version 21; Risk of Rain 2 (2021.3), Schedule I (2022.3), Sledding Game, PEAK and Big Walk (Unity 6000.3)
+write version 22. :proven[every serialized file of each install]
 The same containers sit inside a [UnityFS bundle](/engines/unity/archives/unityfs-bundles/) when a build packs its data
 into one; Big Walk does.
 
@@ -29,7 +33,11 @@ into one; Big Walk does.
 
 | Game | Container | Unity version in the file | Files | Embedded type trees | Confidence |
 |---|---|---|---|---|---|
+| Enter the Gungeon | 17 | `2017.4.27f1` | 5 | none | :proven |
+| Enter the Gungeon's bundles | 17 | `2017.4.27f1` | 34 (inside 30 bundles) | every type | :proven |
 | SkateBIRD | 21 | `2019.4.20f1` | 31 | none | :proven |
+| Risk of Rain 2 | 22 | `2021.3.45f2` | 5 | none | :proven |
+| Schedule I | 22 | `2022.3.62f2` | 9 | none | :proven |
 | Sledding Game | 22 | `6000.3.12f1` | 7 | none | :proven |
 | PEAK 3.0.0 | 22 | `6000.3.15f1` | 13 | none | :proven |
 | Big Walk | 22 | `6000.3.17f1` | 12 (inside `data.unity3d`) | none | :proven |
@@ -195,13 +203,33 @@ resources`; `level13` adds `sharedassets13`. :observed{games="skatebird"} A scen
 `Shader` or `AudioClip` object in any of SkateBIRD's 14 scenes; its renderers reference the `sharedassets` files.
 :observed{games="skatebird"}
 
+## Managed references
+
+A field marked `[SerializeReference]` stores a reference to a plain C# object, not a Unity object. An object that has such
+fields ends with a `ManagedReferencesRegistry` named `references`: an `int version` and a vector `RefIds` of
+`ReferencedObject`s, each an `SInt64 rid`, a `ReferencedManagedType type` (three strings: `class`, `ns`, `asm`) and a
+`ReferencedObjectData data`. The fields that hold a reference store its `rid`. The data is laid out by the tree of the class
+`type` names, which the file keeps in its [reference types](#metadata) (matched by class, namespace and assembly), not in
+the object's own tree; a null reference has an empty class and no data. :sourced[UnityPy] All 1,427 objects of Sledding
+Game's 50 bundles decode by that rule, each to exactly its last byte, the 94 MonoBehaviours with `[SerializeReference]`
+fields among them. :proven{games="sledding"} A referenced object's own tree names a registry of its own, which is not stored:
+those objects decode to their last byte with it left out. :proven{games="sledding"}
+
 ## Container versions and Unity versions
 
-A reader accepts a container version it was checked against and refuses others: versions 21 and 22 are the ones verified
-against real data here. :observed A version 21 file is not a version 22 file read with other widths; field offsets and
-the object table differ, so one reader needs both layouts. :proven
+A reader accepts a container version it was checked against and refuses others: versions 17, 21 and 22 are the ones
+verified against real data here. :observed A version 21 file is not a version 22 file read with other widths; field
+offsets and the object table differ, so one reader needs both layouts. :proven
 
-:::open[Containers older or newer than 21 and 22]
-Unity's serialized container has other versions (older players, and newer editors may raise it). None of the games
-documented here uses one, so their layouts are not described.
+Version 17 has the version 21 header and object entry. Its metadata differs in three ways: a stored tree node is 24 bytes
+(no reference type hash, at 24 in later versions), there is no reference types table, and a type has no dependency list.
+:proven{games="enter-the-gungeon"} Enter the Gungeon's 5 loose files read so with the object table an independent reader
+gives (4,285 objects), and every one of the 93,034 objects of its 30 bundles' 34 files decodes by its stored tree to exactly
+its last byte. :proven{games="enter-the-gungeon"} The reference type hash arrives in version 19, the reference types table in
+version 20 and the dependency lists (and a reference type's class names) in version 21. :sourced[UnityPy, AssetStudio]
+
+:::open[Containers 18 to 20, and older or newer than 17 to 22]
+No game documented here writes 18, 19 or 20, so where their fields begin rests on two readers' sources. Unity's serialized
+container has older versions too (older players), and newer editors may raise it. What would settle 18 to 20: one
+player of Unity 2018.x or 2019.1 to 2019.2 read with an independent reader.
 :::

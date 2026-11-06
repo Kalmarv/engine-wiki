@@ -1,11 +1,16 @@
 ---
 title: Animation clips
 description: "How an AnimationClip stores its curves: the streamed, dense and constant blocks, the bindings that name what each curve drives, and the cubic form of a streamed key."
-games: [skatebird, sledding, peak]
+games: [skatebird, sledding, peak, enter-the-gungeon, risk-of-rain-2, schedule-i]
 sources:
   - title: AssetStudio
     url: https://github.com/Perfare/AssetStudio
     note: the independent clip decoder the layout was compared with
+  - title: UnityPy
+    url: https://github.com/K0lb3/UnityPy
+    note: type tree reader of the legacy curves and object bindings compared with
+  - title: Unity scripting reference, Keyframe and WeightedMode
+    url: https://docs.unity3d.com/ScriptReference/Keyframe.html
   - title: Unity scripting reference, AnimationClip
     url: https://docs.unity3d.com/ScriptReference/AnimationClip.html
 implementations:
@@ -16,7 +21,7 @@ implementations:
 ---
 
 An **AnimationClip** (class 74) of Mecanim (`m_Legacy` false) stores its curves in `m_MuscleClip`. Legacy clips store curves
-per kind and are a different layout. A clip's curves are numbered across three blocks, in this order: the **streamed** curves
+per kind and are a different layout ([legacy clips](#legacy-clips)). A clip's curves are numbered across three blocks, in this order: the **streamed** curves
 (`m_StreamedClip`), the **dense** curves (`m_DenseClip`, one sample per frame at a fixed rate) and the **constant** curves
 (`m_ConstantClip`, one value each). :observed{games="skatebird sledding"}
 
@@ -63,8 +68,59 @@ Whether the extra indices of those 98 PEAK clips drive bindings past the streame
 established.
 :::
 
+## Object curves
+
+A binding whose `isPPtrCurve` is set drives an object reference (a renderer's material, a sprite). It takes one curve like a
+float property, and the curve's values are indices into `m_ClipBindingConstant.pptrCurveMapping`, the list of objects the clip
+swaps in. In Risk of Rain 2, 5 of its 4,898 Mecanim clips have such bindings (20 of them, all on a SkinnedMeshRenderer, class
+137, attribute 0), their mappings name 28 objects, and every one of their 26 keys is a whole number that indexes the mapping;
+the bindings and mappings are the ones an independent type tree reader gives. :proven{games="risk-of-rain-2"} No binding of
+those clips or of Schedule I's 279 sets `isIntCurve` or `isSerializeReferenceCurve`. :observed{games="risk-of-rain-2 schedule-i"}
+
 A clip's length is `m_StopTime − m_StartTime` seconds. Its animation events (`m_Events`) are a separate list.
 :sourced[Unity scripting reference]
+
+## Legacy clips
+
+A **legacy** clip (`m_Legacy` true, played by the Animation component) keeps a default `m_MuscleClip` (no curves,
+`m_StartTime` 0 and `m_StopTime` 1) and no generic bindings; its curves are Unity's own keyframe curves, stored by kind with
+the path of their target as text:
+
+| Field | Curve | Value of a key |
+|---|---|---|
+| `m_RotationCurves` | a Transform's rotation | a quaternion (`x y z w`) |
+| `m_EulerCurves` | a Transform's Euler angles, with `m_RotationOrder` | three floats |
+| `m_PositionCurves`, `m_ScaleCurves` | a Transform's position and scale | three floats |
+| `m_FloatCurves` | a property of a component: `attribute` (its name), `classID`, `script` | one float |
+| `m_PPtrCurves` | an object property: `attribute`, `classID`, `script` | a PPtr |
+| `m_CompressedRotationCurves` | rotation curves in a compressed form, with `m_Compressed` | |
+
+Each curve is an `AnimationCurve`: `m_Curve`, a list of keyframes of `time`, `value`, `inSlope` and `outSlope` (from Unity
+2018.1 also `weightedMode`, `inWeight` and `outWeight`), and `m_PreInfinity`, `m_PostInfinity` and `m_RotationOrder`. The
+clip's wrap mode is `m_WrapMode` (0 default, 1 once, 2 loop, 4 ping-pong, 8 clamp forever). :sourced[Unity scripting
+reference]
+
+Every legacy clip of Enter the Gungeon (27), Risk of Rain 2 (25) and Schedule I (187) reads in that layout, each key of each
+curve equal to an independent type tree reader's. :proven{games="enter-the-gungeon risk-of-rain-2 schedule-i"} None of them is
+compressed or has object curves, every Euler curve is of rotation order 4 (Z, then X, then Y), and every pre- and
+post-infinity is 2 (clamp). :observed{games="enter-the-gungeon risk-of-rain-2 schedule-i"} The muscle clip's stop time is not
+the clip's length: 179 of Schedule I's 187 legacy clips have keys past 1 s or end before it. :observed{games="schedule-i"} Two
+of Schedule I's clips start at a first key later than 0. :observed{games="schedule-i"} Gungeon's (Unity 2017.4) keyframes have
+no `weightedMode`. :observed{games="enter-the-gungeon"} One of Schedule I's legacy clips wraps ping-pong (`m_WrapMode` 4): it plays forward, then
+backward. :proven{games="schedule-i"}
+
+A legacy curve's path names its target as a mechanim binding's path hash does: its CRC-32 is the hash. Mecanim's Transform
+attributes 1 to 4 are the position, rotation, scale and Euler kinds, and a float curve's attribute names its property as a
+binding's attribute hash does. :inferred
+
+### Tangents and weights
+
+Between two keys a curve is a cubic Hermite spline of their values and their slopes (per second). A slope that is infinite on
+either side of a segment makes it a step: the segment holds the first key's value. :sourced[Unity scripting reference]
+`weightedMode` bit 1 (`In`) makes the key's `inWeight` count and bit 2 (`Out`) its `outWeight`. A weighted side of a segment
+is the Bezier handle that fraction of the segment's span from its key, along its slope; an unweighted side is a third, which is
+where the Hermite spline's handles are. The segment is then the cubic Bezier curve in time and value of those handles, not a
+cubic in time. :sourced[Unity scripting reference] Schedule I has 24 curves with weighted keys. :proven{games="schedule-i"}
 
 ## Humanoid curves
 

@@ -96,6 +96,30 @@
   developer: House House
   build: "Steam build 25723723; Unity 6000.3.17f1 (IL2CPP)"
 
+- id: enter-the-gungeon
+  name: Enter the Gungeon
+  short: Gungeon
+  engine: unity
+  developer: Dodge Roll
+  year: 2016
+  build: "Steam build 3829397; Unity 2017.4.27f1 (Mono)"
+
+- id: risk-of-rain-2
+  name: Risk of Rain 2
+  short: RoR2
+  engine: unity
+  developer: Hopoo Games
+  year: 2020
+  build: "Steam build 25921972; Unity 2021.3.45f2 (Mono)"
+
+- id: schedule-i
+  name: Schedule I
+  short: Schedule I
+  engine: unity
+  developer: TVGS
+  year: 2025
+  build: "Steam build 25796331; Unity 2022.3.62f2 (IL2CPP)"
+
 - id: stuntboost
   name: STUNTBOOST
   short: STUNTBOOST

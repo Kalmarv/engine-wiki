@@ -95,6 +95,13 @@ Most images are DDS files; reflections are cube maps (`DefaultCubeReflect*.dds`)
 | `GrassFresnel.tga` | type 2, 128 × 1, 24 bits per pixel | :observed |
 | Techno `SeaHeightPC2.tga`, `SeaHeightPC3.tga` | type 3 (grey), 512 × 512, 8 bits per pixel, yet descriptor 8 (eight alpha bits), a quirk of the writer | :observed |
 
+The three packs hold 50 DDS files with 42 distinct contents, every one under the legacy (Direct3D 9) header. 33 are 2D
+block-compressed textures by FourCC (16 `DXT1`, 1 `DXT3`, 16 `DXT5`) and 7 are cube maps with all six faces (2 `DXT1`,
+5 `DXT5`). The other 2 are 24-bit RGB by channel masks, a format Direct3D 10 and later have no equivalent for, which
+DirectXTex expands to 32-bit RGBA as it loads. Three of the FourCC files also carry nonzero bit counts or channel masks,
+which the FourCC overrides. DirectXTex's library (may2026) reads every distinct file with these formats, shapes and
+images. :proven[the 50 DDS files of the three packs]{games="tmnf"}
+
 Normal maps are BC3 in the DXT5nm arrangement: red 0, blue about 255, X in alpha and Y in green. :observed[`StadiumRoadN`]
 
 :::open[Which way does a normal map's green point?]

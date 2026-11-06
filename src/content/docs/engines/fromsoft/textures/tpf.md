@@ -134,6 +134,37 @@ exception to the first of these: 272 zero bytes lie between its 17 names and its
 from its parsed fields by this rule gives the stored bytes of all of them.
 :proven[all 14,481 packages]{games="sekiro"} :proven[all 274,440 packages]{games="elden-ring"}
 
+### The DDS headers
+
+A payload's DDS header is read here as Microsoft's DirectXTex library (may2026) reads it, with Direct3D's meaning for each
+field. Every BC6H cube map and every volume has a DX10 header. :proven[every cube and volume of the install's packages]{games="sekiro"}
+:proven[every texture of the 10,233 environment-probe binders]{games="elden-ring"} The 16-bit float RGBA cube maps have a
+legacy header instead, with the four-character code 113 (`D3DFMT_A16B16G16R16F`) for the format.
+:proven[every texture of the 10,233 environment-probe binders]{games="elden-ring"}
+
+The BC6H cube maps state the cube flag (`miscFlag` 4) with `arraySize` 6. Direct3D and DirectXTex count cubes there, so
+6 would mean six cubes of six faces each, but the payload holds one cube: six faces (+X, -X, +Y, -Y, +Z, -Z), each with
+its mip chain, and nothing after them. DirectXTex's default load refuses these files; its permissive load
+(`DDS_FLAGS_PERMISSIVE`) reads each as one cube with the same images as a one-cube reading of the payload. Every other
+cube map and every volume reads with the default load; the volumes state `arraySize` 1.
+
+| Distinct payloads | Sekiro | Elden Ring | Confidence |
+|---|---:|---:|---|
+| BC6H UF16 cube maps, `arraySize` 6 | 2,232 | 44,269 | :proven[every cube and volume of the install]{games="sekiro"} :proven[the environment-probe binders]{games="elden-ring"} |
+| 16-bit float RGBA cube maps, legacy header, one cube | none | 269 | :proven[the environment-probe binders]{games="elden-ring"} |
+| BC7 volumes, `arraySize` 1 | 7,851 | 173,815 | :proven[every cube and volume of the install]{games="sekiro"} :proven[the environment-probe binders]{games="elden-ring"} |
+
+In Sekiro the cubes and volumes are 11,136 textures in 38 packages, 10,083 of them distinct by content; in Elden Ring's
+environment-probe binders, 221,796 textures with 218,353 distinct payloads and 2,820 distinct headers. In both, DirectXTex's
+library reads every distinct payload with the same shape, format, size, mip count and images as the reading above.
+:proven{games="sekiro"} :proven[the environment-probe binders]{games="elden-ring"}
+
+Sekiro's 2D texture headers are the ones DirectXTex's writer (`EncodeDDSHeader`) gives the same resource. The textures
+that Ashina Castle's (`m11`) materials bind are 821 files, 813 distinct, in BC1 (sRGB or linear), BC4 and BC7. Of those,
+79 have a legacy header and the rest a DX10 one. Writing each resource again with the header kind it has gives the file's
+header byte for byte. DirectXTex's default load reads every one of them as above.
+:observed[the 813 distinct textures bound by m11's materials]{games="sekiro"}
+
 ## Pixel formats and colour transfer
 
 SoulsFormatsNEXT's package-format table includes the following mappings. These describe its header reconstruction

@@ -80,7 +80,11 @@ For mask form, low six marker bits count bytes; high bits are `0x40`, `0x80` or 
 
 Packed component decode is `(v / maximum × 2 − 1) / sqrt(2)`, with maxima 1023, 32767 or 1048575. The omitted quaternion component is the nonnegative square root making unit length. First-key matches against mapped Skeleton local rotations distinguish these packings from alternatives; this is data evidence rather than execution of the track decoder. :observed
 
-For kind 3, bits 30–31 select the omitted component; bits 20–29, 10–19 and 0–9 give retained components in component order. Kind 4 uses low 15 bits of each u16; high bits of words zero and one form the omitted index, and word two's high bit is the sign, zero in the checked 84,886-key sample. :observed
+For kind 3, bits 30–31 select the omitted component; bits 20–29, 10–19 and 0–9 give retained components in component order. Kind 4 uses low 15 bits of each u16; high bits of words zero and one form the omitted index, and word two's high bit is the sign, zero in the checked 84,886-key sample. :observed Which of the two high bits is the index's high bit is not established for Riders Republic: the checked first-key matches and fixtures leave out w (index 3, both bits set), which either order reads the same, and Shaun White Skateboarding stores the two bits with word zero's as the low bit. :unknown
+
+:::open[Which order do Riders Republic's kind 4 index bits use?]
+The smoothness of consecutive keys across a change of index, which settles the order for Shaun White Skateboarding, is not yet measured on Riders Republic's kind 4 tracks. :unknown
+:::
 
 For kind 5, retained components are bits 8–27, bits 52–63 followed by bits 0–7, and bits 32–51. The ring component is `(low8 << 12) | high12`. Bits 30–31 select the omitted component; bits 28–29 are zero on the checked keys. All 53,647 keys of 600 sampled tracks fit the component-square bound. :observed
 
@@ -152,7 +156,7 @@ Shaun White Skateboarding has no mask time form: bit 1 of the tag does not chang
 
 | Kind (tag >> 2) | Width / alignment | Value | Confidence |
 |---:|---|---|---|
-| 4 | 6 / 2 | Rotation: smallest-three with 15-bit components, the Riders Republic kind 4 layout; bit 15 of the third word is 0 on every key | :observed{games="shaun-white-skateboarding"} |
+| 4 | 6 / 2 | Rotation: smallest-three with 15-bit components in component order, as Riders Republic's kind 4, but the omitted index's low bit is bit 15 of the first word and its high bit bit 15 of the second (0 x, 1 y, 2 z, 3 w); bit 15 of the third word is 0 on every key | :observed{games="shaun-white-skateboarding"} |
 | 5 | 8 / 4 | Rotation: smallest-three with 20-bit components on a bit ring, the Riders Republic kind 5 layout; bits 28 and 29 are 0 on every key | :observed{games="shaun-white-skateboarding"} |
 | 6 | 12 / 4 | Rotation: x, y and z as f32, w the positive root | :observed{games="shaun-white-skateboarding"} |
 | 7 | 12 / 4 | Three f32 on a few bones, not a unit quaternion's xyz | :unknown |
@@ -161,14 +165,14 @@ Shaun White Skateboarding has no mask time form: bit 1 of the tag does not chang
 | 10 | 4 / 4 | One f32 on tracks whose mapping is not a bone name | :unknown |
 | 11, 17 | 1 / 1 | One byte on tracks whose mapping is not a bone name | :unknown |
 
-The widths are fixed by the block grammar, which reads every track to the object's end. The decodes are told apart by the data: on the 14,363 Animation objects the game loads up to the second level, consecutive keys of the three rotation kinds have a median smallest |dot| of 0.9986 (kind 4), 0.9986 (kind 5) and 0.9979 (kind 6), where the other 64-bit layouts tried give 0.14; every key decodes to a unit quaternion. For kind 8 the median largest step between consecutive keys is 16 units with the 11/11/10 split and over 1,000 with the 10/11/11 and 11/10/11 splits. Over the install, 268,438 of 5,046,170 rotation first keys lie within 1e-5 of a bind rotation of a bone of that name, and 96,881 of 614,189 translation first keys within 1 mm of a bind position; the 1 mm unit fits kind 9's i16 values against bind positions with a median ratio of 999 to 1,000 per metre. :observed{games="shaun-white-skateboarding"}
+The widths are fixed by the block grammar, which reads every track to the object's end. The decodes are told apart by the data: on the 14,363 Animation objects the game loads up to the second level, consecutive keys of the three rotation kinds have a median smallest |dot| of 0.9986 (kind 4), 0.9986 (kind 5) and 0.9979 (kind 6), where the other 64-bit layouts tried give 0.14; every key decodes to a unit quaternion. For kind 8 the median largest step between consecutive keys is 16 units with the 11/11/10 split and over 1,000 with the 10/11/11 and 11/10/11 splits. Kind 4's index bit order is told by the keys around a change of index. Over the 24,274 consecutive key pairs of the 2,708 distinct clips whose index changes, each of the twelve kinds of change keeps 96% to 99% of its pairs within |dot| > 0.9 of each other with word zero's bit as the low bit, as keys of one index do (99.6% to 100%). With the bits read the other way round, the eight changes between index 0 or 3 and index 1 or 2 keep 1% to 24%. Keys that leave out y or z are 11% of kind 4 first keys. Over the install, 275,189 of 5,046,170 rotation first keys lie within 1e-5 of a bind rotation of a bone of that name, and 96,881 of 614,189 translation first keys within 1 mm of a bind position; the 1 mm unit fits kind 9's i16 values against bind positions with a median ratio of 999 to 1,000 per metre. :observed{games="shaun-white-skateboarding"}
 
 The renderer's bone matrices confirm the kind 5, 6, 8 and 9 decodes. A traced frame's local bone transforms come from its bone constants and MeshBone matrices as on the [skeleton page](/engines/anvil/animation/skeletons/), and a stored clip is sampled at a time between keys (linear, rotations normalized):
 
 - a skinned train in four consecutive frames: one clip, at 4, 5, 9 and 13 ticks, gives the seven parent-child bones' rotations (kind 6) to within 1 − |dot| = 3e-8 and their four translations (kind 9) to within 0.04 mm; in the two frames before, the bones are at their bind pose;
 - a walking worker's legs and torso in ten frames 20 presents apart: one clip, at times rising by about 13.8 ticks a step, gives every rotation (kind 5) to within 1 − |dot| = 1.3e-7 and every translation (kind 8) to within 0.013 mm.
 
-A second walking character and the heads match no single stored clip at any time (the best leave 1 − |dot| of 0.09 to 0.17, or 1e-4 on one head bone), so they are blended or driven otherwise; kind 4, which their nearest clips use, is not covered. :observed{games="shaun-white-skateboarding"}[the bone constants of 290 skinned draws of 16 meshes in 16 traced frames of two runs]
+A second walking character and the heads match no single stored clip at any time (the best leave 1 − |dot| of 0.09 to 0.17, or 1e-4 on one head bone), so they are blended or driven otherwise: no stored clip, of any kind and at any time, gives even one of their bones within 1 − |dot| = 1e-6 (a bone the clip has no track for taken at its bind rotation), and their child bones lie up to 2.4 m from their stored positions with no clip translating them. Kind 4, which their nearest clips use, is therefore not checked against the renderer under either index bit order. :observed{games="shaun-white-skateboarding"}[the bone constants of 290 skinned draws of 16 meshes in 16 traced frames of two runs]
 
 ### AnimSet
 

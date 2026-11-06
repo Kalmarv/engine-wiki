@@ -435,6 +435,12 @@ Of the 180 opcodes with a format, 109 occur in these programs (53 in Sekiro, 105
 Microsoft's reference, which gives them two destinations and two sources. :observed
 vkd3d's disassembler, run as a program over 600 sampled containers of the three games, prints the same instruction sequence as a decode of the token stream (182,560 instructions), the same
 signature elements (4,730) and the same part directory. :observed
+Microsoft's `D3DDisassemble` (`d3dcompiler_47`) agrees with this reading on every program of two of the games. A listing written from the
+container as this page reads it (signatures, `RDEF`, the `STAT` words and the token stream) is byte for byte the listing Microsoft prints
+with flag word `0`, for all 2,443 containers of Riders Republic's pack (1,156 pixel, 736 compute, 526 vertex, 9 hull, 9 domain, 7 geometry)
+and all 432 of Sekiro's programs. :proven[every container of both games]{games="sekiro riders-republic"} For Sekiro it is also the same
+under each of the flags `0x04` (instruction numbering), `0x20` (instruction offsets), `0x40` (instructions only) and `0x80` (hexadecimal
+literals), each set alone. :proven[Sekiro's 432 programs, d3dcompiler_47 10.0.26100.4654]{games="sekiro"}
 
 The version tokens of the 7,729 programs are pixel 4.0 (3,316) and 5.0 (3,084), vertex 5.0 (568), compute 5.0 (736),
 domain 5.0 (9), geometry 5.0 (7) and hull 5.0 (9). :proven[7,729 containers]

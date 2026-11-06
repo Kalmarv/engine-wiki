@@ -4,9 +4,10 @@ description: "The effect and program bundles of Shaun White Skateboarding: sourc
 games: ["shaun-white-skateboarding"]
 ---
 
-Shaun White Skateboarding ships its Direct3D 9 shaders as bundles beside the executable: `ekshadersPChigh.bin`, `ekshadersPCmed.bin` and `ekshadersPClow.bin` for the three quality levels, three `...compress.bin` siblings and `ekshadersinitpccompress.bin`. The three named bundles are uncompressed and carry both the original HLSL source of the effects and the compiled Shader Model 3 programs; the compressed siblings have not been read. :observed{games="shaun-white-skateboarding"}
+Shaun White Skateboarding ships its Direct3D 9 shaders as bundles beside the executable: `ekshadersPChigh.bin`, `ekshadersPCmed.bin` and `ekshadersPClow.bin` for the three quality levels, three `...compress.bin` siblings and `ekshadersinitpccompress.bin`. The three named bundles are uncompressed and carry both the original HLSL source of the effects and the compiled Shader Model 3 programs. Each `...compress.bin` sibling is its quality bundle compressed, byte for byte, and `ekshadersinitpccompress.bin` is a small fourth bundle of the same kind (see [Compressed bundles](#compressed-bundles)). :proven{games="shaun-white-skateboarding"}[the four compressed files decoded and compared with the three uncompressed ones]
 
 The executable takes its shaders from these bundles only, never from the forges, and checks the magic `SDB2` and the version 39 when it opens one. :observed{games="shaun-white-skateboarding"}[the executable's loader, read]
+From `d3dx9_41.dll` it imports only `D3DXCreateTextureFromFileInMemory`, `D3DXCreateBuffer` and `D3DXGetShaderConstantTable`, and from `d3d9.dll` only `Direct3DCreate9`: nothing that compiles or assembles a shader. :proven{games="shaun-white-skateboarding"}[the executable's import table] The HLSL sources in the bundles are therefore not compiled at run time through an imported function; every program the game draws with comes precompiled. :inferred{games="shaun-white-skateboarding"}
 
 ## Container
 
@@ -84,8 +85,8 @@ The pixel programs of the high file are `ps_3_0` and use 22 token kinds, 20 of t
 
 ## The compiled programs
 
-The three uncompressed bundles hold 7,306 distinct programs by their bytes, 1,099 vertex and 6,207 pixel (588 and 3,751 in the high bundle, 538 and 3,273 in the medium, 543 and 2,062 in the low; most repeat across bundles). Every one is Shader Model 3.0: the version token is `0xFFFE0300` for a vertex program and `0xFFFF0300` for a pixel program, and none is Shader Model 1 or 2. :observed[the three uncompressed bundles]
-Together they hold 63,679 vertex and 601,220 pixel instructions. A program has no control flow: no `if`, `loop`, `rep`, `call`, `break` or predicate. :observed[the three uncompressed bundles]
+The effect passes of the three uncompressed bundles hold 7,306 distinct programs by their bytes, 1,099 vertex and 6,207 pixel (588 and 3,751 in the high bundle, 538 and 3,273 in the medium, 543 and 2,062 in the low; most repeat across bundles). The utility records add two more: kind 5's vertex program (300 bytes) and kind 6's pixel program (136 bytes), the same in all three bundles; kind 7's 136-byte pixel program is also one of the effect programs. That makes 7,308 distinct programs, 1,100 vertex and 6,208 pixel, and the init bundle adds none. Every one is Shader Model 3.0: the version token is `0xFFFE0300` for a vertex program and `0xFFFF0300` for a pixel program, and none is Shader Model 1 or 2. :proven[every record of the four bundles]{games="shaun-white-skateboarding"}
+The counts and checks below are over the 7,306 effect programs. Together they hold 63,679 vertex and 601,220 pixel instructions. A program has no control flow: no `if`, `loop`, `rep`, `call`, `break` or predicate. :observed[the three uncompressed bundles]
 
 | Stage | Opcodes used (besides `dcl` and `def`) | Confidence |
 |---|---|---|
@@ -104,6 +105,38 @@ source. A `dcl` token's second word is a usage and an index (usage in bits 0 to 
 sampler the texture type in bits 27 to 30. :observed[the three uncompressed bundles]
 
 On the reference rasterizer (`D3DDEVTYPE_REF`, software vertex processing) `mova` rounds to the nearest integer with a half going away from zero (`-2.5` gives `-3`, `0.5` gives `1`), a relative constant read at an index from 256 up to 4096 returns zero, and `slt` and `sge` are the IEEE comparisons (a NaN operand gives 0). :observed[a vertex program run on the reference rasterizer]
+
+## Compressed bundles
+
+A `...compress.bin` file is one compressed stream of the SDB2 bytes: a byte `0xF5` and the decoded size, then an Anvil block header with no chunk table, then the chunks, each with a header of its own. It uses the magic, version, algorithm and checksum of the forges' [data blocks](/engines/anvil/archives/data-blocks/), but not their layout: the forges' blocks list all chunk sizes up front in 16-bit fields, while here each chunk carries 32-bit sizes before its bytes. :proven{games="shaun-white-skateboarding"}[all four compressed files]
+
+```layout
+title: "Compressed shader bundle"
+size: "variable"
+games: [shaun-white-skateboarding]
+note: "Little-endian. The chunks run to the end of the file."
+fields:
+  - {"at": 0, "size": 1, "type": "u8", "name": "unknown", "value": "0xF5", "level": "unknown", "note": "the same in all four files"}
+  - {"at": 1, "size": 4, "type": "u32", "name": "decoded size", "level": "proven", "note": "the length of the decoded SDB2 bundle"}
+  - {"at": 5, "size": 8, "type": "u64", "name": "magic", "value": "0x1004FA9957FBAA33", "level": "proven"}
+  - {"at": 13, "size": 2, "type": "u16", "name": "version", "value": "1", "level": "proven"}
+  - {"at": 15, "size": 1, "type": "u8", "name": "algorithm", "value": "2", "level": "proven", "note": "LZO2A"}
+  - {"at": 16, "size": 4, "type": "u32", "name": "largest chunk", "value": "32768", "level": "inferred", "note": "no chunk decodes to more"}
+  - {"at": 20, "size": "variable", "type": "chunks", "name": "chunks", "level": "proven", "note": "each: u8 flag (1), u32 stored size, u32 decoded size, u32 Adler-32 (from 0) of the stored bytes, the stored bytes"}
+```
+
+Every chunk of the four files has the flag 1 and is LZO2A-compressed (none is stored raw), passes its checksum and decodes to its stated size; the decoded sizes add up to the size at offset 1, and the chunks end exactly at the end of the file. :proven{games="shaun-white-skateboarding"}[all four compressed files]
+
+| File | Size | Chunks | Decoded | Decodes to |
+|---|---:|---:|---:|---|
+| `ekshadersPChighcompress.bin` | 8,772,168 | 1,072 | 35,094,609 | `ekshadersPChigh.bin`, byte for byte |
+| `ekshadersPCmedcompress.bin` | 8,205,957 | 1,044 | 34,181,857 | `ekshadersPCmed.bin`, byte for byte |
+| `ekshadersPClowcompress.bin` | 3,746,524 | 498 | 16,310,862 | `ekshadersPClow.bin`, byte for byte |
+| `ekshadersinitpccompress.bin` | 86,059 | 19 | 609,323 | an SDB2 bundle with no uncompressed copy |
+
+:proven{games="shaun-white-skateboarding"}[all four compressed files]
+
+The init bundle has the same header (version 39, 62 sources) with 16 records, 13 of kind 4 and one each of kinds 5, 6 and 7, and its table at 302,216. Its sources have the names, in the same order, of the quality bundles' sources, but six differ in content: `ekcustomsemantics.h`, `eklighting.hlsl`, `ekcommonps.hlsl`, `eklightingps.hlsl`, `platform.inc.fx` and `ekgeneric.fx`. Its records hold 29 programs, 21 distinct (11 vertex, 10 pixel), every one of them also in the quality bundles. :proven{games="shaun-white-skateboarding"}[the decoded init bundle] Which of the two copies of a quality bundle the game opens, and when it loads the init bundle, is not traced. :unknown{games="shaun-white-skateboarding"}
 
 ## Selecting a record
 

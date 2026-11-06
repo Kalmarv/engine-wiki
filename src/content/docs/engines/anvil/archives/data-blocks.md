@@ -74,6 +74,8 @@ Some entries store a block entirely raw: its chunk sizes are equal. Sixty-six of
 
 The size of an entry counts its blocks only, from the first block's magic; the 440-byte [`FILEDATA` header](/engines/anvil/archives/forge/) before them is not counted. :proven{games="shaun-white-skateboarding"}[all 33 forges]
 
+Outside the forges, the compressed shader bundles beside the executable use the same magic, version, algorithm and checksum in another layout: no chunk table, and each chunk preceded by a flag and 32-bit stored and decoded sizes. It is described with the [SDB2 bundles](/engines/anvil/shaders/sdb2/#compressed-bundles). :proven{games="shaun-white-skateboarding"}[all four compressed shader bundles]
+
 ## Ghost Recon Breakpoint
 
 ```layout

@@ -27,6 +27,12 @@ are in binders that hold programs directly, with no bundle level (`/shader/<name
 | Material parameters | Named reflected fields | Commonly `SAT_MtdParam`, with metaparam word offsets | :observed |
 | Geometry inputs | Ordinary and skinned variants | Ordinary, skinned and SpeedTree variants | :observed |
 
+Elden Ring's programs all target shader model 6.0, its libraries 6.3: of the 50,283 programs extracted from the 17
+shader binders (`grass`, the `gx*` program binders, `shaderbdle`, its DLC and ray-traced binders, `speedtree` and
+`speedtree_[rt]`), 25,183 are `ps_6_0`, 18,769 `vs_6_0`, 1,731 `cs_6_0`, 136 `hs_6_0`, 150 `ds_6_0`, 33 `gs_6_0` and
+4,281 `lib_6_3`, by each container's program header, and Microsoft's DXC 1.9.2609 reads every one of them.
+:observed{games="elden-ring"}
+
 The parts of these containers, their digest and (for Elden Ring) the `PSV0` record and the feature mask are described on
 [Direct3D shader containers](/concepts/d3d-shader-containers/).
 

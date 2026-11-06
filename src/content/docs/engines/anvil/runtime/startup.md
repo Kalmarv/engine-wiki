@@ -1,6 +1,6 @@
 ---
 title: "Start-up and the first frame"
-description: "How the Shaun White Skateboarding executable starts: the single-instance check, the boot command line and settings, the engine window and the Direct3D 9 device, and where the first frame is drawn."
+description: "How the Shaun White Skateboarding executable starts: the single-instance check, the boot command line and settings, the floating-point environment, input, the engine window and the Direct3D 9 device, and where the first frame is drawn."
 games: ["shaun-white-skateboarding"]
 ---
 
@@ -111,6 +111,43 @@ The executable is a GUI program (PE subsystem 2) with no console: the C runtime'
 `LOCALE_SENGCOUNTRY`, `LOCALE_SABBREVLANGNAME`, `LOCALE_SABBREVCTRYNAME`) with the one requested. :observed[static reading; these
 sites were not run]
 
+### The floating-point environment
+
+The code sets the SSE control and status register (MXCSR) in few places. The whole translated code stores it (`stmxcsr`) at 47
+instructions and loads it (`ldmxcsr`) at 39; a scan of the executable sections' bytes for the two encodings finds 71 and 69
+candidates, the further ones in the same groups of routines but outside the code the translation reached. Nothing saves or
+restores the whole SSE state: the five byte sequences that read as `fxsave` lie inside the displacements of `call` and `jmp`
+instructions (`0x413563`, `0x60DBAC`, `0x60DBCC`, `0x93D758` and `0xA9621C`), and none reads as `fxrstor`. The x87 control
+word is stored at 1,083 instructions and loaded at 2,098. :observed[static reading of the executable and of its whole translated
+code]
+
+The 71 MXCSR stores fall into these groups. :observed[static reading]
+
+| Addresses | Stores | What the code does with the value | Confidence |
+|---|---:|---|---|
+| `0xC84B99` to `0xC84BFA` | 3 | Saves the rounding control (`& 0x6000`), sets round to nearest, and restores it; the status bits are kept | :observed |
+| `0x1404CA3` | 1 | An exception probe: loads the register back unchanged, divides 0 by 0 and inspects the exception code | :observed |
+| `0x141D250` to `0x1427F8C` | 23 | C runtime math routines: compare `MXCSR & 0x1F80` with `0x1F80` (all six exceptions masked) to choose their code path | :observed |
+| `0x1433A5D`, `0x1433AED` | 2 | A reader that returns the raw register, and a status clear (`& 0xFFFFFFC0`) | :observed |
+| `0x14579EA` to `0x14589A2` | 12 | The C runtime's status, reset, clear and control routines | :observed |
+| `0x1555252` to `0x1562E92` | 30 | Save the register, install `0x9F80`, run, and load the saved value back | :observed |
+
+`0x9F80` is round to nearest with every exception masked, flush-to-zero on and denormals-are-zero off. Ten of the thirty regions
+that install it are in the translated code, and each of them calls other functions before it restores the register: nine are
+wrappers with no arithmetic of their own, and the tenth (from `0x15625B5`, restoring at `0x15628F8`) holds 54 additions,
+subtractions, multiplications, divisions and square roots and two calls. :observed[static reading of the translated code]
+
+The C runtime's routines are known by their shape, not by symbols. A `_statusfp`-shaped routine (`0x1457D24`) stores the register
+at `0x1457D70` and turns each of its six status bits into the runtime's status flag; `0x1457DEE` does the same through the raw
+reader (`0x1433A4E`), and a `_statusfp2`-shaped routine (`0x1457FEF`) can call it. The `_clearfp`-shaped entry `0x1458049`, which
+the game calls directly from `0x1664E31` and `0x16B2F79`, clears the x87 and the SSE status. The `_fpreset`-shaped entry
+`0x1457DB6` runs `fninit` and installs `0x1F80` through `0x1433A6C`. :observed[static reading]
+
+:::open[Does anything read the SSE status flags?]
+The routines above that turn the status bits into flags exist, but whether the game reaches them, directly or through an
+indirect call, and so whether any of its decisions depends on the sticky exception flags, is not established.
+:::
+
 ## Saves and background requests
 
 Saves are read and written by six synchronous functions: list the saves `0x9166F0`, read a save `0x9167D0`, write one
@@ -148,6 +185,20 @@ length of 0, and its error getter returns 2. :observed[static reading, and hardw
 start-up] In that start-up an options request (action 14) completed with status 2 and error 0, and the serialization request
 after it (action 8) failed with status 3, `SaveCorrupted` (2) and the back end's result `0x18`; the start-up had the options set to
 their defaults by an intervention, so it does not show the path of an unmodified start-up. :observed[one start-up]
+
+## Input
+
+The game polls its input once a frame. In the world, each presented frame reads the DirectInput keyboard and mouse once each
+with `GetDeviceState`, which returns the devices' current state rather than buffered events, and calls `GetCursorPos` once.
+:observed[one run of the translated code through New Game into level 02, counting calls per present] The executable also
+imports `GetAsyncKeyState`. :observed[the executable's import table]
+
+Controllers are routed by their identity. The device enumeration (`0x9A10C0`, calling `0x9E6550`) reads each game controller's
+`DIPROP_VIDPID`: a Microsoft controller (vendor `0x045E`) with the product `0x028E`, `0x0719` or `0x02A1` gets the XInput pad
+class (vtable `0x19113C0`), which polls `XInputGetState`, and any other controller a generic DirectInput pad whose bindings come
+from `DefaultBindings.map`, looked up by vendor and product (`0x18315C0`). :observed[static reading] With an Xbox 360 pad
+connected, the game reads pad 0 with `XInputGetState` once per presented frame and makes no DirectInput joystick reads.
+:observed[one run of the translated code with a wired Xbox 360 pad reported]
 
 ## Graphics
 

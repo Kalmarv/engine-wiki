@@ -47,6 +47,15 @@ bake atlases ([textures](/engines/monogame/textures/xnb-textures/)). :proven{gam
 - **Transparent nodes** and their alpha rule ([level materials](/engines/monogame/materials/level-materials/)).
   :observed{games="stuntboost"}
 
+## Later builds
+
+Build 26429886 (2026-11-04) changes two level parts, by the game's own parsers run over both builds: `StairsSlide_1`, whose
+invisible `_<=RoomBounds()` collision mesh has 80 triangles (68 before), so the part has one grind ledge and two ledge corners
+more; and `BoosterLaunching_0`, whose two mandatory checkpoints are named `=Checkpoint(Mandatory).Custom(1)` and `.Custom(2)`
+(`.Order(1)` and `.Order(2)` before). The other 157 parts read the same. :proven{games="stuntboost"} The update also adds a board
+(`Models/Resources/Board/102.xnb` and its thumbnail) and four UI textures (`Crown`, `Duck`, `DuckMissing`,
+`DuckScreenshots/24`). :observed{games="stuntboost"}
+
 ## Community and custom maps
 
 Custom levels are made with the Blender exporter in `StuntboostTools` and loaded from `custom_maps` in the save folder

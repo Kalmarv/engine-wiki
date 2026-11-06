@@ -1,7 +1,7 @@
 ---
 title: XNB containers
-description: "The XNA 4.0 content file as MonoGame games ship it: the header, the type-reader table, the primary object, the built-in readers, and the readers STUNTBOOST adds."
-games: [stuntboost]
+description: "The XNA 4.0 content file as XNA and MonoGame games ship it: the header, LZX compression, the type-reader table, the primary object, the built-in readers, and the readers STUNTBOOST adds."
+games: [stuntboost, terraria]
 sources:
   - title: MonoGame content pipeline
     url: https://github.com/MonoGame/MonoGame
@@ -9,6 +9,9 @@ sources:
   - title: MonoGame ContentManager
     url: https://github.com/MonoGame/MonoGame/blob/develop/MonoGame.Framework/Content/ContentManager.cs
     note: the header and the compression flags
+  - title: libmspack (lzxd.c)
+    url: https://github.com/kyz/libmspack
+    note: the LZX decoder that MonoGame's LzxDecoder is a port of
 implementations:
   - name: monogame-formats (xnb.rs)
     url: https://github.com/Kalmarv/monogame-formats/blob/main/src/xnb.rs
@@ -29,7 +32,7 @@ fields:
   - {at: 0, size: 3, type: "char[3]", name: magic, value: "XNB", level: proven}
   - {at: 3, size: 1, type: u8, name: target platform, level: proven, note: "`d` (DesktopGL) in 1,872 files; `w` (Windows) in one font"}
   - {at: 4, size: 1, type: u8, name: version, value: "5", level: proven, note: "XNA 4.0; MonoGame writes the same"}
-  - {at: 5, size: 1, type: u8, name: flags, level: proven, note: "0x01 HiDef profile (the `w` font only); 0x40 LZ4-compressed and 0x80 LZX-compressed are documented by MonoGame and occur in no file"}
+  - {at: 5, size: 1, type: u8, name: flags, level: proven, note: "0x01 HiDef profile (STUNTBOOST's `w` font only); 0x80 LZX-compressed (15,108 of Terraria's files, none of STUNTBOOST's); 0x40 LZ4-compressed is documented by MonoGame and occurs in no file read"}
   - {at: 6, size: 4, type: u32, name: file size, level: proven, note: "the length of the whole file"}
 ```
 
@@ -49,6 +52,23 @@ compressed. :proven{games="stuntboost"}
 
 STUNTBOOST's `Content` holds 1,873 `.xnb` files, 4,953,823,117 bytes. All have version 5 and a stated size equal to the file's;
 1,872 are for platform `d` and flags 0, one (`Fonts/Tiny.xnb`) for platform `w` with the HiDef flag. :proven{games="stuntboost"}
+
+## Compression
+
+A file with flag 0x80 is compressed with **LZX**, the codec of Microsoft's cabinet files, as XNA 4.0's content pipeline
+writes it. After the 10-byte header comes the decompressed size (`u32`) of what follows the header in the uncompressed
+file, then blocks to the end of the file. A block is a big-endian `u16` compressed size, standing for 32 KiB of output;
+or a byte `0xFF`, a big-endian `u16` output size and the compressed size. Each block is one LZX frame of a 64 KiB window,
+its bits starting afresh; a block of size 0 ends the stream. :sourced[MonoGame ContentManager] Every one of Terraria's
+15,108 compressed files decodes by that rule to exactly the bytes XNA 4.0's own decompressor (the XNA Framework's
+internal `DecompressStream`) makes of it, and to its stated size. :proven{games="terraria"} Their LZX blocks are verbatim
+(5,671) and aligned-offset (9,942) blocks, none uncompressed, and none of their frames uses x86 call translation.
+:proven{games="terraria"}
+
+Terraria's `Content` holds 15,994 `.xnb` files, all of platform `w` and version 5: 15,108 compressed, 886 not.
+:proven{games="terraria"} The LZX inside is the cabinet form libmspack reads: the tree lengths are sent as deltas through a
+pretree, and its run code 19 repeats one length (the first one's old length less the delta) over the run.
+:sourced[libmspack (lzxd.c)]
 
 ## Readers
 

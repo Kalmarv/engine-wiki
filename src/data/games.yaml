@@ -127,6 +127,14 @@
   developer: Byting Games
   build: Steam build 25832744 (app 2999500)
 
+- id: terraria
+  name: Terraria
+  short: Terraria
+  engine: monogame
+  developer: Re-Logic
+  year: 2011
+  build: "Steam build 24893155 (app 105600); XNA Framework 4.0"
+
 - id: meccha-chameleon
   name: MECCHA CHAMELEON
   short: MECCHA

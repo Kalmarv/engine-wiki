@@ -1,6 +1,6 @@
 ---
 title: Direct3D shader containers (DXBC and DXIL)
-description: "How five games wrap compiled Direct3D shaders: the container digest and part sets, the signature, reflection, statistics, feature and level 9 parts, and the pipeline-state record of Shader Model 6 programs, measured over the extracted programs."
+description: "How five games wrap compiled Direct3D shaders: the container digest and part sets, the signature, reflection, statistics, feature, level 9, class linkage and debug parts, and the pipeline-state record of Shader Model 6 programs, measured over the extracted programs."
 games: [sekiro, elden-ring, riders-republic, skate, sledding]
 sources:
   - title: Microsoft fxc (Effect-Compiler Tool), Windows SDK 10.0.26100
@@ -214,6 +214,135 @@ filtering at feature level 9 (a `ps_4_0_level_9_1` target), 8 tiled resources, 9
 inner coverage, 11 typed UAV loads of additional formats, 12 raster-ordered views and 13 a render-target or viewport array index
 from any shader that feeds the rasterizer; each compiled container's `SFI0` equals the compiler's own listing of what the program
 requires. :observed[test compilations of one program per feature] The bits 14 and up are not produced by fxc.
+
+## Class linkage part (`IFCE`)
+
+A Shader Model 5 program that uses class linkage (dynamic shader linkage: interfaces whose implementation is chosen when
+the program is bound) carries an `IFCE` part. It lists the classes that implement the interfaces, the class instances
+the constant buffers hold, and which function tables each interface slot can be bound to. :observed[test compilations]
+None of the games' Shader Model 4 and 5 programs uses class linkage (none declares an interface or a function table),
+and none carries the part. :observed{games="sekiro riders-republic sledding"} Offsets are bytes from the start of the part; names are
+zero-terminated strings after the tables.
+
+```layout
+title: IFCE header
+size: 36
+fields:
+  - {at: 0, size: 4, type: u32, name: instance count, level: observed}
+  - {at: 4, size: 4, type: u32, name: class type count, level: observed}
+  - {at: 8, size: 4, type: u32, name: slot record count, level: observed}
+  - {at: 12, size: 4, type: u32, name: interface slot count, level: observed, note: "all the slots, an interface array taking one per element"}
+  - {at: 16, size: 4, type: u32, name: instance table offset, level: observed, note: "16-byte records"}
+  - {at: 20, size: 4, type: u32, name: class type table offset, level: observed, note: "12-byte records"}
+  - {at: 24, size: 4, type: u32, name: slot record table offset, level: observed, note: "16-byte records"}
+  - {at: 28, size: 8, type: "u32[2]", name: reserved, level: unknown, note: "0 in every container seen"}
+```
+
+```layout
+title: IFCE class type record
+size: 12
+fields:
+  - {at: 0, size: 4, type: u32, name: name offset, level: observed}
+  - {at: 4, size: 2, type: u16, name: reserved, level: unknown, note: "0 in every container seen"}
+  - {at: 6, size: 2, type: u16, name: constant buffer stride, level: observed, note: "the registers one instance's data takes"}
+  - {at: 8, size: 2, type: u16, name: texture count, level: observed}
+  - {at: 10, size: 2, type: u16, name: sampler count, level: observed}
+```
+
+```layout
+title: IFCE class instance record
+size: 16
+fields:
+  - {at: 0, size: 4, type: u32, name: name offset, level: observed}
+  - {at: 4, size: 2, type: u16, name: class type, level: observed, note: "its place in the class type table"}
+  - {at: 6, size: 2, type: u16, name: count, level: observed, note: "more than 1 for an instance array"}
+  - {at: 8, size: 2, type: u16, name: constant buffer, level: observed, note: "0xffff for a class without data"}
+  - {at: 10, size: 2, type: u16, name: buffer register, level: observed, note: "where its data starts; 0xffff without data"}
+  - {at: 12, size: 2, type: u16, name: first texture, level: observed, note: "0xffff where it holds none"}
+  - {at: 14, size: 2, type: u16, name: first sampler, level: observed, note: "0xffff where it holds none"}
+```
+
+```layout
+title: IFCE slot record
+size: 16
+fields:
+  - {at: 0, size: 4, type: u32, name: slot span, level: observed, note: "the slots of one interface pointer or array"}
+  - {at: 4, size: 4, type: u32, name: entry count, level: observed}
+  - {at: 8, size: 4, type: u32, name: class type list offset, level: observed, note: "a u16 class type per entry"}
+  - {at: 12, size: 4, type: u32, name: function table list offset, level: observed, note: "a u32 function table per entry, at the same place as its class type"}
+```
+
+The layout was read from fxc 10.0.26100.4654 builds with one to thirty classes per interface, interface arrays, several
+interfaces, classes with data, textures and samplers, instance arrays, and pixel and hull programs. For each build,
+tables written from this layout are identical to the ones `D3DDisassemble` prints. :observed[test compilations]
+
+## Debug information of a Direct3D 9 program (`DBUG`)
+
+`fxc /Zi` stores debug information in a Direct3D 9 program as a comment whose first word is the FourCC `DBUG`. A
+Direct3D 9 program compiled on its own carries it, and so does the Direct3D 9 program in the `Aon9` part of a level 9
+container (the Shader Model 4 program beside it has its debug information in an `SPDB` part). It records the source
+files, the source line of each declaration, definition and instruction, and which components of which variables each
+instruction writes. :observed[test compilations] Offsets are bytes from the word after the FourCC; strings are
+zero-terminated.
+
+```layout
+title: DBUG header
+size: 40
+fields:
+  - {at: 0, size: 4, type: u32, name: main source path offset, level: observed}
+  - {at: 4, size: 4, type: u32, name: compiler name offset, level: observed, note: "Microsoft (R) HLSL Shader Compiler 10.1"}
+  - {at: 8, size: 4, type: u32, name: reserved, level: unknown, note: "0 in every program seen"}
+  - {at: 12, size: 4, type: u32, name: source file count, level: observed}
+  - {at: 16, size: 4, type: u32, name: source file table offset, level: observed, note: "a u32 path offset per file; an included file is one more"}
+  - {at: 20, size: 4, type: u32, name: line record count, level: observed, note: "one per declaration, definition and instruction"}
+  - {at: 24, size: 4, type: u32, name: line record table offset, level: observed, note: "8-byte records"}
+  - {at: 28, size: 4, type: u32, name: variable count, level: observed}
+  - {at: 32, size: 4, type: u32, name: variable table offset, level: observed, note: "20-byte records, in name order"}
+  - {at: 36, size: 4, type: u32, name: entry point name offset, level: observed}
+```
+
+```layout
+title: DBUG line record
+size: 8
+fields:
+  - {at: 0, size: 2, type: u16, name: line, level: observed, note: "0 where the file is 0xffff"}
+  - {at: 2, size: 2, type: u16, name: source file, level: observed, note: "its place in the file table; 0xffff for a record with no line, as a declaration has"}
+  - {at: 4, size: 4, type: u32, name: byte offset, level: observed, note: "of the record's token, from the program's version token"}
+```
+
+```layout
+title: DBUG variable record
+size: 20
+fields:
+  - {at: 0, size: 4, type: u32, name: scope name offset, level: observed, note: "the function or constant buffer it is in; 0 for a local and for a function's return value"}
+  - {at: 4, size: 4, type: u32, name: name offset, level: observed, note: "a function's return value is named by the function"}
+  - {at: 8, size: 4, type: u32, name: type offset, level: observed, note: "a 16-byte type record laid out as the constant table's (class, type, rows, columns, elements, member count, member offset)"}
+  - {at: 12, size: 4, type: u32, name: location count, level: observed}
+  - {at: 16, size: 4, type: u32, name: location table offset, level: observed, note: "12-byte records"}
+```
+
+```layout
+title: DBUG location record
+size: 12
+fields:
+  - {at: 0, size: 4, type: u32, name: instruction, level: observed, note: "its place in the line record table"}
+  - {at: 4, size: 8, type: "u16[4]", name: components, level: observed, note: "the variable's component in destination lanes x, y, z and w; 0xffff for a lane that holds none of it"}
+```
+
+A variable's components are counted over the whole variable: a struct's members follow one another in member order (a
+struct of a `float4`, a `float2` and a `float` has components 0 to 6), a matrix's and an array's elements likewise.
+:observed[test compilations] The line records follow the program's records in stream order, and the location of a
+variable names its instruction by that order. :observed[test compilations]
+
+`D3DDisassemble` prints this information. Before a record whose file differs from the last record that had a line, it
+prints a blank line and `#line N "path"`. Where the file is the same and the line moves by more than 2 either way, it
+prints a blank line and `#line N`; a move of 1 or 2 prints nothing. After the record, it prints the variables written,
+`  // name<components>`, separated by `, ` in variable table order, with the components of the lanes that hold one in
+lane order. A parameter of the entry point is printed by its bare name (`p<0,1,2,3>`), a variable of another function
+or of a constant buffer as `scope::name` (`twist::v`, `C::k`), and a local or a return value as `::name`. Flag `0x10`
+(`D3D_DISASM_DISABLE_DEBUG_INFO`) leaves all of it out. Listings written by these rules are identical to Microsoft's.
+:observed[test compilations: 10 vs_2_0 to ps_3_0 programs and the Direct3D 9 programs of 16 level 9 containers, with
+and without /Od, under every flag word]
 
 ## Shader Model 4 and 5 token streams
 

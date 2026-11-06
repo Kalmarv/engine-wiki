@@ -572,7 +572,13 @@ box of the tile's layout names: groups `0900` to `0959`, each `GIIV` volume 84 �
 beside it. 48 far tiles have such a package, all of them `m60`: 46 `_02` tiles, of which 32 hold one group and 14 hold
 two (the second numbered `0946` to `0959`), and `m60_11_09_12` (one group, `0920`) and `m60_11_13_12` (two, `0924` and
 `0953`, as `m60_11_13_02`). :observed[every `m60` and `m61` far tile name, `_02` and `_12`, state 05 `high`, read from
-the installed archives]{games="elden-ring"} No recorded frame draws one of them. :observed[the recorded Elden Ring
+the installed archives]{games="elden-ring"} The Shadow of the Erdtree far tiles (`m61`) have none in `high`: `m61_10_10_02`'s
+packages, for one, come in the `middle` tier only (states `00` to `06`). Read from the best tier each far tile
+installs, 67 far tiles have packages, 47 with one group, 19 with two and one with four, and 10 have none. The 19 more
+than at `high` include `m61_10_10_02`, `m61_10_11_02`, `m61_10_12_02` and `m61_12_10_02` with two groups
+(`0900` to `0905` under `0916` to `0922`) and `m61_13_10_02` with four (`0910`, `0918`, `0921` and `0922`).
+:observed[every `m60` and `m61` far tile name, at the best tier each installs]{games="elden-ring"} No recorded frame
+draws one of them. :observed[the recorded Elden Ring
 frames]{games="elden-ring"}
 
 Their volumes line up with the ground. Decoded, a `W` coefficient is dark in texels inside the terrain and bright in open
@@ -599,6 +605,12 @@ the bottom, the two volumes separate buried from open texels at 0.902 to 0.997, 
 of the 14 `_02` tiles, whose terrain reaches 22 to 1,969 m. Letting the upper group take a bottom and row height of its
 own gains 0.0008 and moves its bottom 38 m down, within the uncertainty of the stack.
 :observed[all 14 `_02` far tiles with two groups, at the shared placement above]{games="elden-ring"}
+The `m61` tiles stack the same way. On the four with two groups, the lower-numbered group at the bottom separates at 0.73
+to 0.995 and swapped at 0.36 to 0.46; on `m61_13_10_02`, `0910` under `0918` separates at 0.984 and swapped at 0.779,
+while swapping `0918` with `0921`, or `0921` with `0922`, leaves 0.984 unchanged.
+:observed[the five `m61` far tiles with more than one group, at the shared placement above]{games="elden-ring"} The upper
+three of that tile lie wholly above its ground, where the measure has no buried texels to rank, so it cannot tell their
+order. :inferred{games="elden-ring"}
 
 None of the ten recorded frames holds a far tile's volume: of the BC7 3-D textures of each frame's resource list, none is 84 on
 all three sides, and the volumes the region draws bind are boxes of the area, at most 132 × 112 × 64.

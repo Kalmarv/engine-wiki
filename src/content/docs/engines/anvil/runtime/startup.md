@@ -193,18 +193,32 @@ The control word is loaded (`fldcw`) at 2,107 instructions. :observed[static rea
 | Precision 64 bits, the other fields kept (`or 0x300`) | 6 | :observed |
 | `0x027F` from data: 53-bit precision, round to nearest | 6 | :observed |
 | 64-bit precision, round to nearest (`0x33F` and `0x133F`) | 8 | :observed |
+| `(cw & ~0x1100) \| 0x0E3F`: 53-bit precision, rounding set to chop, every exception masked, never restored (`0x984ED2`, `0x99163F`) | 2 | :observed |
 | Not resolved statically (a call or branch between the value and the load) | 39 | :observed |
 
-Each of the 1,026 chop windows, followed from its `fldcw` to the next one, holds only `fistp` (and `fxch` in 21 of
-them): no arithmetic runs at a directed rounding mode. Every resolved word masks all six exceptions, and none selects
-24-bit precision. :observed[static reading of every window and every resolved word] The game's threads therefore keep
-the precision a new Windows thread starts with, control word `0x027F` (53-bit precision, round to nearest): the device
-is created with `D3DCREATE_FPU_PRESERVE` (below), so creating it does not drop the render thread to 24-bit
-precision. :inferred[from the loads above and the device's behaviour flags]
+Each of the 1,026 float-to-integer chop windows, followed from its `fldcw` to the next one, holds only `fistp` (and
+`fxch` in 21 of them). Every resolved word masks all six exceptions, and none selects 24-bit precision. :observed[static
+reading of every window and every resolved word] Two sites set chop for good: `0x984EB0`, a virtual method that appears
+in seven vtables, loads `0x0E3F` and then makes its object's virtual calls, and the function holding `0x99163F` loads it
+before a final virtual call; neither restores the word. :observed[static reading] The x87 rounding control is thread
+state, so it holds for everything those calls run. :sourced[Intel's instruction reference]
+
+On one gameplay route (title, new game, 40 seconds in the world), translated and run with every x87 operation counted
+by rounding and precision, 1.2% of the x87 arithmetic and float stores ran at chop (2.4 million of 198.5 million) and
+almost none at the other directed modes. The threads doing most of the floating point ran at round to nearest; the chop
+work was on four threads that end the route with `0x0E3F` or `0x0E7F`, and 82% of it was one function, `0x149EF90`, which
+scales a vector by another (float by float, exact at 53-bit precision) and stores each product with `fstp dword`, a store
+that truncates under chop, before widening a bounding box. :observed[one route, counted under translation] The game's threads
+run at 53-bit precision: a new Windows thread starts with control word `0x027F` (53-bit precision, round to nearest), the
+chop word above keeps 53 bits, and the device is created with `D3DCREATE_FPU_PRESERVE` (below), so creating it does not
+drop the render thread to 24-bit precision. :inferred[from the loads above and the device's behaviour flags]
 
 The engine's thread entry `0x16B2F50`, the start routine it passes to `0x17451C7`, clears the floating-point status and
 calls `_controlfp_s(NULL, 0xFFFFFFE3, 0x8001F)`: on every thread started that way, invalid operation, division by zero
-and overflow are unmasked, on the x87 and in MXCSR. :observed[static reading]
+and overflow are unmasked, on the x87 and in MXCSR. :observed[static reading] On the gameplay route above no thread
+is started that way, and no thread runs with an exception unmasked: every operation's invalid, division-by-zero and
+overflow results were counted against its thread's control words, and all of them were masked. :observed[one route,
+counted under translation]
 
 The C runtime's `sin` (`0x141DB70`) takes the SSE2 path only when MXCSR has every exception masked and the x87 control
 word's low byte is `0x7F`, and a flag at `0x1CD1BE8` is set; otherwise it runs `fsin`. When `fsin` reports its operand out

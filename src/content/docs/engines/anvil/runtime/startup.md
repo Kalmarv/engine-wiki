@@ -2,6 +2,13 @@
 title: "Start-up and the first frame"
 description: "How the Shaun White Skateboarding executable starts: the single-instance check, the boot command line and settings, the floating-point environment, input, the engine window and the Direct3D 9 device, and where the first frame is drawn."
 games: ["shaun-white-skateboarding"]
+sources:
+  - title: Direct3D 9 headers
+    url: https://learn.microsoft.com/en-us/windows/win32/direct3d9/d3dcreate
+    note: "The D3DCREATE behaviour flags and what FPU_PRESERVE does"
+  - title: Intel's instruction reference
+    url: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
+    note: "RCPPS, RCPSS, RSQRTPS and RSQRTSS and their relative error bound"
 ---
 
 The executable starts the engine in a fixed order: the C runtime, a single-instance check, the engine's settings, the
@@ -121,6 +128,11 @@ instructions (`0x413563`, `0x60DBAC`, `0x60DBCC`, `0x93D758` and `0xA9621C`), an
 word is stored at 1,083 instructions and loaded at 2,098. :observed[static reading of the executable and of its whole translated
 code]
 
+The code approximates reciprocals and reciprocal square roots with SSE's estimate instructions at 345 places in 207
+functions: 188 `rsqrtss`, 140 `rsqrtps`, 16 `rcpps` and 1 `rcpss`. :observed[static reading of the whole translated code]
+Their results are specified only to within 1.5 × 2⁻¹² of the true value, so they need not be the same on every processor.
+:sourced[Intel's instruction reference]
+
 The 71 MXCSR stores fall into these groups. :observed[static reading]
 
 | Addresses | Stores | What the code does with the value | Confidence |
@@ -208,7 +220,10 @@ the engine's view surface. :observed
 
 The renderer is Direct3D 9. The `IDirect3D9` object is made on first use (`Direct3DCreate9(0x20)`) and kept in a global
 (`0x1C9B764`). `IDirect3D9::CreateDevice` is called from two sites: `0xBA90C8` makes a hardware (HAL) device with behaviour
-flags `0x46`, and `0xBA902C` a reference-rasterizer (REF) device with `0x42`. :observed The device is not in one global: a
+flags `0x46`, and `0xBA902C` a reference-rasterizer (REF) device with `0x42`. :observed Both carry
+`D3DCREATE_FPU_PRESERVE` (`0x2`) beside hardware vertex processing (`0x40`), and the HAL device also
+`D3DCREATE_MULTITHREADED` (`0x4`), so creating the device leaves the thread's x87 precision as it was instead of
+dropping it to single precision. :sourced[Direct3D 9 headers] The device is not in one global: a
 wrapper's constructor (`0xCAE9B0`) stores it at the wrapper's `+0`, the wrapper is at `+0` of a renderer, and the renderers are
 held in arrays at `0x1C9B750` and `0x1C9B768`, so the device is `[[0x1C9B768]]`. A second global, `0x1C555F0`, also holds a
 device, identified by how it is used. :observed The game calls Direct3D through the COM interface form (the interface pointer

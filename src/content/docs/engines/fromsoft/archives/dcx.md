@@ -190,6 +190,8 @@ Kraken payload of both installs, with each size word one less and one more and t
 over (six variants of each payload), the walk of the framing followed by `oo2core_6` refuses every variant but decoded
 sizes one off of a payload ending in a memset quantum: 8 of Elden Ring's 702,726 variants and 2 of Sekiro's 162,438,
 each decoding to one byte fewer or one more fill byte. :proven[both archive sets, Elden Ring without the `DLC` pair]
+With the `DLC` pair installed the same check makes 922,230 Elden Ring variants and accepts the same 8: none of the
+expansion's payloads adds one. :proven[every archive pair, the `DLC` pair included]{games="elden-ring"}
 Elden Ring's `/asset/aet/aet220/aet220_816.tpf.dcx`, 11,884,253 bytes ending in three memset blocks (`8C 06 07 FF FF 00`),
 is one. :observed{games="elden-ring"} So no reader can check the decoded-size word of such an envelope against its
 payload; only the decoded file's own sizes can.

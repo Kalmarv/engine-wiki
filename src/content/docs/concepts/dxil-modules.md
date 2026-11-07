@@ -19,9 +19,9 @@ bindings, a string table, a semantic-index table, the signature elements, and th
 title: PSV0 part
 size: variable
 games: [skate, elden-ring]
-note: Little-endian. The sizes shown are those of validator 1.10 (skate.); validator 1.6 (Elden Ring) writes a 48-byte runtime info, validator 1.5 a 36-byte one and a 16-byte resource record.
+note: Little-endian. The sizes shown are those of validator 1.10 (skate.); validator 1.6 (Elden Ring) writes a 48-byte runtime info, validator 1.5 a 36-byte one and a 16-byte resource record, validator 1.0 a 24-byte one.
 fields:
-  - {at: 0, size: 4, type: u32, name: runtime info size, value: "52", level: observed, note: "36 (validator 1.5), 48 (1.6), 52 (1.10)"}
+  - {at: 0, size: 4, type: u32, name: runtime info size, value: "52", level: observed, note: "24 (validator 1.0), 36 (1.1 to 1.5), 48 (1.6), 52 (1.10)"}
   - {at: 4, size: 16, type: "u32[4]", name: stage-specific words, level: observed, note: "vertex: output position present; pixel: byte 0 depth output present, byte 1 per-sample frequency (set exactly when the program reads the sample index); hull: input control points, output control points, tessellator domain, output primitive; geometry: input primitive, output topology, stream mask, position present; domain: input control points"}
   - {at: 20, size: 8, type: "u32[2]", name: wave lane range, level: unknown, note: "0 and 0xffffffff in every container"}
   - {at: 28, size: 1, type: u8, name: shader stage, level: observed, note: "equals the program kind in the DXIL header (0 pixel ... 5 compute, 13 mesh)"}
@@ -78,6 +78,11 @@ words for stream 0 (the geometry programs write one stream). A hull program adds
 | 1.10 | 52 bytes | 24 bytes | 19,240 skate. (86 without resources) |
 
 :observed{games="skate elden-ring"}
+
+Compiled with `-validator-version 1.0`, dxc writes a 24-byte runtime info, and with validator versions 1.1 to 1.5 the
+36-byte one. :observed[test compilations with dxc releases 1.4.1907 to 1.9.2609] The 24 bytes are the four stage-specific
+words and the wave lane range, so a validator 1.0 record stops before the stage byte at 28; that is a fit of the sizes to
+the layout above. :inferred
 
 ## Feature mask and metadata
 
@@ -139,6 +144,15 @@ program with each kind of view] In the programs one skate. SRV states a sample c
 skate. UAVs have a counter and none of Elden Ring's, and no record is globally coherent, rasterizer ordered or a 64-bit atomic target.
 :observed{games="skate elden-ring"}
 
+In a library (`lib_6_x`), a buffer field of a matrix type is typed differently by compiler version: dxc 1.4.1907 and
+1.5.2010 leave the front end's `class.matrix.*` structure in the buffer's type, and dxc 1.6.2112 and later write a
+`hostlayout.*` type there. :observed[test compilations with four dxc releases]
+
+A library's state-object subobjects (hit groups, configurations, root-signature associations) do not stay in the module as
+`dx.subobjects` metadata: no dxc release from 1.4.1907 to 1.9.2609 leaves it in the container, compiled by default, with
+`-Vd`, with `-Qstrip_reflect` or for validator 1.3 or 1.4. :observed[test compilations] The container's `RDAT` part is
+where a library's subobjects are read from instead. :inferred
+
 The module's attribute groups (the `PARAMATTR_GROUP` block) number 60,793 in skate. and 160,520 in Elden Ring. A group is a slot
 (`0xFFFFFFFF` for the function itself, `0` for its result, `1` and up for its parameters) and attributes of three forms: a flag
 (an LLVM kind number), an integer (a kind number and a value) and a string (a key and a value, or a key alone). The programs use
@@ -170,6 +184,9 @@ The address spaces of the modules are `0` and `3` only: 431,441 skate. pointer t
 `0`, 6,587 and 66 in space `3` (group shared), and every global variable is in space `0` (34,764 in the two games, 32,461 of them constant) or `3` (8,516). A pointer type's
 second operand is the address space, so 264 skate. modules (392 pointee types) have a pointee type
 that appears under both spaces; no Elden Ring module does. :observed{games="skate elden-ring"}
+
+No load or store in either game's modules is volatile or atomic: a reader that refuses both reads all 69,728 modules (19,445
+skate., 50,283 Elden Ring) with no refusal. :observed{games="skate elden-ring"}
 
 ## Listings
 

@@ -157,8 +157,60 @@ the game calls directly from `0x1664E31` and `0x16B2F79`, clears the x87 and the
 
 :::open[Does anything read the SSE status flags?]
 The routines above that turn the status bits into flags exist, but whether the game reaches them, directly or through an
-indirect call, and so whether any of its decisions depends on the sticky exception flags, is not established.
+indirect call, and so whether any of its decisions depends on the sticky exception flags, is not established. Neither
+`_statusfp`-shaped entry (`0x1457D16`, `0x1457FEA`) has a direct call or an absolute reference anywhere in the
+image :observed[every `call` of the code sections and every absolute reference of every section]; a call through a
+computed address is not excluded.
 :::
+
+### The x87 status and control words
+
+Over the 246,330 functions of the translated code, the x87 status word is stored (`fnstsw`) at 1,863 instructions. Each
+stored value, followed forward to what consumes it, is read as follows. :observed[static reading of the translated code]
+
+| Consumer | Sites | What it reads | Confidence |
+|---|---:|---|---|
+| `test ah, imm`, `sahf` or a stack slot, then a conditional jump | 1,836 | C0, C2 and C3 only: a comparison's result | :observed |
+| `and eax, 0x3800` in the C runtime's transcendental entries `0x14358DD` to `0x1435A99` | 8 | TOP: whether the stack is empty | :observed |
+| The high byte after `fxam`, at `0x1434146`, `0x14341AD`, `0x14341C5` and `0x1436492` | 4 | C3, C2, C1 and C0: the operand's class and sign | :observed |
+| The C runtime's `fprem` loop, at `0x1435CA2` and `0x1435F5A` | 2 | C0, C1 and C3 merged back into a saved environment | :observed |
+| `and ax, 0x20` at `0x14343FC`, `0x1434455` and `0x1434C0B` | 3 | The precision (inexact) exception | :observed |
+| The C runtime's status routines (`_clearfp` family) | 5 | Returned as a value | :observed |
+| Stored and never read | 3 | Nothing | :observed |
+
+The three precision readers choose between returning the result directly and passing it to the C runtime's exception
+handler (`0x14342F7`, code 8, which calls `_handle_exc` at `0x145277E`) before reloading it. Every control word the game
+installs masks the precision exception, so the handler hands the result back unchanged and both paths return the same
+value. :inferred[from the handler's code and the installed control words] The `_clearfp`-shaped entry has two direct
+callers, `0x1664E31` and `0x16B2F79`, and neither reads its return value. :observed[static reading]
+
+The control word is loaded (`fldcw`) at 2,107 instructions. :observed[static reading of the translated code]
+
+| Word loaded | Sites | Confidence |
+|---|---:|---|
+| The saved word with rounding set to chop (`or ah, 0x0C`): a float-to-integer conversion | 1,026 | :observed |
+| The saved word, restored | 1,020 | :observed |
+| Precision 64 bits, the other fields kept (`or 0x300`) | 6 | :observed |
+| `0x027F` from data: 53-bit precision, round to nearest | 6 | :observed |
+| 64-bit precision, round to nearest (`0x33F` and `0x133F`) | 8 | :observed |
+| Not resolved statically (a call or branch between the value and the load) | 39 | :observed |
+
+Each of the 1,026 chop windows, followed from its `fldcw` to the next one, holds only `fistp` (and `fxch` in 21 of
+them): no arithmetic runs at a directed rounding mode. Every resolved word masks all six exceptions, and none selects
+24-bit precision. :observed[static reading of every window and every resolved word] The game's threads therefore keep
+the precision a new Windows thread starts with, control word `0x027F` (53-bit precision, round to nearest): the device
+is created with `D3DCREATE_FPU_PRESERVE` (below), so creating it does not drop the render thread to 24-bit
+precision. :inferred[from the loads above and the device's behaviour flags]
+
+The engine's thread entry `0x16B2F50`, the start routine it passes to `0x17451C7`, clears the floating-point status and
+calls `_controlfp_s(NULL, 0xFFFFFFE3, 0x8001F)`: on every thread started that way, invalid operation, division by zero
+and overflow are unmasked, on the x87 and in MXCSR. :observed[static reading]
+
+The C runtime's `sin` (`0x141DB70`) takes the SSE2 path only when MXCSR has every exception masked and the x87 control
+word's low byte is `0x7F`, and a flag at `0x1CD1BE8` is set; otherwise it runs `fsin`. When `fsin` reports its operand out
+of range (C2 set, |x| at least 2^63), it reduces the operand with `fprem1` against the 80-bit constant at `0x19A5AEA`,
+2π × 2^61 (about 1.4488 × 10^19), repeating while C2 is set, and runs `fsin` on the remainder. :observed[static reading,
+and the reduction run on an x87: the finished `fprem1` loop gives the exact remainder]
 
 ## Saves and background requests
 

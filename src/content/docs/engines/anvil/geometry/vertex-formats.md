@@ -68,6 +68,15 @@ its CRC-32. The other 26 hold six ids, in the meshes of two front forks and two 
 and no bone-name list of a skeleton holds them. Each sits where the record's class says the bone name goes, so they are the
 data's own ids. :proven[every mesh bone record of the six forges]{games="riders-republic"}
 
+The front forks' four ids are also in their [LODSelectors](/engines/anvil/world/lod-selector/): the selectors
+`MAD_CHR_CR_FrontFork_002_U` and `MAD_CHR_CR_FrontFork_002_U_A001` list three BoneIDs on each of their first two levels,
+`0xD14DB302` and then the two ids of the matching meshes, in `DataPC.forge` and its patch alike. The two frame ids are in no
+LODSelector. The frame id of `MAD_CHR_CG_Frame_001_U_A002` has IsUsedBySubMeshes 0 and weights no vertex of its meshes;
+the other five are used and weight some of their meshes' vertices (59 of the 639 of `MAD_CHR_CR_FrontFork_002_U_LOD2`, 3,049 of
+the 11,644 of `MAD_CHR_EN_Frame_007_U_A002_LODM`). :observed[a byte search for the six ids over every entry up to 512 KiB
+of the six forges, 1,296,141 entries]{games="riders-republic"} That the first BoneID, `0xD14DB302`, is the fork mesh's first
+bone, the one a Skeleton names, fits the three-bone meshes but is not checked. :inferred{games="riders-republic"}
+
 :::open[Which spherical vector reaches each pixel path?]
 The two kind-11 vectors have an established vertex decode, but their downstream roles need a per-permutation trace. :unknown
 :::

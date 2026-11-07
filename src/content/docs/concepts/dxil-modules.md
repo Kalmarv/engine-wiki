@@ -123,6 +123,10 @@ Ring), and tag `8` the shader kind: 7 ray generation, 8 intersection, 9 any hit,
 Two tags come from test compilations only: tag `10`, an amplification shader's state, is a node of the thread group and the
 payload size in bytes (`[[8, 1, 1], 20]`), and tag `11`, a required wave size, a node with one integer (`[WaveSize(32)]` states
 `[32]`). :observed[dxc 1.7.2308, one program each, equal to the `PSV0` part]
+The payload an amplification program hands its mesh groups is laid out by the module's data layout string, as C lays out a
+struct: a `bool` member takes 4 bytes, and with `-enable-16bit-types` (data layout `i16:16`) a 16-bit member takes 2 bytes
+aligned to 2. :inferred[from the data layout] Read this way, the amplification programs of vkd3d's mesh-shader tests,
+compiled by dxc, give the results the tests expect. :observed[vkd3d's mesh-shader tests]
 
 A signature element's metadata record has 11 operands; the last is a tail list of tag and value pairs, null in 7,418 of skate.'s
 145,462 elements and 86,015 of Elden Ring's 545,303, and otherwise only tag `3`, the usage mask. Tags `0` (stream) and

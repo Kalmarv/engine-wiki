@@ -2,6 +2,13 @@
 title: Shader Model 6 parts and DXIL modules
 description: "What the Shader Model 6 programs of skate. and Elden Ring hold: the pipeline-state record (PSV0), the feature mask (SFI0), the DXIL module's entry-point, signature, resource and attribute metadata, and how dxc lists a module."
 games: [elden-ring, skate]
+sources:
+  - title: DXIL.rst
+    url: https://github.com/microsoft/DirectXShaderCompiler/blob/main/docs/DXIL.rst
+    note: the DXIL operation table, with the description of each operation
+  - title: D3D11.3 functional specification
+    url: https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm
+    note: Direct3D's floating-point conversion rules (3.2.2) and f32tof16 (22.13.2)
 ---
 
 A Shader Model 6 program is a [DirectX container](/concepts/d3d-shader-containers/) whose `DXIL` part holds an LLVM 3.7
@@ -191,6 +198,27 @@ that appears under both spaces; no Elden Ring module does. :observed{games="skat
 
 No load or store in either game's modules is volatile or atomic: a reader that refuses both reads all 69,728 modules (19,445
 skate., 50,283 Elden Ring) with no refusal. :observed{games="skate elden-ring"}
+
+## Converting a float to a half (`legacyF32ToF16`)
+
+dxc writes HLSL's `f32tof16` as `dx.op.legacyF32ToF16` (operation 130): a float in, the binary16 in the low 16 bits of an
+`i32` out. DXIL's operation table describes it only as a "legacy fuction to convert float (f32) to half (f16) (this is not
+related to min-precision)" and states no rounding. :sourced[DXIL.rst] Direct3D 11's `f32tof16`, the operation it carries
+over, "Follows D3D rules for floating point conversion", and those say "Round-to-zero must be used during conversion to
+another float format": a finite value past the half range gives the largest half of its sign, not an infinity.
+:sourced[D3D11.3 functional specification, 22.13.2 and 3.2.2]
+
+WARP through Direct3D 12 rounds `legacyF32ToF16` toward zero. With the float read from a constant buffer,
+1 + 0x1fff × 2^-23 gives 0x3c00 and its negative 0xbc00 (to nearest they are 0x3c01 and 0xbc01); 65520 and 1e10 give
+0x7bff and -65520 gives 0xfbff (to nearest, infinities); 1e-5 gives the denormal 167 × 2^-24 (to nearest, 168 × 2^-24);
+and the NaN 0x7fc00000 gives 0x7fff. :observed[WARP on Direct3D 12; one pixel program compiled by dxc for shader models 6.0
+(with and without optimisation) and 6.6, each build emitting the call on a constant-buffer value]
+
+:::open[Does every Direct3D 12 driver round `legacyF32ToF16` toward zero?]
+Only WARP has been measured. The DXIL documentation states no rounding, so a driver that lowers the operation to its own
+hardware conversion could round to nearest, and a NaN's half need not be WARP's 0x7fff (D3D11.3 3.1.3.2 leaves a NaN's
+bits open).
+:::
 
 ## Listings
 

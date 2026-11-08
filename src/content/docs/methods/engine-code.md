@@ -14,6 +14,9 @@ sources:
   - title: WebGPU Shading Language specification
     url: https://www.w3.org/TR/WGSL/
     note: "15.7.2 finite-math assumption; pow undefined for a zero base with an exponent of zero or less"
+  - title: wgpu pull request 10314
+    url: https://github.com/gfx-rs/wgpu/pull/10314
+    note: the HLSL writer zero-initialises group-shared memory with loops over the invocations; not in wgpu 30.0.1
   - title: Microsoft's Direct3D 9 shader reference
     url: https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/pow---ps
     note: pow; silent on a zero base
@@ -193,12 +196,22 @@ to 200 repeats each] Only a barrier that makes the invocations wait ends such a 
 does not. :sourced[Direct3D 11.3 functional specification] A word that varies on WARP is therefore first checked for
 these two shapes, and counts as WARP's only when neither explains it. :inferred
 
-**A slow first dispatch is not a hang.** WARP spends a fixed 47 to 55 seconds on the first dispatch of some programs,
-whatever the dispatch holds: for four Riders Republic compute programs translated to WGSL, one, two or four groups, 4
-or 256 invocations a group, or the barrier removed all take about as long, while a dispatch of no groups after the
-pipeline is made takes half a second; compiled through `fxc` instead, one of them is no faster. :observed[four programs,
-timed one dispatch at a time] A cost that does not follow the work fits WARP compiling the program at its first real
-dispatch. :inferred A harness that waits less than a minute for WARP reports these programs as hung.
+**A slow first dispatch is not a hang.** A compute program translated to WGSL and run through wgpu 30.0.1 can take WARP
+20 to 120 seconds at its first dispatch, whatever the dispatch holds: for four Riders Republic compute programs, one, two
+or four groups, 4 or 256 invocations a group, or the barrier removed all take about as long, while a dispatch of no groups
+after the pipeline is made takes half a second. :observed[four programs, timed one dispatch at a time] The time is spent
+on the group-shared memory's zero-initialisation. wgpu's HLSL writer zeroes each group-shared array with one
+whole-array assignment made by invocation 0 (`g = (uint[3072])0;`), and the time WARP takes over it grows faster than
+the array: one Riders Republic program with its group-shared array set to 1,024, 2,048, 3,071, 3,072 and 4,096 words
+takes 3.4, 20.9, 84.8, 123 and 115 seconds. With wgpu's zero-initialisation turned off it takes 0.3 seconds and gives
+the same outputs. :observed[one program at five array sizes; outputs compared with and without the initialisation]
+About 45 Riders Republic and Elden Ring compute programs, each with roughly 2,000 words of group-shared memory or more,
+are slow this way. :observed[the programs of both games that outlasted a 30-second wait] Compiling the HLSL with
+`fxc` instead makes one of them no faster, as the assignment is in the HLSL either way. :observed[one program] Zeroing
+the memory in the program itself instead, each invocation clearing every word whose index is its own index plus a
+multiple of the group's size, followed by a barrier, leaves no single large assignment to compile and so avoids the
+cost. :inferred wgpu's HLSL writer was changed to emit such loops after the 30.0.1 release. :sourced[wgpu pull request 10314] A harness that
+waits less than two minutes for WARP reports these programs as hung.
 
 **Translated and recompiled programs.** A program translated to another shading language and compiled again for WARP
 meets the compiler's rules as well as WARP's. HLSL's `pow(x, y)` compiles to `exp2(y × log2(x))`, so a zero base with an

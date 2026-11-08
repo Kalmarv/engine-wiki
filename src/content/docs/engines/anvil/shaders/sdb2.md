@@ -104,6 +104,15 @@ Relative addressing is bit 13, and the address-register token follows the operan
 source. A `dcl` token's second word is a usage and an index (usage in bits 0 to 3, index in bits 16 to 19), or for a pixel
 sampler the texture type in bits 27 to 30. :observed[the three uncompressed bundles]
 
+No vertex program declares a sampler. The pixel programs declare samplers `s0` to `s10` and, above a gap, `s14` and
+`s15`: `s0` in 6,042 of the 6,207, `s15` in 2,631 and `s14` in 1,544, and none `s11` to `s13`. A pixel program declares at
+most 12, and 3,559 of them declare a set that is not a run starting at `s0`. :observed[the declarations of the three
+uncompressed bundles' programs]
+
+| Sampler | `s0` | `s1` | `s2` | `s3` | `s4` | `s5` | `s6` | `s7` | `s8` | `s9` | `s10` | `s14` | `s15` | Confidence |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Pixel programs declaring it | 6,042 | 5,471 | 4,658 | 3,488 | 2,118 | 1,037 | 389 | 117 | 31 | 6 | 1 | 1,544 | 2,631 | :observed |
+
 On the reference rasterizer (`D3DDEVTYPE_REF`, software vertex processing) `mova` rounds to the nearest integer with a half going away from zero (`-2.5` gives `-3`, `0.5` gives `1`), a relative constant read at an index from 256 up to 4096 returns zero, and `slt` and `sge` are the IEEE comparisons (a NaN operand gives 0). :observed[a vertex program run on the reference rasterizer]
 
 ## Compressed bundles

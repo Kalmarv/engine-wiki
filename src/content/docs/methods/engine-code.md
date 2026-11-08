@@ -1,6 +1,10 @@
 ---
 title: Running the engine's own code
 description: Proving what a material or vertex stage computes by running the game's compiled shaders unmodified.
+sources:
+  - title: Microsoft's Shader Model 5 assembly reference
+    url: https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/imm-atomic-iadd--sm5---asm-
+    note: imm_atomic_iadd; an out-of-range atomic writes nothing and returns an undefined value
 ---
 
 Files say what is stored; the engine's code says what it means. For rendering data the decisive code is the game's own
@@ -38,8 +42,8 @@ and tie cases] A model with a guard band of even 16.25 pixels already disagrees 
 
 ## Where WARP is not an exact reference
 
-WARP is the reference a program is run on, but two of its results are not exact enough, or not stable enough, to settle
-a disagreement on their own.
+WARP is the reference a program is run on, but some of its results are not exact enough, not stable enough, or not
+required by Direct3D, to settle a disagreement on their own.
 
 **Sine and cosine at large arguments.** WARP's `sin` is coarse once the argument is large. At 64 arguments from 269 to
 55,424 radians, none of its results was the correctly rounded single-precision value: the median error was 9,103 ulp
@@ -59,17 +63,34 @@ programs, 26 lanes]
 **Ray queries are not repeatable.** Run under Direct3D 12, WARP's inline ray queries (`RayQuery`, with triangle and
 procedural-box instances) sometimes give a different result for the same input. A fixed batch of twelve generated scenes
 replayed 200 times in one process differed from its first run in 4 of the 200 batches: in three of the scenes a ray that
-hit in the first run missed, or hit another primitive. Two of the scenes replayed alone, 200 times each, never varied.
-:observed[200 replays of one batch of 12 scenes, every instance's flags valid] In another scene's first run, WARP did not
-offer seven procedural boxes as candidates that it offered on every later run. :observed[one run in six] A ray-query
-comparison with WARP therefore runs each case at least twice and compares only results on which two of WARP's own runs
-agree.
+hit in the first run missed, or hit another primitive. :observed[200 replays of one batch of 12 scenes, every instance's
+flags valid] In another scene's first run, WARP did not offer seven procedural boxes as candidates that it offered on
+every later run. :observed[one run in six]
 
-:::open[Why do WARP's ray-query results vary?]
-The variation has been seen only in batches of scenes run one after another in one process, never in a scene replayed
-alone. Whether it comes from WARP's traversal or from state carried from one case to the next inside the process is not
-established; running each case in a fresh process would separate the two.
-:::
+The variation is not carried from one case to the next. Running every scene in a process of its own, with its own device
+and resources, 200 times over (2,400 runs), three runs still differed from the rest: one ray in each of three scenes,
+each once in its 200, with the same input bytes every time. The other nine scenes never varied. :observed[200 rounds of 12
+scenes, one process per run] The three rays are not near a tie. Intersected in double precision against every
+instance's triangles and masks, no mask-visible hit of the three lies within 0.0063 (in barycentric terms) of an edge
+of its triangle, and no two hits of one ray lie within 0.00051 of each other along it; in each case the rare result was
+a farther hit or a miss. :observed[the three rays] With the process restricted to one CPU (the affinity mask set to one processor and
+checked before the device is created), the same three scenes gave the same result in all 600 runs, 200 each.
+:observed[600 single-CPU runs] That fits a race between WARP's worker threads building or traversing the acceleration
+structure. :inferred[from the single-CPU runs; WARP's code was not read] A ray-query comparison with WARP therefore either
+runs WARP on one CPU, or runs each case at least twice and compares only results on which two of WARP's own runs agree.
+
+**Out-of-range atomics.** Run under Direct3D 11 on a 2×2 `R32_UINT` texture, an atomic add (`InterlockedAdd`) at a
+coordinate inside the texture returns the old value and stores the sum; at `(width, 0)`, `(0, height)` or `(-1, 0)` it
+returns 0 and writes nothing, and an out-of-range compare-exchange also returns 0 and writes nothing. This holds with the
+program compiled with and without optimisation. :observed[one probe program, WARP under Direct3D 11] Only the missing
+write is required: the documentation of `imm_atomic_iadd` leaves the value an out-of-range atomic returns undefined, and
+a structured view addressed past the end of its struct is left wholly undefined rather than unwritten.
+:sourced[Microsoft's Shader Model 5 assembly reference] A 0 returned by WARP is therefore WARP's choice, not a rule other
+drivers must keep. :inferred
+
+The compiler can hide WARP's own behaviour. With optimisation on, `fxc` replaced an out-of-range load that follows an
+out-of-range store in the same program by the stored value (99); compiled with `D3DCOMPILE_SKIP_OPTIMIZATION`, the load
+reads 0 from WARP. :observed[one probe program] A probe of what WARP does out of range is compiled without optimisation.
 
 ## What it proves and what it doesn't
 

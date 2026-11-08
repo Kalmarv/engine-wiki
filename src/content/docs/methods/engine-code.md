@@ -10,7 +10,13 @@ sources:
     note: sincos; maximum absolute error 0.0008 between -100π and 100π
   - title: Direct3D 11.3 functional specification
     url: https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#inst_UTOF
-    note: "22.13.6 utof: round-to-nearest-even recommended, not required"
+    note: "22.13.6 utof: round-to-nearest-even recommended, not required; 22.10.20 sincos: absolute error at most 0.0008 inside ±100π"
+  - title: WebGPU Shading Language specification
+    url: https://www.w3.org/TR/WGSL/
+    note: "15.7.2 finite-math assumption; pow undefined for a zero base with an exponent of zero or less"
+  - title: Microsoft's Direct3D 9 shader reference
+    url: https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/pow---ps
+    note: pow; silent on a zero base
 ---
 
 Files say what is stored; the engine's code says what it means. For rendering data the decisive code is the game's own
@@ -46,6 +52,20 @@ screen-space parameter (each endpoint weighted by `c·w`, normalised), perspecti
 parameter `t`. :observed[a double-precision model fitted to WARP's raw output words to about 1.7e-7, on near-plane
 and tie cases] A model with a guard band of even 16.25 pixels already disagrees with it. :observed
 
+## Looking inside a program
+
+When a program's output differs from what an accurate executor gives, the first operation where the two part is found by
+capturing intermediate values: the bytecode is patched to copy chosen registers, as raw bits with no conversion, into an
+unused tail of a buffer the program already writes, and the same captures are taken on both sides. A capture counts only
+if every original output word of the patched program is byte-identical to the unpatched one's, because the added store
+can change how the program around it is compiled. :inferred It does. In one Riders Republic compute program translated
+to WGSL, a lane that gives an infinity on WARP gives NaN once every term of its `exp2` and product chain is stored as
+well; storing only values the program computes anyway, and the argument of `exp2`, leaves every output byte as it was in
+10 runs of 10 and shows that argument at 7.51e17, an overflow, behind all 64 differing words. :observed[one program, 10
+runs] Once a value is not finite, WGSL lets a program's result be any value, so a change of compilation is free to move
+it. :sourced[the WGSL specification, 15.7.2 and 8.2] Captures around the suspect operation are also checked against the
+same operation recomputed on the CPU from its captured inputs.
+
 ## Where WARP is not an exact reference
 
 WARP is the reference a program is run on, but some of its results are not exact enough, not stable enough, or not
@@ -73,7 +93,13 @@ promises: an absolute error of at most 0.0008 between −100π and 100π, and no
 factor 1e5 moves a hash value by up to 0.34, and 33 of them disagree with an accurate executor by more than 1e-3 for
 this reason. :observed[1,731 Elden Ring compute programs run on WARP, the arguments of one probed] Three of Riders Republic's FFT compute programs take their twiddle factors from `sin` and `cos`;
 with WARP's `sin` and `cos` replaced by accurate ones inside the same programs, none of their lanes differs from the
-accurate executor by more than 1e-3 over 60 runs each. :observed[3 programs, 60 runs each]
+accurate executor by more than 1e-3 over 60 runs each. :observed[3 programs, 60 runs each] In two more Riders Republic
+compute programs, run as the original DXBC on WARP under Direct3D 11, the values entering `sincos` are bit-identical to
+an accurate executor's, and redoing the rest of the arithmetic in correctly rounded single precision with only WARP's
+`sin` and `cos` results put in reproduces WARP's outputs bit for bit, for all 26 words that differ (24 in one program
+over ten invocations, 2 in one invocation of the other). Every one of those WARP results is within the 0.0008 bound, with
+the argument inside ±100π. :observed[the 26 differing words of two programs, intermediate values captured on WARP] The
+difference there is WARP's `sin` and `cos`, legal and nothing else.
 
 The same happens with any small rounding difference multiplied by a large constant before `frac`: Elden Ring's
 ambient-occlusion programs (`ScreenSpaceAO2` and its variants, `CopyExternalAOTexture`) compute
@@ -123,16 +149,22 @@ The zero appears at build time, in any of a triangle's nine coordinates, in abou
 read of memory it has not yet written is not established.
 :::
 
-**Integer-to-float conversion.** WARP converts an unsigned integer that a float cannot hold exactly toward zero, not to
-the nearest value: in one lane of an Elden Ring compute program, 3,267,677,828 converts to 3,267,677,696.0 on WARP, where
-nearest-even gives 3,267,677,952.0, and likewise for a second word. :observed[one program, values captured on both sides
-at the conversion] Both are legal: the Direct3D 11.3 functional specification (22.13.6, `utof`) strongly recommends
-round-to-nearest-even but does not require it, though Microsoft's shorter instruction page says nearest-even.
-:sourced[Direct3D 11.3 functional specification] The program (a SpeedTree `*_Animation` program that
-calls no `sin`) reinterprets a float result as an integer, converts it back to float and saturates it to an integer
-word, so a one-ulp difference becomes a different integer; its multiply-add chain before the conversion already
-differs from an accurate executor by 1 to 3 ulp on WARP. :observed[the same lane] An integer word that differs from WARP
-in such a program is WARP's rounding, not a wrong formula.
+**Integer-to-float conversion.** WARP converts an unsigned integer that a float cannot hold exactly (one above 2^24)
+to one of the two floats either side of it, but neither always the nearest nor always the one toward zero. In one lane of
+an Elden Ring compute program, 3,267,677,828 converts to 3,267,677,696.0, toward zero, where nearest-even gives
+3,267,677,952.0, and likewise for a second word. :observed[one program, values captured on both sides at the conversion]
+Converted on its own, 3,256,159,079 (`0xC2150B67`) gives 3,256,159,232.0 (`0x4F42150C`), rounded up by 153/256 of a
+unit in the last place, where nearest-even and toward-zero both give 3,256,158,976.0; it gives that value in 10 runs of
+10, so the choice follows the input, not the run. :observed[a standalone probe, 10 runs, WARP under Direct3D 12] Over
+the other conversions compared, WARP's result is sometimes the truncated value, sometimes the nearest-even one and
+sometimes the one above. :observed Any of the two is legal: the Direct3D 11.3 functional specification (22.13.6,
+`utof`) strongly recommends round-to-nearest-even but does not require it, though Microsoft's shorter instruction page
+says nearest-even. :sourced[Direct3D 11.3 functional specification] The Elden Ring program (a SpeedTree `*_Animation`
+program that calls no `sin`) reinterprets a float result as an integer, converts it back to float and saturates it to
+an integer word, so a one-ulp difference becomes a different integer; its multiply-add chain before the conversion
+already differs from an accurate executor by 1 to 3 ulp on WARP. :observed[the same lane] An integer word that differs
+from WARP in such a program is WARP's rounding, not a wrong formula, and a comparison with WARP accepts either float
+next to the exact value of a `utof`. :inferred
 
 **Out-of-range atomics.** Run under Direct3D 11 on a 2×2 `R32_UINT` texture, an atomic add (`InterlockedAdd`) at a
 coordinate inside the texture returns the old value and stores the sum; at `(width, 0)`, `(0, height)` or `(-1, 0)` it
@@ -146,6 +178,36 @@ drivers must keep. :inferred
 The compiler can hide WARP's own behaviour. With optimisation on, `fxc` replaced an out-of-range load that follows an
 out-of-range store in the same program by the stored value (99); compiled with `D3DCOMPILE_SKIP_OPTIMIZATION`, the load
 reads 0 from WARP. :observed[one probe program] A probe of what WARP does out of range is compiled without optimisation.
+
+**Results that vary are not always WARP's.** A program run on WARP several times with the same inputs can give a word
+a different value from run to run because the program itself leaves it undefined. With constants chosen at random, two
+invocations of a program can compute the same output index and store different values there, and Direct3D does not say
+which store lands last. In six of Riders Republic's FFT compute programs, one other Riders Republic program and Elden
+Ring's `MatrixTranspose`, every word that varied over 30 replays of each case is a word two or more invocations store
+with different values (16 of 16 in one program, 128 of 128 in another, 32 of 32 in `MatrixTranspose`), and none of the
+eight uses group-shared memory or a barrier. :observed[30 replays of each case of 8 programs translated to WGSL, the
+stores recounted by an executor] Whether the games' own constants ever make such indices collide is not established.
+In 13 other programs (eleven of Riders Republic's and Elden Ring's `BitonicSortSinglePass256` and `512`), the words that
+vary come from a group-shared word that is read and then written between the same two barriers. :observed[the programs' structure, and up
+to 200 repeats each] Only a barrier that makes the invocations wait ends such a stretch: a fence that only orders memory
+does not. :sourced[Direct3D 11.3 functional specification] A word that varies on WARP is therefore first checked for
+these two shapes, and counts as WARP's only when neither explains it. :inferred
+
+**A slow first dispatch is not a hang.** WARP spends a fixed 47 to 55 seconds on the first dispatch of some programs,
+whatever the dispatch holds: for four Riders Republic compute programs translated to WGSL, one, two or four groups, 4
+or 256 invocations a group, or the barrier removed all take about as long, while a dispatch of no groups after the
+pipeline is made takes half a second; compiled through `fxc` instead, one of them is no faster. :observed[four programs,
+timed one dispatch at a time] A cost that does not follow the work fits WARP compiling the program at its first real
+dispatch. :inferred A harness that waits less than a minute for WARP reports these programs as hung.
+
+**Translated and recompiled programs.** A program translated to another shading language and compiled again for WARP
+meets the compiler's rules as well as WARP's. HLSL's `pow(x, y)` compiles to `exp2(y × log2(x))`, so a zero base with an
+exponent of zero or less gives NaN or 0: `pow(0, -0.0)` is NaN on WARP, where the C library gives 1. :observed[47 Direct3D
+9 programs, each of which agrees with an accurate executor on every lane once only pow's zero base is given the C
+library's values] WGSL leaves that case undefined, and Microsoft's Direct3D 9 documentation of `pow` says nothing about
+it. :sourced[the WGSL specification; Microsoft's Direct3D 9 documentation] Both `fxc` and `dxc` fold `x - x`, `-x + x`
+and `x + -x` to 0 and `x / x` to 1 even when `x` is an infinity, which WGSL's finite-math assumption allows.
+:observed[one probe program per compiler]
 
 ## What it proves and what it doesn't
 

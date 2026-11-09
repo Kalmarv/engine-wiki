@@ -1,6 +1,6 @@
 ---
 title: Entity materials
-description: "How an entity material's defines select the entity shader's alpha test, colour mask, overlay, emissive light and texture animation, and where the colours they read come from."
+description: "How an entity material's defines select the entity shader's alpha test, colour mask, masked second texture, overlay, emissive light and texture animation, and where the colours they read come from."
 sources:
   - title: bridge. (vanilla resource pack copy)
     url: https://github.com/bridge-core/bridge./tree/e3f00f6f649263383c96d578b9409dcb0fbf25cd/static/vanilla/RP/materials
@@ -27,12 +27,15 @@ named by the vanilla client entities but defined neither in the 1.16 file nor in
 
 The stages below are those of the 1.16-era GLSL entity shader, in the order the fragment shader runs them: texture,
 alpha test, vertex colour, colour mask, multi-texture, overlay, light, fog, glint. :sourced[SlimeChunkDisplay (shader pack)]
+`MASKED_MULTITEXTURE` runs between the texture read and the alpha test, so the alpha test sees the masked result.
+:sourced[SlimeChunkDisplay (shader pack)]
 
 | Define | Effect | Confidence |
 |---|---|---|
 | `ALPHA_TEST` | Discards a texel with alpha below 0.5; with `USE_COLOR_MASK`, only a texel with alpha 0; with `USE_EMISSIVE`, only a texel whose `r + g + b + a` is 0 (with `USE_ONLY_EMISSIVE`, alpha 0 or 1) | :sourced[SlimeChunkDisplay (shader pack)] |
 | `USE_COLOR_MASK` | `rgb = mix(rgb, rgb * CHANGE_COLOR.rgb, a)`, then `a *= CHANGE_COLOR.a`: the texel's own alpha is how far the change colour tints it | :sourced[SlimeChunkDisplay (shader pack)] |
 | `MULTI_COLOR_TINT` | The texture is a mask: `rgb = mask.r * CHANGE_COLOR.rgb`, replaced by `mask.g * MULTIPLICATIVE_TINT_CHANGE_COLOR` wherever `mask.g` is above 0 | :sourced[SlimeChunkDisplay (shader pack)] |
+| `MASKED_MULTITEXTURE` | Reads the second texture (`TEXTURE_1`) at the same coordinates and keeps it, except where it is coloured but not opaque (`r + g + b` above 0 and alpha below 1), where the first texture shows through: `color = mix(tex1, color, float(dot(tex1.rgb, vec3(1)) * (1 - tex1.a) > 0))` | :sourced[SlimeChunkDisplay (shader pack)] |
 | `USE_OVERLAY` | `rgb = mix(rgb, OVERLAY_COLOR.rgb, OVERLAY_COLOR.a)`, before the light | :sourced[SlimeChunkDisplay (shader pack)] |
 | `USE_EMISSIVE` | `color *= mix(1, light, a)` instead of `color *= light`: a texel takes the light by its alpha, so a transparent texel draws at full brightness | :sourced[SlimeChunkDisplay (shader pack)] |
 | `TINTED_ALPHA_TEST` | The alpha test runs on `a * OVERLAY_COLOR.a` | :sourced[SlimeChunkDisplay (shader pack)] |
@@ -49,6 +52,8 @@ The base `entity` material defines `USE_OVERLAY`, so nearly every entity materia
 | `entity_alphablend` | `entity` + state `Blending`, with a vertex colour; culled | :sourced[bridge. (vanilla resource pack copy)] |
 | `entity_emissive_alpha` | `entity_nocull` + `ALPHA_TEST`, `USE_EMISSIVE` | :sourced[bridge. (vanilla resource pack copy)] |
 | `villager_v2` | `entity_alphatest` with `depthFunc` `LessEqual` | :sourced[bridge. (vanilla resource pack copy)] |
+| `entity_multitexture_masked` | `entity_alphatest` + `MASKED_MULTITEXTURE`, both samplers clamped | :sourced[bridge. (vanilla resource pack copy)] |
+| `villager_v2_masked`, `zombie_villager_v2_masked` | `entity_multitexture_masked` with `depthFunc` `LessEqual` | :sourced[bridge. (vanilla resource pack copy)] |
 | `entity_change_color` | `entity_nocull` + `USE_OVERLAY`, `USE_COLOR_MASK` | :sourced[bridge. (vanilla resource pack copy)] |
 | `entity_alphatest_change_color` | `entity_change_color` + `ALPHA_TEST`, `USE_COLOR_MASK`, state `DisableAlphaWrite` | :sourced[bridge. (vanilla resource pack copy)] |
 | `cat` | `entity_alphatest_change_color` | :sourced[bridge. (vanilla resource pack copy)] |
@@ -65,6 +70,16 @@ The base `entity` material defines `USE_OVERLAY`, so nearly every entity materia
   controller gives `this` as the fallback of its armour-dye `color`. :inferred
 - **`OVERLAY_COLOR`** is the render controller's `overlay_color`. :inferred
 - **`UV_ANIM`** is the render controller's `uv_anim` (`offset` in `xy`, `scale` in `zw`). :inferred
+
+### Villager clothes
+
+The villager's middle render controller draws the biome clothes (`array.biomes[query.mark_variant]`) as the first
+texture and the profession (`array.professions[variable.profession_index]`) as the second, with `Material.masked`
+except for a baby or an unskilled villager (profession 0), which get `Material.default` and so show the biome clothes
+alone. :observed[the villager_v2 render controllers of bedrock-samples v1.26.60.5] With `villager_v2_masked`, the
+profession outfit covers the biome clothes wherever it is opaque or empty-black, and lets them through only at its
+coloured, translucent texels. :inferred[from the define's shader line] The numbers these arrays are indexed by come
+from [behaviour components](/engines/bedrock/data-model/behaviour-components/#texture-choice-variant-mark_variant-and-skin_id).
 
 ### Tame cat textures
 

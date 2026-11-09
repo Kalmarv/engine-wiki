@@ -75,6 +75,12 @@ and the unwind and catch actions registered with `__CxxFrameHandler3`, reaches 6
 another. :observed[static reading of the whole executable] That is the code reachable by those routes, not all the code that runs.
 :inferred
 
+The code holds 82,102 indirect call sites (calls through a register or a memory operand). :observed[every call site of the translated
+code] Their targets come from function pointers and virtual tables, so they are not fixed by the code. :inferred Run on a
+gameplay route, about 79,000 indirect calls a frame are made across all threads; each site's most frequent target takes 73.6%
+of them and its two most frequent 79.7%, and the 100 busiest sites make three quarters of all the calls. :observed[one route,
+translated with every indirect call's site and target counted]
+
 An optional check at `0x9EF420` asks the version of `dbghelp.dll`: it reads only the root `VS_FIXEDFILEINFO`, refuses a version
 block larger than `0x800` bytes and accepts version 5.1.2600.2181 or later; its caller (`0x9EF270`) frees the library when the check
 fails. The install ships no `dbghelp.dll`. :observed[static reading, and a run of that path]

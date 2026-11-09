@@ -214,6 +214,11 @@ WARP through Direct3D 12 rounds `legacyF32ToF16` toward zero. With the float rea
 and the NaN 0x7fc00000 gives 0x7fff. :observed[WARP on Direct3D 12; one pixel program compiled by dxc for shader models 6.0
 (with and without optimisation) and 6.6, each build emitting the call on a constant-buffer value]
 
+WARP through Direct3D 11 rounds DXBC's `f32tof16` the same way: in a program whose four cases have inputs on which the two
+roundings differ (on 8, 10, 8 and 11 lanes), every lane's half is the one rounded toward zero. :observed[WARP on Direct3D 11;
+one program] Its NaN halves need not be 0x7fff either: the packed `f32tof16` results of one game's compute program hold the
+NaN half 0xffff (sign set, every fraction bit set). :observed[WARP on Direct3D 11; one compute program]
+
 :::open[Does every Direct3D 12 driver round `legacyF32ToF16` toward zero?]
 Only WARP has been measured. The DXIL documentation states no rounding, so a driver that lowers the operation to its own
 hardware conversion could round to nearest, and a NaN's half need not be WARP's 0x7fff (D3D11.3 3.1.3.2 leaves a NaN's

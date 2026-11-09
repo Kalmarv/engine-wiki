@@ -69,6 +69,14 @@ The vanilla values the two formats hold differ for swamps:
 
 Swamp water drawn at the default opacity since the move to client biomes is intended. :sourced[MCPE-187943]
 
+The water block's own textures are close to opaque, so the biome's opacity is nearly all of the water's
+transparency. `water` and `flowing_water` draw their top and bottom with `still_water_grey` and their sides with
+`flowing_water_grey` (`blocks.json`); `water_still_grey.png` has an alpha of 240 (0.94) on every pixel and
+`water_flow_grey.png` 255. :proven[every pixel of both textures, bedrock-samples v1.26.60.5] Java Edition's water
+textures carry the transparency themselves: `water_flow.png` and `water_overlay.png` have an alpha of 180 (0.71) on
+every pixel. :proven[every pixel of both textures, Java Edition 26.3's client] How the engine combines the texture's
+alpha with `surface_opacity` is not published; a product of the two is the plain reading. :inferred
+
 :::open[What opacity does a client biome without surface_opacity get?]
 The client biome documentation gives no default. The old file's `default` entry held 0.65, which the vanilla swamps'
 explicit 0.65 matches.

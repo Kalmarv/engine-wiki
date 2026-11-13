@@ -147,6 +147,18 @@ scores, not every attempt, so failed and abandoned runs and where players leave 
 :observed[BOXRR-23 metadata joined to BeatSaver maps]{games="beat-saber"} Frame times line up with the map's note times: averaged over players, the right hand's speed peaks
 40 ms after the right-hand notes. :observed[179 map difficulties with 8 or more players]{games="beat-saber"}
 
+Hand positions line up with the notes too. Averaged over three or more players, at a lone note the left hand follows red
+notes and the right hand blue ones: the hand's x rises with the note's lane (correlation 0.94 for both colours) and its y
+with the layer (0.89 red, 0.88 blue). Around the note, the hand and its saber's forward vector move the way the cut direction
+points. The note's hand is fastest just before or at the note, about twice as fast as 180 ms either side, and the other
+hand is slowest there. :observed[90 difficulties of 40 maps, 32,132 lone notes]{games="beat-saber"}
+
+:::open[Does the swing peak before the note or 40 ms after it?]
+Sampled every 40 ms, the note's hand is fastest in the step from 40 ms before the note to the note, and the other
+measurement puts the right hand's peak 40 ms after it, about 60 ms apart. Which way each was measured has not been traced,
+so the exact offset between frame times and note times is open.
+:::
+
 :::open[What do the out-of-range noteID and saberType values mean?]
 They come from a minority of recordings; whether they are older mod versions, Quest recordings or conversion damage is not
 known.

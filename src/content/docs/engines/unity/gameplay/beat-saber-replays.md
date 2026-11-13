@@ -147,6 +147,13 @@ scores, not every attempt, so failed and abandoned runs and where players leave 
 :observed[BOXRR-23 metadata joined to BeatSaver maps]{games="beat-saber"} Frame times line up with the map's note times: averaged over players, the right hand's speed peaks
 40 ms after the right-hand notes. :observed[179 map difficulties with 8 or more players]{games="beat-saber"}
 
+The fail time in a BOXRR-23 replay does not mark failed runs the way it does in a local replay. Over a sample of 50,981 Beat
+Saber replays it is absent in 47,449, zero or negative in 3,481, NaN in 2 and above 0 in 49 (9 of those 49 with No Fail on).
+:observed[50,981 replays]{games="beat-saber"} 47 of the 49 positive values are below 1 ms, down to 1.4e-45 (float32
+subnormals), and play goes on to the end of the map; only 2 are 1 s or more, one of them with No Fail.
+:observed[50,981 replays]{games="beat-saber"} A reader that cuts a recording at its fail time whenever it is above 0 cuts
+those 47 to almost nothing; values under 1 ms are noise. :inferred
+
 Hand positions line up with the notes too. Averaged over three or more players, at a lone note the left hand follows red
 notes and the right hand blue ones: the hand's x rises with the note's lane (correlation 0.94 for both colours) and its y
 with the layer (0.89 red, 0.88 blue). Around the note, the hand and its saber's forward vector move the way the cut direction
@@ -157,6 +164,11 @@ hand is slowest there. :observed[90 difficulties of 40 maps, 32,132 lone notes]{
 Sampled every 40 ms, the note's hand is fastest in the step from 40 ms before the note to the note, and the other
 measurement puts the right hand's peak 40 ms after it, about 60 ms apart. Which way each was measured has not been traced,
 so the exact offset between frame times and note times is open.
+:::
+
+:::open[How many BOXRR-23 runs really failed?]
+Positive fail times in the sample are nearly all sub-millisecond noise, so a count of failed runs taken from the fail time
+overstates them. Whether the 0.1% of failed runs given above was counted that way has not been traced.
 :::
 
 :::open[What do the out-of-range noteID and saberType values mean?]

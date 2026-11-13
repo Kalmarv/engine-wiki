@@ -136,7 +136,16 @@ values per row. :observed[54,167 of 54,171 replays decoded]{games="beat-saber"} 
 and `saberType` are in `otherData`, not in the float array. :observed[54,167 of 54,171 replays decoded]{games="beat-saber"} Rows whose time is
 -1 are padding. :sourced[metaguard/xror] The recordings of 71 of 4,335 users hold a `saberType`
 other than 0 or 1, and some hold a `noteID` beyond the signed 32-bit range. :observed[4,335 users]{games="beat-saber"} ScoreSaber replays in the same set give the
-difficulty as its rank number (1, 3, 5, 7, 9) rather than its name. :observed{games="beat-saber"}
+difficulty as its rank number (1, 3, 5, 7, 9) rather than its name. :observed{games="beat-saber"} They are about a tenth of
+the Beat Saber recordings and their metadata carries no score. :observed[BOXRR-23 metadata]{games="beat-saber"}
+
+The Beat Saber recordings are nearly all finished runs: over the 4.36 million Standard-mode replays of BeatSaver maps, 99%
+last the whole map (the 1st percentile of duration over map length is 1.01), 0.1% are failed runs and about 0.4% end early.
+:observed[BOXRR-23 metadata, 4.36 million replays]{games="beat-saber"} They are the replays the leaderboard mods uploaded as
+scores, not every attempt, so failed and abandoned runs and where players leave a map are recorded only in local replays.
+:inferred No map uploaded to BeatSaver after 2023 has a recording in the set.
+:observed[BOXRR-23 metadata joined to BeatSaver maps]{games="beat-saber"} Frame times line up with the map's note times: averaged over players, the right hand's speed peaks
+40 ms after the right-hand notes. :observed[179 map difficulties with 8 or more players]{games="beat-saber"}
 
 :::open[What do the out-of-range noteID and saberType values mean?]
 They come from a minority of recordings; whether they are older mod versions, Quest recordings or conversion damage is not

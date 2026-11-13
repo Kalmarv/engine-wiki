@@ -188,3 +188,11 @@
   developer: Mojang Studios
   year: 2017
   build: "Vanilla resource and behaviour packs as Mojang's bedrock-samples v1.26.60.5 publishes them (v1.21.0.3 for older geometry); entity materials and shaders of the 1.16-era renderer from published copies; no installed game read"
+
+- id: beat-saber
+  name: Beat Saber
+  short: Beat Saber
+  engine: unity
+  developer: Beat Games
+  year: 2019
+  build: "Steam game 1.40.8_7379 with the BeatLeader mod 0.9.33 (its replays); BOXRR-23 replays from game 1.24 to 1.28; Unity version not read"

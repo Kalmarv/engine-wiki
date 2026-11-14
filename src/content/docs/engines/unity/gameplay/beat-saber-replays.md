@@ -136,7 +136,17 @@ values per row. :observed[54,167 of 54,171 replays decoded]{games="beat-saber"} 
 and `saberType` are in `otherData`, not in the float array. :observed[54,167 of 54,171 replays decoded]{games="beat-saber"} Rows whose time is
 -1 are padding. :sourced[metaguard/xror] The recordings of 71 of 4,335 users hold a `saberType`
 other than 0 or 1, and some hold a `noteID` beyond the signed 32-bit range. :observed[4,335 users]{games="beat-saber"} ScoreSaber replays in the same set give the
-difficulty as its rank number (1, 3, 5, 7, 9) rather than its name. :observed{games="beat-saber"} They are about a tenth of
+difficulty as its rank number (1, 3, 5, 7, 9) rather than its name. :observed{games="beat-saber"}
+
+Some recordings use the older `noteID` with no scoringType, below 10,000: 14.5% of 1.34 million note events matched to map
+notes in a sample of about 1,400 replays. :observed[about 1,400 replays]{games="beat-saber"} Where the scoringType is there,
+it agrees with the map: of 14.9 million events matched to a colour note, 62 disagree about whether the note is a chain head
+(scoringType 6), and none of the 7,559 chain-link events (scoringType 7) has the line, layer, colour and direction of a colour
+note within 50 ms of its time. :observed[BOXRR-23 replays of 3,675 map difficulties with three or more players]{games="beat-saber"}
+A bomb's id in the newer layout is 20000 + line × 1000 + layer × 100 − 1 (colour −1, direction 9), so the bottom-left bomb is
+19999 and the top of the first lane 20199; in the older one it is the plain digits below 10,000.
+:observed[230 bomb events, 1 undecodable]{games="beat-saber"}
+ They are about a tenth of
 the Beat Saber recordings and their metadata carries no score. :observed[BOXRR-23 metadata]{games="beat-saber"}
 
 The Beat Saber recordings are nearly all finished runs: over the 4.36 million Standard-mode replays of BeatSaver maps, 99%
@@ -145,20 +155,27 @@ last the whole map (the 1st percentile of duration over map length is 1.01), 0.1
 scores, not every attempt, so failed and abandoned runs and where players leave a map are recorded only in local replays.
 :inferred No map uploaded to BeatSaver after 2023 has a recording in the set.
 :observed[BOXRR-23 metadata joined to BeatSaver maps]{games="beat-saber"} Frame times line up with the map's note times: averaged over players, the right hand's speed peaks
-40 ms after the right-hand notes. :observed[179 map difficulties with 8 or more players]{games="beat-saber"}
+40 ms after the right-hand notes. :observed[179 map difficulties with 8 or more players]{games="beat-saber"} Event times line
+up with spawn times too: on average 0.0034% of a replay's note events come more than 0.2 s before their note's `spawnTime`, and
+2 of 21,935 replays have 1% or more such events. :observed[21,935 replays of map difficulties with three or more players]{games="beat-saber"}
 
 The fail time in a BOXRR-23 replay does not mark failed runs the way it does in a local replay. Over a sample of 50,981 Beat
 Saber replays it is absent in 47,449, zero or negative in 3,481, NaN in 2 and above 0 in 49 (9 of those 49 with No Fail on).
 :observed[50,981 replays]{games="beat-saber"} 47 of the 49 positive values are below 1 ms, down to 1.4e-45 (float32
 subnormals), and play goes on to the end of the map; only 2 are 1 s or more, one of them with No Fail.
 :observed[50,981 replays]{games="beat-saber"} A reader that cuts a recording at its fail time whenever it is above 0 cuts
-those 47 to almost nothing; values under 1 ms are noise. :inferred
+those 47 to almost nothing; values under 1 ms are noise. :inferred In another 3,566 replays, No Fail is on in 614 and only 2
+have a positive fail time without it. :observed[3,566 replays]{games="beat-saber"}
 
 Hand positions line up with the notes too. Averaged over three or more players, at a lone note the left hand follows red
 notes and the right hand blue ones: the hand's x rises with the note's lane (correlation 0.94 for both colours) and its y
 with the layer (0.89 red, 0.88 blue). Around the note, the hand and its saber's forward vector move the way the cut direction
 points. The note's hand is fastest just before or at the note, about twice as fast as 180 ms either side, and the other
 hand is slowest there. :observed[90 difficulties of 40 maps, 32,132 lone notes]{games="beat-saber"}
+
+Bad cuts and misses together are 3% to 5% of note events and rise with the local note rate: counting each player's first
+replay without speed modifiers, and ranking each difficulty's notes by how many notes came in the 4 s before, they are 2.9% of
+events in the bottom third, 3.8% in the middle and 4.7% in the top. :observed[about 19,000 replays of 3,364 map difficulties with three or more players]{games="beat-saber"}
 
 :::open[Does the swing peak before the note or 40 ms after it?]
 Sampled every 40 ms, the note's hand is fastest in the step from 40 ms before the note to the note, and the other

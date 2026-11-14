@@ -9,6 +9,9 @@ sources:
   - title: Mapping Extensions
     url: https://github.com/Kylemc1413/MappingExtensions
     note: the precision position convention
+  - title: SongCore
+    url: https://github.com/Kylemc1413/SongCore
+    note: the level hash
 ---
 
 A Beat Saber level is a folder (a zip on BeatSaver) holding the song's audio, `Info.dat` and one JSON `.dat` file per
@@ -16,6 +19,8 @@ difficulty; `Info.dat` names the song, its tempo, its difficulties by characteri
 the file each is in. :sourced[BSMG Wiki] The level hash that replays and BeatSaver use to name a map is a SHA-1 over
 `Info.dat` and the difficulty files, so it changes when any of them does
 (see [replays](/engines/unity/gameplay/beat-saber-replays/#where-replays-are-kept)). :observed[40 replays matched to their level folders]{games="beat-saber"}
+It covers the bytes of `Info.dat` followed by each difficulty file in the order `Info.dat` lists them, and is written as
+upper-case hex. :sourced[SongCore]
 
 ## Versions
 

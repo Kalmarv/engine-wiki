@@ -136,7 +136,10 @@ values per row. :observed[54,167 of 54,171 replays decoded]{games="beat-saber"} 
 and `saberType` are in `otherData`, not in the float array. :observed[54,167 of 54,171 replays decoded]{games="beat-saber"} Rows whose time is
 -1 are padding. :sourced[metaguard/xror] The recordings of 71 of 4,335 users hold a `saberType`
 other than 0 or 1, and some hold a `noteID` beyond the signed 32-bit range. :observed[4,335 users]{games="beat-saber"} ScoreSaber replays in the same set give the
-difficulty as its rank number (1, 3, 5, 7, 9) rather than its name. :observed{games="beat-saber"}
+difficulty as its rank number (1, 3, 5, 7, 9) rather than its name. :observed{games="beat-saber"} They are about a tenth of
+the Beat Saber recordings and their metadata carries no score. :observed[BOXRR-23 metadata]{games="beat-saber"}
+The modifiers are comma-separated two-letter codes, and No Arrows is `NA`: a CSV reader that takes `NA` for a missing value
+(pandas does by default) reads every No Arrows play as a play without modifiers. :observed[29,338 No Arrows plays]{games="beat-saber"}
 
 Some recordings use the older `noteID` with no scoringType, below 10,000: 14.5% of 1.34 million note events matched to map
 notes in a sample of about 1,400 replays. :observed[about 1,400 replays]{games="beat-saber"} Where the scoringType is there,
@@ -146,8 +149,6 @@ note within 50 ms of its time. :observed[BOXRR-23 replays of 3,675 map difficult
 A bomb's id in the newer layout is 20000 + line × 1000 + layer × 100 − 1 (colour −1, direction 9), so the bottom-left bomb is
 19999 and the top of the first lane 20199; in the older one it is the plain digits below 10,000.
 :observed[230 bomb events, 1 undecodable]{games="beat-saber"}
- They are about a tenth of
-the Beat Saber recordings and their metadata carries no score. :observed[BOXRR-23 metadata]{games="beat-saber"}
 
 The Beat Saber recordings are nearly all finished runs: over the 4.36 million Standard-mode replays of BeatSaver maps, 99%
 last the whole map (the 1st percentile of duration over map length is 1.01), 0.1% are failed runs and about 0.4% end early.

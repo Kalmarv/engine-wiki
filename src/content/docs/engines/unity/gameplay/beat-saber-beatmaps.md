@@ -11,7 +11,7 @@ sources:
     note: the precision position convention
   - title: SongCore
     url: https://github.com/Kylemc1413/SongCore
-    note: the level hash
+    note: the level hash; the per-difficulty colour fields (SongData.cs)
 ---
 
 A Beat Saber level is a folder (a zip on BeatSaver) holding the song's audio, `Info.dat` and one JSON `.dat` file per
@@ -21,6 +21,9 @@ the file each is in. :sourced[BSMG Wiki] The level hash that replays and BeatSav
 (see [replays](/engines/unity/gameplay/beat-saber-replays/#where-replays-are-kept)). :observed[40 replays matched to their level folders]{games="beat-saber"}
 It covers the bytes of `Info.dat` followed by each difficulty file in the order `Info.dat` lists them, and is written as
 upper-case hex. :sourced[SongCore]
+
+`Info.dat` does not keep a characteristic's difficulties distinct: a few maps list two Standard difficulties under the same
+difficulty name, so a reader that keys difficulties by characteristic and name finds two for one key. :observed[22 of about 117,000 Standard difficulties in a BeatSaver census]{games="beat-saber"}
 
 ## Versions
 
@@ -64,6 +67,12 @@ Most mods extend the same files, in `_customData` or `customData` and in out-of-
 off the grid that way. :observed[corpus difficulties]{games="beat-saber"} Noodle Extensions adds per-object data (position,
 rotation, note speed, fake and uninteractable objects, free-form wall size) and animation through tracks and custom events.
 :sourced[BSMG Wiki]
+
+SongCore lets a map set its own colours per difficulty in a v2 `Info.dat`: the difficulty's `_customData` may hold
+`_colorLeft`, `_colorRight`, `_envColorLeft`, `_envColorRight`, `_envColorWhite`, their `Boost` variants and
+`_obstacleColor`, each an object of `r`, `g`, `b` and optional `a` (1 when left out). :sourced[SongCore] A difficulty whose
+`_beatmapColorSchemeIdx` names an entry of `_colorSchemes` with `useOverride` set takes that scheme instead, and its
+`_customData` colours are ignored; for a difficulty with neither, SongCore sets no colours. :sourced[SongCore]
 
 How much of that a map uses varies with its popularity:
 

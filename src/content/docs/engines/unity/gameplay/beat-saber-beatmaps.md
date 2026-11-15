@@ -11,7 +11,7 @@ sources:
     note: the precision position convention
   - title: SongCore
     url: https://github.com/Kylemc1413/SongCore
-    note: the level hash (Utilities/Hashing.cs); the per-difficulty colour fields (SongData.cs); extra level folders (folders.xml)
+    note: the level hash (Utilities/Hashing.cs); the per-difficulty colour fields (SongData.cs); extra level folders (folders.xml); the contributors list (README)
   - title: ChroMapper AutoLighterV2
     url: https://github.com/Jonas00000/ChroMapper-AutoLighterV2
     note: the lighter tag it writes into the files it lights
@@ -74,6 +74,8 @@ difficulties, 57% have identical lighting events in all of them and 83% overlap 
 and 68 have none; the five light groups, ring spin and laser speed make up almost all basic events, and 94% to 96% of lit
 maps use rings and laser speeds. :observed[999 BeatSaver maps]{games="beat-saber"} The median lit map has 10.5 lighting events
 per second at 5.3 distinct times per second. :observed[863 lit maps]{games="beat-saber"}
+Human lighting follows the notes: in 564 maps whose lights are credited to a person, 43% of the moments at which the lights
+change fall at the time of a note, against 9% expected by chance. :observed[564 maps credited to a human lighter]{games="beat-saber"}
 
 Group lighting changes that picture for newer maps: 38 of the 999 use event box groups, 8 of them with no basic events at all
 and 24 with fewer than one basic event per second, so a count of basic events alone puts most group-lit maps among the
@@ -86,6 +88,11 @@ holding its version to the difficulty's `customData.lighter` (`_customData._ligh
 name to the difficulty's lighters in `Info.dat`. :sourced[ChroMapper AutoLighterV2] The text appears in 43 difficulty files of
 19 of the 999 maps. :observed[text search of 999 BeatSaver maps]{games="beat-saber"} The entry stays when the lights are
 edited by hand afterwards, so it shows that the tool was used, not that the final lights are its output alone. :inferred
+
+A person who lit a map is named, if at all, in the level-author text or in the `lighters` of a difficulty's `beatmapAuthors`
+in a v4 `Info.dat`, :sourced[BSMG Wiki] or among the contributors SongCore reads from the top-level
+`_customData._contributors` of a v2 `Info.dat`, each entry a `_role`, a `_name` and an optional `_iconPath`. :sourced[SongCore] Few maps do: 36 of the 863 lit maps of
+the sample name a human lighter in `Info.dat`. :observed[863 lit maps of a 999-map sample]{games="beat-saber"}
 
 ## Maps that need mods
 

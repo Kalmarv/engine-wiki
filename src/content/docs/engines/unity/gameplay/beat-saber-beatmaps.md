@@ -11,7 +11,7 @@ sources:
     note: the precision position convention
   - title: SongCore
     url: https://github.com/Kylemc1413/SongCore
-    note: the level hash; the per-difficulty colour fields (SongData.cs)
+    note: the level hash (Utilities/Hashing.cs); the per-difficulty colour fields (SongData.cs)
 ---
 
 A Beat Saber level is a folder (a zip on BeatSaver) holding the song's audio, `Info.dat` and one JSON `.dat` file per
@@ -20,7 +20,11 @@ the file each is in. :sourced[BSMG Wiki] The level hash that replays and BeatSav
 `Info.dat` and the difficulty files, so it changes when any of them does
 (see [replays](/engines/unity/gameplay/beat-saber-replays/#where-replays-are-kept)). :observed[40 replays matched to their level folders]{games="beat-saber"}
 It covers the bytes of `Info.dat` followed by each difficulty file in the order `Info.dat` lists them, and is written as
-upper-case hex. :sourced[SongCore]
+upper-case hex. :sourced[SongCore] For a v4 `Info.dat` the files after it are the audio data file named by
+`audioDataFilename`, then each difficulty's beatmap file followed by its lightshow file, so a lightshow file that several
+difficulties share enters the hash once for each of them; in every version a listed file that is not in the folder is
+skipped. :sourced[SongCore] Recomputed that way over a folder of 960 levels, all 203 hashes of a playlist that names
+levels in it resolve to a folder. :observed[203 playlist hashes against 960 level folders]{games="beat-saber"}
 
 `Info.dat` does not keep a characteristic's difficulties distinct: a few maps list two Standard difficulties under the same
 difficulty name, so a reader that keys difficulties by characteristic and name finds two for one key. :observed[22 of about 117,000 Standard difficulties in a BeatSaver census]{games="beat-saber"}

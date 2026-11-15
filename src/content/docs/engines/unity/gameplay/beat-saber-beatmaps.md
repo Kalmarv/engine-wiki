@@ -11,7 +11,10 @@ sources:
     note: the precision position convention
   - title: SongCore
     url: https://github.com/Kylemc1413/SongCore
-    note: the level hash (Utilities/Hashing.cs); the per-difficulty colour fields (SongData.cs)
+    note: the level hash (Utilities/Hashing.cs); the per-difficulty colour fields (SongData.cs); extra level folders (folders.xml)
+  - title: ChroMapper AutoLighterV2
+    url: https://github.com/Jonas00000/ChroMapper-AutoLighterV2
+    note: the lighter tag it writes into the files it lights
 ---
 
 A Beat Saber level is a folder (a zip on BeatSaver) holding the song's audio, `Info.dat` and one JSON `.dat` file per
@@ -25,6 +28,11 @@ upper-case hex. :sourced[SongCore] For a v4 `Info.dat` the files after it are th
 difficulties share enters the hash once for each of them; in every version a listed file that is not in the folder is
 skipped. :sourced[SongCore] Recomputed that way over a folder of 960 levels, all 203 hashes of a playlist that names
 levels in it resolve to a folder. :observed[203 playlist hashes against 960 level folders]{games="beat-saber"}
+
+Custom levels are loaded by the SongCore mod, as unzipped folders each with its own `Info.dat`, from the `CustomLevels`
+folder and from extra folders listed in `UserData/SongCore/folders.xml`, where an entry gives the folder a name and a path,
+`Pack` 2 shows it as a level pack of its own, `WIP` false makes its levels playable outside practice mode, and only an entry
+with `CacheZIPs` set has its zips unpacked. :sourced[SongCore]
 
 `Info.dat` does not keep a characteristic's difficulties distinct: a few maps list two Standard difficulties under the same
 difficulty name, so a reader that keys difficulties by characteristic and name finds two for one key. :observed[22 of about 117,000 Standard difficulties in a BeatSaver census]{games="beat-saber"}
@@ -40,6 +48,9 @@ The files come in three versions with different field names; a reader takes the 
 | v4 | `colorNotes`, `obstacles`, ... indexing shared `colorNotesData`, `obstaclesData`, ... | `basicEvents` indexing `basicEventsData` | `colorBoostEvents` indexing `colorBoostEventsData` | a separate lightshow file named by `lightshowDataFilename` in a v4 `Info.dat`, with `eventBoxGroups` | :sourced[BSMG Wiki] |
 
 Of a sample of 999 maps from BeatSaver, 695 are written in v2, 277 in v3 and 27 in v4. :observed[999 BeatSaver maps]{games="beat-saber"}
+The `Info.dat` version does not follow the difficulty files': 970 of the 999 have a v2 `Info.dat`, including 275 of the 304
+maps whose difficulties are v3 or v4; the other 29 have a v4 `Info.dat`.
+:observed[999 BeatSaver maps]{games="beat-saber"}
 
 ### Fields left out when zero
 
@@ -64,9 +75,27 @@ and 68 have none; the five light groups, ring spin and laser speed make up almos
 maps use rings and laser speeds. :observed[999 BeatSaver maps]{games="beat-saber"} The median lit map has 10.5 lighting events
 per second at 5.3 distinct times per second. :observed[863 lit maps]{games="beat-saber"}
 
+Group lighting changes that picture for newer maps: 38 of the 999 use event box groups, 8 of them with no basic events at all
+and 24 with fewer than one basic event per second, so a count of basic events alone puts most group-lit maps among the
+sparse or unlit. :observed[999 BeatSaver maps]{games="beat-saber"} All 36 maps set in one of the environments made for group lighting
+(Weave, The Weeknd, Rock Mixtape, Lizzo and the like) use group lighting, and 28 of them also have basic events.
+:observed[36 maps of a 999-map sample]{games="beat-saber"}
+
+A lighting tool can leave its name in the file: the AutoLighterV2 ChroMapper plugin adds an entry `AutoLighterV2 by Jonas`
+holding its version to the difficulty's `customData.lighter` (`_customData._lighter` in v2), and in a v4 map also adds that
+name to the difficulty's lighters in `Info.dat`. :sourced[ChroMapper AutoLighterV2] The text appears in 43 difficulty files of
+19 of the 999 maps. :observed[text search of 999 BeatSaver maps]{games="beat-saber"} The entry stays when the lights are
+edited by hand afterwards, so it shows that the tool was used, not that the final lights are its output alone. :inferred
+
 ## Maps that need mods
 
-Most mods extend the same files, in `_customData` or `customData` and in out-of-range values. :sourced[BSMG Wiki] Mapping Extensions reads a line index or layer of 1000 or more (or
+Most mods extend the same files, in `_customData` or `customData` and in out-of-range values. :sourced[BSMG Wiki] A
+difficulty's `_customData` in `Info.dat` names the mods it needs in `_requirements` and those it can use in `_suggestions`;
+on the most-noted Standard difficulty of each of the 999 sampled maps, Noodle Extensions is required by 8 and Chroma by 5,
+while Chroma is suggested by 134. :observed[999 BeatSaver maps]{games="beat-saber"} By BeatSaver's own per-difficulty flags,
+of the 123,126 maps with a Standard difficulty not marked as automapped, 12.4% use Chroma, 5.9% Noodle Extensions, 2.9%
+Mapping Extensions and 1.9% Cinema; of the 40,235 uploaded from 2024 on, 21.5% use Chroma and 12.2% Noodle Extensions.
+:observed[BeatSaver catalog flags]{games="beat-saber"} Mapping Extensions reads a line index or layer of 1000 or more (or
 -1000 or less) as a precise position off the 4×3 grid. :sourced[Mapping Extensions] A difficulty can have every colour note
 off the grid that way. :observed[corpus difficulties]{games="beat-saber"} Noodle Extensions adds per-object data (position,
 rotation, note speed, fake and uninteractable objects, free-form wall size) and animation through tracks and custom events.
@@ -76,7 +105,9 @@ SongCore lets a map set its own colours per difficulty in a v2 `Info.dat`: the d
 `_colorLeft`, `_colorRight`, `_envColorLeft`, `_envColorRight`, `_envColorWhite`, their `Boost` variants and
 `_obstacleColor`, each an object of `r`, `g`, `b` and optional `a` (1 when left out). :sourced[SongCore] A difficulty whose
 `_beatmapColorSchemeIdx` names an entry of `_colorSchemes` with `useOverride` set takes that scheme instead, and its
-`_customData` colours are ignored; for a difficulty with neither, SongCore sets no colours. :sourced[SongCore]
+`_customData` colours are ignored; for a difficulty with neither, SongCore sets no colours. :sourced[SongCore] Of the 999
+sampled maps, 278 have a `_colorSchemes` entry with `useOverride` set and 424 set custom colours one way or the other; among the
+271 uploaded from 2024 on, 243 use such a scheme. :observed[999 BeatSaver maps]{games="beat-saber"}
 
 How much of that a map uses varies with its popularity:
 
@@ -91,5 +122,7 @@ An animated difficulty file is large: a median of 3.7 MB against 0.2 MB for one 
 keyframe by keyframe rather than the script. :inferred
 
 :::open[What does the game light when a map has no events?]
-68 of the 999 maps have no lighting events at all; what the environment shows for them has not been checked.
+68 of the 999 maps have no lighting events at all; what the environment shows for them has not been checked. Some maps are
+lit only through event box groups (8 of the 999 have groups and no basic events), so the unlit ones are fewer than a count
+of basic events suggests.
 :::

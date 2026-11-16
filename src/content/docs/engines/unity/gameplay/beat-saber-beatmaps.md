@@ -1,6 +1,6 @@
 ---
 title: Beat Saber beatmap files
-description: "How a Beat Saber level's map files are written: Info.dat and the difficulty files, the v2, v3 and v4 versions, the zero-valued fields v3.3 and v4 leave out, where lighting lives, and what mod-requiring maps add."
+description: "How a Beat Saber level's map files are written: Info.dat and the difficulty files, the v2, v3 and v4 versions, the note fields and tempo changes, the zero-valued fields v3.3 and v4 leave out, where lighting lives, and what mod-requiring maps add."
 games: [beat-saber]
 sources:
   - title: BSMG Wiki, map format
@@ -27,7 +27,9 @@ upper-case hex. :sourced[SongCore] For a v4 `Info.dat` the files after it are th
 `audioDataFilename`, then each difficulty's beatmap file followed by its lightshow file, so a lightshow file that several
 difficulties share enters the hash once for each of them; in every version a listed file that is not in the folder is
 skipped. :sourced[SongCore] Recomputed that way over a folder of 960 levels, all 203 hashes of a playlist that names
-levels in it resolve to a folder. :observed[203 playlist hashes against 960 level folders]{games="beat-saber"}
+levels in it resolve to a folder. :observed[203 playlist hashes against 960 level folders]{games="beat-saber"} Recomputed
+for 120,897 zips of a BeatSaver archive, every hash equals the one BeatSaver serves the zip under.
+:observed[120,897 BeatSaver zips, no mismatch]{games="beat-saber"}
 
 Custom levels are loaded by the SongCore mod, as unzipped folders each with its own `Info.dat`, from the `CustomLevels`
 folder and from extra folders listed in `UserData/SongCore/folders.xml`, where an entry gives the folder a name and a path,
@@ -43,7 +45,7 @@ The files come in three versions with different field names; a reader takes the 
 
 | Version | Notes, walls | Basic lighting events | Colour boost | Where lighting lives | Confidence |
 |---|---|---|---|---|---|
-| v2 | `_notes`, `_obstacles` (underscored keys) | `_events`: `_time`, `_type`, `_value`, `_floatValue`, `_customData` | event type 5 in `_events` | the difficulty file | :sourced[BSMG Wiki] |
+| v2 | `_notes`, `_obstacles` (underscored keys), and from v2.6 `_sliders` (arcs) | `_events`: `_time`, `_type`, `_value`, `_floatValue`, `_customData` | event type 5 in `_events` | the difficulty file | :sourced[BSMG Wiki] |
 | v3 | `colorNotes`, `bombNotes`, `obstacles`, `sliders` (arcs), `burstSliders` (chains) | `basicBeatmapEvents`: `b`, `et`, `i`, `f` | `colorBoostBeatmapEvents`: `b`, `o` | the difficulty file, plus group lighting (`lightColorEventBoxGroups`, `lightRotationEventBoxGroups`, `lightTranslationEventBoxGroups`, `vfxEventBoxGroups`) | :sourced[BSMG Wiki] |
 | v4 | `colorNotes`, `obstacles`, ... indexing shared `colorNotesData`, `obstaclesData`, ... | `basicEvents` indexing `basicEventsData` | `colorBoostEvents` indexing `colorBoostEventsData` | a separate lightshow file named by `lightshowDataFilename` in a v4 `Info.dat`, with `eventBoxGroups` | :sourced[BSMG Wiki] |
 
@@ -51,6 +53,18 @@ Of a sample of 999 maps from BeatSaver, 695 are written in v2, 277 in v3 and 27 
 The `Info.dat` version does not follow the difficulty files': 970 of the 999 have a v2 `Info.dat`, including 275 of the 304
 maps whose difficulties are v3 or v4; the other 29 have a v4 `Info.dat`.
 :observed[999 BeatSaver maps]{games="beat-saber"}
+
+In every version a colour note has a beat, a line index 0 to 3 (left to right) and a layer 0 to 2 (bottom to top) on the
+4×3 grid, a colour (0 red, the left saber; 1 blue, the right) and a cut direction: 0 up, 1 down, 2 left, 3 right, 4 up-left,
+5 up-right, 6 down-left, 7 down-right, 8 any (a dot); v3 and v4 add an angle offset to the direction. :sourced[BSMG Wiki] A v2
+wall has a type, 0 full height or 1 crouch, where v3 and v4 give every wall its own layer and height. :sourced[BSMG Wiki]
+Beats convert to time at the `Info.dat` BPM unless the difficulty changes tempo: in v2 with an `_events` entry of type 100, in
+v3 with `bpmEvents`, and in v4 with the `bpmData` of the audio data file. :sourced[BSMG Wiki]
+
+Read with these rules, the current versions of 146,063 live BeatSaver maps list 297,363 difficulties across all
+characteristics; 297,319 of them read, holding 268.7 million colour notes, 15.6 million bombs, 44.4 million walls, 4.0 million
+arcs and 0.89 million chains. Of the 44 that do not, 26 are not valid JSON, 17 are files `Info.dat` lists but the zip does not
+hold, and one is a file over 64 MB that was not read. :observed[146,063 BeatSaver maps]{games="beat-saber"}
 
 ### Fields left out when zero
 
@@ -60,6 +74,17 @@ basic events lack one of these keys, so a reader that requires them silently dro
 :observed[one difficulty]{games="beat-saber"} Reading every missing field as 0 brings the event counts within 2% of
 BeatSaver's own on 964 of the 999 maps; most of the rest use group lighting or legacy Chroma colours, which BeatSaver counts
 differently. :observed[999 BeatSaver maps]{games="beat-saber"}
+
+## Note patterns ranked maps leave out
+
+Two note patterns never occur in ranked maps: two notes of one colour at the same time whose arrows point 135° or more apart,
+and a bomb in the cell a note at the same time swings in from (the cell one step against its arrow). Neither occurs in the
+6,240 ScoreSaber-ranked difficulties of the 2,130 ranked maps, with 6.63 million notes and 467,000 bombs between them, while
+unranked difficulties of some of those maps do have them. :observed[every ScoreSaber-ranked difficulty of a BeatSaver archive]{games="beat-saber"}
+Unranked maps by people have both. On Standard difficulties of 50 notes or more, with the time taken to 1/16 of a beat, the
+opposite-arrow pair comes 0.85 to 5.23 times per 1,000 notes depending on the difficulty (most on Expert+, where 5.7% of
+difficulties have one, and Easy, with 4.12) and the bomb in the swing's start cell 0.11 to 2.51 times (most on Easy).
+:observed[every Standard difficulty of 50 or more notes in a BeatSaver archive]{games="beat-saber"}
 
 ## Lighting
 

@@ -1,6 +1,6 @@
 ---
 title: Beat Saber beatmap files
-description: "How a Beat Saber level's map files are written: Info.dat and the difficulty files, the v2, v3 and v4 versions, the note fields and tempo changes, the zero-valued fields v3.3 and v4 leave out, where lighting lives, and what mod-requiring maps add."
+description: "How a Beat Saber level's map files are written: Info.dat and the difficulty files, the v2, v3 and v4 versions, the note fields and tempo changes, the zero-valued fields v3.3 and v4 leave out, what the archive's maps use, where lighting lives, and what mod-requiring maps add."
 games: [beat-saber]
 sources:
   - title: BSMG Wiki, map format
@@ -74,6 +74,28 @@ basic events lack one of these keys, so a reader that requires them silently dro
 :observed[one difficulty]{games="beat-saber"} Reading every missing field as 0 brings the event counts within 2% of
 BeatSaver's own on 964 of the 999 maps; most of the rest use group lighting or legacy Chroma colours, which BeatSaver counts
 differently. :observed[999 BeatSaver maps]{games="beat-saber"}
+
+## What the maps hold
+
+These counts come from a database of every live BeatSaver map's difficulties, read as above. They cover the maps BeatSaver
+does not flag as AI-made, so an unflagged automapped map counts among them. Unless stated otherwise, a count is over the
+Standard difficulties with 50 notes or more, and a year is the year the map was uploaded.
+
+| What | How the files use it | Confidence |
+|---|---|---|
+| Characteristics | 123,305 maps have a Standard difficulty, 4,163 Lawless, 3,294 Lightshow, 586 360 Degree and 204 90 Degree | :observed[BeatSaver archive]{games="beat-saber"} |
+| Arcs and chains | the share of Expert+ difficulties with arcs rises from 6% of those uploaded in 2022, when v3 brought arcs and chains, to 64% in 2026; chains level off at about 20% | :observed[BeatSaver archive]{games="beat-saber"} |
+| Bombs and walls | Expert+ difficulties with bombs go from 37% (2018) to 69% (2022) and back to 56%; those with walls from 73% to 86% and back to 80% | :observed[BeatSaver archive]{games="beat-saber"} |
+| Grid rows | 55% of notes are on the bottom layer, and the rest split about evenly between the middle and top | :observed[BeatSaver archive]{games="beat-saber"} |
+| Middle row | 77% of red notes on the middle layer are in line 0 and 75% of blue ones in line 3 | :observed[BeatSaver archive]{games="beat-saber"} |
+| Crossovers | about 21% of Expert+ notes are on the other saber's half (red in lines 2 and 3, blue in 0 and 1), the same in every upload year since 2018 | :observed[BeatSaver archive]{games="beat-saber"} |
+| Cut directions | left and right arrows fall from 16.7% of notes (2018) to about 5%, diagonals rise from 17.5% to 31% (2026), and dots peak at 16.7% (2025) | :observed[BeatSaver archive]{games="beat-saber"} |
+
+The middle layer's centre cells are kept clear because a note there hides what comes behind it. :inferred
+
+A reader meets extreme files among them. 86 maps have a difficulty of more than 50,000 notes, holding 13.7 million notes
+between them; the largest has 1,000,073 notes in 3.4 minutes. Some maps have broken note times, one of them giving a
+length of about 10¹⁷ minutes, so length and speed figures need such maps filtered out. :observed[BeatSaver archive]{games="beat-saber"}
 
 ## Note patterns ranked maps leave out
 

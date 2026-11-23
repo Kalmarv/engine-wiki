@@ -107,7 +107,7 @@ decode as a flat `y = +1, z = 0` normal; an independent BC5 decoder gives the co
 
 Texture parenting comes from live `gtxd.ymt` RBF data, `mph4_gtxd.ymt` and enabled `GTXD_PARENTING_DATA` XML.
 `CMapParentTxds/txdRelationships` records name child/parent dictionary pairs; lookup can walk a parent chain.
-:observed
+:observed The install's parenting data holds 4,050 such child/parent links. :observed
 
 CodeWalker also searches resident dictionaries after local and parent dictionaries. Its resident initialization
 loads `mapdetail`, then `vehshare`, with later duplicate names replacing earlier resident entries.

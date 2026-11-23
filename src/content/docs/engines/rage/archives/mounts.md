@@ -49,6 +49,13 @@ code is the Online map without `patchday27ng`'s files. :inferred
 
 Title-update paths under `update:/dlc_patch/<pack>/` replace pack files. Some packs also have `dlc1.rpf` and other
 subarchives containing files absent from the pack's main archive. :observed
+The replacement is common: 2,552 `ymap` files, 1,052 `ydr` and 516 `ytd` exist both in a pack and as a
+`dlc_patch` copy in `update.rpf`. :observed A rule that keeps a pack's own copy over its `dlc_patch` copy picks
+another copy than CodeWalker's selected Online map for 2,427 of that map's 5,420 active map files. :observed
+
+The install holds 11,052 distinct map file names, about twice the 5,420 of one selected state. 3,506 base map files
+have a `hei_` twin (1,109 of them `_strm_` maps), the Online replacement that `mpheist` enables; a world built from
+every map file without the change sets places both. :observed
 
 ## Overlay precedence
 

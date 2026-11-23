@@ -42,7 +42,13 @@ distances, LOD level, child count, priority, ambient-occlusion values and tint v
 The world coordinate frame is east, north, up, in metres. Ordinary entity orientation uses the conjugate of the
 stored `(x,y,z,w)` quaternion; an interior instance uses its stored quaternion directly. :observed
 The interior rule has a check against the game's own data: in the interior proxies of `gta5_cache_y.dat` the stored
-quaternion fits 163 rotated interiors and its conjugate fits none. :sourced[ragekit] The ordinary-entity convention
+quaternion fits 163 rotated interiors and its conjugate fits none. :sourced[ragekit]
+A whole-install check agrees. Over every map file of Steam build 25971420, interior-local objects placed with the
+stored interior quaternion fall more than 1 m outside their own map file's `entitiesExtentsMin/Max` 194 times among
+the 122,979 objects of the 683 files that hold a turned interior; with the conjugate, 13,006 times. Objects of
+unturned interiors fall outside 149 times in 61,115. :observed[every map file, one build] 116 of the 194 are the two
+copies of one turned office interior (`v_psycheoffice`), whose map file states extents that are not turned with it.
+:observed The ordinary-entity convention
 comes from CodeWalker, and the other readers copy it rather than confirm it. :sourced[CodeWalker]
 
 ## Archetypes

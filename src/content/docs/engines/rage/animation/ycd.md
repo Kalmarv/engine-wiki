@@ -70,7 +70,7 @@ fields:
   - {at: 24, size: 2, type: u16, name: bytes per frame, level: proven}
   - {at: 26, size: 2, type: u16, name: indirect-quantize integer count, level: sourced}
   - {at: 28, size: 2, type: u16, name: quantize value bits, level: sourced}
-  - {at: 30, size: 1, type: u8, name: linear-channel chunk size, level: proven}
+  - {at: 30, size: 1, type: u8, name: linear-channel chunk size, level: proven, note: "over 1,204 sequences with channel detail, 64 in each that holds a linear channel and 255 in each that holds none"}
   - {at: 31, size: 1, type: u8, name: root-motion-reference counts, level: proven, note: "high nibble position; low nibble rotation"}
 ```
 

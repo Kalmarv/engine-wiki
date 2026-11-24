@@ -9,6 +9,9 @@ sources:
   - title: D3D11.3 functional specification
     url: https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm
     note: Direct3D's floating-point conversion rules (3.2.2) and f32tof16 (22.13.2)
+  - title: DirectXShaderCompiler, DxilOperations.cpp
+    url: https://github.com/microsoft/DirectXShaderCompiler/blob/main/lib/DXIL/DxilOperations.cpp
+    note: the compiler's table of DXIL operations, with the function attribute of each; read at the release tags named below
 ---
 
 A Shader Model 6 program is a [DirectX container](/concepts/d3d-shader-containers/) whose `DXIL` part holds an LLVM 3.7
@@ -171,6 +174,16 @@ flags (101,896 and 268,620), strings in Elden Ring only (38,529) and no integer 
 a list of group ids, by a 1-based index in operand 4 of its record. LLVM 3.7's kind numbers 9 `noalias`, 11 `nocapture`,
 12 `noduplicate`, 17 `noreturn`, 18 `nounwind`, 20 `readnone`, 21 `readonly` and 39 `nonnull` are the ones dxc's listings
 print for these groups. :observed{games="skate elden-ring"}
+
+The attributes of a `dx.op` function are the compiler's choice for the operation, and one of them differs between releases.
+For the same compute program dxc 1.7.2308 declares `dx.op.waveGetLaneIndex` `nounwind readnone` and dxc 1.9.2609 declares it
+`nounwind readonly`. The program's 36 `dx.op` functions (among them handle creation, raw and typed buffer loads and stores,
+texture sampling, wave and bit operations) have the same return and parameter types in both listings, and the other 35 the
+same attributes.
+:observed[one test program compiled with each release] The operation table in the compiler's source gives `WaveGetLaneIndex`
+the attribute `ReadNone` at the tags v1.6.2112, v1.7.2308 and v1.8.2403 and `ReadOnly` at v1.8.2405, v1.8.2407, v1.8.2502,
+v1.8.2505, v1.9.2602 and v1.9.2609, and it is the only operation whose attribute differs among v1.6.2112, v1.7.2308,
+v1.8.2403, v1.8.2405 and v1.9.2609 for the operations they share. :sourced[DirectXShaderCompiler, DxilOperations.cpp]
 
 No program has a string function attribute: the libraries of skate. have none, and those of Elden Ring only the standard attributes
 (`disable-tail-calls`, `less-precise-fpmad`, `no-frame-pointer-elim`, `no-infs-fp-math`, `no-nans-fp-math`, `no-realign-stack`,

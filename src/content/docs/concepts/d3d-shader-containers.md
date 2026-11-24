@@ -6,6 +6,9 @@ sources:
   - title: Microsoft fxc (Effect-Compiler Tool), Windows SDK 10.0.26100
     url: https://learn.microsoft.com/en-us/windows/win32/direct3dtools/fxc
     note: the compiler that produced the minimum-precision test containers below
+  - title: "HLSL specifications, INF-0004: validator hashing"
+    url: https://microsoft.github.io/hlsl-specs/proposals/infra/inf-0004-validator-hashing
+    note: the BYPASS and PREVIEW_BYPASS digests and what the Direct3D 12 runtime does with them from Agility SDK 1.615
 ---
 
 Sekiro, Elden Ring, Riders Republic, skate. and the Unity player of Sledding Game ship their Direct3D shaders in the
@@ -58,6 +61,37 @@ container whose digest is stale or zero (`D3DDisassemble` and `D3DStripShader` r
 Microsoft's DXIL validator, given a container with a zero or arbitrary digest and asked to edit it in place, returns the stock container of Elden Ring byte for byte, so the digest it signs with
 is the one above. :observed[120 sampled containers]{games="elden-ring"} It rejects skate.'s stock containers (status `0x80AA0009`), so it cannot arbitrate those. :observed[20 sampled containers]{games="skate"}
 A container with a part replaced (the debug-name part) and its digest recomputed is accepted by all three, and the validator's signature of it equals the digest recomputed. :observed[60 sampled Elden Ring containers]
+
+### What the Direct3D 12 runtime checks
+
+The Direct3D 12 runtime compares the digest of a Shader Model 6 container when a pipeline is created from it, and takes a
+module no validator has seen as long as the digest is the one above. The measurement uses a Shader Model 6.6 compute program
+compiled by dxc whose only effect is to store one constant in a raw buffer bound as a root UAV: creating a compute pipeline
+from a container and dispatching it shows whether the runtime takes the container and, by the value stored, which module the
+driver compiled. The changed module is the same container with that constant replaced in place in the bitcode of the `DXIL`
+part, every other byte kept.
+
+| Container | `CreateComputePipelineState` | Confidence |
+|---|---|---|
+| As dxc wrote it (signed by its validator) | Succeeds; the dispatch stores the constant | :observed[three setups, below] |
+| The changed module under the compiler's digest | `E_INVALIDARG` (`0x80070057`) | :observed[three setups, below] |
+| As dxc wrote it, the digest replaced by sixteen zero bytes | `E_INVALIDARG` (`0x80070057`) | :observed[three setups, below] |
+| The changed module, the digest computed again as above | Succeeds; the dispatch stores the changed constant | :observed[three setups, below] |
+| The changed module, the digest replaced by sixteen `0x01` bytes | Succeeds; the dispatch stores the changed constant | :observed[three setups, below] |
+
+The three setups give the same five outcomes: an NVIDIA GeForce RTX 5070 Ti (driver 610.74) on the `D3D12Core` of Windows 11
+(10.0.26100.9549) with a container from dxc 1.7.2308; the same adapter on the Agility SDK's `D3D12Core` 1.618.2 with a
+container from dxc 1.9.2609; and the WARP software adapter on the Windows 11 runtime. No AMD or Intel driver, no graphics
+stage, no older runtime and no module that the validator would refuse was tried.
+
+The changed containers keep their `HASH` part, which still holds the hash of the unchanged bitcode, and are taken all the
+same: the runtime does not compare `HASH` with the module. :observed[the two changed containers that are taken, three setups]
+The `HASH` part is 20 bytes, a flags word of `0` and the plain MD5 (RFC 1321) of the module's bitcode, the bytes of the
+`DXIL` part after its 24-byte header. :observed[four compute test programs compiled with dxc 1.7.2308 and with 1.9.2609]
+
+Microsoft's proposal on validator hashing calls the sixteen `0x01` bytes `BYPASS`: from Agility SDK 1.615 on the runtime
+runs a program that carries it without comparing a digest, for shader models that are not experimental, and it always
+refuses a digest of zeros. :sourced[HLSL specifications, INF-0004]
 
 | Part set (in file order) | Containers | Games |
 |---|---|---|

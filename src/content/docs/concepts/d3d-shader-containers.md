@@ -9,6 +9,9 @@ sources:
   - title: "HLSL specifications, INF-0004: validator hashing"
     url: https://microsoft.github.io/hlsl-specs/proposals/infra/inf-0004-validator-hashing
     note: the BYPASS and PREVIEW_BYPASS digests and what the Direct3D 12 runtime does with them from Agility SDK 1.615
+  - title: dxil-spirv
+    url: https://github.com/HansKristian-Work/dxil-spirv
+    note: vkd3d-proton's DXIL-to-SPIR-V translator; its command-line tool converted and validated the changed containers below
 ---
 
 Sekiro, Elden Ring, Riders Republic, skate. and the Unity player of Sledding Game ship their Direct3D shaders in the
@@ -92,6 +95,13 @@ The `HASH` part is 20 bytes, a flags word of `0` and the plain MD5 (RFC 1321) of
 Microsoft's proposal on validator hashing calls the sixteen `0x01` bytes `BYPASS`: from Agility SDK 1.615 on the runtime
 runs a program that carries it without comparing a digest, for shader models that are not experimental, and it always
 refuses a digest of zeros. :sourced[HLSL specifications, INF-0004]
+
+dxil-spirv, the translator that vkd3d-proton uses to turn DXIL into SPIR-V, compares neither the digest nor `HASH`. A
+container whose `DXIL` bitcode has one bit flipped, every other byte kept, converts and passes SPIR-V validation like the
+unchanged one, with byte-identical SPIR-V. Of sixteen more single-bit flips spread across the same bitcode, seven convert and
+validate as well, five are refused while parsing the bitcode, converting it or validating the SPIR-V, and one aborts the
+translator; a container cut short by 64 bytes is refused as it is parsed.
+:observed[one Shader Model 6.6 compute program from dxc 1.9.2609, dxil-spirv as vkd3d-proton 30b0eb9b carries it]
 
 | Part set (in file order) | Containers | Games |
 |---|---|---|

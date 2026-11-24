@@ -245,3 +245,11 @@ its element and is as large as its element's allocation size times the element c
 alignment 4, where stock LLVM gives it 16. A block's predecessors are listed in the order of the block's use list, which is the
 reverse of the order the branches to it were created in, and the listing ends with one newline more after the module.
 :proven[a listing written by these rules is identical to dxc 1.9.2609's for all 50,283 programs and 129 test compilations]{games="elden-ring"}
+
+dxc's assembler (`IDxcAssembler::AssembleToContainer`) reads its own listings back. The listing of a container as
+`IDxcCompiler3::Disassemble` writes it, comment header included, assembles to a container that dxc's validator (`dxil.dll`)
+accepts and whose listing equals the input in every line but `; shader hash:`. The assembled container is about 1.3 kB larger than
+the compiled one. :observed[ten cs_6_6 programs, each with dxc 1.7.2308 and 1.9.2609] This holds for a program compiled with
+`-Qstrip_reflect`. Without it, the listing takes the resource names in its `; Resource Bindings:` table from the container's
+reflection part, which an assembled container does not have, so in the assembled container's listing those names are blank.
+:observed[the same programs]

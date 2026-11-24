@@ -94,6 +94,13 @@ Compiled with `-validator-version 1.0`, dxc writes a 24-byte runtime info, and w
 words and the wave lane range, so a validator 1.0 record stops before the stage byte at 28; that is a fit of the sizes to
 the layout above. :inferred
 
+The validator holds a container to the runtime-info size of the module's own `dx.valver`. The validator of dxc 1.7.2308
+(`dxil.dll` 1.7) refuses a module that states validator 1.8 or 1.9 outright ("Validator version in metadata (1.9) is not
+supported"), and a module that states 1.7 but carries the 52-byte runtime info with an entry name fails it with "Container
+part 'Pipeline State Validation' does not match expected for module"; with the 48-byte form it passes. The validator of dxc
+1.9.2609 takes the 52-byte form. :observed[303 test containers written outside dxc, each checked with both validators; 130
+modules restated as validator 1.7]
+
 ## Feature mask and metadata
 
 `SFI0` appears in every DXIL container. Its bits equal what the module uses: bit 14 is set exactly when the module calls a wave
@@ -184,6 +191,8 @@ same attributes.
 the attribute `ReadNone` at the tags v1.6.2112, v1.7.2308 and v1.8.2403 and `ReadOnly` at v1.8.2405, v1.8.2407, v1.8.2502,
 v1.8.2505, v1.9.2602 and v1.9.2609, and it is the only operation whose attribute differs among v1.6.2112, v1.7.2308,
 v1.8.2403, v1.8.2405 and v1.9.2609 for the operations they share. :sourced[DirectXShaderCompiler, DxilOperations.cpp]
+The validators do not hold a module to either form: `dxil.dll` 1.7 and 1.9 both accept `dx.op.waveGetLaneIndex` declared
+`readnone` and declared `readonly`. :observed[test modules written outside dxc, each validator]
 
 No program has a string function attribute: the libraries of skate. have none, and those of Elden Ring only the standard attributes
 (`disable-tail-calls`, `less-precise-fpmad`, `no-frame-pointer-elim`, `no-infs-fp-math`, `no-nans-fp-math`, `no-realign-stack`,
@@ -211,6 +220,23 @@ that appears under both spaces; no Elden Ring module does. :observed{games="skat
 
 No load or store in either game's modules is volatile or atomic: a reader that refuses both reads all 69,728 modules (19,445
 skate., 50,283 Elden Ring) with no refusal. :observed{games="skate elden-ring"}
+
+HLSL has no interlocked subtract, so a subtraction from group-shared memory reaches the module as `atomicrmw add` of the
+negated value (`sub i32 0, %x`), and dxc has no reason to write `atomicrmw sub`. :inferred The validator accepts
+`atomicrmw sub` on group-shared memory, but the NVIDIA driver 610.74 (GeForce RTX 5070 Ti) refuses some compute modules that
+use it: `CreateComputePipelineState` returns `E_OUTOFMEMORY` (`0x8007000E`) for them, the same modules every time, with
+plenty of memory free. Of 2,000 generated compute modules, 82 were refused, all 82 contain `atomicrmw sub` on group-shared
+memory, and none of the 1,141 modules without it that reached the GPU was refused; 9 modules with it were taken and ran
+correctly (5 of them subtract a constant 0), so the instruction is needed for the refusal but is not the whole condition.
+Generated modules that write each subtraction as `atomicrmw add` of the negation have not been refused on that driver.
+:observed[2,000 generated modules validated by `dxil.dll` 1.9, one driver]
+
+:::open[What else makes the NVIDIA driver refuse `atomicrmw sub`?]
+Nine modules that use it are taken. Which operand or surrounding code decides it, and whether other drivers (AMD, Intel,
+WARP) or other NVIDIA releases refuse the same modules, has not been measured. Users of other NVIDIA cards of the same
+generation report the same `E_OUTOFMEMORY` for modules that use only `atomicrmw add`, which driver 610.74 takes; their driver
+versions are not known.
+:::
 
 ## Converting a float to a half (`legacyF32ToF16`)
 

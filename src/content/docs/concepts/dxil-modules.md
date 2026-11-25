@@ -12,6 +12,9 @@ sources:
   - title: DirectXShaderCompiler, DxilOperations.cpp
     url: https://github.com/microsoft/DirectXShaderCompiler/blob/main/lib/DXIL/DxilOperations.cpp
     note: the compiler's table of DXIL operations, with the function attribute of each; read at the release tags named below
+  - title: dxil-spirv
+    url: https://github.com/HansKristian-Work/dxil-spirv
+    note: the DXIL to SPIR-V translator of vkd3d-proton; its structurizer read at the commits named below
 ---
 
 A Shader Model 6 program is a [DirectX container](/concepts/d3d-shader-containers/) whose `DXIL` part holds an LLVM 3.7
@@ -237,6 +240,16 @@ WARP) or other NVIDIA releases refuse the same modules, has not been measured. U
 generation report the same `E_OUTOFMEMORY` for modules that use only `atomicrmw add`, which driver 610.74 takes; their driver
 versions are not known.
 :::
+
+A module may return from more than one block, and a `switch` whose cases end in different `ret` blocks then has no block
+that post-dominates it. The dxil-spirv of vkd3d-proton 3.1 (dxil-spirv 8b48f0e0), which turns DXIL into SPIR-V when a
+pipeline is created, crashes on such a compute module: `CFGStructurizer::process_switch_blocks` takes the switch's merge
+block from `find_common_post_dominator` over its successors, gets none, and passes the null to
+`find_natural_switch_merge_block`, whose `CFGNode::dominates` reads through it. Under Direct3D 12 this is a page fault
+reading address `0x110` inside `CreateComputePipelineState`. The dxil-spirv of vkd3d-proton 30b0eb9b converts the same
+modules. :observed[one generated compute module converted alone by dxil-spirv 3.1 built with AddressSanitizer; the same fault in
+pipeline creation for two more generated programs] It still makes the same unchecked call, so an earlier step of
+its rewritten structurizer keeps such a switch from reaching it; which step has not been traced. :inferred
 
 ## Converting a float to a half (`legacyF32ToF16`)
 

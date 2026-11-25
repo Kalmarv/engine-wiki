@@ -266,6 +266,18 @@ the shapes read from the control flow of a few failing modules] Modules with one
 compares instead of that `switch`, and every exit joined in one block before the return convert under 3.1 as under
 30b0eb9b: 7,924 of 7,930 generated compute modules on both, the same six failing on both (in five of them the program they
 come from fails whole too). :observed[7,930 generated compute modules, dxil-spirv command line with validation]
+No one of the three changes is enough by itself. 3.1 converts 12 of the 227 modules of a smaller set as they come (171 crash,
+41 give invalid SPIR-V, 3 run past a 120 s limit). The changes raise that as follows:
+
+| Change | Converted |
+|---|---|
+| One `ret` block | 145 |
+| One `ret` block and the chain of compares | 195 |
+| One `ret` block and the joined exit | 150 |
+| All three | 225 |
+
+225 is as many as 30b0eb9b converts. With one `ret` block alone, every module of the set whose entry block is not a `switch` converts.
+:observed[227 generated compute modules, each change applied alone and together, dxil-spirv 3.1 command line]
 
 ## Converting a float to a half (`legacyF32ToF16`)
 

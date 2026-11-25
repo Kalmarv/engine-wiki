@@ -246,10 +246,26 @@ that post-dominates it. The dxil-spirv of vkd3d-proton 3.1 (dxil-spirv 8b48f0e0)
 pipeline is created, crashes on such a compute module: `CFGStructurizer::process_switch_blocks` takes the switch's merge
 block from `find_common_post_dominator` over its successors, gets none, and passes the null to
 `find_natural_switch_merge_block`, whose `CFGNode::dominates` reads through it. Under Direct3D 12 this is a page fault
-reading address `0x110` inside `CreateComputePipelineState`. The dxil-spirv of vkd3d-proton 30b0eb9b converts the same
-modules. :observed[one generated compute module converted alone by dxil-spirv 3.1 built with AddressSanitizer; the same fault in
-pipeline creation for two more generated programs] It still makes the same unchecked call, so an earlier step of
-its rewritten structurizer keeps such a switch from reaching it; which step has not been traced. :inferred
+reading address `0x110` inside `CreateComputePipelineState`. :observed[generated compute modules converted alone by dxil-spirv 3.1
+built with AddressSanitizer, every crash in a sample of 33 at this call; the same fault in pipeline creation] The null
+comes from the post-dominator tree: every block that returns hangs under one virtual exit node, which is its own immediate
+post-dominator, and `find_common_post_dominator` reports no merge when the common post-dominator is that node.
+:sourced[dxil-spirv 8b48f0e0, cfg_structurizer.cpp]
+
+dxil-spirv converts these modules from commit 71967a38 ("Rewrite the structurizer from scratch") on, where a new
+structurizer (`cfg_structurizer_new.cpp`) becomes the default. :sourced[dxil-spirv 71967a38] The old structurizer stays
+behind the `--legacy-structurizer` option (in vkd3d-proton, `VKD3D_CONFIG=legacy_structurizer` or a per-application
+quirk) and still faults at the same call in dxil-spirv 34f0ff84, the one of vkd3d-proton 30b0eb9b; dxil-spirv 2d0df0ce,
+the commit before the rewrite, faults as 3.1 does. :observed[34 generated compute modules; 227 more for the 71967a38 build]
+
+The 3.1 structurizer also refuses two shapes after the returns are joined into one `ret` block, with invalid SPIR-V rather
+than a crash: a `switch` whose cases enter blocks that reach one another ("branches to the selection construct, but not to
+the selection header", case-construct errors), and a loop that leaves through several blocks which each store and then
+reach the same return ("exits the selection ... but not via a structured exit"). :inferred[the messages observed;
+the shapes read from the control flow of a few failing modules] Modules with one `ret` block, a chain of
+compares instead of that `switch`, and every exit joined in one block before the return convert under 3.1 as under
+30b0eb9b: 7,924 of 7,930 generated compute modules on both, the same six failing on both (in five of them the program they
+come from fails whole too). :observed[7,930 generated compute modules, dxil-spirv command line with validation]
 
 ## Converting a float to a half (`legacyF32ToF16`)
 

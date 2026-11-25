@@ -279,6 +279,11 @@ No one of the three changes is enough by itself. 3.1 converts 12 of the 227 modu
 225 is as many as 30b0eb9b converts. With one `ret` block alone, every module of the set whose entry block is not a `switch` converts.
 :observed[227 generated compute modules, each change applied alone and together, dxil-spirv 3.1 command line]
 
+The whole set behaves the same way without the changes. 30b0eb9b converts 7,924 of the 7,930 modules as they come, and the six it
+fails on are the same six as after the changes. 3.1 converts 117 of the 2,904 modules it was run on (4.0 %): 2,141 crash, 624 give
+invalid SPIR-V and 22 run past 120 s. :observed[7,930 generated compute modules with 30b0eb9b, 2,904 of them with 3.1, dxil-spirv
+command line with validation]
+
 ## Converting a float to a half (`legacyF32ToF16`)
 
 dxc writes HLSL's `f32tof16` as `dx.op.legacyF32ToF16` (operation 130): a float in, the binary16 in the low 16 bits of an

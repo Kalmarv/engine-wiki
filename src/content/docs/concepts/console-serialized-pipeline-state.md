@@ -13,14 +13,18 @@ with `DXBC`. :observed[one title, 28,139 entries]
 
 This page records the layout of those entries as one title presents them. The evidence is one title and one launch:
 every statement is observed, none proven. The byte-level counts come from the 91 compute and 186 graphics entries that
-lie in the 4 KiB after the first 50 entries of each kind.
+lie in the 4 KiB after the first 50 entries of each kind, unless a statement says it covers every call of the launch.
 
 ## When and how many
 
 The title restores its whole cache at once: 2,689 compute and 25,450 graphics entries arrive within six seconds of the
-first call, and no further call follows in the next two minutes of loading and play. :observed[one launch]
+first call, and no further call follows in the next two minutes of loading and play. The calls come from three of the
+title's threads. :observed[one launch]
 The compute count equals the number of compute programs the title ships as Direct3D shader containers, so the compute
 cache covers the title's compute pipelines completely. :observed[one title]
+The 2,689 compute entries hold 2,680 distinct code blobs. Over the 25,450 graphics entries there are 10,277 distinct
+combinations of the first two code blobs, made of 9,992 distinct first code blobs and 1,341 distinct second ones.
+:observed[every call of one launch]
 
 Each call's `state` pointer addresses one entry of a contiguous array: the bytes after an entry are the following
 entries, at a stride of 96 bytes for compute and 352 bytes for graphics. :observed[91 compute and 186 graphics entries]
@@ -42,7 +46,7 @@ fields:
   - {at: 24, size: 8, type: ptr, name: id, level: observed, note: "a 20-byte blob, one per entry"}
   - {at: 32, size: 8, type: u64, name: id_size, level: observed, value: "20"}
   - {at: 40, size: 8, type: ptr, name: code, level: observed, note: "console-native shader code, in a different memory region from the other blobs"}
-  - {at: 48, size: 8, type: u64, name: code_size, level: observed, note: "320 to 8,448; a multiple of 64 in every entry"}
+  - {at: 48, size: 8, type: u64, name: code_size, level: observed, note: "256 to 239,464 over every entry of the launch, median 13,632; a multiple of 64 in the 91 entries read, but not in every entry (239,464 is not)"}
   - {at: 56, size: 8, type: ptr, name: metadata, level: observed, note: "begins with the dword 0x00000403"}
   - {at: 64, size: 8, type: u64, name: metadata_size, level: observed, note: "120 to 1,560; a multiple of 8 in every entry"}
   - {at: 72, size: 8, type: ptr, name: unknown_72, level: unknown, note: "a pointer, one per entry"}
@@ -99,7 +103,8 @@ fields:
 ```
 
 The code and metadata pairs are filled from the first; which stage a pair belongs to is not written beside it.
-:observed[186 entries] The pair slots run from byte 40 to byte 264, room for seven code-and-metadata pairs, which
+:observed[186 entries] Over every call of the launch, the first pair is present in 24,090 of the 25,450 entries, the
+second in 13,388 and the third in 12,062. :observed[every call of one launch] The pair slots run from byte 40 to byte 264, room for seven code-and-metadata pairs, which
 matches one slot per graphics shader stage including mesh and amplification shaders; the one entry with a seventh
 pair supports that reading. :inferred
 
@@ -108,7 +113,9 @@ The graphics code blobs begin with the same `0xD580xxxx` dword as the compute on
 ## What the entries do not contain
 
 No 8-byte word of an entry and no FNV-1a 64 hash of a blob an entry points to equals the FNV-1a 64 hash of any of the
-title's PC Direct3D shader containers. :observed[one title, every entry of one launch] Mapping an entry to the PC
+title's PC Direct3D shader containers. :observed[one title, every entry of one launch] Nor does the 16-byte digest
+of any of the 6,132 PC containers the title builds pipelines from appear in the first 50 entries of either kind or
+in the blobs of up to 1 KiB they point to. :observed[50 compute and 50 graphics entries] Mapping an entry to the PC
 build's shaders therefore needs the console code or register state decoded, not a lookup.
 
 :::open[What do the header, state and metadata blobs encode?]
